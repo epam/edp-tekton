@@ -1,0 +1,121 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: maven-build-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: maven-settings
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: https://github.com/sergk/spring-petclinic
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - fetch-repository
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: maven
+      runAfter:
+        - compile
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - org.jacoco:jacoco-maven-plugin:prepare-agent
+            - '-Dmaven.test.failure.ignore=true'
+            - verify
+            - org.jacoco:jacoco-maven-plugin:report
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: maven
+      runAfter:
+        - test
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - clean
+            - package
+            - '-DskipTests=true'
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: push
+      taskRef:
+        name: maven
+      runAfter:
+        - build
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - deploy
+            - '-DskipTests=true'
+            - '-DaltDeploymentRepository=nexus::default::http://nexus.edp-delivery-vp-delivery-dev:8081/repository/edp-maven-snapshots'
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: kaniko-build
+      taskRef:
+        name: kaniko
+      runAfter:
+        - push
+      params:
+        - name: IMAGE
+          value: 093899590031.dkr.ecr.eu-central-1.amazonaws.com/edp-delivery-sk-delivery-dev/petclinic:latest
+      workspaces:
+        - name: source
+          workspace: shared-workspace

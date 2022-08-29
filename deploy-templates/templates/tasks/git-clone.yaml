@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: git-clone
   labels:
-    app.kubernetes.io/version: "0.7"
+    app.kubernetes.io/based-on: "0.7"
+    {{- include "edp-tekton.labels" . | nindent 4 }}
   annotations:
     tekton.dev/pipelines.minVersion: "0.29.0"
     tekton.dev/categories: Git

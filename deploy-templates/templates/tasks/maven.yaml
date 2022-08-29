@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: maven
   labels:
-    app.kubernetes.io/version: "0.2"
+    app.kubernetes.io/based-on: "0.2"
+    {{- include "edp-tekton.labels" . | nindent 4 }}
   annotations:
     tekton.dev/pipelines.minVersion: "0.12.1"
     tekton.dev/categories: Build Tools

@@ -32,7 +32,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-sk-delivery-dev:8081'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
@@ -52,7 +52,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-sk-delivery-dev:8081'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
@@ -75,7 +75,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-sk-delivery-dev:8081'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
@@ -97,13 +97,13 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-vp-delivery-dev:8081'
+            - '-Dartifactory.baseUrl=http://nexus.edp-delivery-sk-delivery-dev:8081'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
             - deploy
             - '-DskipTests=true'
-            - '-DaltDeploymentRepository=nexus::default::http://nexus.edp-delivery-vp-delivery-dev:8081/repository/edp-maven-snapshots'
+            - '-DaltDeploymentRepository=nexus::default::http://nexus.edp-delivery-sk-delivery-dev:8081/repository/edp-maven-snapshots'
       workspaces:
         - name: maven-settings
           workspace: maven-settings

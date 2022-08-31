@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: maven-code-review-pipeline
+  name: maven-build-pipeline
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -40,6 +40,25 @@ spec:
           value: $(params.git-source-revision)
       workspaces:
         - name: output
+          workspace: shared-workspace
+
+    - name: get-edp-values
+      taskRef:
+        name: get-edp-values
+
+    - name: sast
+      taskRef:
+        name: sast
+      runAfter:
+        - fetch-repository
+        - get-edp-values
+      params:
+        - name: reportDataProductName
+          value: $(tasks.get-edp-values.results.TENANT_NAME)
+        - name: reportDataEngagementName
+          value: "$(params.CODEBASE_NAME)-$(params.git-source-revision)"
+      workspaces:
+        - name: source
           workspace: shared-workspace
 
     - name: compile
@@ -110,20 +129,61 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dockerfile-lint
+    - name: build
       taskRef:
-        name: hadolint
+        name: maven
       runAfter:
-        - fetch-repository
+        - sonar
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - clean
+            - package
+            - '-DskipTests=true'
       workspaces:
+        - name: maven-settings
+          workspace: maven-settings
         - name: source
           workspace: shared-workspace
 
-    - name: helm-lint
+    - name: push
       taskRef:
-        name: helm-lint
+        name: maven
       runAfter:
-        - fetch-repository
+        - build
+      params:
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - deploy
+            - '-DskipTests=true'
+            - '-DaltDeploymentRepository=nexus::default::$(params.NEXUS_URL)/repository/edp-maven-snapshots'
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: kaniko-build
+      taskRef:
+        name: kaniko
+      runAfter:
+        - get-edp-values
+        - push
+      params:
+        - name: IMAGE
+          value: "$(tasks.get-edp-values.results.DOCKER_HOST_URL)/$(tasks.get-edp-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)-$(params.git-source-revision):latest"
+        - name: REPO_NAME
+          value: "$(tasks.get-edp-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)-$(params.git-source-revision)"
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -1,0 +1,90 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sast
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Scan Tools
+    tekton.dev/tags: scan-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: SEMGREP_IMAGE
+      type: string
+      description: Semgrep image
+      default: returntocorp/semgrep:0.111.1
+    - name: ci-defectdojo-secret
+      type: string
+      description: name of the secret holding the DefectDojo secret
+      default: defectdojo-ciuser-token
+    - name: reportDataPath
+      type: string
+      description: ""
+      default: "sast-semgrep-report.json"
+    - name: reportDataProductName
+      type: string
+      description: ""
+      default: ""
+    - name: reportDataEngagementName
+      type: string
+      description: ""
+      default: ""
+  steps:
+    - name: semgrep-scan
+      image: $(params.SEMGREP_IMAGE)
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -e
+        semgrep --config=auto . --json --output $(params.reportDataPath)
+    - name: push-report
+      image: alpine:3.15.4
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -e
+        reportDataActive="true"
+        reportDataVerified="false"
+        reportDataPath="sast-semgrep-report.json"
+        reportDataType="Semgrep JSON Report"
+        reportDataProductTypeName="Tenant"
+        reportDataProductName=$(params.reportDataProductName)
+        reportDataEngagementName=$(params.reportDataEngagementName)
+        reportDataAutoCreateContext="true"
+        reportDataCloseOldFindings="true"
+        reportDataPushToJira="false"
+        reportDataEnvironment="Development"
+        reportDataTestTitle="SAST"
+        apk add curl
+        curl -X POST "${DD_URL}/api/v2/import-scan/" \
+            -H "accept: application/json" \
+            -H "Authorization: Token ${DD_TOKEN}" \
+            -H "Content-Type: multipart/form-data" \
+            -F "scan_date=$(date +%Y-%m-%d)" \
+            -F "minimum_severity=Info" \
+            -F "active=${reportDataActive}" \
+            -F "verified=${reportDataVerified}" \
+            -F "scan_type=${reportDataType}" \
+            -F "file=@${reportDataPath};type=application/json" \
+            -F "product_type_name=${reportDataProductTypeName}" \
+            -F "product_name=${reportDataProductName}" \
+            -F "engagement_name=${reportDataEngagementName}" \
+            -F "auto_create_context=${reportDataAutoCreateContext}" \
+            -F "close_old_findings=${reportDataCloseOldFindings}" \
+            -F "push_to_jira=${reportDataPushToJira}" \
+            -F "environment=${reportDataEnvironment}" \
+            -F "test_title=${reportDataTestTitle}"
+      env:
+        - name: DD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo-secret)
+              key: token
+        - name: DD_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo-secret)
+              key: url

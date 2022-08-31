@@ -19,7 +19,10 @@ data:
     limitations under the License. -->
     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
         <localRepository>/opt/caches/maven</localRepository>
-
+    
+        <pluginGroups>
+            <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+        </pluginGroups>
         <servers>
             <server>
                 <id>nexus</id>
@@ -38,6 +41,17 @@ data:
         </mirrors>
 
         <profiles>
+            <profile>
+                <id>sonar</id>
+                <activation>
+                     <activeByDefault>true</activeByDefault>
+                </activation>
+                <properties>
+                    <sonar.login>
+                        ${env.SONAR_TOKEN}
+                    </sonar.login>
+                </properties>
+            </profile>
             <profile>
                 <id>nexus</id>
                 <activation>

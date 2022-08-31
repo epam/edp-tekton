@@ -41,6 +41,10 @@ spec:
       type: string
       description: name of the secret holding the CI maven secret
       default: nexus-ci.user
+    - name: ci-sonar-secret
+      type: string
+      description: name of the secret holding the CI sonar secret
+      default: sonar-ciuser-token
   steps:
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)
@@ -51,6 +55,11 @@ spec:
         - $(workspaces.maven-settings.path)/settings.xml
         - "$(params.GOALS)"
       env:
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonar-secret)
+              key: secret
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

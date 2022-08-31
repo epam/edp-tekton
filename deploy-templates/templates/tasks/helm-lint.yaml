@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/categories: Code Quality
+    tekton.dev/displayName: Helm-Lint
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/platforms: linux/amd64
+  name: helm-lint
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: BUILDER_IMAGE
+      description: The image on which builds will run (default is v3.7.0)
+      default: quay.io/helmpack/chart-testing:v3.7.0
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  steps:
+    - image: $(params.BUILDER_IMAGE)
+      name: helm-lint
+      script: |
+        #!/bin/bash
+        set -e
+        ct lint --charts deploy-templates/
+      workingDir: $(workspaces.source.path)

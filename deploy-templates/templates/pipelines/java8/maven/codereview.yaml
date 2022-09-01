@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: maven-java11-code-review
+  name: maven-java8-code-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -26,11 +26,11 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11'
+      default: 'maven:3.8.6-openjdk-8'
       description: "maven image version"
       type: string
   tasks:

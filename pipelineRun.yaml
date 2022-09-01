@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -9,7 +10,7 @@ spec:
     - pipelineTaskName: get-edp-values
       taskServiceAccountName: jenkins
   pipelineRef:
-    name: maven-build-pipeline
+    name: maven-java11-build
   workspaces:
     - name: maven-settings
       configMap:
@@ -18,14 +19,35 @@ spec:
       persistentvolumeclaim:
         claimName: maven-source-pvc
       subPath: codebase
-
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: java8-build
+spec:
+  taskRunSpecs:
+    - pipelineTaskName: kaniko-build
+      taskServiceAccountName: edp-kaniko
+    - pipelineTaskName: get-edp-values
+      taskServiceAccountName: jenkins
+  pipelineRef:
+    name: maven-java8-build
+  workspaces:
+    - name: maven-settings
+      configMap:
+        name: custom-maven-settings
+    - name: shared-workspace
+      persistentvolumeclaim:
+        claimName: maven-source-pvc
+      subPath: codebase
+---
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   name: java11-code-review
 spec:
   pipelineRef:
-    name: maven-code-review-pipeline
+    name: maven-java11-code-review
   workspaces:
     - name: maven-settings
       configMap:
@@ -34,4 +56,19 @@ spec:
       persistentvolumeclaim:
         claimName: maven-source-pvc
       subPath: codebase
-
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: java8-code-review
+spec:
+  pipelineRef:
+    name: maven-java8-code-review
+  workspaces:
+    - name: maven-settings
+      configMap:
+        name: custom-maven-settings
+    - name: shared-workspace
+      persistentvolumeclaim:
+        claimName: maven-source-pvc
+      subPath: codebase

@@ -16,8 +16,13 @@ spec:
       configMap:
         name: custom-maven-settings
     - name: shared-workspace
-      persistentvolumeclaim:
-        claimName: maven-source-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
       subPath: codebase
 ---
 apiVersion: tekton.dev/v1beta1
@@ -37,8 +42,13 @@ spec:
       configMap:
         name: custom-maven-settings
     - name: shared-workspace
-      persistentvolumeclaim:
-        claimName: maven-source-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
       subPath: codebase
 ---
 apiVersion: tekton.dev/v1beta1
@@ -53,8 +63,13 @@ spec:
       configMap:
         name: custom-maven-settings
     - name: shared-workspace
-      persistentvolumeclaim:
-        claimName: maven-source-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
       subPath: codebase
 ---
 apiVersion: tekton.dev/v1beta1
@@ -69,6 +84,11 @@ spec:
       configMap:
         name: custom-maven-settings
     - name: shared-workspace
-      persistentvolumeclaim:
-        claimName: maven-source-pvc
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
       subPath: codebase

@@ -23,5 +23,6 @@ A Helm chart for EDP Codebase Operator
 |-----|------|---------|-------------|
 | fullnameOverride | string | `""` |  |
 | kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
+| kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |
 | nameOverride | string | `""` |  |
 

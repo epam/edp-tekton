@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: maven-build-pipeline
+  name: maven-java11-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -28,6 +28,10 @@ spec:
     - name: CODEBASE_NAME
       default: 'java11-maven'
       description: "Project name"
+      type: string
+    - name: maven-image-version
+      default: 'maven:3.8.6-openjdk-11'
+      description: "maven image version"
       type: string
   tasks:
     - name: fetch-repository
@@ -67,6 +71,8 @@ spec:
       runAfter:
         - fetch-repository
       params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
         - name: GOALS
           value:
             - -B
@@ -87,6 +93,8 @@ spec:
       runAfter:
         - compile
       params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
         - name: GOALS
           value:
             - -B
@@ -110,6 +118,8 @@ spec:
       runAfter:
         - test
       params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
         - name: GOALS
           value:
             - -B
@@ -135,6 +145,8 @@ spec:
       runAfter:
         - sonar
       params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
         - name: GOALS
           value:
             - -B
@@ -157,6 +169,8 @@ spec:
       runAfter:
         - build
       params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
         - name: GOALS
           value:
             - -B

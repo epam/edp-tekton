@@ -20,8 +20,8 @@ spec:
     - name: get-version
       image: bitnami/kubectl:1.24.4
       env:
-      - name: CODEBASEBRANCH_NAME
-        value: "$(params.CODEBASEBRANCH_NAME)"
+        - name: CODEBASEBRANCH_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
       script: |
         #!/usr/bin/env bash
         set -e
@@ -43,10 +43,3 @@ spec:
         echo "${VERSION}.${BUILD_ID}" | tr -d "\n" | tee $(results.VERSION.path)
         echo "build/${VERSION}.${BUILD_ID}" | tr -d "\n" | tee $(results.VSC_TAG.path)
         echo "${VERSION}.${BUILD_ID}" | tr -d "\n" | tee $(results.IS_TAG.path)
-    - name: write-outputs
-      image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
-      script: |
-        set -e
-        cat $(results.VERSION.path)
-        cat $(results.VSC_TAG.path)
-        cat $(results.IS_TAG.path)

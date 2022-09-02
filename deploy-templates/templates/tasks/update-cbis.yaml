@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-cbis
+spec:
+  params:
+    - name: CODEBASEBRANCH_NAME
+      type: string
+      description: Codebase branch name.
+    - name: IMAGE_TAG
+      type: string
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      type: string
+      default: bitnami/kubectl:1.24.4
+  steps:
+    - name: update-cbis
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CR_API
+          value: "cbis.v2.edp.epam.com"
+        - name: CBIS_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
+        - name: IMAGE_TAG
+          value: "$(params.IMAGE_TAG)"
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        cbisCrTags=$(kubectl get ${CR_API} ${CBIS_NAME} --output=jsonpath={.spec.tags})
+        dateFormat=$(date "+%Y-%m-%d'T'%H:%M:%S")
+        newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\"}"
+
+        if [ "${cbisCrTags}" = "" ] ; then
+            echo "[TEKTON][DEBUG] There're no tags in imageStream ${CBIS_NAME} ... the first one will be added."
+            kubectl patch ${CR_API} ${CBIS_NAME} --type=merge -p "{\"spec\":{\"tags\":[${newcbisTag}]}}"
+        fi
+
+        cbisTagsList=$(kubectl get ${CR_API} ${CBIS_NAME} --output=jsonpath={.spec.tags[*].name})
+        if [[ ! ${cbisTagsList} == *"${IMAGE_TAG}"* ]]; then
+            echo "[TEKTON][DEBUG] ImageStream ${CBIS_NAME} doesn't contain ${IMAGE_TAG} tag ... it will be added."
+            kubectl patch ${CR_API} ${CBIS_NAME} --type json -p="[{\"op\": \"add\", \"path\": \"/spec/tags/-\", \"value\": ${newcbisTag} }]"
+        fi

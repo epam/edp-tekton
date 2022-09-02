@@ -48,8 +48,11 @@ spec:
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.20
+      env:
+        - name: REPO_NAME
+          value: "$(params.REPO_NAME)"
       command: ["/bin/sh"]
-      args: ["-c", "aws ecr describe-repositories --repository-names $(params.REPO_NAME) || aws ecr create-repository --repository-name $(params.REPO_NAME) || true"]
+      args: ["-c", "aws ecr describe-repositories --repository-names ${REPO_NAME}|| aws ecr create-repository --repository-name ${REPO_NAME} || true"]
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)

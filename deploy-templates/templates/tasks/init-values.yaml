@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: init-values
+spec:
+  params:
+    - name: CODEBASE_NAME
+      type: string
+      description: Codebasebranch name.
+      default: "CODEBASE_NAME_placeholder"
+    - name: BRANCH_NAME
+      type: string
+      description: Branch name.
+      default: "BRANCH_placeholder"
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      type: string
+      default: bitnami/kubectl:1.24.4
+  results:
+    - name: DOCKER_REGISTRY_HOST
+      description: "docker host url"
+    - name: TENANT_NAME
+      description: "edp name"
+    - name: CODEBASEBRANCH_NAME
+      description: "codebase branch name"
+  steps:
+    - name: get-values
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CODEBASE
+          value: "$(params.CODEBASE_NAME)"
+        - name: BRANCH
+          value: "$(params.BRANCH_NAME)"
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        dockerRegistryHost=$(kubectl get edpcomponent docker-registry -o jsonpath='{.spec.url}')
+        echo "${dockerRegistryHost}" | tr -d '\n' | tee $(results.DOCKER_REGISTRY_HOST.path)
+
+        tenantName=$(kubectl get cm edp-config -o jsonpath='{.data.edp_name}')
+        echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
+
+        echo "${CODEBASE}-${BRANCH}" | tr -d "\n" | tee $(results.CODEBASEBRANCH_NAME.path)

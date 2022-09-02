@@ -8,6 +8,7 @@ spec:
   workspaces:
     - name: shared-workspace
     - name: maven-settings
+    - name: ssh-creds
   params:
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -33,6 +34,10 @@ spec:
       default: 'maven:3.8.6-openjdk-11'
       description: "maven image version"
       type: string
+    - name: version-type
+      default: 'edp'
+      description: "edp or not edp version type"
+      type: string
   tasks:
     - name: fetch-repository
       taskRef:
@@ -45,22 +50,44 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
 
-    - name: get-edp-values
+    - name: init-values
       taskRef:
-        name: get-edp-values
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: getedp-version
+      when:
+        - input: $(params.version-type)
+          operator: in
+          values:
+            - edp
+      taskRef:
+        name: getedp-version
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
     - name: sast
       taskRef:
         name: sast
       runAfter:
         - fetch-repository
-        - get-edp-values
       params:
         - name: reportDataProductName
-          value: $(tasks.get-edp-values.results.TENANT_NAME)
+          value: $(tasks.init-values.results.TENANT_NAME)
         - name: reportDataEngagementName
-          value: "$(params.CODEBASE_NAME)-$(params.git-source-revision)"
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -69,7 +96,7 @@ spec:
       taskRef:
         name: maven
       runAfter:
-        - fetch-repository
+        - getedp-version
       params:
         - name: MAVEN_IMAGE
           value: $(params.maven-image-version)
@@ -127,8 +154,8 @@ spec:
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(params.CODEBASE_NAME)-$(params.git-source-revision)'
-            - '-Dsonar.projectName=$(params.CODEBASE_NAME)-$(params.git-source-revision)'
+            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
             - '-Dsonar.qualitygate.wait=true'
             - '-Dsonar.host.url=$(params.SONAR_URL)'
             - verify
@@ -191,13 +218,43 @@ spec:
       taskRef:
         name: kaniko
       runAfter:
-        - get-edp-values
         - push
       params:
         - name: IMAGE
-          value: "$(tasks.get-edp-values.results.DOCKER_HOST_URL)/$(tasks.get-edp-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)-$(params.git-source-revision):latest"
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.getedp-version.results.VERSION)"
         - name: REPO_NAME
-          value: "$(tasks.get-edp-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)-$(params.git-source-revision)"
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
       workspaces:
         - name: source
           workspace: shared-workspace
+
+    - name: git-tag
+      taskRef:
+        name: git-cli
+      runAfter:
+        - kaniko-build
+      params:
+        - name: GIT_USER_EMAIL
+          value: jenkins@edp.ci-user
+        - name: GIT_USER_NAME
+          value: jenkins
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.getedp-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: update-cbis
+      taskRef:
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.getedp-version.results.VERSION)

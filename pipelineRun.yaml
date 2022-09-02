@@ -4,11 +4,19 @@ kind: PipelineRun
 metadata:
   name: java11-build
 spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-az-delivery-dev:30011/java11-maven-edp-version-v2" # "https://github.com/sergk/spring-petclinic"
+    - name: git-source-revision
+      value: "edp"
+    - name: CODEBASE_NAME
+      value: "java11-maven-edp-version-v2"
+    - name: maven-image-version
+      value: "maven:3.8.6-openjdk-11" # or maven:3.8.6-openjdk-11 for java 8
+  serviceAccountName: jenkins
   taskRunSpecs:
     - pipelineTaskName: kaniko-build
       taskServiceAccountName: edp-kaniko
-    - pipelineTaskName: get-edp-values
-      taskServiceAccountName: jenkins
   pipelineRef:
     name: maven-java11-build
   workspaces:
@@ -24,38 +32,25 @@ spec:
             requests:
               storage: 1Gi
       subPath: codebase
----
-apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
-metadata:
-  name: java8-build
-spec:
-  taskRunSpecs:
-    - pipelineTaskName: kaniko-build
-      taskServiceAccountName: edp-kaniko
-    - pipelineTaskName: get-edp-values
-      taskServiceAccountName: jenkins
-  pipelineRef:
-    name: maven-java8-build
-  workspaces:
-    - name: maven-settings
-      configMap:
-        name: custom-maven-settings
-    - name: shared-workspace
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey
 ---
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   name: java11-code-review
 spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-az-delivery-dev:30011/java11-maven-edp-version-v2" # "https://github.com/sergk/spring-petclinic"
+    - name: git-source-revision
+      value: "edp"
+    - name: CODEBASE_NAME
+      value: "java11-maven-edp-version-v2"
+    - name: maven-image-version
+      value: "maven:3.8.6-openjdk-11" # or maven:3.8.6-openjdk-11 for java 8
+  serviceAccountName: jenkins
   pipelineRef:
     name: maven-java11-code-review
   workspaces:
@@ -71,24 +66,6 @@ spec:
             requests:
               storage: 1Gi
       subPath: codebase
----
-apiVersion: tekton.dev/v1beta1
-kind: PipelineRun
-metadata:
-  name: java8-code-review
-spec:
-  pipelineRef:
-    name: maven-java8-code-review
-  workspaces:
-    - name: maven-settings
-      configMap:
-        name: custom-maven-settings
-    - name: shared-workspace
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey

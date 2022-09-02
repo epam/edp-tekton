@@ -14,7 +14,7 @@ spec:
     - name: source
       description: The workspace consisting of maven project.
   params:
-    - name: SEMGREP_IMAGE
+    - name: BASE_IMAGE
       type: string
       description: Semgrep image
       default: returntocorp/semgrep:0.111.1
@@ -36,7 +36,7 @@ spec:
       default: ""
   steps:
     - name: semgrep-scan
-      image: $(params.SEMGREP_IMAGE)
+      image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)
       script: |
         set -e

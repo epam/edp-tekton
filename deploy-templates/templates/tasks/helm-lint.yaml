@@ -11,17 +11,17 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
-    - name: BUILDER_IMAGE
-      description: The image on which builds will run (default is v3.7.0)
+    - name: BASE_IMAGE
+      description: The base image for the task.
       default: quay.io/helmpack/chart-testing:v3.7.0
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
   steps:
-    - image: $(params.BUILDER_IMAGE)
+    - image: $(params.BASE_IMAGE)
       name: helm-lint
       script: |
         #!/bin/bash
         set -e
-        ct lint --charts deploy-templates/
+        ct lint --validate-maintainers=false --charts deploy-templates/
       workingDir: $(workspaces.source.path)

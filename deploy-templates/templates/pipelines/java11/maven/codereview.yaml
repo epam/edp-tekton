@@ -8,6 +8,7 @@ spec:
   workspaces:
     - name: shared-workspace
     - name: maven-settings
+    - name: ssh-creds
   params:
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -45,12 +46,25 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
 
     - name: compile
       taskRef:
         name: maven
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: MAVEN_IMAGE
           value: $(params.maven-image-version)
@@ -108,8 +122,8 @@ spec:
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(params.CODEBASE_NAME)-$(params.git-source-revision)'
-            - '-Dsonar.projectName=$(params.CODEBASE_NAME)-$(params.git-source-revision)'
+            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
             - '-Dsonar.qualitygate.wait=true'
             - '-Dsonar.host.url=$(params.SONAR_URL)'
             - verify

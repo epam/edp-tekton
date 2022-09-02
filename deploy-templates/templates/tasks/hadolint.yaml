@@ -17,8 +17,8 @@ spec:
     images. The linter parses the Dockerfile into an AST and performs rules on
     top of the AST
   params:
-    - name: BUILDER_IMAGE
-      description: The image on which builds will run
+    - name: BASE_IMAGE
+      description: The base image for the task.
       default: ghcr.io/hadolint/hadolint:v2.8.0-debian@sha256:50b0e60aa2b4aba5a26eeb4ad08c96ed7a828fca996632e29114aabea18345f4
     - default: './Dockerfile'
       description: Dockerfile path.
@@ -34,15 +34,15 @@ spec:
     - description: A workspace that contains fetched git repo.
       name: source
   steps:
-    - image: $(params.BUILDER_IMAGE)
+    - image: $(params.BASE_IMAGE)
       name: lint-dockerfile
-      script: |
-        #!/bin/bash
-        set -e
-        hadolint "$DOCKERFILE" -f "$OFORMAT"
+      workingDir: $(workspaces.source.path)
       env:
         - name: DOCKERFILE
           value: "$(params.dockerfile-path)"
         - name: OFORMAT
           value: "$(params.output-format)"
-      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+        hadolint "$DOCKERFILE" -f "$OFORMAT"

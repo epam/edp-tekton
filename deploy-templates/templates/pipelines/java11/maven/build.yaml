@@ -34,10 +34,6 @@ spec:
       default: 'maven:3.8.6-openjdk-11'
       description: "maven image version"
       type: string
-    - name: version-type
-      default: 'edp'
-      description: "edp or not edp version type"
-      type: string
   tasks:
     - name: fetch-repository
       taskRef:
@@ -66,7 +62,7 @@ spec:
 
     - name: getedp-version
       when:
-        - input: $(params.version-type)
+        - input: $(tasks.init-values.results.VERSIONING_TYPE)
           operator: in
           values:
             - edp

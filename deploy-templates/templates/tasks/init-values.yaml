@@ -23,6 +23,8 @@ spec:
       description: "edp name"
     - name: CODEBASEBRANCH_NAME
       description: "codebase branch name"
+    - name: VERSIONING_TYPE
+      description: "Versioning type of codebase"
   steps:
     - name: get-values
       image: $(params.BASE_IMAGE)
@@ -42,3 +44,6 @@ spec:
         echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
 
         echo "${CODEBASE}-${BRANCH}" | tr -d "\n" | tee $(results.CODEBASEBRANCH_NAME.path)
+
+        versioningType=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.versioning.type}')
+        echo "${versioningType}" | tr -d '\n' | tee $(results.VERSIONING_TYPE.path)

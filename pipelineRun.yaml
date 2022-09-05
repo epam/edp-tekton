@@ -1,4 +1,5 @@
 ---
+# Java11, Maven, Build Pipeline
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -36,6 +37,7 @@ spec:
       secret:
         secretName: gerrit-ciuser-sshkey
 ---
+# Java11, Maven, Code-Review Pipeline
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -57,6 +59,79 @@ spec:
     - name: maven-settings
       configMap:
         name: custom-maven-settings
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey
+---
+# Java11, Gradle, Build Pipeline
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: java11-gradle-build
+spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-az-delivery-dev:30011/java11-gradle" # "https://github.com/sergk/spring-petclinic"
+    - name: git-source-revision
+      value: "master"
+    - name: CODEBASE_NAME
+      value: "java11-gradle"
+    - name: gradle-image-version
+      value: "gradle:7.5-jdk11"
+  serviceAccountName: jenkins
+  taskRunSpecs:
+    - pipelineTaskName: kaniko-build
+      taskServiceAccountName: edp-kaniko
+  pipelineRef:
+    name: gradle-java11-build
+  workspaces:
+    - name: gradle-settings
+      configMap:
+        name: custom-gradle-settings
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey
+---
+# Java11, Gradle, Code-Review Pipeline
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: java11-code-review
+spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-az-delivery-dev:30011/java11-gradle-edp-version-v3" # "https://github.com/sergk/spring-petclinic"
+    - name: git-source-revision
+      value: "master"
+    - name: CODEBASE_NAME
+      value: "java11-gradle-edp-version-v3"
+    - name: gradle-image-version
+      value: "gradle:7.5-jdk11"
+  serviceAccountName: jenkins
+  pipelineRef:
+    name: gradle-java11-code-review
+  workspaces:
+    - name: gradle-settings
+      configMap:
+        name: custom-gradle-settings
     - name: shared-workspace
       volumeClaimTemplate:
         spec:

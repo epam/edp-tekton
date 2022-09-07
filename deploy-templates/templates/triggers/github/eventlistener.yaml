@@ -1,0 +1,84 @@
+{{ if .Values.github.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  triggers:
+    - name: github-listener-build
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: github-webhook-secret
+                secretKey: secret
+            - name: "eventTypes"
+              value: ["push"]
+        - ref:
+            name: cel
+          params:
+            - name: "overlays"
+              value:
+                - key: branch_name
+                  expression: "body.ref.split('/')[2]"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.branch_name in ['edp']"
+      bindings:
+        - ref: github-binding
+      template:
+        ref: github-build-template
+
+    - name: github-listener-code-review
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: github-webhook-secret
+                secretKey: secret
+            - name: "eventTypes"
+              value: ["pull_request"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.action in ['opened', 'synchronize', 'edited']"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.pull_request.base.ref in ['edp']"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+                - key: branch_name
+                  expression: "body.pull_request.head.ref"
+      bindings:
+        - ref: github-binding
+      template:
+        ref: github-code-review-template
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          spec:
+            serviceAccountName: tekton-triggers-sa-{{ .Release.Namespace }}
+            containers:
+              - resources:
+                  requests:
+                    memory: "64Mi"
+                    cpu: "50m"
+                  limits:
+                    memory: "128Mi"
+                    cpu: "500m"
+{{ end }}

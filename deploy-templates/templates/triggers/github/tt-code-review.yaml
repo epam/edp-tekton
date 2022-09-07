@@ -1,0 +1,47 @@
+{{ if .Values.github.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: github-code-review-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+    - name: gitrepositoryurl
+    - name: gitrepositoryname
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: java11-maven-code-review-
+      spec:
+        serviceAccountName: jenkins
+        pipelineRef:
+          name: maven-java11-code-review
+        params:
+          - name: git-source-url
+            value: $(tt.params.gitrepositoryurl)
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.gitrepositoryname)
+          - name: maven-image-version
+            value: "maven:3.8.6-openjdk-11"
+        workspaces:
+          - name: maven-settings
+            configMap:
+              name: custom-maven-settings
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: github-sshkey
+{{ end }}

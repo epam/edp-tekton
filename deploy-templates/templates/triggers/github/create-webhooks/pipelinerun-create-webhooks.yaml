@@ -1,0 +1,17 @@
+# GitHub, Create WebHooks for Build and Code-Review Pipelines
+{{ if .Values.github.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: github-create-webhooks
+spec:
+  params:
+    - name: GitHubOrg
+      value: {{ .Values.github.accountName }}
+    - name: GitHubRepo
+      value: {{ .Values.github.repositoryName }}
+    - name: ExternalDomain
+      value: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+  pipelineRef:
+    name: github-create-webhooks
+{{ end }}

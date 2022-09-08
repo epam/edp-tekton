@@ -22,7 +22,19 @@ A Helm chart for EDP Codebase Operator
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | fullnameOverride | string | `""` |  |
+| gerrit.enabled | bool | `true` | Deploy Gerrit related components. Default: true |
+| gerrit.sshPort | int | `30003` | Gerrit port |
+| github.accountName | string | `"GitHub Account Name"` |  |
+| github.enabled | bool | `false` |  |
+| github.repositoryName | string | `"GitHub Repository Name"` |  |
+| github.webhookSecret.secretString | string | `"random-string-data"` |  |
+| github.webhookSecret.token | string | `"123"` |  |
+| global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |
 | nameOverride | string | `""` |  |
+| tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
+| tekton.pruner.keep | int | `1` | Maximum number of resources to keep while deleting removing |
+| tekton.pruner.resources | string | `"pipelinerun,taskrun"` | Supported resources for auto prune are 'taskrun' and 'pipelinerun' |
+| tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |
 

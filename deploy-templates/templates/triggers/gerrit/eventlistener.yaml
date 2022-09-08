@@ -1,0 +1,47 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: gerrit-listener
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  triggers:
+    - name: gerrit-listener-build
+      interceptors:
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.change.status in ['MERGED']"
+      bindings:
+        - ref: gerrit-binding
+      template:
+        ref: gerrit-build-template
+
+    - name: gerrit-listener-code-review
+      interceptors:
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.change.status in ['NEW']"
+      bindings:
+        - ref: gerrit-binding
+      template:
+        ref: gerrit-code-review-template
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          spec:
+            serviceAccountName: tekton-triggers-sa-{{ .Release.Namespace }}
+            containers:
+              - resources:
+                  requests:
+                    memory: "64Mi"
+                    cpu: "50m"
+                  limits:
+                    memory: "128Mi"
+                    cpu: "500m"
+{{ end }}

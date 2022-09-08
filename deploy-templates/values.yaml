@@ -24,3 +24,15 @@ github:
   webhookSecret:
     token: "123"
     secretString: "random-string-data"
+
+tekton:
+  # Pruner provides auto clean up feature for the Tekton resources
+  pruner:
+    # -- Specifies whether a cronjob should be created
+    create: true
+    # -- How often to clean up resources
+    schedule: "0 18 * * *"
+    # -- Maximum number of resources to keep while deleting removing
+    keep: 1
+    # -- Supported resources for auto prune are 'taskrun' and 'pipelinerun'
+    resources: "pipelinerun,taskrun"

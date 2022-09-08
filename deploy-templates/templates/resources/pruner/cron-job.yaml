@@ -1,0 +1,37 @@
+{{ if .Values.tekton.pruner.create }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tekton-resource-pruner
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.tekton.pruner.schedule }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          containers:
+            - name: pruner-tkn-tekton-pipelines
+              image: >-
+                gcr.io/tekton-releases/dogfooding/tkn@sha256:025de221fb059ca24a3b2d988889ea34bce48dc76c0cf0d6b4499edb8c21325f
+              command:
+                - /bin/sh
+                - '-c'
+                - >-
+                  function prune() { n=$1; a=$2; resources=$3; old_ifs=" ";
+                  IFS=","; for r in $resources; do tkn $r delete -n=$n $a -f;
+                  done; IFS=$old_ifs; }; echo $conf; for c in $*; do ns=$(echo
+                  $c | cut -d ";" -f 1); args=$(echo $c | cut -d ";" -f 2);
+                  resources=$(echo $c | cut -d ";" -f 3); prune $ns $args
+                  $resources; done;
+              args:
+                - '-s'
+                - ' {{ .Release.Namespace }};--keep={{ .Values.tekton.pruner.keep }};{{ .Values.tekton.pruner.resources }}'
+              imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
+          serviceAccountName: tekton-resource-pruner
+      ttlSecondsAfterFinished: 3600
+{{ end }}

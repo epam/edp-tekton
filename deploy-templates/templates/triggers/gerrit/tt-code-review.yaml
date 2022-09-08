@@ -1,0 +1,47 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: gerrit-code-review-template
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.gerritproject)-review-
+      spec:
+        serviceAccountName: jenkins
+        pipelineRef:
+          name: maven-java11-code-review
+        params:
+          - name: git-source-url
+            value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.gerritproject)
+          - name: maven-image-version
+            value: "maven:3.8.6-openjdk-11"
+        workspaces:
+          - name: maven-settings
+            configMap:
+              name: custom-maven-settings
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: gerrit-ciuser-sshkey
+{{ end }}

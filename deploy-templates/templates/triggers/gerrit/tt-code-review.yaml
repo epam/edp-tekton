@@ -10,6 +10,8 @@ spec:
       default: master
     - name: gerritproject
       description: Gerrit project name
+    - name: gerritrefspec
+      description: Gerrit PatchSet Reference in format "refs/changes/62/62/2"
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -24,6 +26,8 @@ spec:
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
+          - name: git-refspec
+            value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
             value: $(tt.params.gerritproject)
           - name: maven-image-version

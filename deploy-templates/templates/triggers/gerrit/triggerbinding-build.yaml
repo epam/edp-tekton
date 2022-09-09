@@ -2,13 +2,13 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: gerrit-binding
+  name: gerrit-binding-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
     - name: gitrevision
-      value: $(body.change.branch)
+      value: "$(body.change.branch)"
     - name: gerritproject
       value: "$(body.change.project)"
 {{ end }}

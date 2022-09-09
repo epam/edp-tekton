@@ -15,7 +15,7 @@ spec:
             - name: "filter"
               value: "body.change.status in ['MERGED']"
       bindings:
-        - ref: gerrit-binding
+        - ref: gerrit-binding-build
       template:
         ref: gerrit-build-template
 
@@ -27,7 +27,7 @@ spec:
             - name: "filter"
               value: "body.change.status in ['NEW']"
       bindings:
-        - ref: gerrit-binding
+        - ref: gerrit-binding-review
       template:
         ref: gerrit-code-review-template
   resources:

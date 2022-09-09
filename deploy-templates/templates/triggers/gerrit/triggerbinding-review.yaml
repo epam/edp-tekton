@@ -1,0 +1,16 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gerrit-binding-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: "FETCH_HEAD"
+    - name: gerritproject
+      value: "$(body.change.project)"
+    - name: gerritrefspec
+      value: "$(body.patchSet.ref)"
+{{ end }}

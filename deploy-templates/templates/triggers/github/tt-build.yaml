@@ -14,14 +14,14 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: java11-maven-build-
+        generateName: $(tt.params.gitrepositoryname)-build-
       spec:
         serviceAccountName: jenkins
         taskRunSpecs:
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: maven-java11-build
+          name: github-maven-java11-build
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)

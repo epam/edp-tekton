@@ -1,0 +1,20 @@
+{{ if .Values.github.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-binding-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: $(extensions.branch_name)
+    - name: gitrepositoryurl
+      value: $(body.repository.ssh_url)
+    - name: gitrepositoryname
+      value: $(body.repository.name)
+    - name: gitfullrepositoryname
+      value: $(body.repository.full_name)
+    - name: gitsha
+      value: $(body.pull_request.head.sha)
+{{ end }}

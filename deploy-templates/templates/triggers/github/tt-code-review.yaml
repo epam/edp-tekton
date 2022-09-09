@@ -10,15 +10,17 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: gitfullrepositoryname
+    - name: gitsha
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: java11-maven-code-review-
+        generateName: $(tt.params.gitrepositoryname)-review-
       spec:
         serviceAccountName: jenkins
         pipelineRef:
-          name: maven-java11-code-review
+          name: github-maven-java11-review
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
@@ -28,6 +30,10 @@ spec:
             value: $(tt.params.gitrepositoryname)
           - name: maven-image-version
             value: "maven:3.8.6-openjdk-11"
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
+          - name: gitsha
+            value: $(tt.params.gitsha)
         workspaces:
           - name: maven-settings
             configMap:

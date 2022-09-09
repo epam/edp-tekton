@@ -1,0 +1,245 @@
+{{ if .Values.github.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-maven-java11-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: maven-settings
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: 'java11-maven'
+      description: "Project name"
+      type: string
+    - name: maven-image-version
+      default: 'maven:3.8.6-openjdk-11'
+      description: "maven image version"
+      type: string
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+  tasks:
+
+    - name: github-set-pending-status
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build has started"
+        - name: STATE
+          value: "pending"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: github-webhook-secret
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      runAfter:
+        - github-set-pending-status
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - init-values
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: maven
+      runAfter:
+        - compile
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - org.jacoco:jacoco-maven-plugin:prepare-agent
+            - '-Dmaven.test.failure.ignore=true'
+            - verify
+            - org.jacoco:jacoco-maven-plugin:report
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: maven
+      runAfter:
+        - test
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.qualitygate.wait=true'
+            - '-Dsonar.host.url=$(params.SONAR_URL)'
+            - verify
+            - sonar:sonar
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+  finally:
+    - name: github-set-failure-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build has failed"
+        - name: STATE
+          value: "failure"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: github-webhook-secret
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+
+    - name: github-set-success-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build was successful"
+        - name: STATE
+          value: "success"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: github-webhook-secret
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+{{ end }}

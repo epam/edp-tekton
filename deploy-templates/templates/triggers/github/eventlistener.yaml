@@ -31,7 +31,7 @@ spec:
             - name: "filter"
               value: "extensions.branch_name in ['edp']"
       bindings:
-        - ref: github-binding
+        - ref: github-binding-build
       template:
         ref: github-build-template
 
@@ -64,7 +64,7 @@ spec:
                 - key: branch_name
                   expression: "body.pull_request.head.ref"
       bindings:
-        - ref: github-binding
+        - ref: github-binding-review
       template:
         ref: github-code-review-template
   resources:

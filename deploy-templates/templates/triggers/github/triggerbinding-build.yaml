@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: github-binding
+  name: github-binding-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

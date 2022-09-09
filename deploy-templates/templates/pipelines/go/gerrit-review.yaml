@@ -1,0 +1,186 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-go-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-beego"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: "golang-go"
+      description: "Project name"
+      type: string
+    - name: go-image-version
+      default: 'golang:1.18.4-alpine3.16'
+      description: "go image version"
+      type: string
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-notify
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: build
+      taskRef:
+        name: golang-build
+      runAfter:
+        - init-values
+      params:
+        - name: BASE_IMAGE
+          value: $(params.go-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            build -o go-binary "$(grep -irl 'package main')"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: golang-build
+      runAfter:
+        - build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.go-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: sonarqube-scanner
+      runAfter:
+        - test
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: git-source-revision
+          value: $(params.git-source-revision)
+        - name: EXTRA_ARGS
+          value: |
+            -Dsonar.projectKey=$(params.CODEBASE_NAME)-$(params.git-source-revision) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME)-$(params.git-source-revision) \
+            -Dsonar.go.coverage.reportPaths=coverage.out \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=600 \
+            -Dsonar.verbose=true;
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+  finally:
+    - name: gerrit-vote-success
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-vote-failure
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+{{ end }}

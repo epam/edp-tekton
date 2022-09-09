@@ -20,7 +20,7 @@ spec:
       spec:
         serviceAccountName: jenkins
         pipelineRef:
-          name: maven-java11-code-review
+          name: gerrit-maven-java11-review
         params:
           - name: git-source-url
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"

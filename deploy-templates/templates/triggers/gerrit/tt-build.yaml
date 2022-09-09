@@ -21,7 +21,7 @@ spec:
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: maven-java11-build
+          name: gerrit-maven-java11-build
         params:
           - name: git-source-url
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
@@ -31,8 +31,6 @@ spec:
             value: $(tt.params.gerritproject)
           - name: maven-image-version
             value: "maven:3.8.6-openjdk-11"
-        pipelineRef:
-          name: maven-java11-build
         workspaces:
           - name: maven-settings
             configMap:

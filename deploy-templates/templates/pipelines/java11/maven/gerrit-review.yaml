@@ -1,7 +1,8 @@
+{{ if .Values.gerrit.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: maven-java11-build
+  name: gerrit-maven-java11-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -17,6 +18,10 @@ spec:
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
       type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
@@ -43,6 +48,8 @@ spec:
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -60,39 +67,11 @@ spec:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
 
-    - name: getedp-version
-      when:
-        - input: $(tasks.init-values.results.VERSIONING_TYPE)
-          operator: in
-          values:
-            - edp
-      taskRef:
-        name: getedp-version
-      runAfter:
-        - init-values
-      params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: compile
       taskRef:
         name: maven
       runAfter:
-        - getedp-version
+        - init-values
       params:
         - name: MAVEN_IMAGE
           value: $(params.maven-image-version)
@@ -162,95 +141,54 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: build
+    - name: dockerfile-lint
       taskRef:
-        name: maven
+        name: hadolint
       runAfter:
-        - sonar
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - clean
-            - package
-            - '-DskipTests=true'
-      workspaces:
-        - name: maven-settings
-          workspace: maven-settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: push
-      taskRef:
-        name: maven
-      runAfter:
-        - build
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - deploy
-            - '-DskipTests=true'
-            - '-DaltDeploymentRepository=nexus::default::$(params.NEXUS_URL)/repository/edp-maven-snapshots'
-      workspaces:
-        - name: maven-settings
-          workspace: maven-settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: kaniko-build
-      taskRef:
-        name: kaniko
-      runAfter:
-        - push
-      params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.getedp-version.results.VERSION)"
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
+        - fetch-repository
       workspaces:
         - name: source
           workspace: shared-workspace
 
-    - name: git-tag
+    - name: helm-lint
       taskRef:
-        name: git-cli
+        name: helm-lint
       runAfter:
-        - kaniko-build
-      params:
-        - name: GIT_USER_EMAIL
-          value: jenkins@edp.ci-user
-        - name: GIT_USER_NAME
-          value: jenkins
-        - name: GIT_SCRIPT
-          value: |
-            git tag -a "$(tasks.getedp-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
-            git push --tags
+        - fetch-repository
       workspaces:
         - name: source
           workspace: shared-workspace
+
+  finally:
+    - name: gerrit-vote-success
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: "30003"
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified +1 $(tasks.fetch-repository.results.commit)"
+      workspaces:
         - name: ssh-directory
           workspace: ssh-creds
 
-    - name: update-cbis
+    - name: gerrit-vote-failure
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
       taskRef:
-        name: update-cbis
-      runAfter:
-        - git-tag
+        name: gerrit-ssh-cmd
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-        - name: IMAGE_TAG
-          value: $(tasks.getedp-version.results.VERSION)
+        - name: GERRIT_PORT
+          value: "30003"
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified -1 $(tasks.fetch-repository.results.commit)"
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+{{ end }}

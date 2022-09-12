@@ -1,0 +1,107 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-maven-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+    - name: maven-settings
+      description: >-
+        The workspace consisting of the custom maven settings
+        provided by the user.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Codebasebranch name
+    - name: NEXUS_URL
+      type: string
+      description: Nexus url
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "maven:3.8.6-openjdk-11"
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VSC_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: DEPLOYABLE_MODULE
+    - name: DEPLOYABLE_MODULE_DIR
+    - name: TIMESTAMP
+      description: Current timestamp
+  steps:
+    - name: get-timestamp
+      image: bash:5.1.16-alpine3.15
+      script: |
+        #!/usr/bin/env bash
+        ts=$(date "+%Y%m%d-%H%M%S")
+        echo "Current Timestamp: ${ts}"
+        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+
+    - name: get-version
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        VERSION=$(/usr/bin/mvn \
+        -s \
+        $(workspaces.maven-settings.path)/settings.xml \
+        -B \
+        -Dartifactory.baseUrl=${NEXUS_URL} \
+        -Dartifactory.releasePath=edp-maven-releases \
+        -Dartifactory.snapshotsPath=edp-maven-snapshots \
+        -Dartifactory.groupPath=edp-maven-group \
+        org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate \
+        -Dexpression=project.version \
+        | grep -Ev '(^\[|Download\w+:)' )
+
+        # get current BUILD ID
+        BUILD_ID=$(cat $(results.TIMESTAMP.path))
+
+        BUILD_VERSION="${VERSION}-${BUILD_ID}"
+        VSC_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        IS_TAG=${VSC_TAG}
+
+        echo "Application version - ${VERSION}"
+        echo "VCS tag - ${VSC_TAG}"
+        echo "IS tag - ${IS_TAG}"
+
+        printf "%s" "${VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VSC_TAG}" > "$(results.VSC_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+
+        DEPLOYABLE_MODULE=$(cat pom.xml | grep -Poh '<deployable.module>\K[^<]*' || echo "")
+        echo "Deployable module: ${DEPLOYABLE_MODULE}"
+
+        if [ "${DEPLOYABLE_MODULE}" = "" ] ; then
+            DEPLOYABLE_MODULE_DIR="."
+        else
+            DEPLOYABLE_MODULE_DIR="./DEPLOYABLE_MODULE"
+        fi
+
+        printf "%s" "${DEPLOYABLE_MODULE}" > "$(results.DEPLOYABLE_MODULE.path)"
+        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

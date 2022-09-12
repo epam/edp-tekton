@@ -1,0 +1,94 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-gradle-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+    - name: gradle-settings
+      description: >-
+        The workspace consisting of the custom gradle settings
+        provided by the user.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Codebasebranch name
+    - name: NEXUS_URL
+      type: string
+      description: Nexus url
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "gradle:7.5-jdk11"
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VSC_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: DEPLOYABLE_MODULE_DIR
+    - name: TIMESTAMP
+      description: Current timestamp
+  steps:
+    - name: get-timestamp
+      image: bash:5.1.16-alpine3.15
+      script: |
+        #!/usr/bin/env bash
+        ts=$(date "+%Y%m%d-%H%M%S")
+        echo "Current Timestamp: ${ts}"
+        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+
+    - name: get-version
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        VERSION=$(gradle \
+          -I \
+          $(workspaces.gradle-settings.path)/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          -PnexusMavenRepositoryUrl=${NEXUS_URL}/repository/edp-maven-group \
+          properties -q | grep "version:" | awk '{print $2}' )
+
+        # get current BUILD ID
+        BUILD_ID=$(cat $(results.TIMESTAMP.path))
+
+        BUILD_VERSION="${VERSION}-${BUILD_ID}"
+        VSC_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        IS_TAG=${VSC_TAG}
+
+        echo "Application version - ${VERSION}"
+        echo "VCS tag - ${VSC_TAG}"
+        echo "IS tag - ${IS_TAG}"
+
+        printf "%s" "${VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VSC_TAG}" > "$(results.VSC_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+
+        DEPLOYABLE_MODULE_DIR="."
+
+        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

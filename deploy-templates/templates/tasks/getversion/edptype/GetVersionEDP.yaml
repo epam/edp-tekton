@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: getedp-version
+spec:
+  description:
+  params:
+    - name: CODEBASEBRANCH_NAME
+      type: string
+      description: "Codebasebranch name"
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VSC_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: BUILD_ID
+      description: "Build id"
+    - name: BRANCH_VERSION
+      description: "Branch version"
+    - name: IS_RELEASE_BRANCH
+    - name: DEPLOYABLE_MODULE_DIR
+  steps:
+    - name: get-version
+      image: bitnami/kubectl:1.24.4
+      env:
+        - name: CODEBASEBRANCH_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        # get current BUILD ID
+        BUILD_ID=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.status.build})
+        # and increment it
+        BUILD_ID=$((BUILD_ID+1))
+        # set new version
+        kubectl patch codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} --subresource=status --type=merge -p "{\"status\": {\"build\": \"$BUILD_ID\"}}"
+
+        IS_RELEASE_BRANCH=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.release})
+
+        # Get current version
+        VERSION=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.version})
+
+        BRANCH_VERSION=${VERSION}
+        VERSION="${VERSION}.${BUILD_ID}"
+        VSC_TAG="build/${VERSION}"
+        IS_TAG=${VERSION}
+        DEPLOYABLE_MODULE_DIR="."
+
+        echo "Application version - ${VERSION}"
+        echo "VCS tag - ${VSC_TAG}"
+        echo "IS tag - ${IS_TAG}"
+        echo "Build id - ${BUILD_ID}"
+        echo "Branch version - ${BRANCH_VERSION}"
+
+        printf "%s" "${VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VSC_TAG}" > "$(results.VSC_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+        printf "%s" "${BUILD_ID}" > "$(results.BUILD_ID.path)"
+        printf "%s" "${BRANCH_VERSION}" > "$(results.BRANCH_VERSION.path)"
+        printf "%s" "${IS_RELEASE_BRANCH}" > "$(results.IS_RELEASE_BRANCH.path)"
+        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

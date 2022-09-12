@@ -255,37 +255,4 @@ spec:
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
         - name: IMAGE_TAG
           value: $(tasks.getedp-version.results.VERSION)
-
-  finally:
-    - name: gerrit-vote-success
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Succeeded"]
-      taskRef:
-        name: gerrit-ssh-cmd
-      params:
-        - name: GERRIT_PORT
-          value: "30003"
-        - name: SSH_GERRIT_COMMAND
-          value: "review --verified +1 $(tasks.fetch-repository.results.commit)"
-      workspaces:
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: gerrit-vote-failure
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Failed"]
-      taskRef:
-        name: gerrit-ssh-cmd
-      params:
-        - name: GERRIT_PORT
-          value: "30003"
-        - name: SSH_GERRIT_COMMAND
-          value: "review --verified -1 $(tasks.fetch-repository.results.commit)"
-      workspaces:
-        - name: ssh-directory
-          workspace: ssh-creds
 {{ end }}

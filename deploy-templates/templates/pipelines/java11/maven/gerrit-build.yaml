@@ -11,6 +11,9 @@ spec:
     - name: maven-settings
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
@@ -47,6 +50,20 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-notify
+      taskRef:
+        name: gerrit-ssh-cmd
+      runAfter:
+        - fetch-repository
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+      workspaces:
         - name: ssh-directory
           workspace: ssh-creds
 

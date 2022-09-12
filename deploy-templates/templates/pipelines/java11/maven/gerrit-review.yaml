@@ -75,7 +75,7 @@ spec:
       taskRef:
         name: init-values
       runAfter:
-        - gerrit-notify
+        - fetch-repository
       params:
         - name: CODEBASE_NAME
           value: $(params.CODEBASE_NAME)

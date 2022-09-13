@@ -1,0 +1,13 @@
+{{ if .Values.interceptor.deploy }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: ClusterInterceptor
+metadata:
+  name: edp
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  clientConfig:
+    service:
+      name: {{ include "edp-tekton.fullname" . }}
+      namespace: {{ .Values.interceptor.tektonNamespace }}
+{{ end }}

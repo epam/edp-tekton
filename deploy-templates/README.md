@@ -30,6 +30,24 @@ A Helm chart for EDP Codebase Operator
 | github.webhookSecret.secretString | string | `"random-string-data"` |  |
 | github.webhookSecret.token | string | `"123"` |  |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
+| interceptor.deploy | bool | `false` | We should deploy only one instance of interceptor per cluster |
+| interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
+| interceptor.image.repository | string | `"nginx"` |  |
+| interceptor.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
+| interceptor.imagePullSecrets | list | `[]` |  |
+| interceptor.podAnnotations | object | `{}` |  |
+| interceptor.podSecurityContext | object | `{}` |  |
+| interceptor.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| interceptor.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| interceptor.securityContext.readOnlyRootFilesystem | bool | `true` |  |
+| interceptor.securityContext.runAsGroup | int | `65532` |  |
+| interceptor.securityContext.runAsNonRoot | bool | `true` |  |
+| interceptor.securityContext.runAsUser | int | `65532` |  |
+| interceptor.service.port | int | `8080` |  |
+| interceptor.service.type | string | `"ClusterIP"` |  |
+| interceptor.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| interceptor.serviceAccount.name | string | `"edp-interceptor"` | If not set, a name is generated using the fullname template |
+| interceptor.tektonNamespace | string | `"tekton-pipelines"` | The namespace which contains tekton-pipelines, default: tekton-pipelines |
 | kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |
 | nameOverride | string | `""` |  |

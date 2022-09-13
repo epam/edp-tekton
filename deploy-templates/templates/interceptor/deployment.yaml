@@ -66,16 +66,16 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
+            {{- toYaml .Values.interceptor.resources | nindent 12 }}
+      {{- with .Values.interceptor.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.interceptor.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.interceptor.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

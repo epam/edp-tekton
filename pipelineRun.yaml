@@ -211,3 +211,70 @@ spec:
     - name: ssh-creds
       secret:
         secretName: gerrit-ciuser-sshkey
+---
+# React, NPM, Code-Review Pipeline
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: react-code-review
+spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-mm-delivery-dev:30005/react-npm-edp-version"
+    - name: git-source-revision
+      value: "master"
+    - name: CODEBASE_NAME
+      value: "react-npm-edp-version"
+    - name: npm-image-version
+      value: "node:16.11.1-alpine3.14"
+  serviceAccountName: jenkins
+  pipelineRef:
+    name: gerrit-npm-react-review
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey
+---
+# React, NPM, Build Pipeline
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: react-build
+spec:
+  params:
+    - name: git-source-url
+      value: "ssh://jenkins@gerrit.edp-delivery-mm-delivery-dev:30005/react-npm-edp-version"
+    - name: git-source-revision
+      value: "master"
+    - name: CODEBASE_NAME
+      value: "react-npm-edp-version"
+    - name: npm-image-version
+      value: "node:16.11.1-alpine3.14"
+  serviceAccountName: jenkins
+  taskRunSpecs:
+  - pipelineTaskName: kaniko-build
+    taskServiceAccountName: edp-kaniko
+  pipelineRef:
+    name: gerrit-npm-react-build
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+      subPath: codebase
+    - name: ssh-creds
+      secret:
+        secretName: gerrit-ciuser-sshkey

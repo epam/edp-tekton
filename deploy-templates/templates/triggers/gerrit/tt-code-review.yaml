@@ -13,9 +13,9 @@ spec:
     - name: gerritrefspec
       description: Gerrit PatchSet Reference in format "refs/changes/62/62/2"
     - name: buildtool
-      description: Build tool for codebase. Used to generate code-review pipeline name
+      description: Build tool for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: framework
-      description: Framework for codebase. Used to generate code-review pipeline name
+      description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -34,12 +34,10 @@ spec:
             value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
             value: $(tt.params.gerritproject)
-          - name: maven-image-version
-            value: "maven:3.8.6-openjdk-11"
         workspaces:
-          - name: maven-settings
+          - name: settings
             configMap:
-              name: custom-maven-settings
+              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

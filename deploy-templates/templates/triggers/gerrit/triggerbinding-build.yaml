@@ -11,4 +11,8 @@ spec:
       value: "$(body.change.branch)"
     - name: gerritproject
       value: "$(body.change.project)"
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
 {{ end }}

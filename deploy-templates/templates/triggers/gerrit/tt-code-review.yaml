@@ -12,6 +12,10 @@ spec:
       description: Gerrit project name
     - name: gerritrefspec
       description: Gerrit PatchSet Reference in format "refs/changes/62/62/2"
+    - name: buildtool
+      description: Build tool for codebase. Used to generate code-review pipeline name
+    - name: framework
+      description: Framework for codebase. Used to generate code-review pipeline name
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -20,7 +24,7 @@ spec:
       spec:
         serviceAccountName: jenkins
         pipelineRef:
-          name: gerrit-maven-java11-review
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-review
         params:
           - name: git-source-url
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"

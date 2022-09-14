@@ -42,7 +42,7 @@ rules:
       - list
       - watch
     apiGroups:
-      - ''
+      - v2.edp.epam.com
     resources:
       - codebases
       - codebases/status

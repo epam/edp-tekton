@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "edp-tekton.fullname" . }}
+  name: tekton-triggers-edp-interceptor
   namespace: {{ .Values.interceptor.tektonNamespace }}
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.interceptor.service.type }}
+  type: ClusterIP
   ports:
-    - port: {{ .Values.interceptor.service.port }}
+    - port: 8080
       targetPort: http
       protocol: TCP
       name: http

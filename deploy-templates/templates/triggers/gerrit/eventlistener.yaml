@@ -26,6 +26,8 @@ spec:
           params:
             - name: "filter"
               value: "body.change.status in ['NEW']"
+        - ref:
+            name: "edp"
       bindings:
         - ref: gerrit-binding-review
       template:

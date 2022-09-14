@@ -8,6 +8,7 @@ metadata:
 spec:
   clientConfig:
     service:
-      name: {{ include "edp-tekton.fullname" . }}
+      name: tekton-triggers-edp-interceptor
       namespace: {{ .Values.interceptor.tektonNamespace }}
+      port: 8080
 {{ end }}

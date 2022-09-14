@@ -32,8 +32,8 @@ A Helm chart for EDP Codebase Operator
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | interceptor.deploy | bool | `false` | We should deploy only one instance of interceptor per cluster |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
-| interceptor.image.repository | string | `"nginx"` |  |
-| interceptor.image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
+| interceptor.image.repository | string | `"sergk/edp-interceptor"` |  |
+| interceptor.image.tag | string | `"1"` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |
@@ -43,8 +43,6 @@ A Helm chart for EDP Codebase Operator
 | interceptor.securityContext.runAsGroup | int | `65532` |  |
 | interceptor.securityContext.runAsNonRoot | bool | `true` |  |
 | interceptor.securityContext.runAsUser | int | `65532` |  |
-| interceptor.service.port | int | `8080` |  |
-| interceptor.service.type | string | `"ClusterIP"` |  |
 | interceptor.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | interceptor.serviceAccount.name | string | `"edp-interceptor"` | If not set, a name is generated using the fullname template |
 | interceptor.tektonNamespace | string | `"tekton-pipelines"` | The namespace which contains tekton-pipelines, default: tekton-pipelines |

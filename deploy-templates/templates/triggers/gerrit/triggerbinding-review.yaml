@@ -13,4 +13,8 @@ spec:
       value: "$(body.change.project)"
     - name: gerritrefspec
       value: "$(body.patchSet.ref)"
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
 {{ end }}

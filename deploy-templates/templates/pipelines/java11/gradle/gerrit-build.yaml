@@ -8,7 +8,7 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: gradle-settings
+    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -122,7 +122,7 @@ spec:
             -x test
       workspaces:
         - name: gradle-settings
-          workspace: gradle-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -141,7 +141,7 @@ spec:
             jacocoTestReport
       workspaces:
         - name: gradle-settings
-          workspace: gradle-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -162,7 +162,7 @@ spec:
             sonarqube
       workspaces:
         - name: gradle-settings
-          workspace: gradle-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -180,7 +180,7 @@ spec:
             build -x test
       workspaces:
         - name: gradle-settings
-          workspace: gradle-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -199,7 +199,7 @@ spec:
             publish
       workspaces:
         - name: gradle-settings
-          workspace: gradle-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 

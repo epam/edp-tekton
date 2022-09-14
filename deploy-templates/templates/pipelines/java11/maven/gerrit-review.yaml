@@ -8,7 +8,7 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
+    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -100,7 +100,7 @@ spec:
             - compile
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -125,7 +125,7 @@ spec:
             - org.jacoco:jacoco-maven-plugin:report
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -152,7 +152,7 @@ spec:
             - sonar:sonar
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 

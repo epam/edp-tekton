@@ -14,6 +14,8 @@ spec:
           params:
             - name: "filter"
               value: "body.change.status in ['MERGED']"
+        - ref:
+            name: "edp"
       bindings:
         - ref: gerrit-binding-build
       template:

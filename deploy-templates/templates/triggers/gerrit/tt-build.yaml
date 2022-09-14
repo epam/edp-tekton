@@ -10,6 +10,10 @@ spec:
       default: master
     - name: gerritproject
       description: Gerrit project name
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -21,7 +25,7 @@ spec:
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: gerrit-maven-java11-build
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-build
         params:
           - name: git-source-url
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
@@ -29,12 +33,10 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.gerritproject)
-          - name: maven-image-version
-            value: "maven:3.8.6-openjdk-11"
         workspaces:
-          - name: maven-settings
+          - name: settings
             configMap:
-              name: custom-maven-settings
+              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

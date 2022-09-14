@@ -33,7 +33,7 @@ A Helm chart for EDP Codebase Operator
 | interceptor.deploy | bool | `false` | We should deploy only one instance of interceptor per cluster |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | interceptor.image.repository | string | `"sergk/edp-interceptor"` |  |
-| interceptor.image.tag | string | `"1"` | Overrides the image tag whose default is the chart appVersion. |
+| interceptor.image.tag | string | `"2"` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |

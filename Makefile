@@ -6,6 +6,8 @@ BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_TAG=$(shell if [ -z "`git status --porcelain`" ]; then git describe --exact-match --tags HEAD 2>/dev/null; fi)
 KUBECTL_VERSION=$(shell go list -m all | grep k8s.io/client-go| cut -d' ' -f2)
+HOST_OS:=$(shell go env GOOS)
+HOST_ARCH:=$(shell go env GOARCH)
 
 override LDFLAGS += \
   -X ${PACKAGE}.version=${VERSION} \
@@ -58,6 +60,14 @@ GITCHGLOG = ${CURRENT_DIR}/bin/git-chglog
 .PHONY: git-chglog
 git-chglog: ## Download git-chglog locally if necessary.
 	$(call go-get-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,v0.15.1)
+
+.PHONY: build
+build: clean ## build interceptor binary
+	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpinterceptor .
+
+.PHONY: clean
+clean:  ## clean up
+	-rm -rf ${DIST_DIR}
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))

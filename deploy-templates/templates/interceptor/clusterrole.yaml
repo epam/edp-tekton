@@ -43,7 +43,7 @@ rules:
       - watch
     apiGroups:
       - ''
-    resource:
+    resources:
       - codebases
       - codebases/status
       - codebases/finalizers

@@ -52,10 +52,10 @@ interceptor:
   tektonNamespace: tekton-pipelines
 
   image:
-    repository: nginx
+    repository: sergk/edp-interceptor
     pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "1"
 
   imagePullSecrets: []
 
@@ -80,7 +80,3 @@ interceptor:
     runAsNonRoot: true
     runAsUser: 65532
     runAsGroup: 65532
-
-  service:
-    type: ClusterIP
-    port: 8080

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/tektoncd/triggers/pkg/interceptors"
 	"google.golang.org/grpc/codes"
@@ -12,6 +13,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
@@ -49,6 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize logger: %s", err)
 	}
+
 	logger := zapLogger.Sugar()
 	ctx = logging.WithLogger(ctx, logger)
 	defer func() {
@@ -76,6 +79,7 @@ func main() {
 	}
 
 	logger.Infof("Listen and serve on port %d", Port)
+
 	if err := srv.ListenAndServe(); err != nil {
 		logger.Fatalf("failed to start interceptors service: %v", err)
 	}
@@ -96,20 +100,24 @@ func NewEDPInterceptor(c ctrlClient.Reader, l *zap.SugaredLogger) *EDPIntercepto
 func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorRequest) *triggersv1.InterceptorResponse {
 	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
-	eventBody := &EventBody{}
-	if err := json.Unmarshal([]byte(r.Body), eventBody); err != nil {
+	repoName, err := i.getRepoName(r)
+	if err != nil {
 		return interceptors.Failf(codes.InvalidArgument, "failed to unmarshal event body: %v", err)
 	}
 
 	objectKey := ctrlClient.ObjectKey{
 		Namespace: ns,
-		Name:      eventBody.Project.Name,
+		Name:      repoName,
 	}
 	codebase := &codebaseApiV1.Codebase{}
 
 	if err := i.Client.Get(ctx, objectKey, codebase); err != nil {
 		return interceptors.Failf(codes.InvalidArgument, "failed to get codebase %s: %v", objectKey, err)
 	}
+
+	framework := strings.ToLower(*codebase.Spec.Framework)
+	codebase.Spec.Framework = &framework
+	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
 	return &triggersv1.InterceptorResponse{
 		Continue:   true,
@@ -142,29 +150,69 @@ func (i *EDPInterceptor) executeInterceptor(r *http.Request) ([]byte, error) {
 
 	var body bytes.Buffer
 	defer r.Body.Close()
+
 	if _, err := io.Copy(&body, r.Body); err != nil {
 		return nil, internal(fmt.Errorf("failed to read body: %w", err))
 	}
+
 	var ireq triggersv1.InterceptorRequest
 	if err := json.Unmarshal(body.Bytes(), &ireq); err != nil {
 		return nil, badRequest(fmt.Errorf("failed to parse body as InterceptorRequest: %w", err))
 	}
-	i.Logger.Debugf("Interceptor Request is: %+v", ireq)
+
+	i.Logger.Infof("Interceptor request is: %+v", ireq)
+
 	iresp := i.Process(ctx, &ireq)
-	i.Logger.Infof("Interceptor response is: %+v", iresp)
 
 	respBytes, err := json.Marshal(iresp)
 	if err != nil {
 		return nil, internal(err)
 	}
 
+	i.Logger.Infof("Interceptor response is: %s", respBytes)
+
 	return respBytes, nil
 }
 
-type EventBody struct {
+func (i *EDPInterceptor) getRepoName(r *triggersv1.InterceptorRequest) (string, error) {
+	_, isGitHubEvent := r.Header["X-GitHub-Event"]
+	_, isGitLabEvent := r.Header["X-Gitlab-Event"]
+
+	if isGitHubEvent || isGitLabEvent {
+		gitEventBody := &GitEventBody{}
+		if err := json.Unmarshal([]byte(r.Body), gitEventBody); err != nil {
+			return "", err
+		}
+
+		if gitEventBody.Repository.Name == "" {
+			return "", errors.New("repository name is empty")
+		}
+
+		return strings.ToLower(gitEventBody.Repository.Name), nil
+	}
+
+	gerritEventBody := &GerritEventBody{}
+	if err := json.Unmarshal([]byte(r.Body), gerritEventBody); err != nil {
+		return "", err
+	}
+
+	if gerritEventBody.Project.Name == "" {
+		return "", errors.New("project name is empty")
+	}
+
+	return strings.ToLower(gerritEventBody.Project.Name), nil
+}
+
+type GerritEventBody struct {
 	Project struct {
 		Name string `json:"name"`
 	} `json:"project"`
+}
+
+type GitEventBody struct {
+	Repository struct {
+		Name string `json:"name"`
+	} `json:"repository"`
 }
 
 func readinessHandler(w http.ResponseWriter, r *http.Request) {

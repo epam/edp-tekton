@@ -1,0 +1,198 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-react-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-react"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: 'react-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: npm-image-version
+      default: 'docker.io/library/node:16.11.1-alpine3.14'
+      description: "npm image version"
+      type: string
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: getedp-version
+      when:
+        - input: $(tasks.init-values.results.VERSIONING_TYPE)
+          operator: in
+          values:
+            - edp
+      taskRef:
+        name: getedp-version
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+
+    - name: compile
+      taskRef:
+        name: npm
+      runAfter:
+        - getedp-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm install
+            npm run build:clean
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: npm
+      runAfter:
+        - compile
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm run test:coverage
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: npm
+      runAfter:
+        - test
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm install
+            npm run build:prod
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: push
+      taskRef:
+        name: npm
+      runAfter:
+        - build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            apk add curl
+            token=$(curl -s -H 'Accept: application/json' -H Content-Type:application/json -X PUT --data '{"name": "'"${CI_USERNAME}"'", "password": "'"${CI_PASSWORD}"'"}' http://nexus:8081/repository/edp-npm-snapshots/-/user/org.couchdb.user:${CI_USERNAME} | grep -oE 'NpmToken\.[0-9a-zA-Z-]+')
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-snapshots/ --location project
+            npm set _auth=$upBase64
+            npm set //http://nexus:8081/repository/edp-npm-snapshots/:_authToken $token
+            npm set 'email=edp-ci@edp.local'
+            npm publish
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: kaniko-build
+      taskRef:
+        name: kaniko
+      runAfter:
+        - push
+      params:
+        - name: IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.getedp-version.results.VERSION)"
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: git-tag
+      taskRef:
+        name: git-cli
+      runAfter:
+        - kaniko-build
+      params:
+        - name: GIT_USER_EMAIL
+          value: jenkins@edp.ci-user
+        - name: GIT_USER_NAME
+          value: jenkins
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.getedp-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: update-cbis
+      taskRef:
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.getedp-version.results.VERSION)

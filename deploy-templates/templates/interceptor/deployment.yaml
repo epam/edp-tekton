@@ -46,7 +46,7 @@ spec:
               value: config-observability-triggers
             - name: METRICS_DOMAIN
               value: tekton.dev/triggers
-        - name: tekton-triggers-edp-interceptor
+          name: tekton-triggers-edp-interceptor
           securityContext:
             {{- toYaml .Values.interceptor.securityContext | nindent 12 }}
           image: "{{ .Values.interceptor.image.repository }}:{{ .Values.interceptor.image.tag | default .Chart.AppVersion }}"

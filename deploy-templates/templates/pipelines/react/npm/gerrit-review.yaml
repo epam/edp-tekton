@@ -1,3 +1,4 @@
+{{ if .Values.gerrit.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -9,6 +10,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/epmd-edp/javascript-npm-react"
       description: git url to clone
@@ -16,6 +20,10 @@ spec:
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
       type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
@@ -42,9 +50,23 @@ spec:
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
       workspaces:
         - name: output
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-notify
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+      workspaces:
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -112,3 +134,37 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+
+  finally:
+    - name: gerrit-vote-success
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-vote-failure
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: {{ .Values.gerrit.sshPort }}
+        - name: SSH_GERRIT_COMMAND
+          value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+{{ end }}

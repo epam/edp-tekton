@@ -27,11 +27,43 @@ spec:
       type: string
       default: "python:3.8-slim@sha256:36eb12ba900acfdcc6f1351c89b695c806d54439d584b2900017db453801cd40"
       description: The python image you want to use.
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI npm secret
+      default: nexus-ci.user
   steps:
     - name: python
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
       script: |
         #!/usr/bin/env sh
         set -e
+        cat <<EOP >> /etc/pip.conf
+        [global]
+        trusted-host = nexus
+        index = http://$CI_USERNAME:$CI_PASSWORD@nexus:8081/repository/edp-python-group/pypi
+        index-url = http://$CI_USERNAME:$CI_PASSWORD@nexus:8081/repository/edp-python-group/simple
+        EOP
+
+        cat <<EOF > ~/.pypirc
+        [distutils]
+        index-servers =
+           nexus
+        [nexus]
+        repository = http://nexus:8081/repository/edp-python-group/
+        username = $CI_USERNAME
+        password = $CI_PASSWORD
+        EOF
+
         $(params.EXTRA_COMMANDS)

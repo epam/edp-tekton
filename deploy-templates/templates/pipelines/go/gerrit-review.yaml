@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-go-review
+  name: gerrit-go-beego-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

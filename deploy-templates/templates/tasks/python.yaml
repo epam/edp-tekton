@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: python
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run python goals on a project.
+
+    This task can be used to run python goals on a project
+  workspaces:
+    - name: source
+  params:
+    - name: PATH_CONTEXT
+      type: string
+      default: "."
+      description: The path where package.json of the project is defined.
+    - name: EXTRA_COMMANDS
+      type: string
+    - name: BASE_IMAGE
+      type: string
+      default: "python:3.8-slim@sha256:36eb12ba900acfdcc6f1351c89b695c806d54439d584b2900017db453801cd40"
+      description: The python image you want to use.
+  steps:
+    - name: python
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        $(params.EXTRA_COMMANDS)

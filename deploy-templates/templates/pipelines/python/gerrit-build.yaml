@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-go-beego-build
+  name: gerrit-python-python-3.8-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -14,7 +14,7 @@ spec:
       default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-beego"
+      default: "python-python-python-3.8"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -30,12 +30,12 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: "golang-go"
+      default: "python-app"
       description: "Project name"
       type: string
-    - name: go-image-version
-      default: 'golang:1.18.4-alpine3.16'
-      description: "go image version"
+    - name: python-image-version
+      default: 'python:3.8-slim'
+      description: "python image version"
       type: string
   tasks:
     - name: fetch-repository
@@ -91,68 +91,51 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
-    - name: sast
+    - name: compile
       taskRef:
-        name: sast
+        name: python
       runAfter:
-        - fetch-repository
+        - getedp-version
       params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: BASE_IMAGE
+          value: $(params.python-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            set -ex
+            python setup.py clean build install --user
       workspaces:
         - name: source
           workspace: shared-workspace
 
     - name: test
       taskRef:
-        name: golang-build
+        name: python
       runAfter:
         - fetch-repository
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
+          value: $(params.python-image-version)
+        - name: EXTRA_COMMANDS
           value: |
-            test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
+            set -ex
+            pip3 install .
+            [ -f run_service.py ] && python run_service.py &
+            python setup.py pytest
       workspaces:
         - name: source
           workspace: shared-workspace
 
     - name: sonar
       taskRef:
-        name: sonarqube-scanner
+        name: python
       runAfter:
         - test
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
-        - name: git-source-revision
-          value: $(params.git-source-revision)
-        - name: EXTRA_ARGS
-          value: |
-            -Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-            -Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-            -Dsonar.go.coverage.reportPaths=coverage.out \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=600 \
-            -Dsonar.verbose=true;
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: build
-      taskRef:
-        name: golang-build
-      runAfter:
-        - sonar
-      params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
+          value: $(params.python-image-version)
+        - name: EXTRA_COMMANDS
           value: |
-            build -o go-binary "$(grep -irl 'package main')"
+            echo remove this command
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -161,7 +144,7 @@ spec:
       taskRef:
         name: kaniko
       runAfter:
-        - build
+        - sonar
       params:
         - name: IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.getedp-version.results.VERSION)"

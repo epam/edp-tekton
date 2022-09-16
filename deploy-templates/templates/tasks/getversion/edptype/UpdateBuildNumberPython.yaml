@@ -17,11 +17,13 @@ spec:
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
       env:
         - name: VERSION
           value: "$(params.VERSION)"
       script: |
         #!/usr/bin/env bash
+        set -ex
 
         VERSION_LOWER_CASE=$(echo "${VERSION}" | tr '[:upper:]' '[:lower:]')
         if [[ ! ${VERSION_LOWER_CASE} == *"snapshot"* ]]; then

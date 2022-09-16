@@ -40,10 +40,10 @@ spec:
           value: "$(params.BRANCH_NAME)"
       workingDir: $(workspaces.source.path)
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -e
 
-        VERSION=$(node -p "require('./package.json').version)
+        VERSION=$(node -p "require('./package.json').version")
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

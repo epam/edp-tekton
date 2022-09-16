@@ -14,6 +14,8 @@ spec:
       description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -25,7 +27,7 @@ spec:
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-build
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
             value: "ssh://jenkins@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"

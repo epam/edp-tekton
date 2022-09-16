@@ -1,0 +1,22 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gitlab-binding-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.object_attributes.target_branch)
+    - name: gitrepositoryurl
+      value: $(body.project.git_ssh_url)
+    - name: gitrepositoryname
+      value: $(body.project.name)
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    - name: versioning-type
+      value: "$(extensions.spec.versioning.type)"
+{{ end }}

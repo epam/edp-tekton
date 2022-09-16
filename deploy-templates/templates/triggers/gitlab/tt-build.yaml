@@ -1,0 +1,54 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: gitlab-build-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+    - name: gitrepositoryurl
+    - name: gitrepositoryname
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.gitrepositoryname)-build-
+      spec:
+        serviceAccountName: jenkins
+        taskRunSpecs:
+          - pipelineTaskName: kaniko-build
+            taskServiceAccountName: edp-kaniko
+        pipelineRef:
+          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-build-$(tt.params.versioning-type)
+        params:
+          - name: git-source-url
+            value: $(tt.params.gitrepositoryurl)
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.gitrepositoryname)
+        workspaces:
+          - name: settings
+            configMap:
+              name: custom-$(tt.params.buildtool)-settings
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: gitlab-sshkey
+{{ end }}

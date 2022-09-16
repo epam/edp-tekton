@@ -63,11 +63,24 @@ git-chglog: ## Download git-chglog locally if necessary.
 
 .PHONY: build
 build: clean ## build interceptor binary
-	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpinterceptor .
+	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpinterceptor ./cmd/interceptor/main.go
 
 .PHONY: clean
 clean:  ## clean up
 	-rm -rf ${DIST_DIR}
+
+.PHONY: test ## Run tests
+test:
+	go test ./... -coverprofile=coverage.out `go list ./...`
+
+.PHONY: lint
+lint: golangci-lint ## Run go lint
+	${GOLANGCILINT} run
+
+GOLANGCILINT = ${CURRENT_DIR}/bin/golangci-lint
+.PHONY: golangci-lint
+golangci-lint: ## Download golangci-lint locally if necessary.
+	$(call go-get-tool,$(GOLANGCILINT),github.com/golangci/golangci-lint/cmd/golangci-lint,v1.49.0)
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))

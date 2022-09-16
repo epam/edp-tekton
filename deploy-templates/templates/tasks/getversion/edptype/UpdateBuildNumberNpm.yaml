@@ -20,12 +20,14 @@ spec:
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
       env:
         - name: BRANCH_VERSION
           value: "$(params.BRANCH_VERSION)"
         - name: BUILD_ID
           value: "$(params.BUILD_ID)"
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
+        set -ex
 
         npm --no-git-tag-version version ${BRANCH_VERSION}-${BUILD_ID}

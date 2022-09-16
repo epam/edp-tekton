@@ -15,4 +15,6 @@ spec:
       value: "$(extensions.spec.buildTool)"
     - name: framework
       value: "$(extensions.spec.framework)"
+    - name: versioning-type
+      value: "$(extensions.spec.versioning.type)"
 {{ end }}

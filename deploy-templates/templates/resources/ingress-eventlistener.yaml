@@ -4,6 +4,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ $elName }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   rules:
     - host: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}

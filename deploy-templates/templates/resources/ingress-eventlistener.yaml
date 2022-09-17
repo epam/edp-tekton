@@ -1,0 +1,19 @@
+{{- if or .Values.gitlab.enabled .Values.github.enabled -}}
+{{- $elName := ternary "el-gitlab-listener" "el-github-listener" .Values.gitlab.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $elName }}
+spec:
+  rules:
+    - host: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $elName }}
+                port:
+                  number: 8080
+{{- end }}

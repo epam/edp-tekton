@@ -1,8 +1,7 @@
-{{ if .Values.github.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: create-webhook
+  name: github-create-webhook
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -57,4 +56,3 @@ spec:
           else
             curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(params.WebhookEvents),\"config\": {\"url\": \"https://$(params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/$(params.GitHubSecretStringKey))\"}}" -X POST -u $(params.GitHubUser):$(cat /var/secret/$(params.GitHubAccessTokenKey)) -L https://$(params.GitHubDomain)/api/v3/repos/$(params.GitHubOrg)/$(params.GitHubRepo)/hooks
           fi
-{{ end }}

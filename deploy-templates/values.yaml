@@ -35,8 +35,7 @@ gitlab:
   enabled: false
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: git.epam.com
-  accountName: "GitLab Account Name"
-  repositoryName: "GitLab Repository Name"
+  repositoryName: "epmd-edp/temp/tekton-petclinic"
   webhookSecret:
     # -- Generated on GitLab side in section: User Settings > Access Token
     token: "generated_on_gitlab_side"

@@ -40,7 +40,7 @@ spec:
       default: '[\"push\",\"pull_request\"]'
   steps:
     - name: create-webhook
-      image: curlimages/curl:latest
+      image: curlimages/curl:7.85.0@sha256:f4821d304c3d1fa06dcea4feb2be79f98ff012a8fa3a51943b94e333f69b0098
       volumeMounts:
         - name: github-secret
           mountPath: /var/secret

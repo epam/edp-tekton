@@ -1,0 +1,18 @@
+# GitLab, Create WebHooks for Build and Code-Review Pipelines
+{{ if .Values.gitlab.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: gitlab-create-webhooks
+spec:
+  params:
+    - name: GitLabDomain
+      value: {{ .Values.gitlab.host }}
+    - name: GitLabRepo
+      value: {{ .Values.gitlab.repositoryName }}
+    - name: ExternalDomain
+      value: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+  pipelineRef:
+    name: gitlab-create-webhooks
+  serviceAccountName: jenkins
+{{ end }}

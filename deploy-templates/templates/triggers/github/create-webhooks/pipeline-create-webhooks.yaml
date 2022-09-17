@@ -15,22 +15,9 @@ spec:
       default: ""
 
   tasks:
-    - name: create-ingress
-      taskRef:
-        name: create-ingress
-      params:
-        - name: ExternalDomain
-          value: $(params.ExternalDomain)
-        - name: ServiceNamespace
-          value: {{ .Release.Namespace }}
-        - name: Service
-          value: "el-github-listener"
-
     - name: create-webhook-run-for-build-pipelines
       taskRef:
-        name: create-webhook
-      runAfter:
-        - create-ingress
+        name: github-create-webhook
       params:
         - name: GitHubOrg
           value: $(params.GitHubOrg)
@@ -43,9 +30,7 @@ spec:
 
     - name: create-webhook-run-for-code-review-pipelines
       taskRef:
-        name: create-webhook
-      runAfter:
-        - create-ingress
+        name: github-create-webhook
       params:
         - name: GitHubOrg
           value: $(params.GitHubOrg)

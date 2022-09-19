@@ -33,7 +33,7 @@ A Helm chart for EDP Codebase Operator
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.repositoryName | string | `"epmd-edp/temp/tekton-petclinic"` |  |
 | gitlab.webhookSecret.secretString | string | `"random-string-data-123"` | Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
-| gitlab.webhookSecret.token | string | `"generated_on_gitlab_side"` | Generated on GitLab side in section: User Settings > Access Token |
+| gitlab.webhookSecret.token | string | `"generated_on_gitlab_side"` | Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | interceptor.deploy | bool | `false` | We should deploy only one instance of interceptor per cluster |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |

@@ -20,7 +20,7 @@ def helm_template(config):
     with tempfile.NamedTemporaryFile() as temp:
         with open(temp.name, "w") as values:
             values.write(config)
-        helm_cmd = f"helm template release-name -f {temp.name} ./deploy-templates"
+        helm_cmd = f"helm template release-name -f {temp.name} ./deploy-templates --namespace=ns"
         helm_chart = yaml.load_all(check_output(helm_cmd.split()), Loader=yaml.FullLoader)
 
         return kind_builder(helm_chart)

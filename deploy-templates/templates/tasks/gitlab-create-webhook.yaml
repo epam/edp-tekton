@@ -46,6 +46,6 @@ spec:
 
           PROJECT_ID="$(echo $(params.GitLabRepo) | sed 's/\//%2F/g')"
           TOKEN="$(cat /var/secret/$(params.GitLabAccessTokenKey))"
-          curl --verbose --fail -L -d "{\"merge_requests_events\": true,\"push_events\": false,\"token\": \"$(cat /var/secret/$(params.GitLabSecretStringKey))\"}" \
+          curl --fail -L -d "{\"merge_requests_events\": true,\"push_events\": false,\"token\": \"$(cat /var/secret/$(params.GitLabSecretStringKey))\"}" \
             -X POST -H "PRIVATE-TOKEN: ${TOKEN}" -H "Content-Type: application/json" \
             "https://$(params.GitLabDomain)/api/v4/projects/${PROJECT_ID}/hooks?url=https://$(params.ExternalDomain)"

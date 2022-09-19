@@ -37,7 +37,7 @@ gitlab:
   host: git.epam.com
   repositoryName: "epmd-edp/temp/tekton-petclinic"
   webhookSecret:
-    # -- Generated on GitLab side in section: User Settings > Access Token
+    # -- Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
     token: "generated_on_gitlab_side"
     # -- Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
     secretString: "random-string-data-123"

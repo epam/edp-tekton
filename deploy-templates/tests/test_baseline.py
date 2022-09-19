@@ -1,5 +1,3 @@
-from __future__ import annotations
-from importlib.metadata import metadata
 import os
 import sys
 
@@ -59,3 +57,34 @@ github:
     assert el_Name in r["ingress"]
     assert "event-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
     assert el_Name in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+
+
+def test_pruner_disabled():
+    config = """
+tekton:
+  pruner:
+    create: false
+    """
+
+    r = helm_template(config)
+
+    assert "cronjob" not in r
+    assert "tekton-resource-pruner" not in r["serviceaccount"]
+    assert "role" not in r
+    assert "tekton-resource-pruner" not in r["rolebinding"]
+
+
+def test_pruner_enabled():
+    config = """
+tekton:
+  pruner:
+    create: true
+    schedule: "0 5 * * *"
+    keep: 5
+    resources: pipelinerun
+    """
+
+    r = helm_template(config)
+
+    assert "0 5 * * *" in r["cronjob"]["tekton-resource-pruner"]["spec"]["schedule"]
+    assert " ns;--keep=5;pipelinerun" in r["cronjob"]["tekton-resource-pruner"]["spec"]["jobTemplate"]["spec"]["template"]["spec"]["containers"][0]["args"][1]

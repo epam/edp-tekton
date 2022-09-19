@@ -2,3 +2,7 @@ bin/
 .idea/
 dist/
 coverage.out
+
+### Python test
+.venv
+__pycache__/

@@ -77,6 +77,16 @@ test:
 lint: golangci-lint ## Run go lint
 	${GOLANGCILINT} run
 
+test-chart: ${CURRENT_DIR}/.venv/bin/activate
+	( \
+		source $^; \
+		pip3 install -r ${CURRENT_DIR}/requirements.txt; \
+		pytest -sv --color=yes; \
+	)
+
+${CURRENT_DIR}/.venv/bin/activate:
+	python3 -m venv ${CURRENT_DIR}/.venv
+
 GOLANGCILINT = ${CURRENT_DIR}/bin/golangci-lint
 .PHONY: golangci-lint
 golangci-lint: ## Download golangci-lint locally if necessary.

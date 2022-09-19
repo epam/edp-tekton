@@ -63,10 +63,10 @@ interceptor:
   tektonNamespace: tekton-pipelines
 
   image:
-    repository: sergk/edp-interceptor
+    repository: epamedp/edp-tekton
     pullPolicy: IfNotPresent
     # -- Overrides the image tag whose default is the chart appVersion.
-    tag: "2"
+    tag:
 
   imagePullSecrets: []
 

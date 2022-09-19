@@ -37,8 +37,8 @@ A Helm chart for EDP Codebase Operator
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | interceptor.deploy | bool | `false` | We should deploy only one instance of interceptor per cluster |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
-| interceptor.image.repository | string | `"sergk/edp-interceptor"` |  |
-| interceptor.image.tag | string | `"2"` | Overrides the image tag whose default is the chart appVersion. |
+| interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
+| interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |

@@ -230,9 +230,9 @@ spec:
         - kaniko-build
       params:
         - name: GIT_USER_EMAIL
-          value: jenkins@edp.ci-user
+          value: edp-ci@edp.ci-user
         - name: GIT_USER_NAME
-          value: jenkins
+          value: edp-ci
         - name: GIT_SCRIPT
           value: |
             git tag -a "$(tasks.get-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"

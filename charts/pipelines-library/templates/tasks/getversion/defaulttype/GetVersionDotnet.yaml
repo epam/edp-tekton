@@ -1,0 +1,65 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-dotnet-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of dotnet project.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Codebasebranch name
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VSC_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: DEPLOYABLE_MODULE_DIR
+    - name: TIMESTAMP
+      description: Current timestamp
+  steps:
+    - name: get-timestamp
+      image: bash:5.1.16-alpine3.15
+      script: |
+        #!/usr/bin/env bash
+        ts=$(date "+%Y%m%d-%H%M%S")
+        echo "Current Timestamp: ${ts}"
+        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+
+    - name: get-version
+      image: bash:5.1.16-alpine3.15
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        apk add --no-cache grep
+        DEPLOYABLE_MODULE=$(find ./ -name '*.csproj' | xargs grep -Poh '<DeployableModule>\K[^<]*')
+
+        VERSION=$(find ${DEPLOYABLE_MODULE} -name '*.csproj' | xargs grep -Po '<Version>\K[^<]*')
+
+        # get current BUILD ID
+        BUILD_ID=$(cat $(results.TIMESTAMP.path))
+
+        BUILD_VERSION="${VERSION}-${BUILD_ID}"
+        VSC_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        IS_TAG=${VSC_TAG}
+
+        echo "Application version - ${BUILD_VERSION}"
+        echo "VCS tag - ${VSC_TAG}"
+        echo "IS tag - ${IS_TAG}"
+
+        printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VSC_TAG}" > "$(results.VSC_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+
+        DEPLOYABLE_MODULE_DIR="."
+
+        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

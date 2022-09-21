@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: dotnet
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/displayName: DotNet
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a DotNet build.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the dotnet project.
+  params:
+    - name: BASE_IMAGE
+      description: DotNet base image.
+      type: string
+      default: "mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16"
+    - name: PROJECT_DIR
+      description: The directory containing build.gradle
+      type: string
+      default: "."
+    - name: ci-sonar-secret
+      type: string
+      description: name of the secret holding the CI sonar secret
+      default: sonar-ciuser-token
+    - name: EXTRA_COMMANDS
+      type: string
+  steps:
+    - name: dotnet
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        $(params.EXTRA_COMMANDS)
+      env:
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonar-secret)
+              key: secret

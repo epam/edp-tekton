@@ -30,7 +30,7 @@ spec:
     - name: USERNAME
       type: string
       description: SSH username
-      default: "jenkins"
+      default: "edp-ci"
     - name: GERRIT_PORT
       type: string
       description: SSH port, default is 22

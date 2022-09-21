@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/displayName: Commit-Validate
+    tekton.dev/platforms: linux/amd64
+  name: commit-validate
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: BASE_IMAGE
+      description: "The base image for the task."
+      default: "python:3.10.1-alpine3.15"
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  steps:
+    - image: $(params.BASE_IMAGE)
+      name: commit-validate
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: $(params.COMMIT_MESSAGE_PATTERN)
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import sys
+        import subprocess
+        import re
+
+        commit_message_pattern = os.getenv("COMMIT_MESSAGE_PATTERN")
+        if not commit_message_pattern:
+            print("[TEKTON] Pattern to validate commit message is empty")
+            sys.exit(1)
+
+        print("[TEKTON] Pattern to validate commit message: " + commit_message_pattern)
+
+        subprocess.run(["apk", "add", "git"])
+
+        commit_message = subprocess.run(['git', 'log', '-1', '--pretty=%B'], check=True, text=True, capture_output=True).stdout
+        print("[TEKTON] Commit message to validate has been fetched:\n" + commit_message)
+
+        result = re.search(commit_message_pattern, commit_message)
+
+        if result == None:
+            print("[TEKTON] Commit message is invalid. The required pattern is " + commit_message_pattern)
+            sys.exit(1)

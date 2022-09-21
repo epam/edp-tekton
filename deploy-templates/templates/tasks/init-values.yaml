@@ -25,6 +25,8 @@ spec:
       description: "codebase branch name"
     - name: VERSIONING_TYPE
       description: "Versioning type of codebase"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Regexp pattern for commit-validation"
   steps:
     - name: get-values
       image: $(params.BASE_IMAGE)
@@ -47,3 +49,6 @@ spec:
 
         versioningType=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.versioning.type}')
         echo "${versioningType}" | tr -d '\n' | tee $(results.VERSIONING_TYPE.path)
+
+        commitMessagePattern=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.commitMessagePattern}')
+        printf "%s" "${commitMessagePattern}" > "$(results.COMMIT_MESSAGE_PATTERN.path)"

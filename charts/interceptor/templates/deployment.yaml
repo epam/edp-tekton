@@ -1,32 +1,30 @@
-{{ if .Values.interceptor.deploy }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "edp-tekton.fullname" . }}
-  namespace: {{ .Values.interceptor.tektonNamespace }}
+  name: {{ include "edp-tekton-interceptor.fullname" . }}
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "edp-tekton.selectorLabels" . | nindent 6 }}
+      {{- include "edp-tekton-interceptor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.interceptor.podAnnotations }}
+      {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "edp-tekton.selectorLabels" . | nindent 8 }}
+        {{- include "edp-tekton-interceptor.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.interceptor.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "edp-tekton.serviceAccountName" . }}
+      serviceAccountName: {{ include "edp-tekton-interceptor.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.interceptor.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - command:
           - /edpinterceptor
@@ -48,9 +46,9 @@ spec:
               value: tekton.dev/triggers
           name: tekton-triggers-edp-interceptor
           securityContext:
-            {{- toYaml .Values.interceptor.securityContext | nindent 12 }}
-          image: "{{ .Values.interceptor.image.repository }}:{{ .Values.interceptor.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.interceptor.image.pullPolicy }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8080
@@ -66,17 +64,16 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           resources:
-            {{- toYaml .Values.interceptor.resources | nindent 12 }}
-      {{- with .Values.interceptor.nodeSelector }}
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.interceptor.affinity }}
+      {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.interceptor.tolerations }}
+      {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{ end }}

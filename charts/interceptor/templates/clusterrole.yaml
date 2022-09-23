@@ -1,10 +1,9 @@
-{{ if .Values.interceptor.deploy }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: tekton-triggers-edp-interceptor
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
 rules:
   - verbs:
       - get
@@ -47,4 +46,3 @@ rules:
       - codebases
       - codebases/status
       - codebases/finalizers
-{{ end }}

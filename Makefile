@@ -36,7 +36,7 @@ help:  ## Display this help
 
 .PHONY: validate-docs
 validate-docs: helm-docs  ## Validate helm docs
-	@git diff -s --exit-code deploy-templates/README.md || (echo "Run 'make helm-docs' to address the issue." && git diff && exit 1)
+	@git diff -s --exit-code charts/*/README.md || (echo "Run 'make helm-docs' to address the issue." && git diff && exit 1)
 
 # use https://github.com/git-chglog/git-chglog/
 .PHONY: changelog

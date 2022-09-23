@@ -1,14 +1,12 @@
-{{ if .Values.interceptor.deploy }}
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: ClusterInterceptor
 metadata:
   name: edp
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
 spec:
   clientConfig:
     service:
       name: tekton-triggers-edp-interceptor
-      namespace: {{ .Values.interceptor.tektonNamespace }}
+      namespace: {{ .Release.Namespace }}
       port: 8080
-{{ end }}

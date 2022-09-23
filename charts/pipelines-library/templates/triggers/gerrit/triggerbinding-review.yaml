@@ -17,4 +17,10 @@ spec:
       value: "$(extensions.spec.buildTool)"
     - name: framework
       value: "$(extensions.spec.framework)"
+    - name: targetBranch
+      value: "$(body.change.branch)"
+    - name: changeNumber
+      value: "$(body.change.number)"
+    - name: patchsetNumber
+      value: "$(body.patchSet.number)"
 {{ end }}

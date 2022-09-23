@@ -17,4 +17,8 @@ spec:
       value: "$(extensions.spec.framework)"
     - name: versioning-type
       value: "$(extensions.spec.versioning.type)"
+    - name: changeNumber
+      value: "$(body.change.number)"
+    - name: patchsetNumber
+      value: "$(body.patchSet.number)"
 {{ end }}

@@ -1,0 +1,104 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sonar-cleanup
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The sonar-cleanup Task will remove all 'change' projects of a specific
+    change number from Sonar.
+
+    This Task removes all unused 'change' projects created in the review pipeline.
+    Use this Task in build pipelines.
+    The 'change' projects will be found by specific pattern and removed:
+    "<project_name>-<branch_name>:change-<change_number>-<patchset_number>"
+
+  params:
+    - name: BASE_IMAGE
+      description: "The base image for the task."
+      default: "python:3.10.1-alpine3.15"
+    - name: SONAR_HOST_URL
+      description: Host URL where the sonarqube server is running
+    - name: patchsetNumber
+      type: string
+    - name: changeNumber
+      type: string
+    - name: CODEBASE_NAME
+      type: string
+      description: Codebase name.
+    - name: ci-sonar-secret
+      type: string
+      description: name of the secret holding the CI sonar secret
+      default: "sonar-ciuser-token"
+    - name: BRANCH
+      type: string
+  steps:
+    - name: sonar-cleanup
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: PATCHSET_NUMBER
+          value: "$(params.patchsetNumber)"
+        - name: CHANGE_NUMBER
+          value: "$(params.changeNumber)"
+        - name: SONAR_HOST_URL
+          value: "$(params.SONAR_HOST_URL)"
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH)"
+        - name: SONAR_HOST_URL
+          value: "$(params.SONAR_HOST_URL)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonar-secret)
+              key: secret
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import http.client
+        import base64
+
+        def clean_sonar_project_range(patchset_number, change_number):
+            sonar_host_url = os.getenv("SONAR_HOST_URL")
+            sonar_token = os.getenv("SONAR_TOKEN")
+            codebase_name = os.getenv("CODEBASE_NAME")
+            branch_name = os.getenv("BRANCH_NAME")
+
+            sonar_project_key = "{codebase}-{branch}:change-{change_number}".format(
+                codebase = codebase_name,
+                branch = branch_name,
+                change_number = change_number)
+            print(sonar_project_key)
+
+            for index in range(1,int(patchset_number)+1):
+                conn = http.client.HTTPConnection(sonar_host_url.replace("http://", ""))
+                api_show_url = "/api/components/show?component={0}-{1}".format(sonar_project_key,index)
+                headers={
+                    "Authorization":"Basic {}".format(base64.b64encode(bytes(f"{sonar_token}:","utf-8")).decode("ascii")),
+                }
+
+                conn.request(
+                    "GET",
+                    api_show_url,
+                    headers=headers)
+                resp = conn.getresponse()
+                if resp.status == 200:
+                    api_delete_url = "/api/projects/delete?project={0}-{1}".format(sonar_project_key,index)
+                    conn.request(
+                        "POST",
+                        api_delete_url,
+                        headers=headers)
+                    print("[TEKTON] Project {0}-{1} deleted".format(sonar_project_key,index))
+
+        patchset_number = os.getenv("PATCHSET_NUMBER")
+        change_number = os.getenv("CHANGE_NUMBER")
+        print("Patchset_number: {}".format(patchset_number))
+        print("Change_number: {}".format(change_number))
+        if patchset_number != 0 and change_number != 0:
+            clean_sonar_project_range(patchset_number, change_number)

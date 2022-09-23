@@ -41,6 +41,12 @@ spec:
       default: 'golang:1.18.4-alpine3.16'
       description: "go image version"
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -75,24 +81,59 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: sonar
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
       taskRef:
-        name: sonarqube-scanner
+        name: git-cli
       runAfter:
         - test
       params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: sonar-prepare-files
+      taskRef:
+        name: sonar-prepare-files-general
+      runAfter:
+        - fetch-target-branch
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: sonarqube-scanner-custom
+      runAfter:
+        - sonar-prepare-files
+      params:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
-        - name: git-source-revision
-          value: $(params.git-source-revision)
-        - name: EXTRA_ARGS
-          value: |
-            -Dsonar.projectKey=$(params.CODEBASE_NAME)-$(params.git-source-revision) \
-            -Dsonar.projectName=$(params.CODEBASE_NAME)-$(params.git-source-revision) \
-            -Dsonar.go.coverage.reportPaths=coverage.out \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=600 \
-            -Dsonar.verbose=true;
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_SOURCES
+          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
       workspaces:
         - name: source
           workspace: shared-workspace

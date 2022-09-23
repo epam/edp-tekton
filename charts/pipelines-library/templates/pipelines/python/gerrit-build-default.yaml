@@ -37,6 +37,10 @@ spec:
       default: 'python:3.8-slim'
       description: "python image version"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -54,6 +58,23 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+
+    - name: sonar-cleanup
+      taskRef:
+        name: sonar-cleanup
+      runAfter:
+        - init-values
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: patchsetNumber
+          value: $(params.patchsetNumber)
+        - name: changeNumber
+          value: $(params.changeNumber)
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH
+          value: $(params.git-source-revision)
 
     - name: compile
       taskRef:
@@ -91,15 +112,16 @@ spec:
 
     - name: sonar
       taskRef:
-        name: python
+        name: sonarqube-scanner-custom
       runAfter:
         - test
       params:
-        - name: BASE_IMAGE
-          value: $(params.python-image-version)
-        - name: EXTRA_COMMANDS
-          value: |
-            echo remove this command
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

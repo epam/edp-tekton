@@ -1,0 +1,114 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sonarqube-scanner-custom
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Security
+    tekton.dev/tags: security
+    tekton.dev/displayName: "sonarqube scanner"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The sonarqube-scanner-custom Task will update parameters in the
+    sonar-project.properties file or create a new sonar-project.properties
+    file and put parameters of a sonar project into it.
+
+    Task will run sonar-scanner for scanning after preparing the sonar-project.properties file.
+
+  workspaces:
+    - name: source
+  params:
+    - name: SONAR_HOST_URL
+      description: Host URL where the sonarqube server is running
+      default: ""
+    - name: SONAR_PROJECT_KEY
+      description: Project's unique key
+      default: ""
+    - name: SONAR_PROJECT_NAME
+      description: Project's unique name
+      default: ""
+    - name: SONAR_QUALITYGATE_WAIT
+      description: Forces the analysis step to poll the SonarQube instance and wait for the Quality Gate status.
+      default: "true"
+    - name: SONAR_SOURCES
+      description: Path is relative to the sonar-project.properties file. Defaults to .
+      default: "."
+    - name: ci-sonar-secret
+      type: string
+      description: name of the secret holding the CI sonar secret
+      default: "sonar-ciuser-token"
+  steps:
+    - name: sonar-properties-create
+      image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_HOST_URL
+          value: "$(params.SONAR_HOST_URL)"
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
+        - name: SONAR_PROJECT_NAME
+          value: "$(params.SONAR_PROJECT_NAME)"
+        - name: SONAR_QUALITYGATE_WAIT
+          value: "$(params.SONAR_QUALITYGATE_WAIT)"
+        - name: SONAR_SOURCES
+          value: "$(params.SONAR_SOURCES)"
+      script: |
+        #!/usr/bin/env bash
+
+        replaceValues() {
+          filename=$1
+          thekey=$2
+          newvalue=$3
+
+          if ! grep -R "^[#]*\s*${thekey}=.*" $filename >/dev/null; then
+            echo "APPENDING because '${thekey}' not found"
+            echo "" >>$filename
+            echo "$thekey=$newvalue" >>$filename
+          else
+            echo "SETTING because '${thekey}' found already"
+            sed -ir "s|^[#]*\s*${thekey}=.*|$thekey=$newvalue|" $filename
+          fi
+        }
+
+        if [[ -f $(workspaces.source.path)/sonar-project.properties ]]; then
+          if [[ -n "${SONAR_HOST_URL}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.host.url ${SONAR_HOST_URL}
+          fi
+          if [[ -n "${SONAR_PROJECT_KEY}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectKey ${SONAR_PROJECT_KEY}
+          fi
+          if [[ -n "${SONAR_PROJECT_NAME}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectName ${SONAR_PROJECT_NAME}
+          fi
+          if [[ -n "${SONAR_QUALITYGATE_WAIT}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.qualitygate.wait ${SONAR_QUALITYGATE_WAIT}
+          fi
+          if [[ -n "${SONAR_SOURCES}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.sources ${SONAR_SOURCES}
+          fi
+        else
+          touch sonar-project.properties
+          test -z "${SONAR_HOST_URL}" || echo "sonar.host.url=${SONAR_HOST_URL}" >> sonar-project.properties
+          test -z "${SONAR_PROJECT_KEY}" || echo "sonar.projectKey=${SONAR_PROJECT_KEY}" >> sonar-project.properties
+          test -z "${SONAR_PROJECT_NAME}" || echo "sonar.projectName=${SONAR_PROJECT_NAME}" >> sonar-project.properties
+          test -z "${SONAR_QUALITYGATE_WAIT}" || echo "sonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT}" >> sonar-project.properties
+          test -z "${SONAR_SOURCES}" || echo "sonar.sources=${SONAR_SOURCES}" >> sonar-project.properties
+        fi
+
+        echo "---------------------------"
+        cat $(workspaces.source.path)/sonar-project.properties
+
+    - name: sonar-scanner
+      image: sonarsource/sonar-scanner-cli:4.7
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonar-secret)
+              key: secret
+      command:
+        - sonar-scanner

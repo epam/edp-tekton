@@ -16,6 +16,12 @@ spec:
       description: Build tool for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -34,6 +40,12 @@ spec:
             value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
             value: $(tt.params.gerritproject)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
         workspaces:
           - name: settings
             configMap:

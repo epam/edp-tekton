@@ -42,6 +42,12 @@ spec:
       default: 'gradle:7.5-jdk11'
       description: "gradle image version"
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -85,20 +91,61 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
+      taskRef:
+        name: git-cli
+      runAfter:
+        - test
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: sonar-prepare-files
+      taskRef:
+        name: sonar-prepare-files-gradle
+      runAfter:
+        - fetch-target-branch
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: sonar
       taskRef:
         name: gradle
       runAfter:
-        - test
+        - sonar-prepare-files
       params:
         - name: BASE_IMAGE
           value: $(params.gradle-image-version)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            -Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-            -Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
+            -Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+            -Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
             -Dsonar.host.url=$(params.SONAR_URL) \
+            -Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES) \
+            -Dsonar.qualitygate.wait=true \
             sonarqube
       workspaces:
         - name: gradle-settings

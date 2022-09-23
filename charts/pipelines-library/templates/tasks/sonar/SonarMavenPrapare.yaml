@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: sonar-prepare-files-maven
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Security
+    tekton.dev/tags: security
+    tekton.dev/displayName: "sonarqube scanner"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The sonar-prepare-files-maven Task will copy the files found by git diff
+    to a different folder.
+
+  workspaces:
+    - name: source
+  params:
+    - name: CODEBASE_NAME
+      type: string
+      description: Codebase name.
+    - name: BRANCH_NAME
+      type: string
+      description: Target branch name
+    - name: CHANGE_NUMBER
+      type: string
+      default: ""
+      description: Change number from Merge Request
+    - name: PATCHSET_NUMBER
+      type: string
+      default: ""
+      description: Patchset number from Merge Request
+  results:
+    - name: SONAR_PROJECT_KEY
+    - name: SONAR_SOURCES
+  steps:
+    - name: prepare-files
+      image: bash:5.1.16-alpine3.15
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+        - name: CHANGE_NUMBER
+          value: "$(params.CHANGE_NUMBER)"
+        - name: PATCHSET_NUMBER
+          value: "$(params.PATCHSET_NUMBER)"
+      script: |
+        #!/usr/bin/env bash
+
+        echo "[TEKTON] CODEBASE_NAME : ${CODEBASE_NAME}"
+        echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"
+        echo "[TEKTON] CHANGE_NUMBER : ${CHANGE_NUMBER}"
+        echo "[TEKTON] PATCHSET_NUMBER : ${PATCHSET_NUMBER}"
+
+        apk add --no-cache git=2.34.4-r0
+        export LANG=en_US.utf-8
+        git config --local core.quotepath false
+
+        SONAR_SOURCES="codereviewAnalysisRunDir"
+        mkdir -p ${SONAR_SOURCES}
+
+        IFS=$'\n'
+        for i in $(git diff --diff-filter=ACMR --name-only origin${BRANCH_NAME})
+          do cp --parents "$i" ${codereviewAnalysisRunDir}/
+          echo "file for scanner:" "$i"/
+        done
+        cp -f pom.xml ${codereviewAnalysisRunDir}/
+        [ -d "src/test/" ] &&  cp --parents -r src/test/ ${codereviewAnalysisRunDir} || echo "Directory src/test/ not found."
+        cp --parents -r target/ ${codereviewAnalysisRunDir}
+
+        SONAR_PROJECT_KEY="${CODEBASE_NAME}-${BRANCH_NAME}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"
+
+        printf "%s" "${SONAR_PROJECT_KEY}" > "$(results.SONAR_PROJECT_KEY.path)"
+        printf "%s" "${SONAR_SOURCES}" > "$(results.SONAR_SOURCES.path)"

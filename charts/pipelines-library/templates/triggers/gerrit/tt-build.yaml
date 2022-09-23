@@ -16,6 +16,10 @@ spec:
       description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -37,6 +41,10 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.gerritproject)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
         workspaces:
           - name: settings
             configMap:

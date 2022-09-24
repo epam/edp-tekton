@@ -223,34 +223,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: git-tag
-      taskRef:
-        name: git-cli
-      runAfter:
-        - kaniko-build
-      params:
-        - name: GIT_USER_EMAIL
-          value: edp-ci@edp.ci-user
-        - name: GIT_USER_NAME
-          value: edp-ci
-        - name: GIT_SCRIPT
-          value: |
-            git tag -a "$(tasks.get-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
-            git push --tags
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{ include "build-pipeline-end" . | nindent 4 }}
 
-    - name: update-cbis
-      taskRef:
-        name: update-cbis
-      runAfter:
-        - git-tag
-      params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-        - name: IMAGE_TAG
-          value: $(tasks.get-version.results.VERSION)
 {{ end }}

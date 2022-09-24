@@ -30,21 +30,8 @@ spec:
       description: "dotnet-sdk image version"
       type: string
   tasks:
-    - name: fetch-repository
-      taskRef:
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: refspec
-          value: $(params.git-refspec)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+
+{{- include "gerrit-review-start" . | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -96,36 +83,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-  finally:
-    - name: gerrit-vote-success
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Succeeded"]
-      taskRef:
-        name: gerrit-ssh-cmd
-      params:
-        - name: GERRIT_PORT
-          value: {{ .Values.gerrit.sshPort }}
-        - name: SSH_GERRIT_COMMAND
-          value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
-      workspaces:
-        - name: ssh-directory
-          workspace: ssh-creds
+{{ include "gerrit-review-vote" . | nindent 2 }}
 
-    - name: gerrit-vote-failure
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Failed"]
-      taskRef:
-        name: gerrit-ssh-cmd
-      params:
-        - name: GERRIT_PORT
-          value: {{ .Values.gerrit.sshPort }}
-        - name: SSH_GERRIT_COMMAND
-          value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
-      workspaces:
-        - name: ssh-directory
-          workspace: ssh-creds
 {{ end }}

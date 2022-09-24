@@ -39,44 +39,8 @@ spec:
       description: "gradle image version"
       type: string
   tasks:
-    - name: fetch-repository
-      taskRef:
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
 
-    - name: gerrit-notify
-      taskRef:
-        name: gerrit-ssh-cmd
-      runAfter:
-        - fetch-repository
-      params:
-        - name: GERRIT_PORT
-          value: {{ .Values.gerrit.sshPort }}
-        - name: SSH_GERRIT_COMMAND
-          value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
-      workspaces:
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: init-values
-      taskRef:
-        name: init-values
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+{{- include "gerrit-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -230,34 +194,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: git-tag
-      taskRef:
-        name: git-cli
-      runAfter:
-        - kaniko-build
-      params:
-        - name: GIT_USER_EMAIL
-          value: edp-ci@edp.ci-user
-        - name: GIT_USER_NAME
-          value: edp-ci
-        - name: GIT_SCRIPT
-          value: |
-            git tag -a "$(tasks.get-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
-            git push --tags
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{ include "build-pipeline-end" . | nindent 4 }}
 
-    - name: update-cbis
-      taskRef:
-        name: update-cbis
-      runAfter:
-        - git-tag
-      params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-        - name: IMAGE_TAG
-          value: $(tasks.get-version.results.VERSION)
 {{ end }}

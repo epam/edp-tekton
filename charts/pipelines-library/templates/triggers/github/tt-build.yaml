@@ -18,6 +18,8 @@ spec:
       spec:
         serviceAccountName: jenkins
         taskRunSpecs:
+          - pipelineTaskName: create-ecr-repository
+            taskServiceAccountName: edp-kaniko
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:

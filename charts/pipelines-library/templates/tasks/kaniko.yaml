@@ -29,10 +29,8 @@ spec:
       type: array
       default: []
     - name: BUILDER_IMAGE
-      description: The image on which builds will run (default is v1.5.1)
-      default: gcr.io/kaniko-project/executor:v1.5.1@sha256:c6166717f7fe0b7da44908c986137ecfeab21f31ec3992f6e128fff8a94be8a5
-    - name: REPO_NAME
-      description: ""
+      description: The image on which builds will run (default is v1.9.1)
+      default: gcr.io/kaniko-project/executor:v1.9.1@sha256:23ae6ccaba2b0f599966dbc5ecf38aa4404f4cd799add224167eaf285696551a
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
@@ -46,20 +44,13 @@ spec:
     - name: IMAGE_URL
       description: URL of the image just built.
   steps:
-    - name: init-repository
-      image: amazon/aws-cli:2.7.20
-      env:
-        - name: REPO_NAME
-          value: "$(params.REPO_NAME)"
-      command: ["/bin/sh"]
-      args: ["-c", "aws ecr describe-repositories --repository-names ${REPO_NAME}|| aws ecr create-repository --repository-name ${REPO_NAME} || true"]
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)
       args:
         - $(params.EXTRA_ARGS)
         - --dockerfile=$(params.DOCKERFILE)
-        - --context=$(workspaces.source.path)/$(params.CONTEXT) # The user does not need to care the workspace and the source.
+        - --context=$(workspaces.source.path)/$(params.CONTEXT) # The user does not need to care of the workspace and the source.
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)
       # kaniko assumes it is running as root, which means this example fails on platforms
@@ -68,7 +59,7 @@ spec:
       securityContext:
         runAsUser: 0
     - name: write-url
-      image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
+      image: docker.io/library/bash:5.2.0@sha256:553746463135eaae3f2c9bde1c4185ffc18efb24c7b75b8b096ffd6d3e63f2bf
       script: |
         set -e
         image="$(params.IMAGE)"

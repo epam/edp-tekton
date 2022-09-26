@@ -119,19 +119,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: kaniko-build
+    - name: create-ecr-repository
       taskRef:
-        name: kaniko
+        name: create-ecr-repository
       runAfter:
         - build
       params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.get-version.results.VERSION)"
         - name: REPO_NAME
           value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

@@ -19,6 +19,11 @@ spec:
         generateName: $(tt.params.gitrepositoryname)-review-
       spec:
         serviceAccountName: jenkins
+        taskRunSpecs:
+          - pipelineTaskName: create-ecr-repository
+            taskServiceAccountName: edp-kaniko
+          - pipelineTaskName: kaniko-build
+            taskServiceAccountName: edp-kaniko
         pipelineRef:
           name: github-maven-java11-review
         params:

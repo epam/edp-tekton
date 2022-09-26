@@ -116,25 +116,11 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: kaniko-build
-      taskRef:
-        name: kaniko
-      runAfter:
-        - sonar
-      params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME):$(tasks.get-version.results.VERSION)"
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: push
       taskRef:
         name: dotnet
       runAfter:
-        - kaniko-build
+        - sonar
       params:
         - name: BASE_IMAGE
           value: $(params.dotnet-sdk-image-version)
@@ -148,6 +134,15 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+
+    - name: create-ecr-repository
+      taskRef:
+        name: create-ecr-repository
+      runAfter:
+        - push
+      params:
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

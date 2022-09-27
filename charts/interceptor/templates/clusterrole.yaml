@@ -20,21 +20,13 @@ rules:
       - list
       - watch
       - update
+      - create
     apiGroups:
       - ''
     resources:
       - secrets
     resourceNames:
-      - tekton-triggers-core-interceptors-certs
-
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - ''
-    resources:
-      - secrets
+      - tekton-edp-interceptor-certs
 
   - verbs:
       - get

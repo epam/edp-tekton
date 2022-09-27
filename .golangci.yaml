@@ -928,9 +928,6 @@ issues:
         - funlen
         - wrapcheck
         - cyclop
-    - path: _types\.go
-      linters:
-        - gochecknoinits
     - path: main\.go
       linters:
         - funlen

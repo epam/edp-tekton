@@ -4,11 +4,14 @@ go 1.18
 
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.13.0
+	github.com/epam/edp-common v0.0.0-20211206180607-3e1ca60d6e4a
 	github.com/stretchr/testify v1.8.0
 	github.com/tektoncd/triggers v0.21.0
 	go.uber.org/zap v1.22.0
 	google.golang.org/grpc v1.46.0
+	k8s.io/api v0.24.0
 	k8s.io/apimachinery v0.24.0
+	knative.dev/pkg v0.0.0-20220805012121-7b8b06028e4f
 	sigs.k8s.io/controller-runtime v0.12.1
 )
 
@@ -82,14 +85,12 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.24.0 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
 	k8s.io/client-go v0.24.0 // indirect
 	k8s.io/component-base v0.24.0 // indirect
 	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/pkg v0.0.0-20220805012121-7b8b06028e4f // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect

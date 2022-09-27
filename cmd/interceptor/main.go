@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -11,20 +12,23 @@ import (
 	"syscall"
 	"time"
 
+	triggersApi "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	buildInfo "github.com/epam/edp-common/pkg/config"
 
 	"github.com/epam/edp-tekton/pkg/interceptor"
 )
 
 const (
-	// Port is the port that the port that interceptor service listens on.
-	Port            = 8080
+	// httpsPort is the port where the interceptor service listens. Use 8443 as it does not require root privileges.
+	httpsPort       = 8443
 	readTimeout     = 5 * time.Second
 	writeTimeout    = 20 * time.Second
 	idleTimeout     = 60 * time.Second
@@ -36,17 +40,12 @@ type edpInterceptorHandler struct {
 	Logger         *zap.SugaredLogger
 }
 
+type config struct {
+	Namespace              string
+	ClusterInterceptorName string
+}
+
 func main() {
-	clusterConfig := ctrl.GetConfigOrDie()
-
-	scheme := runtime.NewScheme()
-	utilruntime.Must(codebaseApiV1.AddToScheme(scheme))
-
-	client, err := ctrlClient.New(clusterConfig, ctrlClient.Options{Scheme: scheme})
-	if err != nil {
-		log.Fatalf("Failed to get client: %v", err)
-	}
-
 	zapLogger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("Failed to initialize logger: %s", err)
@@ -54,7 +53,43 @@ func main() {
 
 	logger := zapLogger.Sugar()
 
-	//TODO: We need to move to https server. See: https://tekton.dev/docs/triggers/clusterinterceptors/#running-clusterinterceptor-as-https
+	logBuildInfo(logger)
+
+	var conf *config
+
+	if conf, err = initEnv(); err != nil {
+		logger.Fatalf("failed to init env: %v", err)
+	}
+
+	clusterConfig := ctrl.GetConfigOrDie()
+
+	scheme := runtime.NewScheme()
+	utilruntime.Must(codebaseApiV1.AddToScheme(scheme))
+	utilruntime.Must(corev1.AddToScheme(scheme))
+	utilruntime.Must(triggersApi.AddToScheme(scheme))
+
+	client, err := ctrlClient.New(clusterConfig, ctrlClient.Options{Scheme: scheme})
+	if err != nil {
+		logger.Fatalf("Failed to get client: %v", err)
+	}
+
+	secretService := interceptor.NewSecretService(client)
+
+	ctx := context.Background()
+
+	certData, err := secretService.CreateCertsSecret(ctx, conf.Namespace, conf.ClusterInterceptorName)
+	if err != nil {
+		logger.Fatalf("Failed to create certs secret: %v", err)
+	}
+
+	logger.Infof("The secret %s was populated with certs ", interceptor.SecretCertsName)
+
+	if err = secretService.UpdateCABundle(ctx, conf.Namespace, conf.ClusterInterceptorName, certData.CaCert); err != nil {
+		logger.Fatalf("Failed to update cABundle: %v", err)
+	}
+
+	logger.Infof("ClusterInterceptor %s caBundle updated successfully", conf.ClusterInterceptorName)
+
 	mux := http.NewServeMux()
 	mux.Handle(
 		"/",
@@ -65,21 +100,34 @@ func main() {
 	)
 	mux.HandleFunc("/ready", readinessHandler)
 
+	tlsData := &tls.Config{
+		MinVersion: tls.VersionTLS13,
+		GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+			cert, err := tls.X509KeyPair(certData.ServerCert, certData.ServerKey)
+			if err != nil {
+				return nil, err
+			}
+
+			return &cert, nil
+		},
+	}
+
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", Port),
+		Addr:         fmt.Sprintf(":%d", httpsPort),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,
 		Handler:      mux,
+		TLSConfig:    tlsData,
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 			logger.Fatalf("Server failed: %v", err)
 		}
 	}()
 
-	logger.Infof("Listen and serve on port %d", Port)
+	logger.Infof("Listen and serve on port %d", httpsPort)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
@@ -126,4 +174,35 @@ func (h *edpInterceptorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 func readinessHandler(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+func logBuildInfo(logger *zap.SugaredLogger) {
+	v := buildInfo.Get()
+
+	logger.Info("Starting the EDP interceptor",
+		"version", v.Version,
+		"git-commit", v.GitCommit,
+		"git-tag", v.GitTag,
+		"build-date", v.BuildDate,
+		"go-version", v.Go,
+		"go-client", v.KubectlVersion,
+		"platform", v.Platform,
+	)
+}
+
+func initEnv() (*config, error) {
+	namespace, ok := os.LookupEnv("SYSTEM_NAMESPACE")
+	if !ok {
+		return nil, errors.New("env SYSTEM_NAMESPACE is required")
+	}
+
+	clusterInterceptorName, ok := os.LookupEnv("CLUSTER_INTERCEPTOR_NAME")
+	if !ok {
+		return nil, errors.New("env CLUSTER_INTERCEPTOR_NAME is required")
+	}
+
+	return &config{
+		Namespace:              namespace,
+		ClusterInterceptorName: clusterInterceptorName,
+	}, nil
 }

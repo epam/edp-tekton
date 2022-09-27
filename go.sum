@@ -157,6 +157,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/epam/edp-codebase-operator/v2 v2.13.0 h1:0X/q7Wr6loyPqRqbtMvUiGvUgvXeCAtutsJ514eub50=
 github.com/epam/edp-codebase-operator/v2 v2.13.0/go.mod h1:pyqgKgKEc6ylF7TbxbVkBMwewZBRfkDlqVlSD4X/aFU=
+github.com/epam/edp-common v0.0.0-20211206180607-3e1ca60d6e4a h1:twumv3j/0cxDlfz1T8De0/4FNuKmPEP1ql0lG8XELFQ=
+github.com/epam/edp-common v0.0.0-20211206180607-3e1ca60d6e4a/go.mod h1:S1yrJ76vy4JMkBpartv4qpDDAtPP43aM2sg5YhkB90I=
 github.com/epam/edp-jenkins-operator/v2 v2.3.0-130.0.20220615130453-41c49930569c h1:WezzFVqR6/gadqhE+ohJEojrWy/Zwj2WRrTtuF6vHGc=
 github.com/epam/edp-jenkins-operator/v2 v2.3.0-130.0.20220615130453-41c49930569c/go.mod h1:Koz44K32v40h7eWJzpLI0Nbz8Khuvy7yCJip66vluYE=
 github.com/evanphx/json-patch v0.5.2/go.mod h1:ZWS5hhDbVDyob71nXKNL0+PWn6ToqBHMikGIFbs31qQ=

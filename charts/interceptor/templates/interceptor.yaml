@@ -3,10 +3,11 @@ kind: ClusterInterceptor
 metadata:
   name: edp
   labels:
+    server/type: https
     {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
 spec:
   clientConfig:
     service:
       name: tekton-triggers-edp-interceptor
       namespace: {{ .Release.Namespace }}
-      port: 8080
+      port: 8433

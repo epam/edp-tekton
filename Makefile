@@ -1,3 +1,4 @@
+PACKAGE=github.com/epam/edp-common/pkg/config
 CURRENT_DIR=$(shell pwd)
 DIST_DIR=${CURRENT_DIR}/dist
 

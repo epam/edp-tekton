@@ -10,4 +10,4 @@ spec:
     service:
       name: tekton-triggers-edp-interceptor
       namespace: {{ .Release.Namespace }}
-      port: 8433
+      port: 8443

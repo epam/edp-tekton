@@ -38,9 +38,16 @@ gerrit:
             assert "sonar-prepare-files" in rt[6]["name"]
             assert f"sonar-prepare-files-{buildtool}" == rt[6]["taskRef"]["name"]
             assert "sonar" in rt[7]["name"]
-            assert "dockerfile-lint" in rt[8]["name"]
-            assert "dockerbuild-verify" in rt[9]["name"]
-            assert "helm-lint" in rt[10]["name"]
+            if buildtool == "gradle":
+                assert "build" in rt[8]["name"]
+                assert "dockerfile-lint" in rt[9]["name"]
+                assert "dockerbuild-verify" in rt[10]["name"]
+                assert "helm-lint" in rt[11]["name"]
+            else:
+                assert "dockerfile-lint" in rt[8]["name"]
+                assert "dockerbuild-verify" in rt[9]["name"]
+                assert "helm-lint" in rt[10]["name"]
+
             assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
             assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]
 

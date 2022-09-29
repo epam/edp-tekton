@@ -4,7 +4,7 @@ import sys
 from .helpers import helm_template
 
 
-def test_javascript_pipelines_gerrit():
+def test_python_pipelines_gerrit():
     config = """
 gerrit:
   enabled: true
@@ -12,13 +12,13 @@ gerrit:
 
     r = helm_template(config)
 
-    assert "gerrit-npm-react-review" in r["pipeline"]
-    assert "gerrit-npm-react-build-default" in r["pipeline"]
-    assert "gerrit-npm-react-build-edp" in r["pipeline"]
+    assert "gerrit-dotnet-dotnet-3.1-review" in r["pipeline"]
+    assert "gerrit-dotnet-dotnet-3.1-build-default" in r["pipeline"]
+    assert "gerrit-dotnet-dotnet-3.1-build-edp" in r["pipeline"]
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
-        for framework in ['react']:
+    for buildtool in ['dotnet']:
+        for framework in ['dotnet-3.1']:
 
             gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-review"
             gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-build-default"
@@ -47,7 +47,7 @@ gerrit:
             assert "compile" in btd[4]["name"]
             assert "test" in btd[5]["name"]
             assert buildtool == btd[5]["taskRef"]["name"]
-            assert "build" in btd[6]["name"]
+            assert "sonar" in btd[6]["name"]
             assert buildtool == btd[6]["taskRef"]["name"]
             assert "push" in btd[7]["name"]
             assert buildtool == btd[7]["taskRef"]["name"]
@@ -69,7 +69,7 @@ gerrit:
             assert buildtool == btedp[5]["taskRef"]["name"]
             assert "test" in btedp[6]["name"]
             assert buildtool == btedp[6]["taskRef"]["name"]
-            assert "build" in btedp[7]["name"]
+            assert "sonar" in btedp[7]["name"]
             assert buildtool == btedp[7]["taskRef"]["name"]
             assert "push" in btedp[8]["name"]
             assert buildtool == btedp[8]["taskRef"]["name"]

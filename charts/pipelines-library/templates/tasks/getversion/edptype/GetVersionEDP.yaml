@@ -23,7 +23,7 @@ spec:
     - name: DEPLOYABLE_MODULE_DIR
   steps:
     - name: get-version
-      image: bitnami/kubectl:1.24.4
+      image: bitnami/kubectl:1.25.2
       env:
         - name: CODEBASEBRANCH_NAME
           value: "$(params.CODEBASEBRANCH_NAME)"

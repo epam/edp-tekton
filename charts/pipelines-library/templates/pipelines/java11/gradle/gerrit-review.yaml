@@ -153,6 +153,24 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: build
+      taskRef:
+        name: gradle
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            build -x test
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
     - name: dockerfile-lint
       taskRef:
         name: hadolint
@@ -166,7 +184,7 @@ spec:
       taskRef:
         name: kaniko
       runAfter:
-        - sonar
+        - build
         - dockerfile-lint
       params:
         - name: IMAGE

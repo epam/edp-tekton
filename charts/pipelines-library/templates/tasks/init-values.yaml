@@ -15,7 +15,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: bitnami/kubectl:1.24.4
+      default: bitnami/kubectl:1.25.2
   results:
     - name: DOCKER_REGISTRY_HOST
       description: "docker host url"

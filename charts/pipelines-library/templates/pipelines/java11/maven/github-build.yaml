@@ -218,7 +218,7 @@ spec:
         - push
       params:
         - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(tasks.init-values.results.CODEBASEBRANCH_NAME)"
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

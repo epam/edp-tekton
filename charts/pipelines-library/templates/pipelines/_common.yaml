@@ -128,7 +128,7 @@
       value: $(tasks.get-version.results.VERSION)
 {{- end -}}
 
-# finally section for gerrit codereview pipelines
+# final section for gerrit codereview pipelines
 {{- define "gerrit-review-vote" -}}
 finally:
   - name: gerrit-vote-success

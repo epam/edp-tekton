@@ -1,0 +1,102 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ecr-to-docker
+  labels:
+    app.kubernetes.io/based-on: "0.6"
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Image Copy
+    tekton.dev/tags: image-copy
+    tekton.dev/displayName: "Push ECR images to DockerHUB"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task copies images from ECR to DockerHUB.
+    It must be used after kaniko-build task.
+    It is necessary to add a Service Account in a Pipeline for this task to run
+    since it uses AWS ECR authentication.
+  params:
+    - name: ECR_HOST
+      description: ""
+    - name: ECR_LOGIN
+      description: ""
+      default: '/workspace/ecr_login_pass'
+    - name: ECR_USER
+      description: ""
+      default: 'AWS'
+    - name: ECR_IMAGE
+      description: ""
+    - name: CODEBASE_NAME
+      description: ""
+    - name: IMAGE_TAG
+      description: ""
+    - name: DOCKERHUB_HOST
+      description: ""
+      default: 'index.docker.io'
+    - name: dockerhub-credentials
+      type: string
+      description: secret holding dockerhub login token
+      default: dockerhub-credentials
+    - name: edp-config
+      type: string
+      description: this configmap holds aws_region parameter
+      default: edp-config
+  steps:
+    - name: get-ecr-pass
+      image: amazon/aws-cli:2.7.35
+      env:
+        - name: ECR_LOGIN
+          value: "$(params.ECR_LOGIN)"
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.edp-config)"
+              key: 'aws_region'
+      script: |
+        aws ecr get-login-password --region "${AWS_REGION}" > "${ECR_LOGIN}"
+        ls -l "${ECR_LOGIN}"
+    - name: copy-image
+      env:
+        - name: ECR_HOST
+          value: "$(params.ECR_HOST)"
+        - name: ECR_LOGIN
+          value: "$(params.ECR_LOGIN)"
+        - name: ECR_USER
+          value: "$(params.ECR_USER)"
+        - name: ECR_IMAGE
+          value: "$(params.ECR_IMAGE)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: IMAGE_TAG
+          value: "$(params.IMAGE_TAG)"
+        - name: DOCKERHUB_HOST
+          value: "$(params.DOCKERHUB_HOST)"
+        - name: DOCKERHUB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: "$(params.dockerhub-credentials)"
+              key: 'username'
+        - name: DOCKERHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: "$(params.dockerhub-credentials)"
+              key: 'accesstoken'
+        - name: DOCKERHUB_ACCOUNT
+          valueFrom:
+            secretKeyRef:
+              name: "$(params.dockerhub-credentials)"
+              key: 'account'
+      image: gcr.io/go-containerregistry/crane/debug:v0.11.0
+      script: |
+        #!/busybox/sh
+        DOCKERHUB_IMAGE_TAGGED="${DOCKERHUB_HOST}/${DOCKERHUB_ACCOUNT}/${CODEBASE_NAME}:${IMAGE_TAG}"
+        echo "${DOCKERHUB_TOKEN}" | crane auth login "${DOCKERHUB_HOST}" -u "${DOCKERHUB_USERNAME}" --password-stdin
+        if crane manifest "${DOCKERHUB_IMAGE_TAGGED}"; then
+            echo " [INFO] Image "${DOCKERHUB_IMAGE_TAGGED}" already exists in Docker Hub"
+            exit 1
+        else
+            cat "${ECR_LOGIN}" | crane auth login "${ECR_HOST}" -u "${ECR_USER}" --password-stdin
+            crane cp "${ECR_IMAGE}:${IMAGE_TAG}" "${DOCKERHUB_IMAGE_TAGGED}"
+        fi

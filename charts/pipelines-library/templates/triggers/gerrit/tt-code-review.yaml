@@ -23,9 +23,6 @@ spec:
         generateName: $(tt.params.gerritproject)-review-
       spec:
         serviceAccountName: jenkins
-        taskRunSpecs:
-          - pipelineTaskName: kaniko-build
-            taskServiceAccountName: edp-kaniko
         pipelineRef:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-review
         params:

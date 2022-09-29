@@ -120,26 +120,27 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: dockerbuild-verify
       taskRef:
         name: kaniko
       runAfter:
         - sonar
+        - dockerfile-lint
       params:
         - name: IMAGE
           value: "placeholder:latest"
         - name: EXTRA_ARGS
           value:
             - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerfile-lint
-      taskRef:
-        name: hadolint
-      runAfter:
-        - fetch-repository
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/epam/edp-tekton/branch/master/graph/badge.svg?token=P2RDX1F68O)](https://codecov.io/gh/epam/edp-tekton)
+
 # EDP Tekton
 <!-- TOC -->
 
@@ -36,7 +38,7 @@ EDP Interceptor extracts information from VCS payload, like `repository_name`. T
                             └────────────────────────────────┘
 
 The data, retrieved from the Codebase SPEC, is used in Tekton Pipelines logic.
-The docker images for EDP Interceptor are available on the [DockerHub](https://hub.docker.com/repository/docker/epamedp/edp-tekton). 
+The docker images for EDP Interceptor are available on the [DockerHub](https://hub.docker.com/repository/docker/epamedp/edp-tekton).
 The helm-chart for interceptor deployment is in the same repository by the [charts/interceptor](./charts/interceptor) directory.
 
 ## Tekton Pipelines

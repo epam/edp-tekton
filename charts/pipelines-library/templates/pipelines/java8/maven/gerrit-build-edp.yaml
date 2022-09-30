@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: gerrit-maven-java8-app-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -31,11 +31,11 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
     - name: changeNumber
@@ -71,7 +71,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "java-maven-build-common" . | nindent 4 }}
+{{ include "java-maven-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:

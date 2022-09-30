@@ -1,27 +1,29 @@
-{{ if .Values.github.enabled }}
+{{ if .Values.gitlab.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java11-app-review
+  name: gitlab-maven-java8-app-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
+    - name: settings
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: git-source-url
-      default: "https://github.com/sergk/spring-petclinic"
+      default: "https://gitlab.com/sergk/spring-petclinic"
       description: git url to clone
       type: string
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
-      type: string
-    - name: git-refspec
-      description: Refspec to fetch before checking out revision.
-      default: ""
       type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
@@ -32,57 +34,45 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
-    - name: pipelineUrl
-      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
-      type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
-      type: string
-    - name: gitsha
-      description: "commit sha"
-      type: string
   tasks:
-
-    - name: github-set-pending-status
+    - name: report-pipeline-start-to-gitlab
       taskRef:
-        name: github-set-status
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has started"
-        - name: STATE
+        - name: "STATE"
           value: "pending"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: "gitlab-webhook-secret"
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: "token"
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 
     - name: fetch-repository
       taskRef:
         name: git-clone
-      runAfter:
-        - github-set-pending-status
       params:
         - name: url
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
-        - name: refspec
-          value: $(params.git-refspec)
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -118,7 +108,7 @@ spec:
             - compile
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -143,7 +133,7 @@ spec:
             - org.jacoco:jacoco-maven-plugin:report
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -170,7 +160,31 @@ spec:
             - sonar:sonar
       workspaces:
         - name: maven-settings
-          workspace: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: maven
+      runAfter:
+        - sonar
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - clean
+            - package
+            - '-DskipTests=true'
+      workspaces:
+        - name: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -178,7 +192,7 @@ spec:
       taskRef:
         name: kaniko
       runAfter:
-        - sonar
+        - build
       params:
         - name: IMAGE
           value: "placeholder:latest"
@@ -208,53 +222,61 @@ spec:
           workspace: shared-workspace
 
   finally:
-    - name: github-set-failure-status
+    - name: gitlab-set-failure-status
       when:
         - input: "$(tasks.status)"
           operator: in
           values: ["Failed"]
       taskRef:
         name: github-set-status
+      taskRef:
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has failed"
-        - name: STATE
-          value: "failure"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "STATE"
+          value: "failed"
+        - name: "GITLAB_HOST_URL"
+          value: "git.epam.com"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: "gitlab-webhook-secret"
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: "token"
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 
-    - name: github-set-success-status
+    - name: gitlab-set-success-status
       when:
         - input: "$(tasks.status)"
           operator: in
           values: ["Succeeded"]
       taskRef:
         name: github-set-status
+      taskRef:
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build was successful"
-        - name: STATE
+        - name: "STATE"
           value: "success"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "GITLAB_HOST_URL"
+          value: "git.epam.com"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: "gitlab-webhook-secret"
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: "token"
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 {{ end }}

@@ -79,7 +79,7 @@ spec:
       taskRef:
         name: gradle
       runAfter:
-        - sonar-cleanup
+        - update-build-number
       params:
         - name: BASE_IMAGE
           value: $(params.gradle-image-version)

@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: gerrit-gradle-java8-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -31,12 +31,12 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-gradle'
       description: "Project name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: 'gradle:7.5.1-jdk8'
+      description: "gradle image version"
       type: string
     - name: changeNumber
       description: Change number from Merge Request
@@ -48,12 +48,21 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-gradle-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
@@ -71,7 +80,27 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "java-maven-build-common" . | nindent 4 }}
+    - name: compile
+      taskRef:
+        name: gradle
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            clean \
+            compileJava \
+            -x test
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+{{ include "java-gradle-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:

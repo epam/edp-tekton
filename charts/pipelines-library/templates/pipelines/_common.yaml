@@ -147,6 +147,28 @@
       value: $(tasks.get-version.results.VERSION)
 {{- end -}}
 
+{{- define "build-pipeline-lib-end" -}}
+- name: git-tag
+  taskRef:
+    name: git-cli
+  runAfter:
+    - push
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+{{- end -}}
+
 # final section for gerrit codereview pipelines
 {{- define "gerrit-review-vote" -}}
 finally:

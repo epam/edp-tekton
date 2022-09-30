@@ -37,7 +37,7 @@ spec:
     - name: SONAR_SOURCES
   steps:
     - name: prepare-files
-      image: bash:5.1.16-alpine3.15
+      image: alpine/git:2.36.2
       workingDir: $(workspaces.source.path)
       env:
         - name: CODEBASE_NAME
@@ -49,28 +49,27 @@ spec:
         - name: PATCHSET_NUMBER
           value: "$(params.PATCHSET_NUMBER)"
       script: |
-        #!/usr/bin/env bash
+        #!/bin/sh
 
         echo "[TEKTON] CODEBASE_NAME : ${CODEBASE_NAME}"
         echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"
         echo "[TEKTON] CHANGE_NUMBER : ${CHANGE_NUMBER}"
         echo "[TEKTON] PATCHSET_NUMBER : ${PATCHSET_NUMBER}"
 
-        apk add --no-cache git=2.34.4-r0
         export LANG=en_US.utf-8
         git config --local core.quotepath false
 
         SONAR_SOURCES="codereviewAnalysisRunDir"
-        mkdir -p ${SONAR_SOURCES}
+        mkdir -p "${SONAR_SOURCES}"
 
         IFS=$'\n'
-        for i in $(git diff --diff-filter=ACMR --name-only origin${BRANCH_NAME})
-          do cp --parents "$i" ${codereviewAnalysisRunDir}/
+        for i in $(git diff --diff-filter=ACMR --name-only origin/"${BRANCH_NAME}")
+          do cp --parents "$i" "${SONAR_SOURCES}"/
           echo "file for scanner:" "$i"/
         done
-        cp -f pom.xml ${codereviewAnalysisRunDir}/
-        [ -d "src/test/" ] &&  cp --parents -r src/test/ ${codereviewAnalysisRunDir} || echo "Directory src/test/ not found."
-        cp --parents -r target/ ${codereviewAnalysisRunDir}
+        cp -f pom.xml "${SONAR_SOURCES}"/
+        [ -d "src/test/" ] &&  cp --parents -r src/test/ "${SONAR_SOURCES}" || echo "Directory src/test/ not found."
+        cp --parents -r target/ "${SONAR_SOURCES}"
 
         SONAR_PROJECT_KEY="${CODEBASE_NAME}-${BRANCH_NAME}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"
 

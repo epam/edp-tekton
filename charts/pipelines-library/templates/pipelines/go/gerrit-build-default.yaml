@@ -105,7 +105,7 @@ spec:
 
     - name: sonar
       taskRef:
-        name: sonarqube-scanner-custom
+        name: sonarqube-scanner
       runAfter:
         - test
       params:

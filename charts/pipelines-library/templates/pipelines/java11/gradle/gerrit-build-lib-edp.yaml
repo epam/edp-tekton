@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: gerrit-gradle-java11-lib-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -34,9 +34,9 @@ spec:
       default: 'java11-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: 'gradle:7.5.1-jdk11'
+      description: "gradle image version"
       type: string
     - name: changeNumber
       description: Change number from Merge Request
@@ -55,33 +55,48 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
-{{ include "sonar-cleanup" . | nindent 4 }}
-
-    - name: sast
+    - name: update-build-number
       taskRef:
-        name: sast
+        name: update-build-number-gradle
       runAfter:
-        - fetch-repository
+        - get-version
       params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: BRANCH_VERSION
+          value: $(tasks.get-version.results.BRANCH_VERSION)
+        - name: BUILD_ID
+          value: $(tasks.get-version.results.BUILD_ID)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
       workspaces:
         - name: source
           workspace: shared-workspace
 
-{{- include "java-maven-build-common" . | nindent 4 }}
+{{ include "sonar-cleanup" . | nindent 4 }}
 
-    - name: create-ecr-repository
+    - name: compile
       taskRef:
-        name: create-ecr-repository
+        name: gradle
       runAfter:
-        - push
+        - get-version
       params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            clean \
+            compileJava \
+            -x test
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "java-gradle-build-common" . | nindent 4 }}
+
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ end }}

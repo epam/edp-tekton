@@ -38,7 +38,7 @@ spec:
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11'
+      default: 'maven:3.8.6-openjdk-11-slim'
       description: "maven image version"
       type: string
   tasks:

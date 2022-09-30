@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: gerrit-maven-java11-lib-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -57,31 +57,8 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
 {{- include "java-maven-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ end }}

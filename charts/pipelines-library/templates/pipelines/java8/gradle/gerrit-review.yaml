@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: gerrit-gradle-java8-app-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -22,6 +22,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
@@ -31,57 +35,77 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: 'gradle:7.5.1-jdk8'
+      description: "gradle image version"
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
     - name: changeNumber
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-review-start" . | nindent 4 }}
 
-    - name: get-version
+{{ include "java-gradle-review-common" . | nindent 4 }}
+
+    - name: build
       taskRef:
-        name: get-version-edp
+        name: gradle
       runAfter:
-        - init-values
+        - sonar
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: BASE_IMAGE
+          value: gradle:7.5.1-jdk8
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            build -x test
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
 
-{{ include "sonar-cleanup" . | nindent 4 }}
-
-    - name: sast
+    - name: dockerfile-lint
       taskRef:
-        name: sast
+        name: hadolint
       runAfter:
         - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace
 
-{{- include "java-maven-build-common" . | nindent 4 }}
-
-    - name: create-ecr-repository
+    - name: dockerbuild-verify
       taskRef:
-        name: create-ecr-repository
+        name: kaniko
       runAfter:
-        - push
+        - build
+        - dockerfile-lint
       params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
 
 {{ end }}

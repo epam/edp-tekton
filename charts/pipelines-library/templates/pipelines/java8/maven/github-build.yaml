@@ -1,19 +1,16 @@
-{{ if .Values.gerrit.enabled }}
+{{ if .Values.github.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-edp
+  name: github-maven-java8-app-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
+    - name: maven-settings
     - name: ssh-creds
   params:
-    - name: pipelineUrl
-      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
-      type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
@@ -31,20 +28,38 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
-    - name: changeNumber
-      description: Change number from Merge Request
-    - name: patchsetNumber
-      description: Patchset number from Merge Request
   tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
 
     - name: get-version
       taskRef:
@@ -55,23 +70,7 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
-{{ include "sonar-cleanup" . | nindent 4 }}
-
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-{{- include "java-maven-build-common" . | nindent 4 }}
+{{ include "java-maven-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:

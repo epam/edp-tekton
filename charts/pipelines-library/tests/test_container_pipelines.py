@@ -12,17 +12,17 @@ gerrit:
 
     r = helm_template(config)
 
-    assert "gerrit-kaniko-docker-review" in r["pipeline"]
-    assert "gerrit-kaniko-docker-build-default" in r["pipeline"]
-    assert "gerrit-kaniko-docker-build-edp" in r["pipeline"]
+    assert "gerrit-kaniko-docker-lib-review" in r["pipeline"]
+    assert "gerrit-kaniko-docker-lib-build-default" in r["pipeline"]
+    assert "gerrit-kaniko-docker-lib-build-edp" in r["pipeline"]
 
     # ensure pipelines have proper steps
     for buildtool in ['kaniko']:
         for framework in ['docker']:
 
-            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-review"
-            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-build-default"
-            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-build-edp"
+            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-lib-review"
+            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-lib-build-default"
+            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-lib-build-edp"
 
             rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
             assert "fetch-repository" in rt[0]["name"]

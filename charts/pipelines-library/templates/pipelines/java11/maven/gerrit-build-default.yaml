@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-build-default
+  name: gerrit-maven-java11-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

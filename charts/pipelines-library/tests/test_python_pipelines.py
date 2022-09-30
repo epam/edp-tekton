@@ -12,17 +12,17 @@ gerrit:
 
     r = helm_template(config)
 
-    assert "gerrit-python-python-3.8-review" in r["pipeline"]
-    assert "gerrit-python-python-3.8-build-default" in r["pipeline"]
-    assert "gerrit-python-python-3.8-build-edp" in r["pipeline"]
+    assert "gerrit-python-python-3.8-app-review" in r["pipeline"]
+    assert "gerrit-python-python-3.8-app-build-default" in r["pipeline"]
+    assert "gerrit-python-python-3.8-app-build-edp" in r["pipeline"]
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
         for framework in ['python-3.8']:
 
-            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-review"
-            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-build-default"
-            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-build-edp"
+            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-app-review"
+            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-app-build-default"
+            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-app-build-edp"
 
             rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
             assert "fetch-repository" in rt[0]["name"]

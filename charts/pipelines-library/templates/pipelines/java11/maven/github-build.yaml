@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java11-build
+  name: github-maven-java11-app-build
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

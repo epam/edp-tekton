@@ -1,8 +1,8 @@
-{{ if .Values.github.enabled }}
+{{ if .Values.gitlab.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: github-build-template
+  name: gitlab-build-app-template
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -10,6 +10,12 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -23,7 +29,7 @@ spec:
           - pipelineTaskName: kaniko-build
             taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: github-maven-java11-build
+          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
@@ -31,12 +37,10 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.gitrepositoryname)
-          - name: maven-image-version
-            value: "maven:3.8.6-openjdk-11"
         workspaces:
-          - name: maven-settings
+          - name: settings
             configMap:
-              name: custom-maven-settings
+              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:
@@ -48,5 +52,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: github-sshkey
+              secretName: gitlab-sshkey
 {{ end }}

@@ -12,17 +12,17 @@ gerrit:
 
     r = helm_template(config)
 
-    assert "gerrit-codenarc-codenarc-library-review" in r["pipeline"]
-    assert "gerrit-codenarc-codenarc-library-build-default" in r["pipeline"]
-    assert "gerrit-codenarc-codenarc-library-build-edp" in r["pipeline"]
+    assert "gerrit-codenarc-codenarc-lib-review" in r["pipeline"]
+    assert "gerrit-codenarc-codenarc-lib-build-default" in r["pipeline"]
+    assert "gerrit-codenarc-codenarc-lib-build-edp" in r["pipeline"]
 
     # ensure pipelines have proper steps
     for buildtool in ['codenarc']:
         for framework in ['codenarc']:
 
-            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-library-review"
-            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-library-build-default"
-            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-library-build-edp"
+            gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-lib-review"
+            gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-lib-build-default"
+            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-lib-build-edp"
 
             rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
             assert "fetch-repository" in rt[0]["name"]

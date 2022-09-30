@@ -7,7 +7,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
-    - name: github-listener-build
+    - name: github-listener-app-build
       interceptors:
         - ref:
             name: "github"
@@ -30,10 +30,19 @@ spec:
           params:
             - name: "filter"
               value: "extensions.branch_name in ['edp']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: github-binding-build
       template:
-        ref: github-build-template
+        ref: github-build-app-template
 
     - name: github-listener-code-review
       interceptors:
@@ -63,6 +72,15 @@ spec:
               value:
                 - key: branch_name
                   expression: "body.pull_request.head.ref"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: github-binding-review
       template:

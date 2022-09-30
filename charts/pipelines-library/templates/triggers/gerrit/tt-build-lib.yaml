@@ -1,42 +1,47 @@
-{{ if .Values.gitlab.enabled }}
+{{ if .Values.gerrit.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gitlab-build-template
-  labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: gerrit-build-lib-template
 spec:
   params:
     - name: gitrevision
-    - name: gitrepositoryurl
-    - name: gitrepositoryname
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
     - name: buildtool
       description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: cbtype
+      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gitrepositoryname)-build-
+        generateName: $(tt.params.gerritproject)-build-
       spec:
         serviceAccountName: jenkins
-        taskRunSpecs:
-          - pipelineTaskName: create-ecr-repository
-            taskServiceAccountName: edp-kaniko
-          - pipelineTaskName: kaniko-build
-            taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-build-$(tt.params.versioning-type)
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
-            value: $(tt.params.gitrepositoryurl)
+            value: "ssh://edp-ci@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
-            value: $(tt.params.gitrepositoryname)
+            value: $(tt.params.gerritproject)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
         workspaces:
           - name: settings
             configMap:
@@ -52,5 +57,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: gitlab-sshkey
+              secretName: gerrit-ciuser-sshkey
 {{ end }}

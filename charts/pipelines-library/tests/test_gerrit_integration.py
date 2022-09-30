@@ -27,8 +27,8 @@ gerrit:
 
     r = helm_template(config)
 
-    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-go-beego-build-default"]["spec"]["tasks"][1]["params"]
-    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-maven-java11-build-default"]["spec"]["tasks"][1]["params"]
-    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-gradle-java11-review"]["spec"]["finally"][1]["params"]
+    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-go-beego-app-build-default"]["spec"]["tasks"][1]["params"]
+    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-maven-java11-app-build-default"]["spec"]["tasks"][1]["params"]
+    assert {'name': 'GERRIT_PORT', 'value': 777} in r["pipeline"]["gerrit-gradle-java11-app-review"]["spec"]["finally"][1]["params"]
 
-    assert {'name': 'git-source-url', 'value': 'ssh://edp-ci@gerrit:777/$(tt.params.gerritproject)'} in r["triggertemplate"]["gerrit-build-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]
+    assert {'name': 'git-source-url', 'value': 'ssh://edp-ci@gerrit:777/$(tt.params.gerritproject)'} in r["triggertemplate"]["gerrit-build-app-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]

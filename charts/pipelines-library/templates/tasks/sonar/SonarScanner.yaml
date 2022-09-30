@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: sonarqube-scanner-custom
+  name: sonarqube-scanner
   labels:
     app.kubernetes.io/version: "0.2"
   annotations:
@@ -12,7 +12,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    The sonarqube-scanner-custom Task will update parameters in the
+    The sonarqube-scanner Task will update parameters in the
     sonar-project.properties file or create a new sonar-project.properties
     file and put parameters of a sonar project into it.
 

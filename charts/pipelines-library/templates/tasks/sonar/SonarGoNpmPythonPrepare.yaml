@@ -38,7 +38,7 @@ spec:
     - name: SONAR_SOURCES
   steps:
     - name: prepare-files
-      image: bash:5.1.16-alpine3.15
+      image: alpine/git:2.36.2
       workingDir: $(workspaces.source.path)
       env:
         - name: CODEBASE_NAME
@@ -50,23 +50,22 @@ spec:
         - name: PATCHSET_NUMBER
           value: "$(params.PATCHSET_NUMBER)"
       script: |
-        #!/usr/bin/env bash
+        #!/bin/sh
 
         echo "[TEKTON] CODEBASE_NAME : ${CODEBASE_NAME}"
         echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"
         echo "[TEKTON] CHANGE_NUMBER : ${CHANGE_NUMBER}"
         echo "[TEKTON] PATCHSET_NUMBER : ${PATCHSET_NUMBER}"
 
-        apk add --no-cache git=2.34.4-r0
         export LANG=en_US.utf-8
         git config --local core.quotepath false
 
         SONAR_SOURCES="codereviewAnalysisRunDir"
-        mkdir -p ${SONAR_SOURCES}
+        mkdir -p "${SONAR_SOURCES}"
 
         IFS=$'\n'
-        for i in $(git diff --diff-filter=ACMR --name-only origin/${BRANCH_NAME})
-          do cp --parents "$i" ${SONAR_SOURCES}/
+        for i in $(git diff --diff-filter=ACMR --name-only origin/"${BRANCH_NAME}")
+          do cp --parents "$i" "${SONAR_SOURCES}"/
           echo "file for scanner:" "$i"
         done
 

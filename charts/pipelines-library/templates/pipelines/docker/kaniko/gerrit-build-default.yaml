@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-kaniko-docker-build-default
+  name: gerrit-kaniko-docker-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

@@ -1,8 +1,8 @@
-{{ if .Values.gitlab.enabled }}
+{{ if .Values.github.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gitlab-code-review-template
+  name: github-build-app-template
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -10,21 +10,20 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
-    - name: gitfullrepositoryname
-      description: Full Repo name. Used in "gitlab-set-status" step as REPO_PATH_ONLY
-    - name: buildtool
-      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: framework
-      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gitrepositoryname)-review-
+        generateName: $(tt.params.gitrepositoryname)-build-
       spec:
         serviceAccountName: jenkins
+        taskRunSpecs:
+          - pipelineTaskName: create-ecr-repository
+            taskServiceAccountName: edp-kaniko
+          - pipelineTaskName: kaniko-build
+            taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
+          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
@@ -32,12 +31,12 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.gitrepositoryname)
-          - name: gitfullrepositoryname
-            value: $(tt.params.gitfullrepositoryname)
+          - name: maven-image-version
+            value: "maven:3.8.6-openjdk-11"
         workspaces:
-          - name: settings
+          - name: maven-settings
             configMap:
-              name: custom-$(tt.params.buildtool)-settings
+              name: custom-maven-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:
@@ -49,5 +48,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: gitlab-sshkey
+              secretName: github-sshkey
 {{ end }}

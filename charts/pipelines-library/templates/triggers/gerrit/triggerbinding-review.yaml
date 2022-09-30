@@ -17,6 +17,9 @@ spec:
       value: "$(extensions.spec.buildTool)"
     - name: framework
       value: "$(extensions.spec.framework)"
+    # Truncated cbtype type name to reduce string length
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
     - name: targetBranch
       value: "$(body.change.branch)"
     - name: changeNumber

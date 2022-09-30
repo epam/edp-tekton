@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-codenarc-codenarc-library-build-default
+  name: gerrit-codenarc-codenarc-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

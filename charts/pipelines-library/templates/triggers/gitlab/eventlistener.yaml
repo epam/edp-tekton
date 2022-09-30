@@ -7,7 +7,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
-    - name: gitlab-listener-build
+    - name: gitlab-listener-app-build
       interceptors:
         - ref:
             name: "gitlab"
@@ -25,10 +25,17 @@ spec:
               value: "body.object_attributes.action in ['merge']"
         - ref:
             name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: gitlab-binding-build
       template:
-        ref: gitlab-build-template
+        ref: gitlab-build-app-template
 
     - name: gitlab-listener-code-review
       interceptors:
@@ -48,6 +55,13 @@ spec:
               value: "body.object_attributes.action in ['open', 'reopen', 'update']"
         - ref:
             name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: gitlab-binding-review
       template:

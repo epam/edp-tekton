@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-gradle-java11-build-edp
+  name: gerrit-gradle-java11-app-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

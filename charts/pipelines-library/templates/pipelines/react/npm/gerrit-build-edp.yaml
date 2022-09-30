@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-npm-react-build-edp
+  name: gerrit-npm-react-app-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

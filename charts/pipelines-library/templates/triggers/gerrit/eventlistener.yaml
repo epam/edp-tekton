@@ -7,7 +7,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
-    - name: gerrit-listener-build
+    - name: gerrit-listener-app-build
       interceptors:
         - ref:
             name: "cel"
@@ -16,10 +16,65 @@ spec:
               value: "body.change.status in ['MERGED']"
         - ref:
             name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['application']"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: gerrit-binding-build
       template:
-        ref: gerrit-build-template
+        ref: gerrit-build-app-template
+
+    - name: gerrit-listener-lib-build
+      interceptors:
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.change.status in ['MERGED']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['library'] && extensions.spec.framework != 'docker'"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gerrit-binding-build
+      template:
+        ref: gerrit-build-lib-template
+
+    - name: gerrit-listener-container-build
+      interceptors:
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.change.status in ['MERGED']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['library'] && extensions.spec.framework == 'docker'"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gerrit-binding-build
+      template:
+        ref: gerrit-build-container-template
 
     - name: gerrit-listener-code-review
       interceptors:
@@ -30,6 +85,13 @@ spec:
               value: "body.change.status in ['NEW']"
         - ref:
             name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
       bindings:
         - ref: gerrit-binding-review
       template:

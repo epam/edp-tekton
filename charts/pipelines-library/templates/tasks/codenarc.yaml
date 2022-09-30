@@ -6,13 +6,16 @@ metadata:
     app.kubernetes.io/version: "0.2"
   annotations:
     tekton.dev/pipelines.minVersion: "0.12.1"
-    tekton.dev/displayName: Codenarc
+    tekton.dev/displayName: CodeNarc
     tekton.dev/categories: Build Tools
     tekton.dev/tags: build-tool
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This Task can be used to run a Gradle build.
+    This Task can be used to run a Gradle build and a Groovy CodeNarc review.
+    Download the output of the 'codenarc-report' step as logs from Tekton
+    and save it as 'html'.
+    Open the 'html' file in a browser to see the CodeNarc report.
 
   workspaces:
     - name: source

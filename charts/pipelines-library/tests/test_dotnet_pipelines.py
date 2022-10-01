@@ -4,7 +4,7 @@ import sys
 from .helpers import helm_template
 
 
-def test_python_pipelines_gerrit():
+def test_dotnet_pipelines_gerrit():
     config = """
 gerrit:
   enabled: true

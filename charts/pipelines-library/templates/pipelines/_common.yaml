@@ -108,7 +108,7 @@
       value: edp-ci
     - name: GIT_SCRIPT
       value: |
-        git tag -a "$(tasks.get-version.results.VSC_TAG)" -m "Tag is added automatically by CI user"
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
         git push --tags
   workspaces:
     - name: source

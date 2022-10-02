@@ -14,7 +14,7 @@ spec:
   results:
     - name: VERSION
       description: "Application version"
-    - name: VSC_TAG
+    - name: VCS_TAG
       description: "VCS tag"
     - name: IS_TAG
       description: "CodebaseImageStream tag"
@@ -46,15 +46,15 @@ spec:
         BUILD_ID=$(cat $(results.TIMESTAMP.path))
 
         BUILD_VERSION="${VERSION}-${BUILD_ID}"
-        VSC_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
-        IS_TAG=${VSC_TAG}
+        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        IS_TAG=${VCS_TAG}
 
         echo "Application version - ${VERSION}"
-        echo "VCS tag - ${VSC_TAG}"
+        echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
 
         printf "%s" "${VERSION}" > "$(results.VERSION.path)"
-        printf "%s" "${VSC_TAG}" > "$(results.VSC_TAG.path)"
+        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
 
         DEPLOYABLE_MODULE_DIR="."

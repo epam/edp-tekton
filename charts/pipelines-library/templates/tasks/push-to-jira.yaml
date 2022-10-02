@@ -1,0 +1,175 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: push-to-jira
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/displayName: Push-to-Jira
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The push-to-jira Task will create JiraIssueMetadata Custom Resource
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the cr file and project files.
+  params:
+    - name: TICKET_NAME_PATTERN
+      type: string
+    - name: COMMIT_MESSAGE_PATTERN
+      type: string
+    - name: COMMIT_MESSAGE
+      type: string
+    - name: COMMIT_ID
+      type: string
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      type: string
+    - name: CODEBASE_NAME
+      type: string
+    - name: PIPELINE_URL
+      type: string
+    - name: VCS_TAG
+      type: string
+    - name: VERSION
+      type: string
+  steps:
+    - name: push-to-jira
+      image: python:3.10.1-alpine3.15
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: TICKET_NAME_PATTERN
+          value: "$(params.TICKET_NAME_PATTERN)"
+        - name: COMMIT_MESSAGE_PATTERN
+          value: "$(params.COMMIT_MESSAGE_PATTERN)"
+        - name: COMMIT_MESSAGE
+          value: "$(params.COMMIT_MESSAGE)"
+        - name: COMMIT_ID
+          value: "$(params.COMMIT_ID)"
+        - name: JIRA_ISSUE_METADATA_PAYLOAD
+          value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: PIPELINE_URL
+          value: "$(params.PIPELINE_URL)"
+        - name: VCS_TAG
+          value: "$(params.VCS_TAG)"
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import sys
+        import re
+        import json
+        from random import randint
+
+        ticket_message_pattern = os.getenv("TICKET_NAME_PATTERN")
+        commit_message_pattern = os.getenv("COMMIT_MESSAGE_PATTERN")
+        commit_message_with_change_id = os.getenv("COMMIT_MESSAGE")
+        commit_id = os.getenv("COMMIT_ID")
+        jira_issue_metadata_payload = os.getenv("JIRA_ISSUE_METADATA_PAYLOAD")
+        codebase = os.getenv("CODEBASE_NAME")
+        pipeline_url = os.getenv("PIPELINE_URL")
+        vcs_tag = os.getenv("VCS_TAG")
+        version = os.getenv("VERSION")
+
+        print(f"[TEKTON][DEBUG] TICKET_NAME_PATTERN: {ticket_message_pattern}")
+        print(f"[TEKTON][DEBUG] COMMIT_MESSAGE_PATTERN: {commit_message_pattern}")
+        print(f"[TEKTON][DEBUG] COMMIT_MESSAGE: \n{commit_message_with_change_id}")
+        print(f"[TEKTON][DEBUG] COMMIT_ID: {commit_id}")
+        print(f"[TEKTON][DEBUG] JIRA_ISSUE_METADATA_PAYLOAD: {jira_issue_metadata_payload}")
+        print(f"[TEKTON][DEBUG] CODEBASE_NAME: {codebase}")
+        print(f"[TEKTON][DEBUG] PIPELINE_URL: {pipeline_url}")
+        print(f"[TEKTON][DEBUG] VCS_TAG: {vcs_tag}")
+        print(f"[TEKTON][DEBUG] VERSION: {version}")
+        print("")
+
+        def search_pattern(message, pattern):
+            result = re.search(pattern, message)
+            if result == None:
+                print(f"[TEKTON] Message is invalid. The required pattern is {pattern}")
+                sys.exit(1)
+            return result.group()
+
+        def set_params_jira_issue_metadata(metadata_name, commits, tickets, codebase, payload):
+            print("[TEKTON] Getting JiraIssueMetadata CR template")
+            template = {
+              "apiVersion": "v2.edp.epam.com/v1",
+              "kind": "JiraIssueMetadata",
+              "metadata": {
+                "name": "replace"
+              },
+              "spec": {
+                "commits": "replace",
+                "tickets": "replace",
+                "codebaseName": "replace",
+                "payload": "replace"
+              }
+            }
+            print("[TEKTON] JiraIssueMetadata template has been fetched:\n{}".format(json.dumps(template, indent = 4)))
+
+            template["metadata"]["name"] = metadata_name
+            template["spec"]["commits"] = commits
+            template["spec"]["tickets"] = tickets
+            template["spec"]["codebaseName"] = codebase
+            template["spec"]["payload"] = payload
+            print("[TEKTON] JiraIssueMetadata template has been parameterized:\n{}".format(json.dumps(template, indent = 4)))
+
+            return json.dumps(template)
+
+        print(f"[TEKTON] Ticket name pattern has been fetched: {ticket_message_pattern}")
+        print(f"[TEKTON] Commit message to validate has been fetched:\n{commit_message_with_change_id}")
+
+        print("[TEKTON] Getting Ticket number and Commit message")
+        ticket_number = search_pattern(commit_message_with_change_id, ticket_message_pattern)
+        print(f"[TEKTON] Ticket number is {ticket_number}")
+        commit_message = search_pattern(commit_message_with_change_id, commit_message_pattern)
+        print(f"[TEKTON] Commit message was parsed: {commit_message}")
+
+        print("[TEKTON] Preparing Jira Issue Link")
+        linkInfo = {
+            "ticket": ticket_number,
+            "title": f"{commit_message} [{codebase}][{vcs_tag}]",
+            "url": pipeline_url
+        }
+        print("[TEKTON] Issue Link:\n{}".format(json.dumps(linkInfo, indent = 4)))
+
+        values = {
+            "EDP_COMPONENT": codebase,
+            "EDP_VERSION": version,
+            "EDP_SEM_VERSION": re.sub("(-RC|-SNAPSHOT)\.\d", "", version),
+            "EDP_GITTAG": vcs_tag
+        }
+        print("[TEKTON] EDP predefined variables:\n{}".format(json.dumps(values, indent = 4)))
+
+        payload = json.loads(jira_issue_metadata_payload)
+        print("[TEKTON] JiraIssueMetadataPayload of {0} Codebase CR has been fetched:\n{1}".format(codebase, json.dumps(values, indent = 4)))
+
+        if payload == None:
+            payload = { "issuesLinks": [linkInfo] }
+        else:
+            for x in payload:
+                for k in values:
+                    payload[x] = payload[x].replace(k, values[k])
+            payload["issuesLinks"] = [linkInfo]
+
+        random_seed = ''.join(str(randint(0, 9)) for _ in range(8))
+        metadata_name = f"{codebase}-{random_seed}"
+
+        template_json = set_params_jira_issue_metadata(metadata_name, [commit_id], [ticket_number], codebase, json.dumps(payload, indent = 4))
+
+        print("[TEKTON] Writing JiraIssueMetadata template to cr.json file")
+        with open("cr.json", "w") as outfile:
+            outfile.write(template_json)
+
+    - name: kubectl
+      image: bitnami/kubectl:1.25.2
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -e
+        echo "[TEKTON][DEBUG] Trying to create JiraIssueMetadata CR"
+        kubectl apply -f cr.json
+        echo "[TEKTON][DEBUG] JiraIssueMetadata CR has been created"

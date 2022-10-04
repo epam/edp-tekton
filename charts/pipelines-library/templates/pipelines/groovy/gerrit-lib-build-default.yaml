@@ -42,9 +42,6 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
-    - name: enableKakinoBuild
-      description: Enable KanikoBuild stage
-      default: "false"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}

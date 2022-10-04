@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-gradle-java11-review
+  name: gerrit-codenarc-codenarc-library-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -15,7 +15,7 @@ spec:
       default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/sergk/spring-petclinic"
+      default: "https://github.com/epmd-edp/groovy-pipeline-codenarc-codenarc"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -35,7 +35,7 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'groovy-pipeline'
       description: "Project name"
       type: string
     - name: gradle-image-version
@@ -52,52 +52,13 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        name: gradle
-      runAfter:
-        - init-values
-      params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            clean \
-            compileJava \
-            -x test
-      workspaces:
-        - name: gradle-settings
-          workspace: settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        name: gradle
-      runAfter:
-        - compile
-      params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            test \
-            jacocoTestReport
-      workspaces:
-        - name: gradle-settings
-          workspace: settings
-        - name: source
-          workspace: shared-workspace
-
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
     # because the fetch-repository Task fetches only user changes.
     - name: fetch-target-branch
       taskRef:
         name: git-cli
       runAfter:
-        - test
+        - init-values
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -146,6 +107,7 @@ spec:
             -Dsonar.host.url=$(params.SONAR_URL) \
             -Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES) \
             -Dsonar.qualitygate.wait=true \
+            -x compileGroovy \
             sonarqube
       workspaces:
         - name: gradle-settings
@@ -155,7 +117,7 @@ spec:
 
     - name: build
       taskRef:
-        name: gradle
+        name: codenarc
       runAfter:
         - sonar
       params:
@@ -164,44 +126,10 @@ spec:
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            build -x test
+            build -x test -x compileGroovy
       workspaces:
         - name: gradle-settings
           workspace: settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerfile-lint
-      taskRef:
-        name: hadolint
-      runAfter:
-        - fetch-repository
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerbuild-verify
-      taskRef:
-        name: kaniko
-      runAfter:
-        - build
-        - dockerfile-lint
-      params:
-        - name: IMAGE
-          value: "placeholder:latest"
-        - name: EXTRA_ARGS
-          value:
-            - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-lint
-      taskRef:
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      workspaces:
         - name: source
           workspace: shared-workspace
 

@@ -68,6 +68,7 @@ spec:
           echo "file for scanner:" "$i"/
         done
         cp -f build.gradle "${SONAR_SOURCES}"
+        cp -fr gradle/ "${SONAR_SOURCES}"
         for build in $(find . -type d -name 'build')
           do cp --parents -r "${build}" "${SONAR_SOURCES}"
         done

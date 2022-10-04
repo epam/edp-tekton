@@ -35,7 +35,7 @@ spec:
       description: "Project name"
       type: string
     - name: gradle-image-version
-      default: 'gradle:7.5-jdk11'
+      default: 'gradle:7.5.1-jdk11'
       description: "gradle image version"
       type: string
     - name: changeNumber

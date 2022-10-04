@@ -25,6 +25,10 @@ spec:
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
     - name: CODEBASE_NAME
       default: 'dotnet-dotnet-dotnet-3.1'
       description: "Project name"
@@ -137,11 +141,23 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: get-nuget-token
+      taskRef:
+        name: get-nuget-token
+      runAfter:
+        - sonar
+      params:
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: push
       taskRef:
         name: dotnet
       runAfter:
-        - sonar
+        - get-nuget-token
       params:
         - name: BASE_IMAGE
           value: $(params.dotnet-sdk-image-version)

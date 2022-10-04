@@ -1,0 +1,100 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-nuget-token
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/displayName: GetNugetToken
+spec:
+  description: >-
+    This Task can be used to get a nuget token from Nexus.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the dotnet project.
+  params:
+    - name: NUGET_TOKEN_FILE
+      default: 'nuget-token'
+    - name: NEXUS_SCRIPT_NAME
+      default: 'get-nuget-token'
+    - name: NEXUS_URL
+      type: string
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI Nexus secret
+      default: nexus-ci.user
+  results:
+    - name: NUGET_TOKEN_FILE
+      description: ""
+  steps:
+    - name: get-nuget-token
+      image: python:3.10.1-alpine3.15
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: NUGET_TOKEN_FILE
+          value: "$(params.NUGET_TOKEN_FILE)"
+        - name: NEXUS_SCRIPT_NAME
+          value: "$(params.NEXUS_SCRIPT_NAME)"
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: NEXUS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: NEXUS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+        - name: RESULT_NUGET_TOKEN_FILE_PATH
+          value: $(results.NUGET_TOKEN_FILE.path)
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import http.client
+        import base64
+        import json
+
+        nuget_token_file = os.getenv("NUGET_TOKEN_FILE")
+        nexus_script_name = os.getenv("NEXUS_SCRIPT_NAME")
+        nexus_url = os.getenv("NEXUS_URL")
+        nexus_user = os.getenv("NEXUS_USERNAME")
+        nexus_passwd = os.getenv("NEXUS_PASSWORD")
+        result_nuget_token_file_path = os.getenv("RESULT_NUGET_TOKEN_FILE_PATH")
+        with open(result_nuget_token_file_path, "w") as outfile:
+            outfile.write(nuget_token_file)
+
+        print(f"[TEKTON][DEBUG] NUGET_TOKEN_FILE: {nuget_token_file}")
+        print(f"[TEKTON][DEBUG] NEXUS_SCRIPT_NAME: {nexus_script_name}")
+        print(f"[TEKTON][DEBUG] NEXUS_URL: {nexus_url}")
+        print(f"[TEKTON][DEBUG] RESULT_NUGET_TOKEN_FILE_PATH: {result_nuget_token_file_path}")
+
+        headers = {
+            "Authorization":"Basic {}".format(base64.b64encode(bytes(f"{nexus_user}:{nexus_passwd}","utf-8")).decode("ascii")),
+            "Content-Type": "application/json"
+        }
+        data = {
+            "name": nexus_user
+        }
+
+        status_url = f"/service/rest/v1/script/{nexus_script_name}/run"
+        conn = http.client.HTTPConnection(nexus_url.replace("http://", ""))
+
+        conn.request(
+            "POST",
+            status_url,
+            body=json.dumps(data),
+            headers=headers)
+        resp = conn.getresponse()
+        resp_data = resp.read()
+
+        resp_data_json = json.loads(resp_data)
+        result_data_json = json.loads(resp_data_json["result"])
+        nuget_api_key = result_data_json["nuGetApiKey"]
+        print(nuget_api_key)
+
+        with open(nuget_token_file, "w") as outfile:
+            outfile.write(nuget_api_key)

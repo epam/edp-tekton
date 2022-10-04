@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-gradle-java11-build-default
+  name: gerrit-codenarc-codenarc-library-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -15,12 +15,12 @@ spec:
       default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/sergk/spring-petclinic"
+      default: "https://github.com/epmd-edp/groovy-pipeline-codenarc-codenarc"
       description: git url to clone
       type: string
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
-      default: "edp"
+      default: "master"
       type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
@@ -31,7 +31,7 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-gradle'
+      default: 'groovy-pipeline'
       description: "Project name"
       type: string
     - name: gradle-image-version
@@ -42,25 +42,37 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: enableKakinoBuild
+      description: Enable KanikoBuild stage
+      default: "false"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
-        name: get-version-gradle-default
+        name: get-version-edp
       runAfter:
         - init-values
       params:
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+
+    - name: update-build-number
+      taskRef:
+        name: update-build-number-gradle
+      runAfter:
+        - get-version
+      params:
         - name: BASE_IMAGE
           value: $(params.gradle-image-version)
+        - name: BRANCH_VERSION
+          value: $(tasks.get-version.results.BRANCH_VERSION)
+        - name: BUILD_ID
+          value: $(tasks.get-version.results.BUILD_ID)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -81,64 +93,11 @@ spec:
         - name: BRANCH
           value: $(params.git-source-revision)
 
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: compile
-      taskRef:
-        name: gradle
-      runAfter:
-        - get-version
-      params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            clean \
-            compileJava \
-            -x test
-      workspaces:
-        - name: gradle-settings
-          workspace: settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        name: gradle
-      runAfter:
-        - compile
-      params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            test \
-            jacocoTestReport
-      workspaces:
-        - name: gradle-settings
-          workspace: settings
-        - name: source
-          workspace: shared-workspace
-
     - name: sonar
       taskRef:
         name: gradle
       runAfter:
-        - test
+        - sonar-cleanup
       params:
         - name: BASE_IMAGE
           value: $(params.gradle-image-version)
@@ -149,6 +108,7 @@ spec:
             -Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
             -Dsonar.host.url=$(params.SONAR_URL) \
             -Dsonar.qualitygate.wait=true \
+            -x compileGroovy \
             sonarqube
       workspaces:
         - name: gradle-settings
@@ -158,7 +118,7 @@ spec:
 
     - name: build
       taskRef:
-        name: gradle
+        name: codenarc
       runAfter:
         - sonar
       params:
@@ -167,41 +127,42 @@ spec:
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            build -x test
+            build -x test -x compileGroovy
       workspaces:
         - name: gradle-settings
           workspace: settings
         - name: source
           workspace: shared-workspace
 
-    - name: push
+    - name: git-tag
       taskRef:
-        name: gradle
+        name: git-cli
       runAfter:
         - build
       params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
           value: |
-            -Dorg.gradle.internal.publish.checksums.insecure=true \
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-snapshots \
-            publish
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
 
-    - name: create-ecr-repository
+    - name: update-cbis
       taskRef:
-        name: create-ecr-repository
+        name: update-cbis
       runAfter:
-        - push
+        - git-tag
       params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.VERSION)
 
 {{ end }}

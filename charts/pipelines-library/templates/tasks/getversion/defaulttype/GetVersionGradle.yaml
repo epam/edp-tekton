@@ -6,7 +6,7 @@ spec:
   description:
   workspaces:
     - name: source
-      description: The workspace consisting of maven project.
+      description: The workspace consisting of gradle project.
     - name: gradle-settings
       description: >-
         The workspace consisting of the custom gradle settings
@@ -20,10 +20,10 @@ spec:
       description: Nexus url
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "gradle:7.5-jdk11"
+      default: "gradle:7.5.1-jdk11"
     - name: ci-secret
       type: string
-      description: name of the secret holding the CI maven secret
+      description: name of the secret holding the CI gradle secret
       default: nexus-ci.user
   results:
     - name: VERSION
@@ -37,9 +37,8 @@ spec:
       description: Current timestamp
   steps:
     - name: get-timestamp
-      image: bash:5.1.16-alpine3.15
+      image: alpine:3.16.2
       script: |
-        #!/usr/bin/env bash
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"
         echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)

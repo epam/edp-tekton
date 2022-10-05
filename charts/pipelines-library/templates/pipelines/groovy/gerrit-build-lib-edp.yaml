@@ -73,22 +73,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: sonar-cleanup
-      taskRef:
-        name: sonar-cleanup
-      runAfter:
-        - init-values
-      params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
-        - name: patchsetNumber
-          value: $(params.patchsetNumber)
-        - name: changeNumber
-          value: $(params.changeNumber)
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH
-          value: $(params.git-source-revision)
+{{ include "sonar-cleanup" . | nindent 4 }}
 
     - name: sonar
       taskRef:

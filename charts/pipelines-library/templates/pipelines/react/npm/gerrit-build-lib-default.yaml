@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-npm-react-app-build-edp
+  name: gerrit-npm-react-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -47,25 +47,14 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-npm-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        name: update-build-number-npm
-      runAfter:
-        - get-version
-      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
-        - name: BRANCH_VERSION
-          value: $(tasks.get-version.results.BRANCH_VERSION)
-        - name: BUILD_ID
-          value: $(tasks.get-version.results.BUILD_ID)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -76,7 +65,7 @@ spec:
       taskRef:
         name: npm
       runAfter:
-        - update-build-number
+        - get-version
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
@@ -95,15 +84,6 @@ spec:
 
 {{ include "reactjs-npm-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ end }}

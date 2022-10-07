@@ -1,0 +1,170 @@
+{{- define "reactjs-npm-build-common" -}}
+- name: test
+  taskRef:
+    name: npm
+  runAfter:
+    - compile
+  params:
+    - name: BASE_IMAGE
+      value: $(params.npm-image-version)
+    - name: EXTRA_COMMANDS
+      value: |
+        npm run test:coverage
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    name: sonarqube-scanner
+  runAfter:
+    - test
+  params:
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_URL)
+    - name: SONAR_PROJECT_KEY
+      value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: build
+  taskRef:
+    name: npm
+  runAfter:
+    - sonar
+  params:
+    - name: BASE_IMAGE
+      value: $(params.npm-image-version)
+    - name: EXTRA_COMMANDS
+      value: |
+        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+        npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+        npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+        npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+        npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+        npm install
+        npm run build:prod
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: push
+  taskRef:
+    name: npm
+  runAfter:
+    - build
+  params:
+    - name: BASE_IMAGE
+      value: $(params.npm-image-version)
+    - name: EXTRA_COMMANDS
+      value: |
+        apk add curl
+        token=$(curl -s -H 'Accept: application/json' -H Content-Type:application/json -X PUT --data '{"name": "'"${CI_USERNAME}"'", "password": "'"${CI_PASSWORD}"'"}' http://nexus:8081/repository/edp-npm-snapshots/-/user/org.couchdb.user:${CI_USERNAME} | grep -oE 'NpmToken\.[0-9a-zA-Z-]+')
+        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+        npm set registry http://nexus:8081/repository/edp-npm-snapshots/ --location project
+        npm set _auth=$upBase64
+        npm set //http://nexus:8081/repository/edp-npm-snapshots/:_authToken $token
+        npm set 'email=edp-ci@edp.local'
+        npm publish
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "reactjs-npm-review-common" -}}
+- name: compile
+  taskRef:
+    name: npm
+  runAfter:
+    - init-values
+  params:
+    - name: BASE_IMAGE
+      value: $(params.npm-image-version)
+    - name: EXTRA_COMMANDS
+      value: |
+        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+        npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+        npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+        npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+        npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+        npm install
+        npm run build:clean
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: test
+  taskRef:
+    name: npm
+  runAfter:
+    - compile
+  params:
+    - name: BASE_IMAGE
+      value: $(params.npm-image-version)
+    - name: EXTRA_COMMANDS
+      value: |
+        npm run test:coverage
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+# The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+# because the fetch-repository Task fetches only user changes.
+- name: fetch-target-branch
+  taskRef:
+    name: git-cli
+  runAfter:
+    - test
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: sonar-prepare-files
+  taskRef:
+    name: sonar-prepare-files-general
+  runAfter:
+    - fetch-target-branch
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.targetBranch)
+    - name: CHANGE_NUMBER
+      value: $(params.changeNumber)
+    - name: PATCHSET_NUMBER
+      value: $(params.patchsetNumber)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    name: sonarqube-scanner
+  runAfter:
+    - sonar-prepare-files
+  params:
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_URL)
+    - name: SONAR_PROJECT_KEY
+      value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+    - name: SONAR_PROJECT_NAME
+      value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+    - name: SONAR_SOURCES
+      value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}

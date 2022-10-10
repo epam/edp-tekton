@@ -70,7 +70,7 @@ tekton:
 
     assert "cronjob" not in r
     assert "tekton-resource-pruner" not in r["serviceaccount"]
-    assert "role" not in r
+    assert "tekton-resource-pruner" not in r["role"]
     assert "tekton-resource-pruner" not in r["rolebinding"]
 
 

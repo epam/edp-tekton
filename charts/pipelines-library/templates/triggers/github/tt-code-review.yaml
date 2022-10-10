@@ -18,7 +18,7 @@ spec:
       metadata:
         generateName: $(tt.params.gitrepositoryname)-review-
       spec:
-        serviceAccountName: jenkins
+        serviceAccountName: tekton
         pipelineRef:
           name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:

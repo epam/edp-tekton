@@ -30,7 +30,7 @@ spec:
       metadata:
         generateName: $(tt.params.gerritproject)-review-
       spec:
-        serviceAccountName: jenkins
+        serviceAccountName: tekton
         pipelineRef:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:

@@ -1,0 +1,46 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: tekton-pipeline-role
+rules:
+  # allow to get configs for EDP from configmap
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+
+  # baseline operations with codebase and cbis
+  - apiGroups:
+      - 'v2.edp.epam.com'
+    resources:
+      - codebasebranches
+      - codebasebranches/status
+      - codebaseimagestreams
+      - codebases
+    verbs:
+      - get
+      - update
+      - patch
+      - list
+
+  # we need to create jira issues
+  - apiGroups:
+      - 'v2.edp.epam.com'
+    resources:
+      - jiraissuemetadatas
+    verbs:
+      - create
+
+  # we need to get url for docker registry from edpcomponent
+  - apiGroups:
+      - 'v1.edp.epam.com'
+    resources:
+      - edpcomponents
+    verbs:
+      - get

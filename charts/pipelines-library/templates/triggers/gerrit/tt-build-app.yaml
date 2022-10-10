@@ -28,7 +28,7 @@ spec:
       metadata:
         generateName: $(tt.params.gerritproject)-build-
       spec:
-        serviceAccountName: jenkins
+        serviceAccountName: tekton
         taskRunSpecs:
           - pipelineTaskName: create-ecr-repository
             taskServiceAccountName: edp-kaniko

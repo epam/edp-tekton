@@ -14,5 +14,5 @@ spec:
       value: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
   pipelineRef:
     name: github-create-webhooks
-  serviceAccountName: jenkins
+  serviceAccountName: tekton
 {{ end }}

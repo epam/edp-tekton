@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-python-python-3.8-app-review
+  name: gerrit-python-python-3.8-lib-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -52,40 +52,6 @@ spec:
 {{- include "gerrit-review-start" . | nindent 4 }}
 
 {{ include "python-review-common" . | nindent 4 }}
-
-    - name: dockerfile-lint
-      taskRef:
-        name: hadolint
-      runAfter:
-        - fetch-repository
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerbuild-verify
-      taskRef:
-        name: kaniko
-      runAfter:
-        - sonar
-        - dockerfile-lint
-      params:
-        - name: IMAGE
-          value: "placeholder:latest"
-        - name: EXTRA_ARGS
-          value:
-            - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-lint
-      taskRef:
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      workspaces:
-        - name: source
-          workspace: shared-workspace
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

@@ -28,13 +28,16 @@ spec:
     - name: NEXUS_URL
       default: 'http://nexus.{{ .Release.Namespace }}:8081'
       description: Nexus url
+    - name: NEXUS_FOLDER
+      default: 'edp-python-releases'
+      description: The folder to push artifacts to
       type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
       type: string
     - name: python-image-version
-      default: 'python:3.8-slim'
+      default: 'python:3.8-alpine3.16'
       description: "python image version"
       type: string
     - name: changeNumber
@@ -77,45 +80,13 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: test
-      taskRef:
-        name: python
-      runAfter:
-        - compile
-      params:
-        - name: BASE_IMAGE
-          value: $(params.python-image-version)
-        - name: EXTRA_COMMANDS
-          value: |
-            set -ex
-            pip3 install .
-            [ -f run_service.py ] && python run_service.py &
-            python setup.py pytest
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: sonar
-      taskRef:
-        name: sonarqube-scanner
-      runAfter:
-        - test
-      params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
-        - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-        - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "python-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:
         name: create-ecr-repository
       runAfter:
-        - sonar
+        - push
       params:
         - name: REPO_NAME
           value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"

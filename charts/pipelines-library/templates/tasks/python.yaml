@@ -25,7 +25,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: "python:3.8-slim@sha256:36eb12ba900acfdcc6f1351c89b695c806d54439d584b2900017db453801cd40"
+      default: "python:3.8-alpine3.16"
       description: The python image you want to use.
     - name: ci-secret
       type: string
@@ -52,8 +52,8 @@ spec:
         cat <<EOP >> /etc/pip.conf
         [global]
         trusted-host = nexus
-        index = http://$CI_USERNAME:$CI_PASSWORD@nexus:8081/repository/edp-python-group/pypi
-        index-url = http://$CI_USERNAME:$CI_PASSWORD@nexus:8081/repository/edp-python-group/simple
+        index = http://${CI_USERNAME}:${CI_PASSWORD}@nexus:8081/repository/edp-python-group/pypi
+        index-url = http://${CI_USERNAME}:${CI_PASSWORD}@nexus:8081/repository/edp-python-group/simple
         EOP
 
         cat <<EOF > ~/.pypirc
@@ -62,8 +62,8 @@ spec:
            nexus
         [nexus]
         repository = http://nexus:8081/repository/edp-python-group/
-        username = $CI_USERNAME
-        password = $CI_PASSWORD
+        username = ${CI_USERNAME}
+        password = ${CI_PASSWORD}
         EOF
 
         $(params.EXTRA_COMMANDS)

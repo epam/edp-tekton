@@ -42,7 +42,7 @@ spec:
         set -e
         semgrep --config=auto . --json --output $(params.reportDataPath)
     - name: push-report
-      image: alpine:3.15.4
+      image: curlimages/curl:7.85.0
       workingDir: $(workspaces.source.path)
       script: |
         set -e
@@ -58,7 +58,6 @@ spec:
         reportDataPushToJira="false"
         reportDataEnvironment="Development"
         reportDataTestTitle="SAST"
-        apk add curl
         curl -X POST "${DD_URL}/api/v2/import-scan/" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \

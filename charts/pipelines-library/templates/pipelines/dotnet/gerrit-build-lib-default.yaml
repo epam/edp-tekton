@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-dotnet-dotnet-3.1-app-build-edp
+  name: gerrit-dotnet-dotnet-3.1-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -47,21 +47,12 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-dotnet-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        name: update-build-number-dotnet
-      runAfter:
-        - get-version
-      params:
-        - name: VERSION
-          value: $(tasks.get-version.results.VERSION)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -72,7 +63,7 @@ spec:
       taskRef:
         name: dotnet
       runAfter:
-        - update-build-number
+        - get-version
       params:
         - name: BASE_IMAGE
           value: $(params.dotnet-sdk-image-version)
@@ -86,15 +77,6 @@ spec:
 
 {{- include "dotnet-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ end }}

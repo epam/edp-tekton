@@ -23,21 +23,19 @@ spec:
       description: Current timestamp
   steps:
     - name: get-timestamp
-      image: bash:5.1.16-alpine3.15
+      image: alpine:3.16.2
       script: |
-        #!/usr/bin/env bash
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"
         echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
 
     - name: get-version
-      image: bash:5.1.16-alpine3.15
+      image: alpine:3.16.2
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"
       workingDir: $(workspaces.source.path)
       script: |
-        #!/usr/bin/env bash
         set -e
 
         apk add --no-cache grep

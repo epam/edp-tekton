@@ -13,7 +13,7 @@ spec:
       description: "Version"
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "bash:5.1.16-alpine3.15"
+      default: "alpine:3.16"
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)
@@ -22,10 +22,11 @@ spec:
         - name: VERSION
           value: "$(params.VERSION)"
       script: |
-        #!/usr/bin/env bash
         set -ex
 
         VERSION_LOWER_CASE=$(echo "${VERSION}" | tr '[:upper:]' '[:lower:]')
-        if [[ ! ${VERSION_LOWER_CASE} == *"snapshot"* ]]; then
-            sed -i 's/\(__version__\s*=\s*\).*/\1"${VERSION}"/' version/__init__.py
+        NOT_SNAPSHOT=$(printf '%s' "${VERSION_LOWER_CASE}" | sed 's/snapshot//g')
+        if [ "${VERSION_LOWER_CASE}" != "${NOT_SNAPSHOT}" ]; then
+            sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
         fi
+        cat version/__init__.py

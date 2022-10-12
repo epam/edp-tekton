@@ -59,7 +59,7 @@ spec:
       securityContext:
         runAsUser: 0
     - name: write-url
-      image: docker.io/library/bash:5.2.0@sha256:553746463135eaae3f2c9bde1c4185ffc18efb24c7b75b8b096ffd6d3e63f2bf
+      image: alpine:3.16
       script: |
         set -e
         image="$(params.IMAGE)"

@@ -23,13 +23,10 @@
     - test
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: 'epamedp/tekton-dotnet:0.1.0-SNAPSHOT.3'
     - name: EXTRA_COMMANDS
       value: |
-        apk add openjdk11=11.0.16.1_p1-r0 nodejs-current=18.9.1-r0
-        export PATH="$PATH:/root/.dotnet/tools"
         slnFilename=$(ls *.sln)
-        dotnet tool install --global dotnet-sonarscanner --version 5.8.0
         dotnet sonarscanner begin /d:sonar.host.url=$(params.SONAR_URL) \
           /d:sonar.login=${SONAR_TOKEN} \
           /d:sonar.qualitygate.wait=true \
@@ -155,13 +152,10 @@
     - sonar-prepare-files
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: 'epamedp/tekton-dotnet:0.1.0-SNAPSHOT.3'
     - name: EXTRA_COMMANDS
       value: |
-        apk add openjdk11=11.0.16.1_p1-r0 nodejs-current=18.9.1-r0
-        export PATH="$PATH:/root/.dotnet/tools"
         slnFilename=$(ls *.sln)
-        dotnet tool install --global dotnet-sonarscanner --version 5.8.0
         dotnet sonarscanner begin /d:sonar.host.url=$(params.SONAR_URL) \
           /d:sonar.login=${SONAR_TOKEN} \
           /d:sonar.qualitygate.wait=true \

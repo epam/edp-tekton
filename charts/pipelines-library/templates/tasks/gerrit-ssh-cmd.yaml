@@ -46,7 +46,7 @@ spec:
       default: "/tekton/home"
   steps:
     - name: ssh
-      image: docker.io/sergk/ssh-client:1@sha256:1de1fca8e15ddbb0e06d8178ea4e6df57c64e9a6413ff66d48fc4e03a697cfa2
+      image: 'epamedp/tekton-openssh-client:0.1.0-SNAPSHOT.2'
       env:
         - name: GERRIT_HOST
           value: "$(params.GERRIT_HOST)"

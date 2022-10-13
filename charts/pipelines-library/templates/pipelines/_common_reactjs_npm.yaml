@@ -53,7 +53,7 @@
 
 - name: push
   taskRef:
-    name: npm
+    name: npm-push
   runAfter:
     - build
   params:
@@ -61,12 +61,11 @@
       value: $(params.npm-image-version)
     - name: EXTRA_COMMANDS
       value: |
-        apk add curl
-        token=$(curl -s -H 'Accept: application/json' -H Content-Type:application/json -X PUT --data '{"name": "'"${CI_USERNAME}"'", "password": "'"${CI_PASSWORD}"'"}' http://nexus:8081/repository/edp-npm-snapshots/-/user/org.couchdb.user:${CI_USERNAME} | grep -oE 'NpmToken\.[0-9a-zA-Z-]+')
+        token=$(grep -oE 'NpmToken\.[0-9a-zA-Z-]+' "${NEXUS_TOKEN}")
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
         npm set registry http://nexus:8081/repository/edp-npm-snapshots/ --location project
-        npm set _auth=$upBase64
-        npm set //http://nexus:8081/repository/edp-npm-snapshots/:_authToken $token
+        npm set _auth=${upBase64}
+        npm set //http://nexus:8081/repository/edp-npm-snapshots/:_authToken ${token}
         npm set 'email=edp-ci@edp.local'
         npm publish
   workspaces:

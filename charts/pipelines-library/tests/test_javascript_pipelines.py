@@ -60,7 +60,7 @@ gerrit:
                 assert "build" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 assert "push" in btd[9]["name"]
-                assert buildtool == btd[9]["taskRef"]["name"]
+                assert "npm-push" == btd[9]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btd[10]["name"]
                     assert "kaniko-build" in btd[11]["name"]
@@ -88,7 +88,7 @@ gerrit:
                 assert "build" in btedp[9]["name"]
                 assert buildtool == btedp[9]["taskRef"]["name"]
                 assert "push" in btedp[10]["name"]
-                assert buildtool == btedp[10]["taskRef"]["name"]
+                assert "npm-push" == btedp[10]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btedp[11]["name"]
                     assert "kaniko-build" in btedp[12]["name"]

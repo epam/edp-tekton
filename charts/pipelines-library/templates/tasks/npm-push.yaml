@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: npm
+  name: npm-push
   labels:
     app.kubernetes.io/version: "0.1"
   annotations:
@@ -11,14 +11,13 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This task can be used to run npm goals on a project.
-
-    This task can be used to run npm goals on a project
-    where package.json is present and has some pre-defined
-    npm scripts.
+    This task can be used to push npm packages to nexus.
   workspaces:
     - name: source
   params:
+    - name: NEXUS_TOKEN
+      description: ""
+      default: '/workspace/nexus_token'
     - name: PATH_CONTEXT
       type: string
       default: "."
@@ -34,10 +33,34 @@ spec:
       description: name of the secret holding the CI npm secret
       default: nexus-ci.user
   steps:
-    - name: npm
+    - name: get-token
+      image: curlimages/curl:7.85.0
+      env:
+        - name: NEXUS_TOKEN
+          value: "$(params.NEXUS_TOKEN)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      script: |
+        set -e
+        curl -s -H 'Accept: application/json' -H Content-Type:application/json -X \
+            PUT --data '{"name": "'"${CI_USERNAME}"'", "password": "'"${CI_PASSWORD}"'"}' \
+            http://nexus:8081/repository/edp-npm-snapshots/-/user/org.couchdb.user:${CI_USERNAME} \
+            > "${NEXUS_TOKEN}"
+        ls -l "${NEXUS_TOKEN}"
+    - name: npm-push
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
+        - name: NEXUS_TOKEN
+          value: "$(params.NEXUS_TOKEN)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

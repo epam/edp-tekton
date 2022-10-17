@@ -1,5 +1,4 @@
 # GitHub, Create WebHooks for Build and Code-Review Pipelines
-{{ if .Values.github.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -15,4 +14,3 @@ spec:
   pipelineRef:
     name: github-create-webhooks
   serviceAccountName: tekton
-{{ end }}

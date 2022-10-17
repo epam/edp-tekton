@@ -1,5 +1,4 @@
 # GitLab, Create WebHooks for Build and Code-Review Pipelines
-{{ if .Values.gitlab.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
@@ -15,4 +14,3 @@ spec:
   pipelineRef:
     name: gitlab-create-webhooks
   serviceAccountName: tekton
-{{ end }}

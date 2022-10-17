@@ -17,6 +17,8 @@ spec:
       value: "$(extensions.spec.buildTool)"
     - name: framework
       value: "$(extensions.spec.framework)"
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
     - name: versioning-type
       value: "$(extensions.spec.versioning.type)"
 {{ end }}

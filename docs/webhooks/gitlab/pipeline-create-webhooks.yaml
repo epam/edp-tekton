@@ -1,10 +1,7 @@
-{{ if .Values.gitlab.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: gitlab-create-webhooks
-  labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
     - name: GitLabDomain
@@ -25,4 +22,4 @@ spec:
           value: $(params.GitLabRepo)
         - name: ExternalDomain
           value: $(params.ExternalDomain)
-{{ end }}
+

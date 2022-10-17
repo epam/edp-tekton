@@ -14,6 +14,8 @@ spec:
       description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: cbtype
+      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
@@ -52,5 +54,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: gitlab-sshkey
+              secretName: {{ .Values.gitlab.webhook.existingSecret }}
 {{ end }}

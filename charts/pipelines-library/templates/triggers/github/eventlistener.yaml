@@ -14,8 +14,8 @@ spec:
           params:
             - name: "secretRef"
               value:
-                secretName: github-webhook-secret
-                secretKey: secret
+                secretName: {{ .Values.github.webhook.existingSecret }}
+                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
             - name: "eventTypes"
               value: ["push"]
         - ref:
@@ -51,8 +51,8 @@ spec:
           params:
             - name: "secretRef"
               value:
-                secretName: github-webhook-secret
-                secretKey: secret
+                secretName: {{ .Values.github.webhook.existingSecret }}
+                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
             - name: "eventTypes"
               value: ["pull_request"]
         - ref:

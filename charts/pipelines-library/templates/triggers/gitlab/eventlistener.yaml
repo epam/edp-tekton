@@ -14,8 +14,8 @@ spec:
           params:
             - name: "secretRef"
               value:
-                secretName: gitlab-webhook-secret
-                secretKey: secret
+                secretName: {{ .Values.gitlab.webhook.existingSecret }}
+                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:
@@ -44,8 +44,8 @@ spec:
           params:
             - name: "secretRef"
               value:
-                secretName: gitlab-webhook-secret
-                secretKey: secret
+                secretName: {{ .Values.gitlab.webhook.existingSecret }}
+                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:

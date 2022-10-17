@@ -53,9 +53,9 @@ spec:
         - name: "REPO_FULL_NAME"
           value: "$(params.gitfullrepositoryname)"
         - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: "gitlab-webhook-secret"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
         - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: "token"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
         - name: "SHA"
           value: "$(params.git-source-revision)"
         - name: "TARGET_URL"
@@ -137,38 +137,11 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: sonar
-      taskRef:
-        name: maven
-      runAfter:
-        - test
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
-            - '-Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
-            - '-Dsonar.qualitygate.wait=true'
-            - '-Dsonar.host.url=$(params.SONAR_URL)'
-            - verify
-            - sonar:sonar
-      workspaces:
-        - name: maven-settings
-          workspace: settings
-        - name: source
-          workspace: shared-workspace
-
     - name: build
       taskRef:
         name: maven
       runAfter:
-        - sonar
+        - test
       params:
         - name: MAVEN_IMAGE
           value: $(params.maven-image-version)
@@ -235,13 +208,13 @@ spec:
         - name: "STATE"
           value: "failed"
         - name: "GITLAB_HOST_URL"
-          value: "git.epam.com"
+          value: "{{ .Values.gitlab.host }}"
         - name: "REPO_FULL_NAME"
           value: "$(params.gitfullrepositoryname)"
         - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: "gitlab-webhook-secret"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
         - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: "token"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
         - name: "SHA"
           value: "$(params.git-source-revision)"
         - name: "TARGET_URL"
@@ -264,13 +237,13 @@ spec:
         - name: "STATE"
           value: "success"
         - name: "GITLAB_HOST_URL"
-          value: "git.epam.com"
+          value: "{{ .Values.gitlab.host }}"
         - name: "REPO_FULL_NAME"
           value: "$(params.gitfullrepositoryname)"
         - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: "gitlab-webhook-secret"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
         - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: "token"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
         - name: "SHA"
           value: "$(params.git-source-revision)"
         - name: "TARGET_URL"

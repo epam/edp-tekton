@@ -63,9 +63,9 @@ spec:
         - name: AUTH_TYPE
           value: Token
         - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
+          value: {{ .Values.github.webhook.existingSecret }}
         - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
         - name: SHA
           value: $(params.gitsha)
         - name: TARGET_URL
@@ -225,9 +225,9 @@ spec:
         - name: AUTH_TYPE
           value: Token
         - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
+          value: {{ .Values.github.webhook.existingSecret }}
         - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
         - name: SHA
           value: $(params.gitsha)
         - name: TARGET_URL
@@ -250,9 +250,9 @@ spec:
         - name: AUTH_TYPE
           value: Token
         - name: GITHUB_TOKEN_SECRET_NAME
-          value: github-webhook-secret
+          value: {{ .Values.github.webhook.existingSecret }}
         - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
         - name: SHA
           value: $(params.gitsha)
         - name: TARGET_URL

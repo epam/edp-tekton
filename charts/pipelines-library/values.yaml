@@ -25,22 +25,27 @@ gerrit:
 
 github:
   enabled: false
-  accountName: "GitHub Account Name"
-  repositoryName: "GitHub Repository Name"
-  webhookSecret:
-    token: "123"
-    secretString: "random-string-data"
+  webhook:
+    # Do not change existingSecret (github-configuration) unless it is expected. This value is aligned with codebase-operator logic
+    # -- Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator
+    existingSecret: github-configuration
+    secretKeys:
+      tokenKey: token
+      secretKey: secretString
 
 gitlab:
   enabled: false
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: git.epam.com
-  repositoryName: "epmd-edp/temp/tekton-petclinic"
-  webhookSecret:
-    # -- Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
-    token: "generated_on_gitlab_side"
-    # -- Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
-    secretString: "random-string-data-123"
+  webhook:
+    # Do not change existingSecret (gitlab-configuration) unless it is expected. This value is aligned with codebase-operator logic
+    # -- Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator
+    existingSecret: gitlab-configuration
+    secretKeys:
+      # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
+      tokenKey: token
+      # -- Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
+      secretKey: secretString
 
 tekton:
   # Pruner provides auto clean up feature for the Tekton resources

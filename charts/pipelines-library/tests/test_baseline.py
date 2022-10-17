@@ -33,6 +33,8 @@ global:
   dnsWildCard: "example.com"
 gitlab:
   enabled: true
+github:
+  enabled: false
     """
 
     el_Name = "el-gitlab-listener"
@@ -49,6 +51,8 @@ global:
   dnsWildCard: "example.com"
 github:
   enabled: true
+gitlab:
+  enabled: false
     """
 
     el_Name = "el-github-listener"

@@ -8,6 +8,10 @@ def test_gerrit_is_disabled():
     config = """
 gerrit:
   enabled: false
+github:
+  enabled: false
+gitlab:
+  enabled: false
     """
 
     r = helm_template(config)

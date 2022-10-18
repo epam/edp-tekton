@@ -13,7 +13,7 @@ gerrit:
     r = helm_template(config)
 
     # ensure pipelines have proper steps
-    for buildtool in ['maven', 'gradle']:
+    for buildtool in ['gradle']:
         for framework in ['java8', 'java11']:
             for cbtype in ['app', 'lib']:
 
@@ -68,12 +68,13 @@ gerrit:
                     assert buildtool == btd[8]["taskRef"]["name"]
                     assert "build" in btd[9]["name"]
                     assert buildtool == btd[9]["taskRef"]["name"]
-                    assert "push" in btd[10]["name"]
-                    assert buildtool == btd[10]["taskRef"]["name"]
-                    assert "create-ecr-repository" in btd[11]["name"]
-                    assert "kaniko-build" in btd[12]["name"]
-                    assert "git-tag" in btd[13]["name"]
-                    assert "update-cbis" in btd[14]["name"]
+                    assert "get-nexus-repository-url" in btd[10]["name"]
+                    assert "push" in btd[11]["name"]
+                    assert buildtool == btd[11]["taskRef"]["name"]
+                    assert "create-ecr-repository" in btd[12]["name"]
+                    assert "kaniko-build" in btd[13]["name"]
+                    assert "git-tag" in btd[14]["name"]
+                    assert "update-cbis" in btd[15]["name"]
                 else:
                     assert "compile" in btd[5]["name"]
                     assert buildtool == btd[5]["taskRef"]["name"]
@@ -83,9 +84,10 @@ gerrit:
                     assert buildtool == btd[7]["taskRef"]["name"]
                     assert "build" in btd[8]["name"]
                     assert buildtool == btd[8]["taskRef"]["name"]
-                    assert "push" in btd[9]["name"]
-                    assert buildtool == btd[9]["taskRef"]["name"]
-                    assert "git-tag" in btd[10]["name"]
+                    assert "get-nexus-repository-url" in btd[9]["name"]
+                    assert "push" in btd[10]["name"]
+                    assert buildtool == btd[10]["taskRef"]["name"]
+                    assert "git-tag" in btd[11]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -112,12 +114,13 @@ gerrit:
                     assert buildtool == btedp[idx+5]["taskRef"]["name"]
                     assert "build" in btedp[idx+6]["name"]
                     assert buildtool == btedp[idx+6]["taskRef"]["name"]
-                    assert "push" in btedp[idx+7]["name"]
-                    assert buildtool == btedp[idx+7]["taskRef"]["name"]
-                    assert "create-ecr-repository" in btedp[idx+8]["name"]
-                    assert "kaniko-build" in btedp[idx+9]["name"]
-                    assert "git-tag" in btedp[idx+10]["name"]
-                    assert "update-cbis" in btedp[idx+11]["name"]
+                    assert "get-nexus-repository-url" in btedp[idx+7]["name"]
+                    assert "push" in btedp[idx+8]["name"]
+                    assert buildtool == btedp[idx+8]["taskRef"]["name"]
+                    assert "create-ecr-repository" in btedp[idx+9]["name"]
+                    assert "kaniko-build" in btedp[idx+10]["name"]
+                    assert "git-tag" in btedp[idx+11]["name"]
+                    assert "update-cbis" in btedp[idx+12]["name"]
                 else:
                     assert "compile" in btedp[idx+2]["name"]
                     assert buildtool == btedp[idx+2]["taskRef"]["name"]
@@ -127,6 +130,7 @@ gerrit:
                     assert buildtool == btedp[idx+4]["taskRef"]["name"]
                     assert "build" in btedp[idx+5]["name"]
                     assert buildtool == btedp[idx+5]["taskRef"]["name"]
-                    assert "push" in btedp[idx+6]["name"]
-                    assert buildtool == btedp[idx+6]["taskRef"]["name"]
-                    assert "git-tag" in btedp[idx+7]["name"]
+                    assert "get-nexus-repository-url" in btedp[idx+6]["name"]
+                    assert "push" in btedp[idx+7]["name"]
+                    assert buildtool == btedp[idx+7]["taskRef"]["name"]
+                    assert "git-tag" in btedp[idx+8]["name"]

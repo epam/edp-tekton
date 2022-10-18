@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-build-number-maven
+spec:
+  description: >-
+    This Task can be used to update an application version.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+    - name: maven-settings
+      description: >-
+        The workspace consisting of the custom maven settings
+        provided by the user.
+  params:
+    - name: NEXUS_URL
+      type: string
+      description: "Nexus url"
+    - name: IS_RELEASE_BRANCH
+      type: string
+    - name: BRANCH_VERSION
+      type: string
+      description: "Branch version"
+    - name: BUILD_ID
+      type: string
+      description: "Version"
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: IS_RELEASE_BRANCH
+          value: "$(params.IS_RELEASE_BRANCH)"
+        - name: BRANCH_VERSION
+          value: "$(params.BRANCH_VERSION)"
+        - name: BUILD_ID
+          value: "$(params.BUILD_ID)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      script: |
+        set -ex
+
+        if [ "${IS_RELEASE_BRANCH}" = "true" ] ; then
+            version="${BRANCH_VERSION}.${BUILD_ID}"
+        else
+            version="${BRANCH_VERSION}"
+        fi
+
+        /usr/bin/mvn \
+        -s \
+        $(workspaces.maven-settings.path)/settings.xml \
+        -B \
+        -Dartifactory.baseUrl=${NEXUS_URL} \
+        -Dartifactory.releasePath=edp-maven-releases \
+        -Dartifactory.snapshotsPath=edp-maven-snapshots \
+        -Dartifactory.groupPath=edp-maven-group \
+        versions:set \
+        versions:commit \
+        -DnewVersion=${version}

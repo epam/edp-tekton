@@ -58,18 +58,29 @@
     - name: source
       workspace: shared-workspace
 
+- name: get-nexus-repository-url
+  taskRef:
+    name: get-nexus-repository-url
+  runAfter:
+    - build
+  params:
+    - name: VERSION
+      value: $(tasks.get-version.results.VERSION)
+    - name: NEXUS_URL
+      value: $(params.NEXUS_URL)
+
 - name: push
   taskRef:
     name: gradle
   runAfter:
-    - build
+    - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
       value: $(params.gradle-image-version)
     - name: EXTRA_ARGS
       value: |
         -Dorg.gradle.internal.publish.checksums.insecure=true \
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-snapshots \
+        -PnexusMavenRepositoryUrl=$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL) \
         publish
   workspaces:
     - name: gradle-settings
@@ -149,6 +160,8 @@
       value: $(params.CODEBASE_NAME)
     - name: BRANCH_NAME
       value: $(params.targetBranch)
+    - name: NORMALIZED_BRANCH
+      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
     - name: CHANGE_NUMBER
       value: $(params.changeNumber)
     - name: PATCHSET_NUMBER

@@ -27,6 +27,10 @@ spec:
       description: "Versioning type of codebase"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Regexp pattern for commit-validation"
+    - name: NORMALIZED_BRANCH
+      description: "Branch name without '/' symbols and lowercase"
+    - name: RESULT_IMAGE_NAME
+      description: "Codebase name with only letters and dashes"
   steps:
     - name: get-values
       image: $(params.BASE_IMAGE)
@@ -45,7 +49,13 @@ spec:
         tenantName=$(kubectl get cm edp-config -o jsonpath='{.data.edp_name}')
         echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
 
-        echo "${CODEBASE}-${BRANCH}" | tr -d "\n" | tee $(results.CODEBASEBRANCH_NAME.path)
+        normalizedBranch=$(echo ${BRANCH//[^\(?!.)a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')
+        printf "%s" "${normalizedBranch}" > "$(results.NORMALIZED_BRANCH.path)"
+
+        echo "${CODEBASE}-${normalizedBranch}" | tr -d "\n" | tee $(results.CODEBASEBRANCH_NAME.path)
+
+        resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
+        printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"
 
         versioningType=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.versioning.type}')
         echo "${versioningType}" | tr -d '\n' | tee $(results.VERSIONING_TYPE.path)

@@ -31,6 +31,8 @@ spec:
         #!/usr/bin/env bash
         set -e
 
+        # replace '/' with '-'
+        CODEBASEBRANCH_NAME=${CODEBASEBRANCH_NAME//\//-}
         # get current BUILD ID
         BUILD_ID=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.status.build})
         # and increment it

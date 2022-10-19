@@ -94,7 +94,6 @@ spec:
         resp_data_json = json.loads(resp_data)
         result_data_json = json.loads(resp_data_json["result"])
         nuget_api_key = result_data_json["nuGetApiKey"]
-        print(nuget_api_key)
 
         with open(nuget_token_file, "w") as outfile:
             outfile.write(nuget_api_key)

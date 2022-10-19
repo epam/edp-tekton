@@ -39,11 +39,22 @@
     - name: source
       workspace: shared-workspace
 
+- name: get-nexus-repository-url
+  taskRef:
+    name: get-nexus-repository-url-dotnet
+  runAfter:
+    - sonar
+  params:
+    - name: VERSION
+      value: $(tasks.get-version.results.VERSION)
+    - name: NEXUS_URL
+      value: $(params.NEXUS_URL)
+
 - name: get-nuget-token
   taskRef:
     name: get-nuget-token
   runAfter:
-    - sonar
+    - get-nexus-repository-url
   params:
     - name: NEXUS_URL
       value: $(params.NEXUS_URL)
@@ -65,8 +76,10 @@
         slnFilename=$(ls *.sln)
         nugetPackagesPath="/tmp/project-nupkgs/"
         dotnet pack ${slnFilename} --no-build --output ${nugetPackagesPath} "-p:PackageVersion=$(tasks.get-version.results.VERSION)"
+        set +x
         nugetApiKey=$(cat $(tasks.get-nuget-token.results.NUGET_TOKEN_FILE))
-        dotnet nuget push ${nugetPackagesPath} -k ${nugetApiKey} -s http://nexus:8081/repository/edp-dotnet-hosted/
+        set -x
+        dotnet nuget push ${nugetPackagesPath} -k ${nugetApiKey} -s $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -137,6 +150,8 @@
       value: $(params.CODEBASE_NAME)
     - name: BRANCH_NAME
       value: $(params.targetBranch)
+    - name: NORMALIZED_BRANCH
+      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
     - name: CHANGE_NUMBER
       value: $(params.changeNumber)
     - name: PATCHSET_NUMBER
@@ -156,12 +171,12 @@
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
+        # /d:sonar.qualitygate.wait=true \
         dotnet sonarscanner begin /d:sonar.host.url=$(params.SONAR_URL) \
           /d:sonar.login=${SONAR_TOKEN} \
-          /d:sonar.qualitygate.wait=true \
-          /k:$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-          /n:$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-          /d:sonar.cs.opencover.reportsPaths=./*Tests*/*.xml
+          /k:$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+          /n:$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+          /d:sonar.cs.opencover.reportsPaths=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)/*Tests*/*.xml
         dotnet build ${sln_filename}
         dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
   workspaces:

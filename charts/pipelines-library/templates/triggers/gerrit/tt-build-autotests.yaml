@@ -1,0 +1,61 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: gerrit-build-autotests-template
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: cbtype
+      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.gerritproject)-build-
+      spec:
+        serviceAccountName: tekton
+        pipelineRef:
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
+        params:
+          - name: git-source-url
+            value: "ssh://edp-ci@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.gerritproject)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
+        workspaces:
+          - name: settings
+            configMap:
+              name: custom-$(tt.params.buildtool)-settings
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: gerrit-ciuser-sshkey
+{{ end }}

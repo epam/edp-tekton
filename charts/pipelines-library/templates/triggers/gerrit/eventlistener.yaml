@@ -7,6 +7,29 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
+    - name: gerrit-listener-autotests-build
+      interceptors:
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.change.status in ['MERGED']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['autotests']"
+            - name: "overlays"
+              value:
+                - key: cbtype_short
+                  expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gerrit-binding-build
+      template:
+        ref: gerrit-build-autotests-template
+
     - name: gerrit-listener-app-build
       interceptors:
         - ref:

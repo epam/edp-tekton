@@ -1,0 +1,104 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: run-tests-for-autotests
+spec:
+  description: >-
+    This Task can be used to run tests for autotests.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+    - name: maven-settings
+      description: >-
+        The workspace consisting of the custom maven settings
+        provided by the user.
+  params:
+    - name: NEXUS_URL
+      type: string
+      description: "Nexus url"
+    - name: TEST_TYPE
+      description: "Test type command in file run.json"
+      default: "codereview"
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+  results:
+    - name: COMMAND
+      description: ""
+  steps:
+    - name: check-run-json-file
+      image: "python:3.9.14-alpine3.16"
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -ex
+
+        if [ -f "run.json" ]; then
+            echo "[TEKTON][INFO] run.json file exists in the project."
+        else
+            echo "[TEKTON][ERROR] There is no run.json file in the project. Can't define command to run autotests."
+            exit 1
+        fi
+
+    - name: get-command
+      image: "python:3.10.1-alpine3.15"
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: RESULT_COMMAND_FILE_PATH
+          value: $(results.COMMAND.path)
+        - name: TEST_TYPE
+          value: $(params.TEST_TYPE)
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import json
+        import sys
+
+        type_test = os.getenv("TEST_TYPE")
+        result_command_file_path = os.getenv("RESULT_COMMAND_FILE_PATH")
+
+        print(f"[TEKTON] '{type_test}' type was chosen")
+
+        with open('run.json') as json_file:
+          data = json.load(json_file)
+
+          try:
+              command=data[type_test]
+          except KeyError:
+              sys.exit(f"[TEKTON] Haven't found '{type_test}' command in file run.json. It's mandatory to be specified, please check")
+
+          print(f"[TEKTON] The command was received: {command}")
+          with open(result_command_file_path, "w") as outfile:
+              outfile.write(command)
+
+    - name: run-tests
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: RESULT_COMMAND_FILE_PATH
+          value: $(results.COMMAND.path)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      script: |
+        $(cat ${RESULT_COMMAND_FILE_PATH}) \
+        -B \
+        -Dartifactory.baseUrl=${NEXUS_URL} \
+        -Dartifactory.releasePath=edp-maven-releases \
+        -Dartifactory.snapshotsPath=edp-maven-snapshots \
+        -Dartifactory.groupPath=edp-maven-group \
+        --settings \
+        $(workspaces.maven-settings.path)/settings.xml

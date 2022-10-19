@@ -56,26 +56,47 @@ spec:
       script: |
         #!/bin/sh
 
+        set -x
+
         echo "[TEKTON] CODEBASE_NAME : ${CODEBASE_NAME}"
         echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"
         echo "[TEKTON] CHANGE_NUMBER : ${CHANGE_NUMBER}"
         echo "[TEKTON] PATCHSET_NUMBER : ${PATCHSET_NUMBER}"
         echo "[TEKTON] NORMALIZED_BRANCH : ${NORMALIZED_BRANCH}"
 
-        export LANG=en_US.utf-8
-        git config --local core.quotepath false
-
         SONAR_SOURCES="codereviewAnalysisRunDir"
         mkdir -p "${SONAR_SOURCES}"
 
-        IFS=$'\n'
-        for i in $(git diff --diff-filter=ACMR --name-only origin/"${BRANCH_NAME}")
-          do cp --parents "$i" "${SONAR_SOURCES}"/
-          echo "file for scanner:" "$i"/
-        done
-        cp -f pom.xml "${SONAR_SOURCES}"/
-        [ -d "src/test/" ] &&  cp --parents -r src/test/ "${SONAR_SOURCES}" || echo "Directory src/test/ not found."
-        cp --parents -r target/ "${SONAR_SOURCES}"
+        if [ -f "target" ]; then
+            echo "[TEKTON][DEBUG] Project with usual structure"
+            export LANG=en_US.utf-8
+            git config --local core.quotepath false
+            IFS=$'\n'
+            for i in $(git diff --diff-filter=ACMR --name-only origin/"${BRANCH_NAME}")
+                do cp --parents "$i" "${SONAR_SOURCES}"/
+                echo "file for scanner:" "$i"/
+            done
+            cp -f pom.xml "${SONAR_SOURCES}"/
+            [ -d "src/test/" ] &&  cp --parents -r src/test/ "${SONAR_SOURCES}" || echo "Directory src/test/ not found."
+            cp --parents -r target/ "${SONAR_SOURCES}"
+        else
+            echo "[TEKTON][DEBUG] Multi-module project"
+            mkdir -p "${SONAR_SOURCES}/unittests"
+            IFS=$'\n'
+            for i in $(git diff --diff-filter=ACMR --name-only origin/"${BRANCH_NAME}")
+                do cp --parents "$i" "${SONAR_SOURCES}"/
+                echo "file for scanner:" "$i"/
+            done
+            for directory in $(find . -type d -name "test")
+                do cp --parents -r ${directory} ${SONAR_SOURCES}/unittests
+            done
+            for poms in $(find . -type f -name "pom.xml")
+                do cp --parents -r ${poms} ${SONAR_SOURCES}
+            done
+            for targets in $(find . -type d -name "target")
+                do cp --parents -r ${targets} ${SONAR_SOURCES}
+            done
+        fi
 
         SONAR_PROJECT_KEY="${CODEBASE_NAME}-${NORMALIZED_BRANCH}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"
 

@@ -29,10 +29,6 @@ spec:
       default: 'http://nexus.{{ .Release.Namespace }}:8081'
       description: Nexus url
       type: string
-    - name: NEXUS_FOLDER
-      default: 'edp-python-snapshots'
-      description: The folder to push artifacts to
-      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"

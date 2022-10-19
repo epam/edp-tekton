@@ -112,6 +112,8 @@ spec:
           value: $(params.CODEBASE_NAME)
         - name: BRANCH_NAME
           value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
         - name: CHANGE_NUMBER
           value: $(params.changeNumber)
         - name: PATCHSET_NUMBER

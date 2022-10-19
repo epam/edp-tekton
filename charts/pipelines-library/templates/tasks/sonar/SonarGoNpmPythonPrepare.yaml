@@ -25,6 +25,9 @@ spec:
     - name: BRANCH_NAME
       type: string
       description: Target branch name
+    - name: NORMALIZED_BRANCH
+      type: string
+      description: "Branch name without '/' symbols and lowercase"
     - name: CHANGE_NUMBER
       type: string
       default: ""
@@ -45,6 +48,8 @@ spec:
           value: "$(params.CODEBASE_NAME)"
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"
+        - name: NORMALIZED_BRANCH
+          value: "$(params.NORMALIZED_BRANCH)"
         - name: CHANGE_NUMBER
           value: "$(params.CHANGE_NUMBER)"
         - name: PATCHSET_NUMBER
@@ -56,6 +61,7 @@ spec:
         echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"
         echo "[TEKTON] CHANGE_NUMBER : ${CHANGE_NUMBER}"
         echo "[TEKTON] PATCHSET_NUMBER : ${PATCHSET_NUMBER}"
+        echo "[TEKTON] NORMALIZED_BRANCH : ${NORMALIZED_BRANCH}"
 
         export LANG=en_US.utf-8
         git config --local core.quotepath false
@@ -69,7 +75,7 @@ spec:
           echo "file for scanner:" "$i"
         done
 
-        SONAR_PROJECT_KEY="${CODEBASE_NAME}-${BRANCH_NAME}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"
+        SONAR_PROJECT_KEY="${CODEBASE_NAME}-${NORMALIZED_BRANCH}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"
 
         printf "%s" "${SONAR_PROJECT_KEY}" > "$(results.SONAR_PROJECT_KEY.path)"
         printf "%s" "${SONAR_SOURCES}" > "$(results.SONAR_SOURCES.path)"

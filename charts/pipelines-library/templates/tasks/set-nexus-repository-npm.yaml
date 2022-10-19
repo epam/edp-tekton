@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-nexus-repository-url-npm
+spec:
+  description: |
+    This Task gets the version of an application if the version contains the 'SNAPSHOT' substring in the name
+    then edp-npm-snapshots Nexus repository is used else edp-npm-releases Nexus repository is used.
+
+  params:
+    - name: VERSION
+      type: string
+      description: "Application version"
+    - name: NEXUS_URL
+      type: string
+      description: "Nexus url"
+  results:
+    - name: NEXUS_REPOSITORY_URL
+      description: "Parameter has '<NEXUS_URL>/repository/edp-npm-snapshots' or '<NEXUS_URL>/repository/edp-npm-releases' value"
+  steps:
+    - name: get-nexus-repository-url
+      image: alpine:3.16.2
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+      script: |
+        set -ex
+
+        # Get Nexus repository name
+        versionLowerCase=$(echo ${VERSION} | tr '[:upper:]' '[:lower:]')
+
+        if [[ "$versionLowerCase" == *"snapshot"* ]]; then
+            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-npm-snapshots"
+        else
+            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-npm-releases"
+        fi
+
+        echo "Nexus repository url- ${NEXUS_REPOSITORY_URL}"
+        printf "%s" "${NEXUS_REPOSITORY_URL}" > "$(results.NEXUS_REPOSITORY_URL.path)"

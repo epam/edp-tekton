@@ -28,10 +28,6 @@ spec:
     - name: NEXUS_URL
       default: 'http://nexus.{{ .Release.Namespace }}:8081'
       description: Nexus url
-    - name: NEXUS_FOLDER
-      default: 'edp-python-releases'
-      description: The folder to push artifacts to
-      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"

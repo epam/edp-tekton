@@ -142,8 +142,8 @@ spec:
       runAfter:
         - git-tag
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.VERSION)
 

@@ -55,6 +55,28 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
+    - name: update-build-number
+      taskRef:
+        name: update-build-number-maven
+      runAfter:
+        - get-version
+      params:
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
+        - name: BRANCH_VERSION
+          value: $(tasks.get-version.results.BRANCH_VERSION)
+        - name: BUILD_ID
+          value: $(tasks.get-version.results.BUILD_ID)
+        - name: BASE_IMAGE
+          value: $(params.maven-image-version)
+      workspaces:
+        - name: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
 {{ include "sonar-cleanup" . | nindent 4 }}
 
     - name: sast
@@ -68,6 +90,28 @@ spec:
         - name: reportDataEngagementName
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
       workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - update-build-number
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 

@@ -80,6 +80,28 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - get-version
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
 {{- include "java-maven-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository

@@ -51,11 +51,22 @@
     - name: source
       workspace: shared-workspace
 
+- name: get-nexus-repository-url
+  taskRef:
+    name: get-nexus-repository-url-npm
+  runAfter:
+    - build
+  params:
+    - name: VERSION
+      value: $(tasks.get-version.results.VERSION)
+    - name: NEXUS_URL
+      value: $(params.NEXUS_URL)
+
 - name: push
   taskRef:
     name: npm-push
   runAfter:
-    - build
+    - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
       value: $(params.npm-image-version)
@@ -63,9 +74,9 @@
       value: |
         token=$(grep -oE 'NpmToken\.[0-9a-zA-Z-]+' "${NEXUS_TOKEN}")
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        npm set registry http://nexus:8081/repository/edp-npm-snapshots/ --location project
+        npm set registry $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/ --location project
         npm set _auth=${upBase64}
-        npm set //http://nexus:8081/repository/edp-npm-snapshots/:_authToken ${token}
+        npm set //$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/:_authToken ${token}
         npm set 'email=edp-ci@edp.local'
         npm publish
   workspaces:
@@ -141,6 +152,8 @@
       value: $(params.CODEBASE_NAME)
     - name: BRANCH_NAME
       value: $(params.targetBranch)
+    - name: NORMALIZED_BRANCH
+      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
     - name: CHANGE_NUMBER
       value: $(params.changeNumber)
     - name: PATCHSET_NUMBER

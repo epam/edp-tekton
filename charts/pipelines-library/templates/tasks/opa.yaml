@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: opa
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run opa tests on a project.
+  workspaces:
+    - name: source
+  params:
+    - name: PROJECT_DIR
+      description: The directory containing opa files
+      type: string
+      default: "."
+    - name: OPA_RESULTS
+      description: ""
+      default: '/workspace/opa_results'
+    - name: JUNIT_SCRIPT
+      description: ""
+      default: '/workspace/opa_test_to_junit.py'
+    - name: EXTRA_COMMANDS
+      type: string
+    - name: BASE_IMAGE
+      type: string
+      default: "openpolicyagent/opa:0.45.0-debug"
+      description: The opa image.
+  steps:
+    - name: opa-results-json
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      env:
+        - name: OPA_RESULTS
+          value: "$(params.OPA_RESULTS)"
+      script: |
+        #!/busybox/sh
+        set -e
+        opa test --bundle ./ --format json > "${OPA_RESULTS}"
+        cat "${OPA_RESULTS}"
+    - name: download-converter
+      image: curlimages/curl:7.85.0
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      env:
+        - name: JUNIT_SCRIPT
+          value: "$(params.JUNIT_SCRIPT)"
+      script: |
+        set -e
+        curl -fsSL https://raw.githubusercontent.com/open-policy-agent/contrib/main/junit/opa_test_to_junit.py \
+            -o "${JUNIT_SCRIPT}"
+        cat "${JUNIT_SCRIPT}"
+    - name: convert-to-xml
+      image: 'python:3.10.8-alpine3.16'
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      env:
+        - name: OPA_RESULTS
+          value: "$(params.OPA_RESULTS)"
+        - name: JUNIT_SCRIPT
+          value: "$(params.JUNIT_SCRIPT)"
+      script: |
+        set -e
+        $(params.EXTRA_COMMANDS)

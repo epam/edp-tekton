@@ -31,7 +31,7 @@ github:
   webhook:
     # Do not change existingSecret (github-configuration) unless it is expected. This value is aligned with codebase-operator logic
     # -- Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator
-    existingSecret: github-configuration
+    existingSecret: github.com-config
     secretKeys:
       tokenKey: token
       secretKey: secretString

@@ -25,7 +25,7 @@ A Helm chart for EDP Tekton Pipelines
 | gerrit.enabled | bool | `true` | Deploy Gerrit related components. Default: true |
 | gerrit.sshPort | int | `30003` | Gerrit port |
 | github.enabled | bool | `false` |  |
-| github.webhook.existingSecret | string | `"github-configuration"` | Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator |
+| github.webhook.existingSecret | string | `"github.com-config"` | Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator |
 | github.webhook.secretKeys.secretKey | string | `"secretString"` |  |
 | github.webhook.secretKeys.tokenKey | string | `"token"` |  |
 | gitlab.enabled | bool | `false` |  |

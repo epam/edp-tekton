@@ -2,13 +2,13 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java8-app-build
+  name: github-maven-java11-app-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
+    - name: settings
     - name: ssh-creds
   params:
     - name: git-source-url
@@ -28,11 +28,11 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java8-maven'
+      default: 'java11-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-8-slim'
+      default: 'maven:3.8.6-openjdk-11-slim'
       description: "maven image version"
       type: string
   tasks:
@@ -70,7 +70,65 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
 
-{{ include "java-maven-build-common" . | nindent 4 }}
+    - name: update-build-number
+      taskRef:
+        name: update-build-number-maven
+      runAfter:
+        - get-version
+      params:
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
+        - name: BRANCH_VERSION
+          value: $(tasks.get-version.results.BRANCH_VERSION)
+        - name: BUILD_ID
+          value: $(tasks.get-version.results.BUILD_ID)
+        - name: BASE_IMAGE
+          value: $(params.maven-image-version)
+      workspaces:
+        - name: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: sast
+      taskRef:
+        name: sast
+      runAfter:
+        - fetch-repository
+      params:
+        - name: reportDataProductName
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: reportDataEngagementName
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - update-build-number
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+{{- include "java-maven-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:

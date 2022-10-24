@@ -38,4 +38,4 @@ github:
     sm = r["eventlistener"]["github-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
 
     assert "secretString" == sr["secretKey"] == sm["secretKey"]
-    assert "github-configuration" == sr["secretName"] == sm["secretName"]
+    assert "github.com-config" == sr["secretName"] == sm["secretName"]

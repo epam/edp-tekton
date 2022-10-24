@@ -2,13 +2,13 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java11-app-build
+  name: github-maven-java11-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
+    - name: settings
     - name: ssh-creds
   params:
     - name: git-source-url
@@ -63,12 +63,21 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-maven-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: BASE_IMAGE
+          value: $(params.maven-image-version)
+      workspaces:
+        - name: maven-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
 
     - name: sast
       taskRef:
@@ -81,6 +90,28 @@ spec:
         - name: reportDataEngagementName
           value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
       workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: compile
+      taskRef:
+        name: maven
+      runAfter:
+        - get-version
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
+      workspaces:
+        - name: maven-settings
+          workspace: settings
         - name: source
           workspace: shared-workspace
 

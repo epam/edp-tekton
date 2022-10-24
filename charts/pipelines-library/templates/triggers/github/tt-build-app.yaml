@@ -10,6 +10,14 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: cbtype
+      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -31,12 +39,10 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.gitrepositoryname)
-          - name: maven-image-version
-            value: "maven:3.8.6-openjdk-11"
         workspaces:
-          - name: maven-settings
+          - name: settings
             configMap:
-              name: custom-maven-settings
+              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

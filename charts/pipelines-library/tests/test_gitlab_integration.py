@@ -9,6 +9,8 @@ def test_gitlab_is_disabled():
     config = """
 gerrit:
   enabled: false
+github:
+  enabled: false
 gitlab:
   enabled: false
     """

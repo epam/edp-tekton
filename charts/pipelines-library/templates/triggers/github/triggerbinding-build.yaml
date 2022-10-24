@@ -8,9 +8,18 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(extensions.branch_name)
+      value: "$(extensions.branch_name)"
     - name: gitrepositoryurl
-      value: $(body.repository.ssh_url)
+      value: "$(body.repository.ssh_url)"
     - name: gitrepositoryname
-      value: $(body.repository.name)
+      value: "$(body.repository.name)"
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    # Truncated cbtype type name to reduce string length
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
+    - name: versioning-type
+      value: "$(extensions.spec.versioning.type)"
 {{ end }}

@@ -29,7 +29,7 @@ spec:
             name: "cel"
           params:
             - name: "filter"
-              value: "extensions.branch_name in ['edp']"
+              value: "extensions.branch_name in ['edp','main','master']"
         - ref:
             name: "edp"
         - ref:
@@ -64,7 +64,7 @@ spec:
             name: "cel"
           params:
             - name: "filter"
-              value: "body.pull_request.base.ref in ['edp']"
+              value: "body.pull_request.base.ref in ['edp','main','master']"
         - ref:
             name: "cel"
           params:

@@ -17,4 +17,11 @@ spec:
       value: $(body.repository.full_name)
     - name: gitsha
       value: $(body.pull_request.head.sha)
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    # Truncated cbtype type name to reduce string length
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
 {{ end }}

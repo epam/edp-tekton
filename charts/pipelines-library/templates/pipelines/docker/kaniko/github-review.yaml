@@ -1,0 +1,147 @@
+{{ if .Values.github.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-kaniko-docker-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/container-kaniko-docker"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+  tasks:
+
+    - name: github-set-pending-status
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build has started"
+        - name: STATE
+          value: "pending"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: {{ .Values.github.webhook.existingSecret }}
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        name: kaniko
+      runAfter:
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+  finally:
+    - name: github-set-success-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build was successful"
+        - name: STATE
+          value: "success"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: {{ .Values.github.webhook.existingSecret }}
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+
+    - name: github-set-failure-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Build has failed"
+        - name: STATE
+          value: "failure"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: {{ .Values.github.webhook.existingSecret }}
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+{{ end }}

@@ -102,7 +102,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 }
 
 func getRepoName(r *triggersv1.InterceptorRequest) (string, error) {
-	_, isGitHubEvent := r.Header["X-GitHub-Event"]
+	_, isGitHubEvent := r.Header["X-Github-Event"]
 	_, isGitLabEvent := r.Header["X-Gitlab-Event"]
 
 	if isGitHubEvent || isGitLabEvent {

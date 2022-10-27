@@ -97,20 +97,20 @@ gerrit:
                 else:
                     assert "git-tag" in btedp[11]["name"]
 
-def test_python_pipelines_gerrit():
+def test_python_pipelines_github():
     config = """
 github:
   enabled: true
     """
 
     r = helm_template(config)
+    vcs = "github"
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
         for framework in ['python-3.8']:
-            for cbtype in ['app']:
+            for cbtype in ['app', 'lib']:
 
-                vcs = "github"
                 github_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 github_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
                 github_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
@@ -126,9 +126,10 @@ github:
                 assert "compile" in rt[3]["name"]
                 assert "test" in rt[4]["name"]
                 assert "sonar" in rt[5]["name"]
-                assert "dockerfile-lint" in rt[6]["name"]
-                assert "dockerbuild-verify" in rt[7]["name"]
-                assert "helm-lint" in rt[8]["name"]
+                if cbtype == "app":
+                    assert "dockerfile-lint" in rt[6]["name"]
+                    assert "dockerbuild-verify" in rt[7]["name"]
+                    assert "helm-lint" in rt[8]["name"]
 
                 assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
@@ -148,10 +149,13 @@ github:
                 assert "get-nexus-repository-url-python" == btd[6]["taskRef"]["name"]
                 assert "push" in btd[7]["name"]
                 assert buildtool == btd[7]["taskRef"]["name"]
-                assert "create-ecr-repository" in btd[8]["name"]
-                assert "kaniko-build" in btd[9]["name"]
-                assert "git-tag" in btd[10]["name"]
-                assert "update-cbis" in btd[11]["name"]
+                if cbtype == "app":
+                    assert "create-ecr-repository" in btd[8]["name"]
+                    assert "kaniko-build" in btd[9]["name"]
+                    assert "git-tag" in btd[10]["name"]
+                    assert "update-cbis" in btd[11]["name"]
+                if cbtype == "lib":
+                    assert "git-tag" in btd[8]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -171,8 +175,10 @@ github:
                 assert "get-nexus-repository-url-python" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
-                assert "create-ecr-repository" in btedp[9]["name"]
-                assert "kaniko-build" in btedp[10]["name"]
-                assert "git-tag" in btedp[11]["name"]
-                assert "update-cbis" in btedp[12]["name"]
-
+                if cbtype == "app":
+                    assert "create-ecr-repository" in btedp[9]["name"]
+                    assert "kaniko-build" in btedp[10]["name"]
+                    assert "git-tag" in btedp[11]["name"]
+                    assert "update-cbis" in btedp[12]["name"]
+                if cbtype == "lib":
+                    assert "git-tag" in btedp[9]["name"]

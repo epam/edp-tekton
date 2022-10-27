@@ -71,7 +71,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			name: "success github payload",
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"repository": {"name": "demo"}}`,
-				Header:  map[string][]string{"X-GitHub-Event": {"data"}},
+				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
 			want: &triggersv1.InterceptorResponse{
@@ -111,7 +111,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			name: "failed to unmarshal github payload",
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"repository": `,
-				Header:  map[string][]string{"X-GitHub-Event": {"data"}},
+				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
 			want: interceptors.Failf(codes.InvalidArgument, "error"),
@@ -120,7 +120,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			name: "no repository name in github payload",
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"repository": {"field": "demo"}}`,
-				Header:  map[string][]string{"X-GitHub-Event": {"data"}},
+				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
 			want: interceptors.Failf(codes.InvalidArgument, "error"),

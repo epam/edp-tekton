@@ -35,6 +35,8 @@ spec:
         - ref:
             name: "cel"
           params:
+            - name: "filter"
+              value: "extensions.spec.type in ['application']"
             - name: "overlays"
               value:
               - key: cbtype_short
@@ -43,6 +45,45 @@ spec:
         - ref: github-binding-build
       template:
         ref: github-build-app-template
+
+    - name: github-listener-lib-build
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: {{ .Values.github.webhook.existingSecret }}
+                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+            - name: "eventTypes"
+              value: ["push"]
+        - ref:
+            name: cel
+          params:
+            - name: "overlays"
+              value:
+                - key: branch_name
+                  expression: "body.ref.split('/')[2]"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.branch_name in ['edp','main','master']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['library'] && extensions.spec.framework != 'docker'"
+            - name: "overlays"
+              value:
+                - key: cbtype_short
+                  expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: github-binding-build
+      template:
+        ref: github-build-lib-template
 
     - name: github-listener-container-build
       interceptors:

@@ -7,6 +7,45 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
+    - name: github-listener-autotests-build
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: {{ .Values.github.webhook.existingSecret }}
+                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+            - name: "eventTypes"
+              value: ["push"]
+        - ref:
+            name: cel
+          params:
+            - name: "overlays"
+              value:
+                - key: branch_name
+                  expression: "body.ref.split('/')[2]"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.branch_name in ['edp','main','master']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['autotests']"
+            - name: "overlays"
+              value:
+                - key: cbtype_short
+                  expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: github-binding-build
+      template:
+        ref: github-build-lib-autotests-template
+
     - name: github-listener-app-build
       interceptors:
         - ref:
@@ -83,7 +122,7 @@ spec:
       bindings:
         - ref: github-binding-build
       template:
-        ref: github-build-lib-template
+        ref: github-build-lib-autotests-template
 
     - name: github-listener-container-build
       interceptors:

@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-maven-java8-app-build-edp
+  name: gitlab-maven-java8-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -11,11 +11,8 @@ spec:
     - name: settings
     - name: ssh-creds
   params:
-    - name: pipelineUrl
-      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
-      type: string
     - name: git-source-url
-      default: "https://gitlab.com/sergk/spring-petclinic"
+      default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -38,7 +35,12 @@ spec:
       default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   tasks:
+
     - name: fetch-repository
       taskRef:
         name: git-clone
@@ -66,27 +68,14 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-maven-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        name: update-build-number-maven
-      runAfter:
-        - get-version
-      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
-        - name: IS_RELEASE_BRANCH
-          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
-        - name: BRANCH_VERSION
-          value: $(tasks.get-version.results.BRANCH_VERSION)
-        - name: BUILD_ID
-          value: $(tasks.get-version.results.BUILD_ID)
         - name: BASE_IMAGE
           value: $(params.maven-image-version)
       workspaces:
@@ -95,25 +84,11 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: compile
       taskRef:
         name: maven
       runAfter:
-        - update-build-number
+        - get-version
       params:
         - name: MAVEN_IMAGE
           value: $(params.maven-image-version)
@@ -133,15 +108,6 @@ spec:
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ end }}

@@ -28,15 +28,17 @@ def test_gitlab_is_enabled():
 gerrit:
   enabled: false
 github:
-  enabled: true
+  enabled: false
 gitlab:
   enabled: true
     """
 
     r = helm_template(config)
 
-    sr = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    sm = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
-
-    assert "secretString" == sr["secretKey"] == sm["secretKey"]
-    assert "gitlab-configuration" == sr["secretName"] == sm["secretName"]
+    glatb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
+    glab = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
+    gllb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][2]["interceptors"][0]["params"][0]["value"]
+    glcb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][3]["interceptors"][0]["params"][0]["value"]
+    glcr = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][4]["interceptors"][0]["params"][0]["value"]
+    assert "secretString" == glatb["secretKey"] == glab["secretKey"] == gllb["secretKey"] == glcb["secretKey"] == glcr["secretKey"]
+    assert "gitlab.com-config" == glatb["secretName"] == glab["secretName"] == gllb["secretName"] == glcb["secretName"] == glcr["secretName"]

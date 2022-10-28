@@ -30,7 +30,7 @@ A Helm chart for EDP Tekton Pipelines
 | github.webhook.secretKeys.tokenKey | string | `"token"` |  |
 | gitlab.enabled | bool | `false` |  |
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
-| gitlab.webhook.existingSecret | string | `"gitlab-configuration"` | Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator |
+| gitlab.webhook.existingSecret | string | `"gitlab.com-config"` | Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator |
 | gitlab.webhook.secretKeys.secretKey | string | `"secretString"` | Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
 | gitlab.webhook.secretKeys.tokenKey | string | `"token"` | Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |

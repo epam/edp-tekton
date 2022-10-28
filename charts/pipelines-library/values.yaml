@@ -43,7 +43,7 @@ gitlab:
   webhook:
     # Do not change existingSecret (gitlab-configuration) unless it is expected. This value is aligned with codebase-operator logic
     # -- Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator
-    existingSecret: gitlab-configuration
+    existingSecret: gitlab.com-config
     secretKeys:
       # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
       tokenKey: token

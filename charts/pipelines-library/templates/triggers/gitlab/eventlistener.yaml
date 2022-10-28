@@ -7,6 +7,38 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
+    - name: gitlab-listener-autotests-build
+      interceptors:
+        - ref:
+            name: "gitlab"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: {{ .Values.gitlab.webhook.existingSecret }}
+                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+            - name: "eventTypes"
+              value: ["Merge Request Hook"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.object_attributes.action in ['merge']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['autotests']"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gitlab-binding-build
+      template:
+        ref: gitlab-build-lib-autotests-template
+
     - name: gitlab-listener-app-build
       interceptors:
         - ref:
@@ -28,6 +60,72 @@ spec:
         - ref:
             name: "cel"
           params:
+            - name: "filter"
+              value: "extensions.spec.type in ['application']"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gitlab-binding-build
+      template:
+        ref: gitlab-build-app-template
+
+    - name: gitlab-listener-lib-build
+      interceptors:
+        - ref:
+            name: "gitlab"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: {{ .Values.gitlab.webhook.existingSecret }}
+                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+            - name: "eventTypes"
+              value: ["Merge Request Hook"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.object_attributes.action in ['merge']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['library'] && extensions.spec.framework != 'docker'"
+            - name: "overlays"
+              value:
+              - key: cbtype_short
+                expression: "extensions.spec.type.truncate(3)"
+      bindings:
+        - ref: gitlab-binding-build
+      template:
+        ref: gitlab-build-lib-autotests-template
+
+    - name: gitlab-listener-container-build
+      interceptors:
+        - ref:
+            name: "gitlab"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: {{ .Values.gitlab.webhook.existingSecret }}
+                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+            - name: "eventTypes"
+              value: ["Merge Request Hook"]
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "body.object_attributes.action in ['merge']"
+        - ref:
+            name: "edp"
+        - ref:
+            name: "cel"
+          params:
+            - name: "filter"
+              value: "extensions.spec.type in ['library'] && extensions.spec.framework == 'docker'"
             - name: "overlays"
               value:
               - key: cbtype_short

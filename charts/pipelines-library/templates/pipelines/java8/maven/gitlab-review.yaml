@@ -137,7 +137,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: build
+    - name: sonar
       taskRef:
         name: maven
       runAfter:
@@ -152,27 +152,15 @@ spec:
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
-            - clean
-            - package
-            - '-DskipTests=true'
+            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.qualitygate.wait=true'
+            - '-Dsonar.host.url=$(params.SONAR_URL)'
+            - verify
+            - sonar:sonar
       workspaces:
         - name: maven-settings
           workspace: settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerbuild-verify
-      taskRef:
-        name: kaniko
-      runAfter:
-        - build
-      params:
-        - name: IMAGE
-          value: "placeholder:latest"
-        - name: EXTRA_ARGS
-          value:
-            - --no-push
-      workspaces:
         - name: source
           workspace: shared-workspace
 
@@ -181,6 +169,22 @@ spec:
         name: hadolint
       runAfter:
         - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        name: kaniko
+      runAfter:
+        - sonar
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -199,18 +203,16 @@ spec:
           workspace: shared-workspace
 
   finally:
-    - name: gitlab-set-failure-status
+    - name: gitlab-set-success-status
       when:
         - input: "$(tasks.status)"
           operator: in
-          values: ["Failed"]
-      taskRef:
-        name: github-set-status
+          values: ["Succeeded"]
       taskRef:
         name: gitlab-set-status
       params:
         - name: "STATE"
-          value: "failed"
+          value: "success"
         - name: "GITLAB_HOST_URL"
           value: "{{ .Values.gitlab.host }}"
         - name: "REPO_FULL_NAME"
@@ -228,18 +230,16 @@ spec:
         - name: "DESCRIPTION"
           value: "Managed by EDP. Run with Tekton"
 
-    - name: gitlab-set-success-status
+    - name: gitlab-set-failure-status
       when:
         - input: "$(tasks.status)"
           operator: in
-          values: ["Succeeded"]
-      taskRef:
-        name: github-set-status
+          values: ["Failed"]
       taskRef:
         name: gitlab-set-status
       params:
         - name: "STATE"
-          value: "success"
+          value: "failed"
         - name: "GITLAB_HOST_URL"
           value: "{{ .Values.gitlab.host }}"
         - name: "REPO_FULL_NAME"

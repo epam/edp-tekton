@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-maven-java11-app-review
+  name: gitlab-maven-java8-lib-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -14,16 +14,17 @@ spec:
     - name: pipelineUrl
       default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
-      type: string
     - name: git-source-url
-      default: "https://gitlab.com/sergk/spring-petclinic"
+      default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
       type: string
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
       type: string
     - name: SONAR_URL
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
@@ -34,14 +35,18 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
   tasks:
+
     - name: report-pipeline-start-to-gitlab
       taskRef:
         name: gitlab-set-status
@@ -68,11 +73,15 @@ spec:
     - name: fetch-repository
       taskRef:
         name: git-clone
+      runAfter:
+        - report-pipeline-start-to-gitlab
       params:
         - name: url
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
       workspaces:
         - name: output
           workspace: shared-workspace
@@ -161,44 +170,6 @@ spec:
       workspaces:
         - name: maven-settings
           workspace: settings
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerfile-lint
-      taskRef:
-        name: hadolint
-      runAfter:
-        - fetch-repository
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: dockerbuild-verify
-      taskRef:
-        name: kaniko
-      runAfter:
-        - sonar
-        - dockerfile-lint
-      params:
-        - name: IMAGE
-          value: "placeholder:latest"
-        - name: EXTRA_ARGS
-          value:
-            - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-lint
-      taskRef:
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --validate-maintainers=false --charts deploy-templates/
-      workspaces:
         - name: source
           workspace: shared-workspace
 

@@ -59,7 +59,7 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 		return nil, badRequest(fmt.Errorf("failed to parse body as InterceptorRequest: %w", err))
 	}
 
-	i.Logger.Infof("Interceptor request is: %+v", ireq)
+	i.Logger.Infof("Interceptor request is: %s", body.Bytes())
 
 	iresp := i.Process(ctx, &ireq)
 

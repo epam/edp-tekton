@@ -34,10 +34,11 @@ github:
 
     r = helm_template(config)
 
-    glab = r["eventlistener"]["github-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    gllb = r["eventlistener"]["github-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
-    glcb = r["eventlistener"]["github-listener"]["spec"]["triggers"][2]["interceptors"][0]["params"][0]["value"]
-    glcr = r["eventlistener"]["github-listener"]["spec"]["triggers"][3]["interceptors"][0]["params"][0]["value"]
+    glatb = r["eventlistener"]["github-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
+    glab = r["eventlistener"]["github-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
+    gllb = r["eventlistener"]["github-listener"]["spec"]["triggers"][2]["interceptors"][0]["params"][0]["value"]
+    glcb = r["eventlistener"]["github-listener"]["spec"]["triggers"][3]["interceptors"][0]["params"][0]["value"]
+    glcr = r["eventlistener"]["github-listener"]["spec"]["triggers"][4]["interceptors"][0]["params"][0]["value"]
 
-    assert "secretString" == glab["secretKey"] == gllb["secretKey"] == glcb["secretKey"] == glcr["secretKey"]
-    assert "github.com-config" == glab["secretName"] == gllb["secretName"] == glcb["secretName"] == glcr["secretName"]
+    assert "secretString" == glatb["secretKey"] == glab["secretKey"] == gllb["secretKey"] == glcb["secretKey"] == glcr["secretKey"]
+    assert "github.com-config" == glatb["secretName"] == glab["secretName"] == gllb["secretName"] == glcb["secretName"] == glcr["secretName"]

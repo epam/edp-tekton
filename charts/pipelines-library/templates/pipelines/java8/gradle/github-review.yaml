@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java11-lib-review
+  name: github-gradle-java8-app-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -35,12 +35,12 @@ spec:
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: 'java8-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: 'gradle:7.5.1-jdk8'
+      description: "gradle image version"
       type: string
     - name: gitfullrepositoryname
       description: "repository full name"
@@ -102,75 +102,114 @@ spec:
 
     - name: compile
       taskRef:
-        name: maven
+        name: gradle
       runAfter:
         - init-values
       params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - compile
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            clean \
+            compileJava \
+            -x test
       workspaces:
-        - name: maven-settings
+        - name: gradle-settings
           workspace: settings
         - name: source
           workspace: shared-workspace
 
     - name: test
       taskRef:
-        name: maven
+        name: gradle
       runAfter:
         - compile
       params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - org.jacoco:jacoco-maven-plugin:prepare-agent
-            - '-Dmaven.test.failure.ignore=true'
-            - verify
-            - org.jacoco:jacoco-maven-plugin:report
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            test \
+            jacocoTestReport
       workspaces:
-        - name: maven-settings
+        - name: gradle-settings
           workspace: settings
         - name: source
           workspace: shared-workspace
 
     - name: sonar
       taskRef:
-        name: maven
+        name: gradle
       runAfter:
         - test
       params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
-            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
-            - '-Dsonar.qualitygate.wait=true'
-            - '-Dsonar.host.url=$(params.SONAR_URL)'
-            - verify
-            - sonar:sonar
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            -Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
+            -Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
+            -Dsonar.host.url=$(params.SONAR_URL) \
+            -Dsonar.qualitygate.wait=true \
+            sonarqube
       workspaces:
-        - name: maven-settings
+        - name: gradle-settings
           workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: gradle
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            build -x test
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        name: kaniko
+      runAfter:
+        - build
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      workspaces:
         - name: source
           workspace: shared-workspace
 

@@ -145,7 +145,7 @@ github:
 
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java11']:
+        for framework in ['java11', 'java8']:
             for cbtype in ['app', 'lib']:
 
                 github_review_pipeline = f"github-{buildtool}-{framework}-{cbtype}-review"

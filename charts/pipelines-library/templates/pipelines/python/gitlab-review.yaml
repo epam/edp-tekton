@@ -1,8 +1,8 @@
-{{ if .Values.github.enabled }}
+{{ if .Values.gitlab.enabled }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-python-python-3.8-lib-review
+  name: gitlab-python-python-3.8-app-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -44,31 +44,31 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
-    - name: gitsha
-      description: "commit sha"
-      type: string
+
   tasks:
 
-    - name: github-set-pending-status
+    - name: report-pipeline-start-to-gitlab
       taskRef:
-        name: github-set-status
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has started"
-        - name: STATE
+        - name: "STATE"
           value: "pending"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 
     - name: fetch-repository
       taskRef:
@@ -147,54 +147,96 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        name: kaniko
+      runAfter:
+        - sonar
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --validate-maintainers=false --charts deploy-templates/
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
   finally:
-    - name: github-set-success-status
+    - name: gitlab-set-success-status
       when:
         - input: "$(tasks.status)"
           operator: in
           values: ["Succeeded"]
       taskRef:
-        name: github-set-status
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build was successful"
-        - name: STATE
+        - name: "STATE"
           value: "success"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 
-    - name: github-set-failure-status
+    - name: gitlab-set-failure-status
       when:
         - input: "$(tasks.status)"
           operator: in
           values: ["Failed"]
       taskRef:
-        name: github-set-status
+        name: gitlab-set-status
       params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has failed"
-        - name: STATE
-          value: "failure"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
+        - name: "STATE"
+          value: "failed"
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
           value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
 {{ end }}

@@ -1,0 +1,105 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gitlab-python-python-3.8-lib-build-edp
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "python-python-python-3.8"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: "python-app"
+      description: "Project name"
+      type: string
+    - name: python-image-version
+      default: 'python:3.8-alpine3.16'
+      description: "python image version"
+      type: string
+  tasks:
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: get-version
+      taskRef:
+        name: get-version-edp
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+
+    - name: update-build-number
+      taskRef:
+        name: update-build-number-python
+      runAfter:
+        - get-version
+      params:
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: compile
+      taskRef:
+        name: python
+      runAfter:
+        - update-build-number
+      params:
+        - name: BASE_IMAGE
+          value: $(params.python-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            set -ex
+            python setup.py clean build install --user
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "python-build-common" . | nindent 4 }}
+
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
+
+{{ end }}

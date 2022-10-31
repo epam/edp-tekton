@@ -1,0 +1,70 @@
+{{ if .Values.github.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-terraform-terraform-lib-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/terraform-terraform-terraform"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'terraform-terraform'
+      description: "Project name"
+      type: string
+    - name: tfenv-image-version
+      default: 'okteto/tfenv-ci:1.4'
+      description: "tfenv image version"
+      type: string
+  tasks:
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: get-version
+      taskRef:
+        name: get-version-terraform-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "terraform-build-common" . | nindent 4 }}
+
+{{ end }}

@@ -24,6 +24,6 @@ spec:
     - image: $(params.BASE_IMAGE)
       name: helm-lint
       script: |
-        set -e
+        set -ex
         $(params.EXTRA_COMMANDS)
       workingDir: $(workspaces.source.path)

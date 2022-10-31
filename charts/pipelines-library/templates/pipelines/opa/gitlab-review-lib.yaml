@@ -1,0 +1,145 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gitlab-opa-opa-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/rego-opa-opa"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: opa-image-version
+      default: 'openpolicyagent/opa:0.45.0-debug'
+      description: "opa image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+  tasks:
+
+    - name: report-pipeline-start-to-gitlab
+      taskRef:
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "pending"
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: test
+      taskRef:
+        name: opa
+      runAfter:
+        - fetch-repository
+      params:
+        - name: BASE_IMAGE
+          value: $(params.opa-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            python "${JUNIT_SCRIPT}" "${OPA_RESULTS}" > testReport.xml
+            cat testReport.xml
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+  finally:
+    - name: gitlab-set-success-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Succeeded"]
+      taskRef:
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "success"
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
+    - name: gitlab-set-failure-status
+      when:
+        - input: "$(tasks.status)"
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "failed"
+        - name: "GITLAB_HOST_URL"
+          value: "{{ .Values.gitlab.host }}"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: {{ .Values.gitlab.webhook.existingSecret }}
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
+{{ end }}

@@ -1,0 +1,81 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gitlab-maven-java8-aut-build-edp
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: settings
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'java8-maven'
+      description: "Project name"
+      type: string
+  tasks:
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: get-version
+      taskRef:
+        name: get-version-edp
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+
+    - name: git-tag
+      taskRef:
+        name: git-cli
+      runAfter:
+        - get-version
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+{{ end }}

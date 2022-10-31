@@ -1,0 +1,103 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gitlab-gradle-java8-aut-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: settings
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: 'java8-gradle'
+      description: "Project name"
+      type: string
+    - name: gradle-image-version
+      default: 'gradle:7.5.1-jdk8'
+      description: "gradle image version"
+      type: string
+  tasks:
+
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: get-version
+      taskRef:
+        name: get-version-gradle-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+      workspaces:
+        - name: gradle-settings
+          workspace: settings
+        - name: source
+          workspace: shared-workspace
+
+    - name: git-tag
+      taskRef:
+        name: git-cli
+      runAfter:
+        - get-version
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+{{ end }}

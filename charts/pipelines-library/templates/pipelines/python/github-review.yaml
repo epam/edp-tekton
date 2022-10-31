@@ -14,7 +14,7 @@ spec:
       default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-beego"
+      default: "https://github.com/epmd-edp/python-python-python-3.8"
       description: git url to clone
       type: string
     - name: git-source-revision

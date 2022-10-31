@@ -132,3 +132,65 @@ github:
             assert "codenarc" == btedp[5]["taskRef"]["name"]
             assert "git-tag" in btedp[6]["name"]
             assert "update-cbis" in btedp[7]["name"]
+
+def test_groovy_pipelines_gitlab():
+    config = """
+gitlab:
+  enabled: true
+    """
+
+    r = helm_template(config)
+    vcs = "gitlab"
+
+    # ensure pipelines have proper steps
+    for buildtool in ['codenarc']:
+        for framework in ['codenarc']:
+
+            gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-lib-review"
+            gitlab_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-lib-build-default"
+            gitlab_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-edp"
+
+            assert gitlab_review_pipeline in r["pipeline"]
+            assert gitlab_build_pipeline_def in r["pipeline"]
+            assert gitlab_build_pipeline_edp in r["pipeline"]
+
+            rt = r["pipeline"][gitlab_review_pipeline]["spec"]["tasks"]
+            assert "report-pipeline-start-to-gitlab" in rt[0]["name"]
+            assert "fetch-repository" in rt[1]["name"]
+            assert "init-values" in rt[2]["name"]
+            assert "sonar" in rt[3]["name"]
+            assert "gradle" == rt[3]["taskRef"]["name"]
+            assert "build" in rt[4]["name"]
+            assert "codenarc" == rt[4]["taskRef"]["name"]
+
+            assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
+            assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]
+
+            # build with default versioning
+            btd = r["pipeline"][gitlab_build_pipeline_def]["spec"]["tasks"]
+            assert "fetch-repository" in btd[0]["name"]
+            assert "init-values" in btd[1]["name"]
+            assert "get-version" in btd[2]["name"]
+            # ensure we have default versioning
+            assert "get-version-gradle-default" == btd[2]["taskRef"]["name"]
+            assert "sonar" in btd[3]["name"]
+            assert "gradle" == btd[3]["taskRef"]["name"]
+            assert "build" in btd[4]["name"]
+            assert "codenarc" == btd[4]["taskRef"]["name"]
+            assert "git-tag" in btd[5]["name"]
+            assert "update-cbis" in btd[6]["name"]
+
+            # build with edp versioning
+            btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
+            assert "fetch-repository" in btedp[0]["name"]
+            assert "init-values" in btedp[1]["name"]
+            assert "get-version" in btedp[2]["name"]
+            assert "get-version-edp" == btedp[2]["taskRef"]["name"]
+            assert "update-build-number" in btedp[3]["taskRef"]["name"]
+            assert "update-build-number-gradle" == btedp[3]["taskRef"]["name"]
+            assert "sonar" in btedp[4]["name"]
+            assert "gradle" == btedp[4]["taskRef"]["name"]
+            assert "build" in btedp[5]["name"]
+            assert "codenarc" == btedp[5]["taskRef"]["name"]
+            assert "git-tag" in btedp[6]["name"]
+            assert "update-cbis" in btedp[7]["name"]

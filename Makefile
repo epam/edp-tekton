@@ -82,7 +82,7 @@ test-chart: ${CURRENT_DIR}/.venv/bin/activate
 	( \
 		source $^; \
 		pip3 install -r ${CURRENT_DIR}/requirements.txt; \
-		pytest -sv --color=yes; \
+		pytest -sv --color=yes -n auto; \
 	)
 
 ${CURRENT_DIR}/.venv/bin/activate:

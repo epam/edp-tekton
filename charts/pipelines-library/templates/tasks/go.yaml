@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: golang-build
+  name: golang
   labels:
     app.kubernetes.io/version: "0.3"
   annotations:
@@ -13,14 +13,7 @@ metadata:
 spec:
   description: >-
     This Task is Golang task to build Go projects.
-
   params:
-  - name: version
-    description: golang version to use for builds
-    default: "latest"
-  - name: flags
-    description: flags to use for the test command
-    default: -v
   - name: GOOS
     description: "running program's operating system target"
     default: linux
@@ -42,20 +35,25 @@ spec:
   - name: GOSUMDB
     description: "Go checksum database url. Use value 'off' to disable checksum validation."
     default: ""
-  - name: EXTRA_ARGS
-    description: Extra arguments to add to the go build
+  - name: EXTRA_COMMANDS
+    type: string
+    description: Extra commands
     default: ""
   - name: BASE_IMAGE
     description: "Base image"
     default: ""
+  - name: GOPROXY
+    description: "Go proxy server"
+    default: ""
   workspaces:
   - name: source
   steps:
-  - name: build
-    image: docker.io/library/golang:$(params.version)
+  - name: golang
+    image: docker.io/library/golang:1.18.4-alpine3.16
     workingDir: $(workspaces.source.path)
     script: |
-      go $(params.EXTRA_ARGS)
+      set -ex
+      $(params.EXTRA_COMMANDS)
     env:
     - name: GOOS
       value: "$(params.GOOS)"
@@ -71,3 +69,5 @@ spec:
       value: "$(params.CGO_ENABLED)"
     - name: GOSUMDB
       value: "$(params.GOSUMDB)"
+    - name: GOPROXY
+      value: "$(params.GOPROXY)"

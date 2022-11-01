@@ -56,74 +56,7 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-    - name: sast
-      taskRef:
-        name: sast
-      runAfter:
-        - get-version
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        name: golang-build
-      runAfter:
-        - sast
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: sonar
-      taskRef:
-        name: sonarqube-scanner
-      runAfter:
-        - test
-      params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
-        - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-        - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: build
-      taskRef:
-        name: golang-build
-      runAfter:
-        - sonar
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            build -o go-binary "$(grep -irl 'package main')"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: create-ecr-repository
-      taskRef:
-        name: create-ecr-repository
-      runAfter:
-        - build
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+{{- include "golang-build-common" . | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

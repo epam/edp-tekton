@@ -97,35 +97,7 @@ spec:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
 
-    - name: build
-      taskRef:
-        name: golang-build
-      runAfter:
-        - init-values
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            build -o go-binary "$(grep -irl 'package main')"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        name: golang-build
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "golang-review-common" . | nindent 4 }}
 
     - name: sonar
       taskRef:

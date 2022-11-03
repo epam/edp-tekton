@@ -16,12 +16,21 @@ spec:
     This Task creates an ECR repo
   params:
     - name: REPO_NAME
-      description: ""
+      description: "The name of the ecr repository where we are going to push the image"
+    - name: edp-config
+      type: string
+      description: "This configmap holds aws_region parameter"
+      default: edp-config
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
       env:
         - name: REPO_NAME
           value: "$(params.REPO_NAME)"
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.edp-config)"
+              key: 'aws_region'
       command: ["/bin/sh"]
       args: ["-c", "aws ecr describe-repositories --repository-names ${REPO_NAME} || aws ecr create-repository --repository-name ${REPO_NAME}"]

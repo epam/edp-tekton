@@ -63,6 +63,12 @@ spec:
           -PnexusPassword=${CI_PASSWORD} \
           $(params.EXTRA_ARGS)
       env:
+        - name: XDG_CONFIG_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: GRADLE_USER_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: SONAR_USER_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:

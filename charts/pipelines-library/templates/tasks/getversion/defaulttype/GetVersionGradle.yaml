@@ -60,6 +60,8 @@ spec:
             secretKeyRef:
               name: $(params.ci-secret)
               key: password
+        - name: GRADLE_USER_HOME
+          value: $(workspaces.source.path)
       workingDir: $(workspaces.source.path)
       script: |
         #!/usr/bin/env bash

@@ -55,6 +55,8 @@ spec:
         - $(workspaces.maven-settings.path)/settings.xml
         - "$(params.GOALS)"
       env:
+        - name: HOME
+          value: $(workspaces.source.path)
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:

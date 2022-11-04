@@ -38,6 +38,8 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
+        - name: HOME
+          value: "$(workspaces.source.path)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

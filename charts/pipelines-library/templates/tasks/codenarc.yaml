@@ -57,6 +57,8 @@ spec:
           -PnexusPassword=${CI_PASSWORD} \
           $(params.EXTRA_ARGS)
       env:
+        - name: HOME
+          value: $(workspaces.source.path)
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

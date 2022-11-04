@@ -1,0 +1,221 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-other-app-build-edp
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-react"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: 'react-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: npm-image-version
+      default: 'docker.io/library/node:18.10-alpine3.16'
+      description: "npm image version"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  tasks:
+
+{{- include "gerrit-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        name: get-version-edp
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+
+    - name: update-build-number
+      taskRef:
+        name: update-build-number-npm
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: BRANCH_VERSION
+          value: $(tasks.get-version.results.BRANCH_VERSION)
+        - name: BUILD_ID
+          value: $(tasks.get-version.results.BUILD_ID)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "sonar-cleanup" . | nindent 4 }}
+
+    - name: compile
+      taskRef:
+        name: npm
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm install
+            npm run build:clean
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: npm
+      runAfter:
+        - compile
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm i jest
+            npm run test:coverage
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: sonarqube-scanner
+      runAfter:
+        - test
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: npm
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm install
+            npm run build:prod
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: get-nexus-repository-url
+      taskRef:
+        name: get-nexus-repository-url-npm
+      runAfter:
+        - build
+      params:
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+
+    - name: push
+      taskRef:
+        name: npm-push
+      runAfter:
+        - get-nexus-repository-url
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            token=$(grep -oE 'NpmToken\.[0-9a-zA-Z-]+' "${NEXUS_TOKEN}")
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/ --location project
+            npm set _auth=${upBase64}
+            npm set //$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/:_authToken ${token}
+            npm set 'email=edp-ci@edp.local'
+            npm publish
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: create-ecr-repository
+      taskRef:
+        name: create-ecr-repository
+      runAfter:
+        - push
+      params:
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+    # TODO
+    # - name: create-jira-issue-metadata
+    #   taskRef:
+    #     name: create-jira-issue-metadata
+
+    # - name: ecr-to-docker
+    #   taskRef:
+    #     name: ecr-to-docker
+    #   runAfter:
+    #     - create-jira-issue-metadata
+    #   params:
+    #     - name: ECR_HOST
+    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
+    #     - name: ECR_IMAGE
+    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+    #     - name: IMAGE_TAG
+    #       value: "$(tasks.get-version.results.VERSION)"
+    #     - name: CODEBASE_NAME
+    #       value: "$(params.CODEBASE_NAME)"
+
+    # TODO
+    # - name: set-version
+    #   taskRef:
+    #     name: set-version
+
+    # TODO
+    # - name: helm-push-gh-pages
+    #   taskRef:
+    #     name: helm-push-gh-pages
+{{ end }}

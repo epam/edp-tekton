@@ -1,0 +1,230 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-other-app-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-react"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: 'react-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: npm-image-version
+      default: 'docker.io/library/node:18.10-alpine3.16'
+      description: "npm image version"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  tasks:
+
+{{- include "gerrit-review-start" . | nindent 4 }}
+
+    # - name: commit-validate
+    #   taskRef:
+    #     name: commit-validate
+    #   runAfter:
+    #     - init-values
+    #   params:
+    #     - name: COMMIT_MESSAGE_PATTERN
+    #       value: "$(params.COMMIT_MESSAGE_PATTERN)"
+
+    - name: compile
+      taskRef:
+        name: npm
+      runAfter:
+        - init-values
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
+            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
+            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
+            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm install
+            npm run build:clean
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # - name: helm-docs
+    #   taskRef:
+    #     name: helm-docs
+
+    - name: test
+      taskRef:
+        name: npm
+      runAfter:
+        - compile
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm i jest
+            npm run test:coverage
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
+      taskRef:
+        name: git-cli
+      runAfter:
+        - test
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: sonar-prepare-files
+      taskRef:
+        name: sonar-prepare-files-general
+      runAfter:
+        - fetch-target-branch
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: sonarqube-scanner
+      runAfter:
+        - sonar-prepare-files
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_SOURCES
+          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: npm-test
+      taskRef:
+        name: npm
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm i jest
+            npm run test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: npm-lint
+      taskRef:
+        name: npm
+      runAfter:
+        - npm-test
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm run lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        name: kaniko
+      runAfter:
+        - sonar
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "placeholder:latest"
+        - name: EXTRA_ARGS
+          value:
+            - --no-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

@@ -83,6 +83,10 @@ spec:
         name: helm-lint
       runAfter:
         - fetch-repository
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --validate-maintainers=false --charts deploy-templates/
       workspaces:
         - name: source
           workspace: shared-workspace

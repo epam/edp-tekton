@@ -36,6 +36,8 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
+        - name: HOME
+          value: $(workspaces.source.path)
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
@@ -49,7 +51,9 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
-        cat <<EOP >> /etc/pip.conf
+        export PATH=$PATH:$HOME/.local/bin
+
+        cat <<EOP >> ~/pip.conf
         [global]
         trusted-host = nexus
         index = http://${CI_USERNAME}:${CI_PASSWORD}@nexus:8081/repository/edp-python-group/pypi

@@ -41,6 +41,11 @@ spec:
       script: |
         set -e
         semgrep --config=auto . --json --output $(params.reportDataPath)
+      env:
+        - name: HOME
+          value: "$(workspaces.source.path)"
+        - name: SEMGREP_VERSION_CACHE_PATH
+          value: "$(workspaces.source.path)/.cache"
     - name: push-report
       image: curlimages/curl:7.85.0
       workingDir: $(workspaces.source.path)

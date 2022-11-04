@@ -41,7 +41,7 @@ spec:
     default: ""
   - name: BASE_IMAGE
     description: "Base image"
-    default: ""
+    default: "docker.io/library/golang:1.18.4-alpine3.16"
   - name: GOPROXY
     description: "Go proxy server"
     default: ""
@@ -49,7 +49,7 @@ spec:
   - name: source
   steps:
   - name: golang
-    image: docker.io/library/golang:1.18.4-alpine3.16
+    image: $(params.BASE_IMAGE)
     workingDir: $(workspaces.source.path)
     script: |
       set -ex

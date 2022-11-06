@@ -25,7 +25,7 @@ spec:
     default: auto
   - name: GOCACHE
     description: "Go caching directory path"
-    default: ""
+    default: "$(workspaces.source.path)"
   - name: GOMODCACHE
     description: "Go mod caching directory path"
     default: ""

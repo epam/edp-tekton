@@ -41,6 +41,8 @@ spec:
         set -e
         $(params.EXTRA_COMMANDS)
       env:
+        - name: HOME
+          value: $(workspaces.source.path)
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:

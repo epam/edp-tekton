@@ -1,0 +1,159 @@
+{{ if .Values.gerrit.enabled }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-go-other-app-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-beego"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: "golang-go"
+      description: "Project name"
+      type: string
+    - name: go-image-version
+      default: 'golang:1.18.4-bullseye'
+      description: "go image with make installed"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  tasks:
+
+{{- include "gerrit-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        name: get-version-go-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "sonar-cleanup" . | nindent 4 }}
+
+    - name: sast
+      taskRef:
+        name: sast
+      runAfter:
+        - get-version
+      params:
+        - name: reportDataProductName
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: reportDataEngagementName
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        name: golang
+      runAfter:
+        - sast
+      params:
+        - name: BASE_IMAGE
+          value: $(params.go-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            GOPROXY=http://athens.eks-core.aws.main.edp.projects.epam.com make test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        name: sonarqube-scanner
+      runAfter:
+        - test
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: golang
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.go-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
+            VERSION=$(tasks.get-version.results.VERSION) GOPROXY=http://athens.eks-core.aws.main.edp.projects.epam.com make build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: create-ecr-repository
+      taskRef:
+        name: create-ecr-repository
+      runAfter:
+        - build
+      params:
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+    # TODO
+    # - name: create-jira-issue-metadata
+    #   taskRef:
+    #     name: create-jira-issue-metadata
+    # - name: ecr-to-docker
+    #   taskRef:
+    #     name: ecr-to-docker
+    #   runAfter:
+    #     - create-jira-issue-metadata
+    #   params:
+    #     - name: ECR_HOST
+    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
+    #     - name: ECR_IMAGE
+    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+    #     - name: IMAGE_TAG
+    #       value: "$(tasks.get-version.results.VERSION)"
+    #     - name: CODEBASE_NAME
+    #       value: "$(params.CODEBASE_NAME)"
+    # TODO
+    # - name: set-version
+    #   taskRef:
+    #     name: set-version
+    # TODO
+    # - name: helm-push-gh-pages
+    #   taskRef:
+    #     name: helm-push-gh-pages
+{{ end }}

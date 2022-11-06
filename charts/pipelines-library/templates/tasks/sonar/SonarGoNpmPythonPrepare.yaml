@@ -54,8 +54,13 @@ spec:
           value: "$(params.CHANGE_NUMBER)"
         - name: PATCHSET_NUMBER
           value: "$(params.PATCHSET_NUMBER)"
+        - name: HOME
+          value: "$(workspaces.source.path)"
       script: |
         #!/bin/sh
+
+        set -xe
+        git config --global --add safe.directory ${HOME}
 
         echo "[TEKTON] CODEBASE_NAME : ${CODEBASE_NAME}"
         echo "[TEKTON] BRANCH_NAME : ${BRANCH_NAME}"

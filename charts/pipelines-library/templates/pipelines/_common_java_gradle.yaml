@@ -143,6 +143,7 @@
       value: edp-ci
     - name: GIT_SCRIPT
       value: |
+        GIT_SSH_COMMAND="ssh -i ${HOME}/.ssh/id_rsa -o StrictHostKeyChecking=no" \
         git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
   workspaces:
     - name: source

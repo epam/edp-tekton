@@ -1,0 +1,75 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-edp-custom
+spec:
+  description:
+  params:
+    - name: CODEBASE_NAME
+      type: string
+      description: "Codebase name"
+    - name: CODEBASEBRANCH_NAME
+      type: string
+      description: "Codebasebranch name"
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VCS_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: BUILD_ID
+      description: "Build id"
+    - name: BRANCH_VERSION
+      description: "Branch version"
+    - name: IS_RELEASE_BRANCH
+    - name: DEPLOYABLE_MODULE_DIR
+  steps:
+    - name: get-version
+      image: bitnami/kubectl:1.25.2
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: CODEBASEBRANCH_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        # replace '/' with '-'
+        CODEBASEBRANCH_NAME=${CODEBASEBRANCH_NAME//\//-}
+        # get current BUILD ID
+        BUILD_ID=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.status.build})
+        # and increment it
+        BUILD_ID=$((BUILD_ID+1))
+        # set new version
+        kubectl patch codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} --subresource=status --type=merge -p "{\"status\": {\"build\": \"$BUILD_ID\"}}"
+
+        IS_RELEASE_BRANCH=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.release})
+
+        # Get current version
+        VERSION=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.version})
+
+        BRANCH_VERSION=${VERSION}
+        VERSION="${VERSION}.${BUILD_ID}"
+        VCS_TAG="build/${VERSION}"
+        IS_TAG=${VERSION}
+        DEPLOYABLE_MODULE_DIR="."
+
+        if [[ $CODEBASE_NAME =~ .*-agent || $CODEBASE_NAME =~ alpine-wget ]]; then
+            IS_TAG=$(echo ${IS_TAG} | sed 's/[0-9]-SNAPSHOT.//g')
+        fi
+
+        echo "Application version - ${VERSION}"
+        echo "VCS tag - ${VCS_TAG}"
+        echo "IS tag - ${IS_TAG}"
+        echo "Build id - ${BUILD_ID}"
+        echo "Branch version - ${BRANCH_VERSION}"
+
+        printf "%s" "${VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+        printf "%s" "${BUILD_ID}" > "$(results.BUILD_ID.path)"
+        printf "%s" "${BRANCH_VERSION}" > "$(results.BRANCH_VERSION.path)"
+        printf "%s" "${IS_RELEASE_BRANCH}" > "$(results.IS_RELEASE_BRANCH.path)"
+        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

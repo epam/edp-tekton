@@ -1,43 +1,53 @@
-{{ if .Values.github.enabled }}
+{{ if .Values.gerrit.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: github-code-review-template
-  labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: gerrit-code-review-lib-autotests-template
 spec:
   params:
     - name: gitrevision
-    - name: gitrepositoryurl
-    - name: gitrepositoryname
-    - name: gitfullrepositoryname
-    - name: gitsha
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
+    - name: gerritrefspec
+      description: Gerrit PatchSet Reference in format "refs/changes/62/62/2"
     - name: buildtool
       description: Build tool for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: cbtype
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gitrepositoryname)-review-
+        generateName: $(tt.params.gerritproject)-review-
       spec:
         serviceAccountName: tekton
         pipelineRef:
-          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:
           - name: git-source-url
-            value: $(tt.params.gitrepositoryurl)
+            value: "ssh://edp-ci@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
+          - name: git-refspec
+            value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
-            value: $(tt.params.gitrepositoryname)
-          - name: gitfullrepositoryname
-            value: $(tt.params.gitfullrepositoryname)
-          - name: gitsha
-            value: $(tt.params.gitsha)
+            value: $(tt.params.gerritproject)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
         workspaces:
           - name: settings
             configMap:
@@ -53,5 +63,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: {{ .Values.github.webhook.existingSecret }}
+              secretName: gerrit-ciuser-sshkey
 {{ end }}

@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gerrit-code-review-template
+  name: gerrit-code-review-app-container-template
 spec:
   params:
     - name: gitrevision
@@ -31,6 +31,9 @@ spec:
         generateName: $(tt.params.gerritproject)-review-
       spec:
         serviceAccountName: tekton
+        taskRunSpecs:
+          - pipelineTaskName: dockerbuild-verify
+            taskServiceAccountName: edp-kaniko
         pipelineRef:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:

@@ -23,8 +23,12 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: "okteto/tfenv-ci:1.4"
+      default: epamedp/tekton-tfenv:0.1.0-SNAPSHOT.1
       description: The tfenv image.
+    - name: TFENV_TERRAFORM_VERSION
+      type: string
+      default: "latest"
+      description: Terraform version
   steps:
     - name: terraform
       image: $(params.BASE_IMAGE)
@@ -32,3 +36,8 @@ spec:
       script: |
         set -ex
         $(params.EXTRA_COMMANDS)
+      env:
+        - NAME: TFENV_CONFIG_DIR
+          value: /tekton/home
+        - name: TFENV_TERRAFORM_VERSION
+          value: $(params.TFENV_TERRAFORM_VERSION)

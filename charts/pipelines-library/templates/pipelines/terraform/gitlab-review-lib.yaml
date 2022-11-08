@@ -29,10 +29,6 @@ spec:
       default: 'terraform-terraform'
       description: "Project name"
       type: string
-    - name: tfenv-image-version
-      default: 'okteto/tfenv-ci:1.4'
-      description: "tfenv image version"
-      type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
@@ -94,16 +90,14 @@ spec:
       runAfter:
         - init-values
       params:
-        - name: BASE_IMAGE
-          value: $(params.tfenv-image-version)
         - name: EXTRA_COMMANDS
           value: |
             if [ -f .terraform-version ]; then
-                tfenv install
+                echo "[TEKTON][INFO] The '.terraform-version' file exists"
+                export TFENV_TERRAFORM_VERSION=""
             else
-                tfenv install 0.14.5
+                echo "[TEKTON][INFO] The '.terraform-version' file does not exist. Terraform version - ${TFENV_TERRAFORM_VERSION} will be used by default"
             fi
-            tfenv use
             terraform init -backend=false
             terraform fmt -check -list=true -diff
             terraform validate

@@ -91,8 +91,11 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 		return interceptors.Failf(codes.InvalidArgument, "failed to get codebase %s: %v", objectKey, err)
 	}
 
-	framework := strings.ToLower(*codebase.Spec.Framework)
-	codebase.Spec.Framework = &framework
+	if codebase.Spec.Framework != nil {
+		framework := strings.ToLower(*codebase.Spec.Framework)
+		codebase.Spec.Framework = &framework
+	}
+
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
 	return &triggersv1.InterceptorResponse{

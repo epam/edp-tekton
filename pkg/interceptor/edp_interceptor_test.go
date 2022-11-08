@@ -38,6 +38,16 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			BuildTool: "Maven",
 		},
 	}
+	codebaseWithEmptyFramework := &codebaseApi.Codebase{
+		TypeMeta: metav1.TypeMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "demo3",
+		},
+		Spec: codebaseApi.CodebaseSpec{
+			BuildTool: "Maven",
+		},
+	}
 	successExtensions := map[string]interface{}{
 		"spec": codebaseApi.CodebaseSpec{
 			Framework: &frameworkTransformed,
@@ -48,7 +58,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 		TriggerID: "namespace/test-ns/triggers/name",
 	}
 
-	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase).Build()
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase, codebaseWithEmptyFramework).Build()
 	interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
 
 	tests := []struct {
@@ -89,6 +99,23 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: successExtensions,
 				Continue:   true,
+			},
+		},
+		{
+			name: "success with empty framework",
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"repository": {"name": "demo3"}}`,
+				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
+				Context: triggersContext,
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework: nil,
+						BuildTool: "maven",
+					},
+				},
+				Continue: true,
 			},
 		},
 		{

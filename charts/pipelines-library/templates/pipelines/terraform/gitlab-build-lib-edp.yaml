@@ -22,10 +22,6 @@ spec:
       default: 'terraform-terraform'
       description: "Project name"
       type: string
-    - name: tfenv-image-version
-      default: 'okteto/tfenv-ci:1.4'
-      description: "tfenv image version"
-      type: string
   tasks:
 
     - name: fetch-repository

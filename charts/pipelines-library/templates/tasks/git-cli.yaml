@@ -94,6 +94,8 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)
       env:
+        - name: GIT_SSH_COMMAND
+          value: ssh -i $(params.USER_HOME)/.ssh/id_rsa -o StrictHostKeyChecking=no
         - name: HOME
           value: $(params.USER_HOME)
         - name: PARAM_VERBOSE

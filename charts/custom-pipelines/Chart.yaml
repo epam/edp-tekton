@@ -35,3 +35,9 @@ annotations:
       url: https://epam.github.io/edp-install/
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/epam-delivery-platform
+
+# we use some templates from core library
+dependencies:
+  - name: edp-tekton
+    version: 0.1.0-SNAPSHOT.213
+    repository: https://epam.github.io/edp-helm-charts/snapshot

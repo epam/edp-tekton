@@ -1,0 +1,6 @@
+dependencies:
+- name: edp-tekton
+  repository: https://epam.github.io/edp-helm-charts/snapshot
+  version: 0.1.0-SNAPSHOT.213
+digest: sha256:a7daf0bef6b02798d156b55a893473ca7dd8367981296f115adbd62fb63ffe6d
+generated: "2022-11-09T13:32:50.050339+02:00"

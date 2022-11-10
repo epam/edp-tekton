@@ -58,7 +58,7 @@ gerrit:
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-scanner" == btd[7]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[8]["name"]
-                assert "get-nexus-repository-url-python" == btd[8]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[8]["taskRef"]["name"]
                 assert "push" in btd[9]["name"]
                 assert buildtool == btd[9]["taskRef"]["name"]
                 if cbtype == "app":
@@ -86,7 +86,7 @@ gerrit:
                 assert "sonar" in btedp[8]["name"]
                 assert "sonarqube-scanner" == btedp[8]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[9]["name"]
-                assert "get-nexus-repository-url-python" == btedp[9]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[9]["taskRef"]["name"]
                 assert "push" in btedp[10]["name"]
                 assert buildtool == btedp[10]["taskRef"]["name"]
                 if cbtype == "app":
@@ -146,7 +146,7 @@ github:
                 assert "sonar" in btd[5]["name"]
                 assert "sonarqube-scanner" == btd[5]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[6]["name"]
-                assert "get-nexus-repository-url-python" == btd[6]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[6]["taskRef"]["name"]
                 assert "push" in btd[7]["name"]
                 assert buildtool == btd[7]["taskRef"]["name"]
                 if cbtype == "app":
@@ -172,7 +172,7 @@ github:
                 assert "sonar" in btedp[6]["name"]
                 assert "sonarqube-scanner" == btedp[6]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[7]["name"]
-                assert "get-nexus-repository-url-python" == btedp[7]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
@@ -232,7 +232,7 @@ gitlab:
                 assert "sonar" in btd[5]["name"]
                 assert "sonarqube-scanner" == btd[5]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[6]["name"]
-                assert "get-nexus-repository-url-python" == btd[6]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[6]["taskRef"]["name"]
                 assert "push" in btd[7]["name"]
                 assert buildtool == btd[7]["taskRef"]["name"]
                 if cbtype == "app":
@@ -258,7 +258,7 @@ gitlab:
                 assert "sonar" in btedp[6]["name"]
                 assert "sonarqube-scanner" == btedp[6]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[7]["name"]
-                assert "get-nexus-repository-url-python" == btedp[7]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":

@@ -53,7 +53,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
-    name: get-nexus-repository-url-npm
+    name: get-nexus-repository-url
   runAfter:
     - build
   params:
@@ -61,6 +61,8 @@
       value: $(tasks.get-version.results.VERSION)
     - name: NEXUS_URL
       value: $(params.NEXUS_URL)
+    - name: TOOL
+      value: "npm"
 
 - name: push
   taskRef:

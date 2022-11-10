@@ -5,7 +5,7 @@ metadata:
 spec:
   description: |
     This Task gets the version of an application if the version contains the 'SNAPSHOT' substring in the name
-    then edp-maven-snapshots Nexus repository is used else edp-maven-releases Nexus repository is used.
+    then edp-<Tool>-snapshots Nexus repository is used else edp-<Tool>-releases Nexus repository is used.
 
   params:
     - name: VERSION
@@ -14,9 +14,12 @@ spec:
     - name: NEXUS_URL
       type: string
       description: "Nexus url"
+    - name: TOOL
+      type: string
+      description: "Application language"
   results:
     - name: NEXUS_REPOSITORY_URL
-      description: "Parameter has '<NEXUS_URL>/repository/edp-maven-snapshots' or '<NEXUS_URL>/repository/edp-maven-releases' value"
+      description: "Parameter has '<NEXUS_URL>/repository/edp-<Tool>-snapshots' or '<NEXUS_URL>/repository/edp-<Tool>-releases' value"
   steps:
     - name: get-nexus-repository-url
       image: alpine:3.16.2
@@ -25,6 +28,8 @@ spec:
           value: "$(params.VERSION)"
         - name: NEXUS_URL
           value: "$(params.NEXUS_URL)"
+        - name: TOOL
+          value: "$(params.TOOL)"
       script: |
         set -ex
 
@@ -32,9 +37,9 @@ spec:
         versionLowerCase=$(echo ${VERSION} | tr '[:upper:]' '[:lower:]')
 
         if [[ "$versionLowerCase" == *"snapshot"* ]]; then
-            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-maven-snapshots"
+            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-${TOOL}-snapshots"
         else
-            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-maven-releases"
+            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-${TOOL}-releases"
         fi
 
         echo "Nexus repository url- ${NEXUS_REPOSITORY_URL}"

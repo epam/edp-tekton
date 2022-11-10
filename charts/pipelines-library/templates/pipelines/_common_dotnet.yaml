@@ -41,7 +41,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
-    name: get-nexus-repository-url-dotnet
+    name: get-nexus-repository-url
   runAfter:
     - sonar
   params:
@@ -49,6 +49,8 @@
       value: $(tasks.get-version.results.VERSION)
     - name: NEXUS_URL
       value: $(params.NEXUS_URL)
+    - name: TOOL
+      value: "dotnet"
 
 - name: get-nuget-token
   taskRef:

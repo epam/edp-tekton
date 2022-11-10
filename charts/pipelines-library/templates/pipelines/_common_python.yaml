@@ -35,7 +35,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
-    name: get-nexus-repository-url-python
+    name: get-nexus-repository-url
   runAfter:
     - sonar
   params:
@@ -43,6 +43,8 @@
       value: $(tasks.get-version.results.VERSION)
     - name: NEXUS_URL
       value: $(params.NEXUS_URL)
+    - name: TOOL
+      value: "python"
 
 - name: push
   taskRef:

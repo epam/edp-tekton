@@ -85,6 +85,8 @@
       value: $(tasks.get-version.results.VERSION)
     - name: NEXUS_URL
       value: $(params.NEXUS_URL)
+    - name: TOOL
+      value: "maven"
 
 - name: push
   taskRef:

@@ -60,7 +60,7 @@ gerrit:
                 assert "build" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[9]["name"]
-                assert "get-nexus-repository-url-npm" == btd[9]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[9]["taskRef"]["name"]
                 assert "push" in btd[10]["name"]
                 assert "npm-push" == btd[10]["taskRef"]["name"]
                 if cbtype == "app":
@@ -90,7 +90,7 @@ gerrit:
                 assert "build" in btedp[9]["name"]
                 assert buildtool == btedp[9]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[10]["name"]
-                assert "get-nexus-repository-url-npm" == btedp[10]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[10]["taskRef"]["name"]
                 assert "push" in btedp[11]["name"]
                 assert "npm-push" == btedp[11]["taskRef"]["name"]
                 if cbtype == "app":
@@ -153,7 +153,7 @@ github:
                 assert "build" in btd[6]["name"]
                 assert buildtool == btd[6]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[7]["name"]
-                assert "get-nexus-repository-url-npm" == btd[7]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
                 assert "npm-push" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
@@ -181,7 +181,7 @@ github:
                 assert "build" in btedp[7]["name"]
                 assert buildtool == btedp[7]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[8]["name"]
-                assert "get-nexus-repository-url-npm" == btedp[8]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
                 assert "push" in btedp[9]["name"]
                 assert "npm-push" == btedp[9]["taskRef"]["name"]
                 if cbtype == "app":
@@ -244,7 +244,7 @@ gitlab:
                 assert "build" in btd[6]["name"]
                 assert buildtool == btd[6]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btd[7]["name"]
-                assert "get-nexus-repository-url-npm" == btd[7]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
                 assert "npm-push" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
@@ -272,7 +272,7 @@ gitlab:
                 assert "build" in btedp[7]["name"]
                 assert buildtool == btedp[7]["taskRef"]["name"]
                 assert "get-nexus-repository-url" in btedp[8]["name"]
-                assert "get-nexus-repository-url-npm" == btedp[8]["taskRef"]["name"]
+                assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
                 assert "push" in btedp[9]["name"]
                 assert "npm-push" == btedp[9]["taskRef"]["name"]
                 if cbtype == "app":

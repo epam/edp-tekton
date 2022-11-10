@@ -4,7 +4,7 @@ kind: Pipeline
 metadata:
   name: gerrit-npm-other-app-build-default
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace

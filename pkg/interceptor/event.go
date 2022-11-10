@@ -1,13 +1,22 @@
 package interceptor
 
-type GerritEventBody struct {
+// GerritEvent represents a Gerrit event.
+type GerritEvent struct {
 	Project struct {
 		Name string `json:"name"`
 	} `json:"project"`
 }
 
-type GitEventBody struct {
+// GitHubEvent represents a GitHub event.
+type GitHubEvent struct {
 	Repository struct {
-		Name string `json:"name"`
+		FullName string `json:"full_name"`
 	} `json:"repository"`
+}
+
+// GitLabEvent represents GitLab event.
+type GitLabEvent struct {
+	Project struct {
+		PathWithNamespace string `json:"path_with_namespace"`
+	} `json:"project"`
 }

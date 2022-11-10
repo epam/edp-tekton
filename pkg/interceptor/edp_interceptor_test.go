@@ -26,93 +26,125 @@ func TestEDPInterceptor_Process(t *testing.T) {
 	utilruntime.Must(codebaseApi.AddToScheme(scheme))
 
 	framework := "Java11"
-	frameworkTransformed := "java11"
-	codebase := &codebaseApi.Codebase{
-		TypeMeta: metav1.TypeMeta{},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
-			Name:      "demo",
-		},
-		Spec: codebaseApi.CodebaseSpec{
-			Framework: &framework,
-			BuildTool: "Maven",
-		},
+	codebaseMeta := metav1.ObjectMeta{
+		Namespace: "test-ns",
+		Name:      "demo",
 	}
-	codebaseWithEmptyFramework := &codebaseApi.Codebase{
-		TypeMeta: metav1.TypeMeta{},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
-			Name:      "demo3",
-		},
-		Spec: codebaseApi.CodebaseSpec{
-			BuildTool: "Maven",
-		},
-	}
-	successExtensions := map[string]interface{}{
-		"spec": codebaseApi.CodebaseSpec{
-			Framework: &frameworkTransformed,
-			BuildTool: "maven",
-		},
-	}
+
 	triggersContext := &triggersv1.TriggerContext{
 		TriggerID: "namespace/test-ns/triggers/name",
 	}
 
-	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase, codebaseWithEmptyFramework).Build()
-	interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
-
 	tests := []struct {
 		name    string
+		objects []runtime.Object
 		request *triggersv1.InterceptorRequest
 		want    *triggersv1.InterceptorResponse
 	}{
 		{
 			name: "success gerrit payload",
+			objects: []runtime.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: codebaseMeta,
+					Spec: codebaseApi.CodebaseSpec{
+						BuildTool:  "Maven",
+						Framework:  &framework,
+						GitUrlPath: stringP("demo"),
+					},
+				},
+			},
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"project": {"name": "demo"}}`,
 				Context: triggersContext,
 			},
 			want: &triggersv1.InterceptorResponse{
-				Extensions: successExtensions,
-				Continue:   true,
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:  stringP("java11"),
+						BuildTool:  "maven",
+						GitUrlPath: stringP("demo"),
+					},
+				},
+				Continue: true,
 			},
 		},
 		{
 			name: "success github payload",
+			objects: []runtime.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: codebaseMeta,
+					Spec: codebaseApi.CodebaseSpec{
+						BuildTool:  "Maven",
+						Framework:  &framework,
+						GitUrlPath: stringP("demo/Repo1"),
+					},
+				},
+			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"name": "demo"}}`,
+				Body:    `{"repository": {"full_name": "demo/repo1"}}`,
 				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
 			want: &triggersv1.InterceptorResponse{
-				Extensions: successExtensions,
-				Continue:   true,
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:  stringP("java11"),
+						BuildTool:  "maven",
+						GitUrlPath: stringP("demo/Repo1"),
+					},
+				},
+				Continue: true,
 			},
 		},
 		{
 			name: "success gitlab payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"name": "demo"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
+			objects: []runtime.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: codebaseMeta,
+					Spec: codebaseApi.CodebaseSpec{
+						BuildTool:  "Maven",
+						Framework:  &framework,
+						GitUrlPath: stringP("demo/repo2"),
+					},
+				},
 			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: successExtensions,
-				Continue:   true,
-			},
-		},
-		{
-			name: "success with empty framework",
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"name": "demo3"}}`,
+				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}}`,
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework: nil,
-						BuildTool: "maven",
+						BuildTool:  "maven",
+						Framework:  stringP("java11"),
+						GitUrlPath: stringP("demo/repo2"),
+					},
+				},
+				Continue: true,
+			},
+		},
+		{
+			name: "success with empty framework",
+			objects: []runtime.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: codebaseMeta,
+					Spec: codebaseApi.CodebaseSpec{
+						BuildTool:  "Maven",
+						GitUrlPath: stringP("demo/repo2"),
+					},
+				},
+			},
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"project": {"path_with_namespace": "demo/repo2"}}`,
+				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
+				Context: triggersContext,
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						BuildTool:  "maven",
+						GitUrlPath: stringP("demo/repo2"),
 					},
 				},
 				Continue: true,
@@ -176,12 +208,15 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Body:    `{"project": {"name": "demo2"}}`,
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want: interceptors.Failf(codes.NotFound, "error"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(tt.objects...).Build()
+			interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
+
 			got := interceptor.Process(context.Background(), tt.request)
 
 			// Disable checking equality of status message, equality of status code is enough.
@@ -206,8 +241,9 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			Name:      "demo",
 		},
 		Spec: codebaseApi.CodebaseSpec{
-			Framework: &framework,
-			BuildTool: "Maven",
+			Framework:  &framework,
+			BuildTool:  "Maven",
+			GitUrlPath: stringP("demo"),
 		},
 	}
 	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase).Build()
@@ -225,8 +261,9 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			wantResp: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework: &frameworkTransformed,
-						BuildTool: "maven",
+						Framework:  &frameworkTransformed,
+						BuildTool:  "maven",
+						GitUrlPath: stringP("demo"),
 					},
 				},
 				Continue: true,
@@ -244,8 +281,8 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			wantResp: &triggersv1.InterceptorResponse{
 				Continue: false,
 				Status: triggersv1.Status{
-					Code:    codes.InvalidArgument,
-					Message: "failed to get codebase test-ns/demo2: codebases.v2.edp.epam.com \"demo2\" not found",
+					Code:    codes.NotFound,
+					Message: "failed to get codebase: codebase with repository path demo2 not found",
 				},
 			},
 			wantErr: assert.NoError,

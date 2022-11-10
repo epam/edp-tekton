@@ -81,15 +81,20 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    # - name: helm-docs
-    #   taskRef:
-    #     name: helm-docs
+    - name: helm-docs
+      taskRef:
+        name: helm-docs
+      runAfter:
+        - init-values
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     - name: test
       taskRef:
         name: npm
       runAfter:
-        - compile
+        - init-values
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)

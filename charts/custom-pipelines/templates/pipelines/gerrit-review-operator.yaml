@@ -60,13 +60,26 @@ spec:
     #     - name: COMMIT_MESSAGE_PATTERN
     #       value: "$(params.COMMIT_MESSAGE_PATTERN)"
 
-    # - name: crdocs-build
-    #   taskRef:
-    #     name: crdocs-build
+    - name: crdocs-build
+      taskRef:
+        name: crdocs
+      runAfter:
+        - init-values
+      params:
+        - name: BASE_IMAGE
+          value: $(params.go-image-version)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
-    # - name: helm-docs
-    #   taskRef:
-    #     name: helm-docs
+    - name: helm-docs
+      taskRef:
+        name: helm-docs
+      runAfter:
+        - init-values
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     - name: build
       taskRef:

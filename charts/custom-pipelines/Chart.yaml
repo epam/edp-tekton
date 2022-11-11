@@ -39,5 +39,5 @@ annotations:
 # we use some templates from core library
 dependencies:
   - name: edp-tekton
-    version: 0.1.0-SNAPSHOT.213
+    version: 0.1.0-SNAPSHOT.223
     repository: https://epam.github.io/edp-helm-charts/snapshot

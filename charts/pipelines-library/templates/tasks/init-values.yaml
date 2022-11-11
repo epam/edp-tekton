@@ -23,10 +23,6 @@ spec:
       description: "edp name"
     - name: CODEBASEBRANCH_NAME
       description: "codebase branch name"
-    - name: VERSIONING_TYPE
-      description: "Versioning type of codebase"
-    - name: COMMIT_MESSAGE_PATTERN
-      description: "Regexp pattern for commit-validation"
     - name: NORMALIZED_BRANCH
       description: "Branch name without '/' symbols and lowercase"
     - name: RESULT_IMAGE_NAME
@@ -56,9 +52,3 @@ spec:
 
         resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
         printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"
-
-        versioningType=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.versioning.type}')
-        echo "${versioningType}" | tr -d '\n' | tee $(results.VERSIONING_TYPE.path)
-
-        commitMessagePattern=$(kubectl get codebase.v2.edp.epam.com ${CODEBASE} -o txt --output=jsonpath='{.spec.commitMessagePattern}')
-        printf "%s" "${commitMessagePattern}" > "$(results.COMMIT_MESSAGE_PATTERN.path)"

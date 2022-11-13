@@ -110,7 +110,7 @@
     - create-ecr-repository
   params:
     - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.VERSION)"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
   workspaces:
     - name: source
       workspace: shared-workspace

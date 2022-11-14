@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: set-version
+spec:
+  description: |
+    This Task sets a version and appVersion into a Chart file.
+
+  workspaces:
+    - name: source
+
+  params:
+    - name: IS_TAG
+      type: string
+      description: "Image Stream Tag"
+    - name: PROJECT_DIR
+      type: string
+      description: "The directory containing project files."
+      default: "."
+  steps:
+    - name: set-version-to-chart
+      image: alpine:3.16.2
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      env:
+        - name: IS_TAG
+          value: "$(params.IS_TAG)"
+      script: |
+        set -ex
+
+        chartPath=$(find . -name "Chart.yaml")
+        IFS=$'\n'
+        for i in "${chartPath}"; do
+            echo "[TEKTON] Chart path is ${i}"
+            sed -i "s/^version:.*$/version: ${IS_TAG}/" $i
+            sed -i "s/^appVersion:.*$/appVersion: ${IS_TAG}/" $i
+        done || true

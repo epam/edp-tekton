@@ -2,8 +2,29 @@
 ## [Unreleased]
 
 
+<a name="v0.1.3"></a>
+## [v0.1.3] - 2022-11-14
+### Features
+
+- Add crdocs task [EPMDEDP-10872](https://jiraeu.epam.com/browse/EPMDEDP-10872)
+- Add Task for updating the version and appVersion of  Helm Chart [EPMDEDP-10879](https://jiraeu.epam.com/browse/EPMDEDP-10879)
+
+### Bug Fixes
+
+- Fix label variable for custom chart [EPMDEDP-10563](https://jiraeu.epam.com/browse/EPMDEDP-10563)
+- Remove commitMessagePattern from TriggerBinding [EPMDEDP-10647](https://jiraeu.epam.com/browse/EPMDEDP-10647)
+
+### Routine
+
+- Add Gitlab Maven Java Apps and Libs [EPMDEDP-10606](https://jiraeu.epam.com/browse/EPMDEDP-10606)
+- Remove parameters from init-values [EPMDEDP-10647](https://jiraeu.epam.com/browse/EPMDEDP-10647)
+- Change VERSION to IS_TAG for IMAGE env of kaniko-build Task [EPMDEDP-10839](https://jiraeu.epam.com/browse/EPMDEDP-10839)
+- Change VERSION to IS_TAG for IMAGE_TAG env of update-cbis Task [EPMDEDP-10839](https://jiraeu.epam.com/browse/EPMDEDP-10839)
+- Set stable version for edp-tekton dependency [EPMDEDP-11013](https://jiraeu.epam.com/browse/EPMDEDP-11013)
+
+
 <a name="v0.1.2"></a>
-## [v0.1.2] - 2022-11-08
+## [v0.1.2] - 2022-11-11
 ### Features
 
 - Move custom logic out of Core pipelines [EPMDEDP-10563](https://jiraeu.epam.com/browse/EPMDEDP-10563)
@@ -198,6 +219,7 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.3...HEAD
+[v0.1.3]: https://github.com/epam/edp-tekton/compare/v0.1.2...v0.1.3
 [v0.1.2]: https://github.com/epam/edp-tekton/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/epam/edp-tekton/compare/v0.1.0...v0.1.1

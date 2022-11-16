@@ -62,8 +62,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework: stringP("java11"),
-						BuildTool: "maven",
+						Framework:            stringP("java11"),
+						BuildTool:            "maven",
+						CommitMessagePattern: stringP(""),
 					},
 				},
 				Continue: true,
@@ -89,9 +90,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:  stringP("java11"),
-						BuildTool:  "maven",
-						GitUrlPath: stringP("/demo/Repo1"),
+						Framework:            stringP("java11"),
+						BuildTool:            "maven",
+						GitUrlPath:           stringP("/demo/Repo1"),
+						CommitMessagePattern: stringP(""),
 					},
 				},
 				Continue: true,
@@ -103,9 +105,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				&codebaseApi.Codebase{
 					ObjectMeta: codebaseMeta,
 					Spec: codebaseApi.CodebaseSpec{
-						BuildTool:  "Maven",
-						Framework:  &framework,
-						GitUrlPath: stringP("/demo/repo2"),
+						BuildTool:            "Maven",
+						Framework:            &framework,
+						GitUrlPath:           stringP("/demo/repo2"),
+						CommitMessagePattern: stringP("pattern"),
 					},
 				},
 			},
@@ -117,9 +120,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						BuildTool:  "maven",
-						Framework:  stringP("java11"),
-						GitUrlPath: stringP("/demo/repo2"),
+						BuildTool:            "maven",
+						Framework:            stringP("java11"),
+						GitUrlPath:           stringP("/demo/repo2"),
+						CommitMessagePattern: stringP("pattern"),
 					},
 				},
 				Continue: true,
@@ -144,8 +148,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						BuildTool:  "maven",
-						GitUrlPath: stringP("/demo/repo2"),
+						BuildTool:            "maven",
+						GitUrlPath:           stringP("/demo/repo2"),
+						CommitMessagePattern: stringP(""),
 					},
 				},
 				Continue: true,
@@ -271,9 +276,10 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			wantResp: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:  &frameworkTransformed,
-						BuildTool:  "maven",
-						GitUrlPath: stringP("/demo"),
+						Framework:            &frameworkTransformed,
+						BuildTool:            "maven",
+						GitUrlPath:           stringP("/demo"),
+						CommitMessagePattern: stringP(""),
 					},
 				},
 				Continue: true,

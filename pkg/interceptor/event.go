@@ -20,3 +20,14 @@ type GitLabEvent struct {
 		PathWithNamespace string `json:"path_with_namespace"`
 	} `json:"project"`
 }
+
+const (
+	gitProviderGitHub = "github"
+	gitProviderGitLab = "gitlab"
+	gitProviderGerrit = "gerrit"
+)
+
+type eventInfo struct {
+	GitProvider string
+	RepoPath    string
+}

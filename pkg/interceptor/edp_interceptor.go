@@ -82,16 +82,9 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 
 // Process processes the interceptor request.
 func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorRequest) *triggersv1.InterceptorResponse {
-	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
-
-	repoName, err := getRepoPath(r)
+	codebase, err := i.getCodeBaseFromRequest(ctx, r)
 	if err != nil {
-		return interceptors.Failf(codes.InvalidArgument, "failed to get repository name: %v", err)
-	}
-
-	codebase, err := i.getCodebaseByRepoPath(ctx, ns, repoName)
-	if err != nil {
-		return interceptors.Failf(codes.NotFound, "failed to get codebase: %v", err)
+		return interceptors.Fail(codes.InvalidArgument, err.Error())
 	}
 
 	if codebase.Spec.Framework != nil {
@@ -107,6 +100,34 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 	}
 }
 
+// getCodeBaseFromRequest returns codebase from interceptor request.
+// If the event is from gerrit, we search codebase by name what is equal to the gerrit project name.
+// If the event is from GitHub/GitLab, we search codebase by gitUrlPath.
+func (i *EDPInterceptor) getCodeBaseFromRequest(ctx context.Context, r *triggersv1.InterceptorRequest) (*codebaseApiV1.Codebase, error) {
+	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
+
+	event, err := getEventInfo(r)
+	if err != nil {
+		return nil, err
+	}
+
+	if event.GitProvider == gitProviderGerrit {
+		codebase := &codebaseApiV1.Codebase{}
+		if err = i.Client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: event.RepoPath}, codebase); err != nil {
+			return nil, fmt.Errorf("failed to get codebase: %w", err)
+		}
+
+		return codebase, nil
+	}
+
+	codebase, err := i.getCodebaseByRepoPath(ctx, ns, event.RepoPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return codebase, nil
+}
+
 // getCodebaseByRepoPath returns codebase by repository path.
 func (i *EDPInterceptor) getCodebaseByRepoPath(ctx context.Context, ns, repoPath string) (*codebaseApiV1.Codebase, error) {
 	codebaseList := &codebaseApiV1.CodebaseList{}
@@ -114,59 +135,77 @@ func (i *EDPInterceptor) getCodebaseByRepoPath(ctx context.Context, ns, repoPath
 		return nil, fmt.Errorf("unable to get codebase list: %w", err)
 	}
 
-	for i := range codebaseList.Items {
-		if codebaseList.Items[i].Spec.GitUrlPath != nil && strings.EqualFold(*codebaseList.Items[i].Spec.GitUrlPath, repoPath) {
-			return &codebaseList.Items[i], nil
+	for n := range codebaseList.Items {
+		if codebaseList.Items[n].Spec.GitUrlPath != nil && strings.EqualFold(*codebaseList.Items[n].Spec.GitUrlPath, repoPath) {
+			return &codebaseList.Items[n], nil
 		}
 	}
 
 	return nil, fmt.Errorf("codebase with repository path %s not found", repoPath)
 }
 
-// getRepoPath returns repository path from event body.
-func getRepoPath(r *triggersv1.InterceptorRequest) (string, error) {
+// getEventInfo returns event info from interceptor request.
+func getEventInfo(r *triggersv1.InterceptorRequest) (*eventInfo, error) {
 	_, isGitHubEvent := r.Header["X-Github-Event"]
 	_, isGitLabEvent := r.Header["X-Gitlab-Event"]
 
 	if isGitLabEvent {
 		gitLabEvent := &GitLabEvent{}
 		if err := json.Unmarshal([]byte(r.Body), gitLabEvent); err != nil {
-			return "", err
+			return nil, fmt.Errorf("failed to unmarshal GitLab event: %w", err)
 		}
 
 		if gitLabEvent.Project.PathWithNamespace == "" {
-			return "", errors.New("gitlab repository path empty")
+			return nil, errors.New("gitlab repository path empty")
 		}
 
-		return strings.ToLower(gitLabEvent.Project.PathWithNamespace), nil
+		return &eventInfo{
+			GitProvider: gitProviderGitLab,
+			RepoPath:    convertRepositoryPath(gitLabEvent.Project.PathWithNamespace),
+		}, nil
 	}
 
 	if isGitHubEvent {
 		gitHubEvent := &GitHubEvent{}
 		if err := json.Unmarshal([]byte(r.Body), gitHubEvent); err != nil {
-			return "", err
+			return nil, fmt.Errorf("failed to unmarshal GitHub event: %w", err)
 		}
 
 		if gitHubEvent.Repository.FullName == "" {
-			return "", errors.New("github repository path empty")
+			return nil, errors.New("github repository path empty")
 		}
 
-		return strings.ToLower(gitHubEvent.Repository.FullName), nil
+		return &eventInfo{
+			GitProvider: gitProviderGitHub,
+			RepoPath:    convertRepositoryPath(gitHubEvent.Repository.FullName),
+		}, nil
 	}
 
 	gerritEventBody := &GerritEvent{}
 	if err := json.Unmarshal([]byte(r.Body), gerritEventBody); err != nil {
-		return "", err
+		return nil, fmt.Errorf("failed to unmarshal Gerrit event: %w", err)
 	}
 
 	if gerritEventBody.Project.Name == "" {
-		return "", errors.New("gerrit repository path empty")
+		return nil, errors.New("gerrit repository path empty")
 	}
 
-	return strings.ToLower(gerritEventBody.Project.Name), nil
+	return &eventInfo{
+		GitProvider: gitProviderGerrit,
+		RepoPath:    strings.ToLower(gerritEventBody.Project.Name),
+	}, nil
 }
 
 // stringPtr returns a pointer to the string value passed in.
 func stringP(value string) *string {
 	return &value
+}
+
+// convertRepositoryPath converts repository path to the format which is used in codebase.
+func convertRepositoryPath(repo string) string {
+	if !strings.HasPrefix(repo, "/") {
+		repo = "/" + repo
+	}
+
+	return strings.ToLower(repo)
 }

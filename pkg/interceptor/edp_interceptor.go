@@ -94,6 +94,10 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
+	if codebase.Spec.CommitMessagePattern == nil {
+		codebase.Spec.CommitMessagePattern = stringP("")
+	}
+
 	return &triggersv1.InterceptorResponse{
 		Continue:   true,
 		Extensions: map[string]interface{}{"spec": codebase.Spec},

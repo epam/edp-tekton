@@ -22,4 +22,6 @@ spec:
     # Truncated cbtype type name to reduce string length
     - name: cbtype
       value: "$(extensions.cbtype_short)"
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
 {{ end }}

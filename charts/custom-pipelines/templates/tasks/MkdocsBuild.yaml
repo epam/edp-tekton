@@ -1,0 +1,86 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: mkdocs
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run python goals and mkdocs on a project.
+  workspaces:
+    - name: source
+    - name: ssh-directory
+  params:
+    - name: PATH_CONTEXT
+      type: string
+      default: "."
+      description: The path where package.json of the project is defined.
+    - name: BASE_IMAGE
+      type: string
+      default: "squidfunk/mkdocs-material:8.5.10"
+      description: The python image you want to use.
+    - name: GIT_SSH_COMMAND
+      type: string
+      default: "ssh -i /tekton/home/.ssh/id_rsa -o StrictHostKeyChecking=no"
+      description: Custom SSH command.
+    - name: GIT_SSH_VARIANT
+      type: string
+      default: "ssh"
+    - name: USER_HOME
+      type: string
+      default: "/tekton/home"
+  steps:
+    - name: mkdocs
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: GIT_SSH_COMMAND
+          value: $(params.GIT_SSH_COMMAND)
+        - name: GIT_SSH_VARIANT
+          value: $(params.GIT_SSH_VARIANT)
+        - name: PARAM_USER_HOME
+          value: $(params.USER_HOME)
+        - name: WORKSPACE_SSH_DIRECTORY_BOUND
+          value: $(workspaces.ssh-directory.bound)
+        - name: WORKSPACE_SSH_DIRECTORY_PATH
+          value: $(workspaces.ssh-directory.path)
+      script: |
+        set -eux
+
+        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+          chmod 700 "${PARAM_USER_HOME}"/.ssh
+          chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+        fi
+
+        commit_docs=$(git show --diff-filter=ACMR --name-only --pretty=format: -- "docs/*" "mkdocs.yml")
+        echo -e "Changed documentation in the commit:\n${commit_docs}"
+
+        if [ -z "${commit_docs}" ]; then
+            echo "No changes related to the documentation have been found, skipping..."
+        else
+            python -m venv /home/tekton/mkdocs
+            source /home/tekton/mkdocs/bin/activate
+            pip install -r hack/mkdocs/requirements.txt
+            mkdocs build -d /tmp/site
+
+            git config --global user.email SupportEPMD-EDP@epam.com
+            git config --global user.name edp-bot
+            git fetch origin gh-pages
+            git checkout -t -f -b gh-pages origin/gh-pages
+            git rm -r .
+            git clean -df -f
+            cp -r /tmp/site/* .
+            # try to address issue with sitemap.xml from GH-Pages
+            touch .nojekyll
+            echo "google-site-verification: google8d28c574bd766c92.html" > google8d28c574bd766c92.html
+            git add .
+            git commit -m 'Update documentation'
+            git push -u origin gh-pages
+        fi

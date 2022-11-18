@@ -24,6 +24,9 @@
       value: {{ .Values.gerrit.sshPort }}
     - name: SSH_GERRIT_COMMAND
       value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+    # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
+    - name: ERR_EXIT_CODE
+      value: 0
   workspaces:
     - name: ssh-directory
       workspace: ssh-creds

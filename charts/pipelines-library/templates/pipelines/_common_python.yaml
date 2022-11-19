@@ -9,7 +9,6 @@
       value: $(params.python-image-version)
     - name: EXTRA_COMMANDS
       value: |
-        set -ex
         pip3 install .
         [ -f run_service.py ] && python run_service.py &
         python setup.py pytest
@@ -54,16 +53,13 @@
   params:
     - name: BASE_IMAGE
       value: 'python:3.8-slim'
+    - name: TWINE_REPOSITORY_URL
+      value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/"
     - name: EXTRA_COMMANDS
       value: |
-        set -ex
         pip install twine==4.0.1
         python setup.py sdist
-        twine upload \
-            --repository-url $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/ \
-             -u "${CI_USERNAME}" \
-             -p "${CI_PASSWORD}" \
-            dist/*
+        twine upload dist/*
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -80,7 +76,6 @@
       value: $(params.python-image-version)
     - name: EXTRA_COMMANDS
       value: |
-        set -ex
         python setup.py clean build install --user
   workspaces:
     - name: source
@@ -96,7 +91,6 @@
       value: $(params.python-image-version)
     - name: EXTRA_COMMANDS
       value: |
-        set -ex
         pip3 install .
         [ -f run_service.py ] && python run_service.py &
         python setup.py pytest

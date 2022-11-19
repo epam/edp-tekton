@@ -12,8 +12,11 @@ metadata:
 spec:
   description: >-
     This task can be used to run python goals on a project.
-
-    This task can be used to run python goals on a project
+    It utilizes default PIP and Twine environment variables.
+    Twine logs in to nexus using environment variables to upload packages.
+    PIP does not support username and password environment variables yet.
+    Thus, we use the ~/.netrc file for PIP to download packages.
+    The ~/.config/pip/pip.conf file can also be used instead of ~/.netrc.
   workspaces:
     - name: source
   params:
@@ -21,6 +24,21 @@ spec:
       type: string
       default: "."
       description: The path where package.json of the project is defined.
+    - name: PIP_TRUSTED_HOST
+      type: string
+      default: "nexus"
+      description: Nexus Repository host PIP connects to via HTTP.
+    - name: PIP_INDEX_URL
+      type: string
+      default: "http://nexus:8081/repository/edp-python-group/simple/"
+      description: >-
+        Repo index from wich PIP downloads private packages and public packages via proxy.
+        PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL
+        can hold multiple URLs if passed with spaces.
+    - name: TWINE_REPOSITORY_URL
+      type: string
+      default: ""
+      description: Nexus Repository URL Twine uploads to.
     - name: EXTRA_COMMANDS
       type: string
     - name: BASE_IMAGE
@@ -38,36 +56,35 @@ spec:
       env:
         - name: HOME
           value: $(workspaces.source.path)
-        - name: CI_USERNAME
+        - name: PIP_TRUSTED_HOST
+          value: $(params.PIP_TRUSTED_HOST)
+        - name: PIP_INDEX_URL
+          value: $(params.PIP_INDEX_URL)
+        - name: TWINE_REPOSITORY_URL
+          value: $(params.TWINE_REPOSITORY_URL)
+        - name: TWINE_USERNAME
           valueFrom:
             secretKeyRef:
               name: $(params.ci-secret)
               key: username
-        - name: CI_PASSWORD
+        - name: TWINE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: $(params.ci-secret)
               key: password
       script: |
         #!/usr/bin/env sh
-        set -e
+        set -ex
         export PATH=$PATH:$HOME/.local/bin
 
-        cat <<EOP >> ~/pip.conf
-        [global]
-        trusted-host = nexus
-        index = http://${CI_USERNAME}:${CI_PASSWORD}@nexus:8081/repository/edp-python-group/pypi
-        index-url = http://${CI_USERNAME}:${CI_PASSWORD}@nexus:8081/repository/edp-python-group/simple
-        EOP
-
-        cat <<EOF > ~/.pypirc
-        [distutils]
-        index-servers =
-           nexus
-        [nexus]
-        repository = http://nexus:8081/repository/edp-python-group/
-        username = ${CI_USERNAME}
-        password = ${CI_PASSWORD}
+        netcr_file="$HOME/.netrc"
+        if [ ! -f "${netcr_file}" ]; then
+          cat <<-EOF > "${netcr_file}"
+        machine ${PIP_TRUSTED_HOST}
+        login ${TWINE_USERNAME}
+        password ${TWINE_PASSWORD}
         EOF
+        chmod 0600 "${netcr_file}"
+        fi
 
         $(params.EXTRA_COMMANDS)

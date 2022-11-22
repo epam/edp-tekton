@@ -109,7 +109,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 		Continue: true,
 		Extensions: map[string]interface{}{
 			"spec":           codebase.Spec,
-			"codebasebranch": event.Branch,
+			"codebasebranch": fmt.Sprintf("%s-%s", codebase.Name, event.Branch),
 		},
 	}
 }
@@ -264,7 +264,7 @@ func convertRepositoryPath(repo string) string {
 
 // convertBranchName converts the branch name to the format used in the codebase for Kubernetes resource naming.
 func convertBranchName(branch string) string {
-	r := strings.NewReplacer("/", "-", ".", "-")
+	r := strings.NewReplacer("/", "-")
 
 	return r.Replace(branch)
 }

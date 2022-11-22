@@ -24,4 +24,6 @@ spec:
       value: "$(extensions.spec.versioning.type)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
 {{ end }}

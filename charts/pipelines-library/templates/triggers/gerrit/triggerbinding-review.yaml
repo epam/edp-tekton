@@ -28,4 +28,6 @@ spec:
       value: "$(body.patchSet.number)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
 {{ end }}

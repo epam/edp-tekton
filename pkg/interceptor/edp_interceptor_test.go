@@ -36,10 +36,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		objects []runtime.Object
-		request *triggersv1.InterceptorRequest
-		want    *triggersv1.InterceptorResponse
+		name        string
+		objects     []runtime.Object
+		request     *triggersv1.InterceptorRequest
+		want        *triggersv1.InterceptorResponse
+		containsErr string
 	}{
 		{
 			name: "success gerrit payload",
@@ -56,7 +57,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"name": "demo"}}`,
+				Body:    `{"project": {"name": "demo"}, "change": {"branch": "master"}}`,
 				Context: triggersContext,
 			},
 			want: &triggersv1.InterceptorResponse{
@@ -66,6 +67,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						BuildTool:            "maven",
 						CommitMessagePattern: stringP(""),
 					},
+					"codebasebranch": "master",
 				},
 				Continue: true,
 			},
@@ -83,7 +85,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"full_name": "demo/repo1"}}`,
+				Body:    `{"repository": {"full_name": "demo/repo1"}, "pull_request": {"head": {"ref": "feature/1"}}}`,
 				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
@@ -95,6 +97,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						GitUrlPath:           stringP("/demo/Repo1"),
 						CommitMessagePattern: stringP(""),
 					},
+					"codebasebranch": "feature-1",
 				},
 				Continue: true,
 			},
@@ -113,7 +116,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}}`,
+				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "feature.1"}}`,
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
@@ -125,6 +128,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						GitUrlPath:           stringP("/demo/repo2"),
 						CommitMessagePattern: stringP("pattern"),
 					},
+					"codebasebranch": "feature-1",
 				},
 				Continue: true,
 			},
@@ -141,7 +145,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/repo2"}}`,
+				Body:    `{"project": {"path_with_namespace": "demo/repo2"}, "object_attributes": {"target_branch": "master"}}`,
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
@@ -152,6 +156,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						GitUrlPath:           stringP("/demo/repo2"),
 						CommitMessagePattern: stringP(""),
 					},
+					"codebasebranch": "master",
 				},
 				Continue: true,
 			},
@@ -162,7 +167,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Body:    `{"repository": `,
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "failed to unmarshal Gerrit event",
 		},
 		{
 			name: "no project name in gerrit payload",
@@ -170,7 +176,17 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Body:    `{"project": {"field": "demo"}}`,
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "gerrit repository path empty",
+		},
+		{
+			name: "no branch name in gerrit payload",
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"project": {"name": "demo"}}`,
+				Context: triggersContext,
+			},
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "gerrit target branch empty",
 		},
 		{
 			name: "failed to unmarshal github payload",
@@ -179,7 +195,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "failed to unmarshal GitHub event",
 		},
 		{
 			name: "no repository name in github payload",
@@ -188,7 +205,18 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "github repository path empty",
+		},
+		{
+			name: "no branch name in github payload",
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"repository": {"full_name": "demo"}}`,
+				Header:  map[string][]string{"X-Github-Event": {"data"}},
+				Context: triggersContext,
+			},
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "github target branch empty",
 		},
 		{
 			name: "failed to unmarshal gitlab payload",
@@ -197,7 +225,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "failed to unmarshal GitLab event",
 		},
 		{
 			name: "no repository name in gitlab payload",
@@ -206,24 +235,37 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "gitlab repository path empty",
+		},
+		{
+			name: "no branch name in gitlab payload",
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"project": {"path_with_namespace": "demo"}}`,
+				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
+				Context: triggersContext,
+			},
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "gitlab target branch empty",
 		},
 		{
 			name: "codebase not found for gerrit flow",
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"name": "demo2"}}`,
+				Body:    `{"project": {"name": "demo2"}, "change": {"branch": "master"}}`,
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "not found",
 		},
 		{
-			name: "codebase lis found for gitlab flow",
+			name: "codebase not found in the list in gitlab flow",
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}}`,
+				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "master"}}`,
 				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
 				Context: triggersContext,
 			},
-			want: interceptors.Failf(codes.InvalidArgument, "error"),
+			want:        interceptors.Failf(codes.InvalidArgument, "error"),
+			containsErr: "not found",
 		},
 	}
 
@@ -233,6 +275,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
 
 			got := interceptor.Process(context.Background(), tt.request)
+
+			if tt.containsErr != "" {
+				require.Contains(t, got.Status.Message, tt.containsErr)
+			}
 
 			// Disable checking equality of status message, equality of status code is enough.
 			got.Status.Message = ""
@@ -272,7 +318,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 	}{
 		{
 			name:    "success",
-			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
+			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
 			wantResp: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
@@ -281,6 +327,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 						GitUrlPath:           stringP("/demo"),
 						CommitMessagePattern: stringP(""),
 					},
+					"codebasebranch": "feature1",
 				},
 				Continue: true,
 			},
@@ -293,7 +340,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 		},
 		{
 			name:    "failed to get codebase",
-			reqBody: `{"body": "{\"project\": {\"name\": \"demo2\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
+			reqBody: `{"body": "{\"project\": {\"name\": \"demo2\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
 			wantResp: &triggersv1.InterceptorResponse{
 				Continue: false,
 				Status: triggersv1.Status{

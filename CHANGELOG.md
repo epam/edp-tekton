@@ -2,6 +2,22 @@
 ## [Unreleased]
 
 
+<a name="v0.1.5"></a>
+## [v0.1.5] - 2022-11-22
+### Features
+
+- Allow PIP to search through private repo [EPMDEDP-10606](https://jiraeu.epam.com/browse/EPMDEDP-10606)
+
+### Bug Fixes
+
+- Modify Python PIP auth [EPMDEDP-10606](https://jiraeu.epam.com/browse/EPMDEDP-10606)
+
+### Code Refactoring
+
+- Introduce common library [EPMDEDP-11008](https://jiraeu.epam.com/browse/EPMDEDP-11008)
+- Update gerrit-ssh-cmd task [EPMDEDP-11031](https://jiraeu.epam.com/browse/EPMDEDP-11031)
+
+
 <a name="v0.1.4"></a>
 ## [v0.1.4] - 2022-11-18
 ### Features
@@ -237,7 +253,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.5...HEAD
+[v0.1.5]: https://github.com/epam/edp-tekton/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/epam/edp-tekton/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/epam/edp-tekton/compare/v0.1.2...v0.1.3
 [v0.1.2]: https://github.com/epam/edp-tekton/compare/v0.1.1...v0.1.2

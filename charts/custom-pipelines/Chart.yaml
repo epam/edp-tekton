@@ -36,8 +36,8 @@ annotations:
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/epam-delivery-platform
 
-# we use some templates from core library
+# we use templates from common library
 dependencies:
-  - name: edp-tekton
-    version: 0.1.2
+  - name: edp-tekton-common-library
+    version: 0.1.5
     repository: https://epam.github.io/edp-helm-charts/stable

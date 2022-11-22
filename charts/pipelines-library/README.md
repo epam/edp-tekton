@@ -31,6 +31,12 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 
 * <https://github.com/epam/edp-tekton>
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.1.5 |
+
 ## Values
 
 | Key | Type | Default | Description |

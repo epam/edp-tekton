@@ -16,7 +16,7 @@ spec:
     Twine logs in to nexus using environment variables to upload packages.
     PIP does not support username and password environment variables yet.
     Thus, we use the ~/.netrc file for PIP to download packages.
-    The ~/.config/pip/pip.conf file can also be used instead of ~/.netrc.
+    The ~/.config/pip/pip.conf file can also be used along with ~/.netrc.
   workspaces:
     - name: source
   params:
@@ -28,17 +28,27 @@ spec:
       type: string
       default: "nexus"
       description: Nexus Repository host PIP connects to via HTTP.
+    - name: PIP_INDEX
+      type: string
+      default: "http://nexus:8081/repository/edp-python-group/pypi"
+      description: >-
+        Private repo index PIP searches through. It is used by 'pip search' command.
     - name: PIP_INDEX_URL
       type: string
-      default: "http://nexus:8081/repository/edp-python-group/simple/"
+      default: "http://nexus:8081/repository/edp-python-group/simple"
       description: >-
         Repo index from wich PIP downloads private packages and public packages via proxy.
-        PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL
-        can hold multiple URLs if passed with spaces.
+        PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL can hold 
+        multiple URLs if passed with spaces. It is used by 'pip install' command.
+        To access index via web, add slash at the end of 'simple/'.
     - name: TWINE_REPOSITORY_URL
       type: string
       default: ""
       description: Nexus Repository URL Twine uploads to.
+    - name: TWINE_NON_INTERACTIVE
+      type: string
+      default: "1"
+      description: Do not interactively prompt for credentials if they are missing.
     - name: EXTRA_COMMANDS
       type: string
     - name: BASE_IMAGE
@@ -58,10 +68,14 @@ spec:
           value: $(workspaces.source.path)
         - name: PIP_TRUSTED_HOST
           value: $(params.PIP_TRUSTED_HOST)
+        - name: PIP_INDEX
+          value: $(params.PIP_INDEX)
         - name: PIP_INDEX_URL
           value: $(params.PIP_INDEX_URL)
         - name: TWINE_REPOSITORY_URL
           value: $(params.TWINE_REPOSITORY_URL)
+        - name: TWINE_NON_INTERACTIVE
+          value: $(params.TWINE_NON_INTERACTIVE)
         - name: TWINE_USERNAME
           valueFrom:
             secretKeyRef:

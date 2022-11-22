@@ -1,0 +1,209 @@
+# The init section for gerrit build pipeline
+{{- define "gerrit-build-start" -}}
+- name: fetch-repository
+  taskRef:
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: gerrit-notify
+  taskRef:
+    name: gerrit-ssh-cmd
+  runAfter:
+    - fetch-repository
+  params:
+    - name: GERRIT_PORT
+      value: {{ .Values.gerrit.sshPort }}
+    - name: SSH_GERRIT_COMMAND
+      value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+    # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
+    - name: ERR_EXIT_CODE
+      value: 0
+  workspaces:
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
+{{- end -}}
+
+# The init section for gerrit code-review pipeline
+{{- define "gerrit-review-start" -}}
+- name: fetch-repository
+  taskRef:
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: refspec
+      value: $(params.git-refspec)
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: gerrit-notify
+  taskRef:
+    name: gerrit-ssh-cmd
+  params:
+    - name: GERRIT_PORT
+      value: {{ .Values.gerrit.sshPort }}
+    - name: SSH_GERRIT_COMMAND
+      value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+  workspaces:
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.targetBranch)
+{{- end -}}
+
+{{- define "sonar-cleanup" -}}
+- name: sonar-cleanup
+  taskRef:
+    name: sonar-cleanup
+  runAfter:
+    - init-values
+  params:
+    - name: SONAR_HOST_URL
+      value: $(params.SONAR_URL)
+    - name: patchsetNumber
+      value: $(params.patchsetNumber)
+    - name: changeNumber
+      value: $(params.changeNumber)
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH
+      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+{{- end -}}
+
+# The last section for Build Pipeline
+{{- define "build-pipeline-end" -}}
+- name: kaniko-build
+  taskRef:
+    name: kaniko
+  runAfter:
+    - create-ecr-repository
+  params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: git-tag
+  taskRef:
+    name: git-cli
+  runAfter:
+    - kaniko-build
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: update-cbis
+  taskRef:
+    name: update-cbis
+  runAfter:
+    - git-tag
+  params:
+    - name: CBIS_NAME
+      value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+    - name: IMAGE_TAG
+      value: $(tasks.get-version.results.IS_TAG)
+{{- end -}}
+
+{{- define "build-pipeline-lib-end" -}}
+- name: git-tag
+  taskRef:
+    name: git-cli
+  runAfter:
+    - push
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+{{- end -}}
+
+# final section for gerrit codereview pipelines
+{{- define "gerrit-review-vote" -}}
+finally:
+  - name: gerrit-vote-success
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      name: gerrit-ssh-cmd
+    params:
+      - name: GERRIT_PORT
+        value: {{ .Values.gerrit.sshPort }}
+      - name: SSH_GERRIT_COMMAND
+        value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+    workspaces:
+      - name: ssh-directory
+        workspace: ssh-creds
+
+  - name: gerrit-vote-failure
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Failed"]
+    taskRef:
+      name: gerrit-ssh-cmd
+    params:
+      - name: GERRIT_PORT
+        value: {{ .Values.gerrit.sshPort }}
+      - name: SSH_GERRIT_COMMAND
+        value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+    workspaces:
+      - name: ssh-directory
+        workspace: ssh-creds
+{{- end -}}

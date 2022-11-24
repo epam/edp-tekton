@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.1.6"></a>
+## [v0.1.6] - 2022-11-24
+### Features
+
+- Put codebasebranch name into interceptor payload [EPMDEDP-11057](https://jiraeu.epam.com/browse/EPMDEDP-11057)
+- Return codebase name as a part of EDP interceptor payload [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+
+### Code Refactoring
+
+- Use common library as dependencies [EPMDEDP-11008](https://jiraeu.epam.com/browse/EPMDEDP-11008)
+- Use codebasebranch name from interceptor [EPMDEDP-11031](https://jiraeu.epam.com/browse/EPMDEDP-11031)
+- Cobebasebranch has format codebase-gitbranch [EPMDEDP-11057](https://jiraeu.epam.com/browse/EPMDEDP-11057)
+
+
 <a name="v0.1.5"></a>
 ## [v0.1.5] - 2022-11-22
 ### Features
@@ -253,7 +267,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.6...HEAD
+[v0.1.6]: https://github.com/epam/edp-tekton/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/epam/edp-tekton/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/epam/edp-tekton/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/epam/edp-tekton/compare/v0.1.2...v0.1.3

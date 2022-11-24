@@ -18,6 +18,8 @@ spec:
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: codebase
+      description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
     - name: changeNumber

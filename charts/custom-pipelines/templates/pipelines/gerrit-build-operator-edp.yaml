@@ -33,6 +33,9 @@ spec:
       default: "golang-go"
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranchname"
+      type: string
     - name: go-image-version
       default: 'golang:1.18.4-bullseye'
       description: "go image with make installed"
@@ -52,7 +55,7 @@ spec:
         - init-values
       params:
         - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
@@ -65,7 +68,7 @@ spec:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)
         - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -94,9 +97,9 @@ spec:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

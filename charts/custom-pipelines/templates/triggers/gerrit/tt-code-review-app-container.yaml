@@ -30,7 +30,7 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gerritproject)-review-
+        generateName: $(tt.params.codebase)-review-
       spec:
         serviceAccountName: tekton
         pipelineRef:
@@ -43,7 +43,7 @@ spec:
           - name: git-refspec
             value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
-            value: $(tt.params.gerritproject)
+            value: $(tt.params.codebase)
           - name: targetBranch
             value: $(tt.params.targetBranch)
           - name: changeNumber

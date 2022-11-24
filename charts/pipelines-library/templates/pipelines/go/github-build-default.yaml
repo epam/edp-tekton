@@ -30,6 +30,9 @@ spec:
       default: "golang-go"
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: go-image-version
       default: 'golang:1.18.4-alpine3.16'
       description: "go image version"

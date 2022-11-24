@@ -31,6 +31,9 @@ spec:
       default: 'java11-maven'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: maven-image-version
       default: 'maven:3.8.6-openjdk-11-slim'
       description: "maven image version"
@@ -88,7 +91,7 @@ spec:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)
         - name: reportDataEngagementName
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

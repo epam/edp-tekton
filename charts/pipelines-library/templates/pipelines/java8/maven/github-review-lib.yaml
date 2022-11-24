@@ -38,6 +38,9 @@ spec:
       default: 'java8-maven'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: maven-image-version
       default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
@@ -162,8 +165,8 @@ spec:
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
-            - '-Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
+            - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
             - '-Dsonar.qualitygate.wait=true'
             - '-Dsonar.host.url=$(params.SONAR_URL)'
             - verify

@@ -37,6 +37,9 @@ spec:
       default: "python-app"
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: python-image-version
       default: 'python:3.8-alpine3.16'
       description: "python image version"
@@ -140,9 +143,9 @@ spec:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

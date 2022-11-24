@@ -21,8 +21,6 @@ spec:
       description: "docker host url"
     - name: TENANT_NAME
       description: "edp name"
-    - name: CODEBASEBRANCH_NAME
-      description: "codebase branch name"
     - name: NORMALIZED_BRANCH
       description: "Branch name without '/' symbols and lowercase"
     - name: RESULT_IMAGE_NAME
@@ -47,8 +45,6 @@ spec:
 
         normalizedBranch=$(echo ${BRANCH//[^\(?!.)a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')
         printf "%s" "${normalizedBranch}" > "$(results.NORMALIZED_BRANCH.path)"
-
-        echo "${CODEBASE}-${normalizedBranch}" | tr -d "\n" | tee $(results.CODEBASEBRANCH_NAME.path)
 
         resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
         printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"

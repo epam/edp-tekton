@@ -30,6 +30,9 @@ spec:
       default: 'react-npm-edp-version'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: npm-image-version
       default: 'docker.io/library/node:18.10-alpine3.16'
       description: "npm image version"

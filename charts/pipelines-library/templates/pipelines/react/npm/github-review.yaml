@@ -37,6 +37,9 @@ spec:
       default: 'react-npm-edp-version'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: npm-image-version
       default: 'docker.io/library/node:18.10-alpine3.16'
       description: "npm image version"
@@ -142,9 +145,9 @@ spec:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

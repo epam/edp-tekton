@@ -20,6 +20,10 @@ spec:
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: targetBranch
       description: Target branch of Merge Request
+    - name: codebase
+      description: Codebase name used in pipeline
+    - name: codebasebranch
+      description: Codebasebranch name used in pipeline
     - name: changeNumber
       description: Change number from Merge Request
     - name: patchsetNumber
@@ -28,7 +32,7 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gerritproject)-review-
+        generateName: $(tt.params.codebase)-review-
       spec:
         serviceAccountName: tekton
         taskRunSpecs:
@@ -44,7 +48,9 @@ spec:
           - name: git-refspec
             value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
-            value: $(tt.params.gerritproject)
+            value: $(tt.params.codebase)
+          - name: CODEBASEBRANCH_NAME
+            value: $(tt.params.codebasebranch)
           - name: targetBranch
             value: $(tt.params.targetBranch)
           - name: changeNumber

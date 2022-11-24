@@ -30,8 +30,8 @@
         dotnet sonarscanner begin /d:sonar.host.url=$(params.SONAR_URL) \
           /d:sonar.login=${SONAR_TOKEN} \
           /d:sonar.qualitygate.wait=true \
-          /k:$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-          /n:$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
+          /k:$(params.CODEBASEBRANCH_NAME) \
+          /n:$(params.CODEBASEBRANCH_NAME) \
           /d:sonar.cs.opencover.reportsPaths=./*Tests*/*.xml
         dotnet build ${sln_filename}
         dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}

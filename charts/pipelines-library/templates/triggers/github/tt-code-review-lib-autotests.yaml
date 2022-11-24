@@ -18,11 +18,13 @@ spec:
       description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: cbtype
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: codebase
+      description: Codebase name used in pipeline
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gitrepositoryname)-review-
+        generateName: $(tt.params.codebase)-review-
       spec:
         serviceAccountName: tekton
         pipelineRef:
@@ -33,7 +35,7 @@ spec:
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
-            value: $(tt.params.gitrepositoryname)
+            value: $(tt.params.codebase)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: gitsha

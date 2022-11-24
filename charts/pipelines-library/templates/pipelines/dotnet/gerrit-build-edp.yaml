@@ -33,6 +33,9 @@ spec:
       default: 'dotnet-dotnet-dotnet-3.1'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: dotnet-sdk-image-version
       default: 'mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16'
       description: "dotnet-sdk image version"
@@ -52,7 +55,7 @@ spec:
         - init-values
       params:
         - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
 
     - name: update-build-number
       taskRef:

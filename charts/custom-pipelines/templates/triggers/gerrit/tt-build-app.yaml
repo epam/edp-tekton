@@ -20,6 +20,8 @@ spec:
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: codebase
+      description: Codebase bane used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
     - name: changeNumber
@@ -30,10 +32,11 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.gerritproject)-build-
+        generateName: $(tt.params.codebase)-build-
         labels:
           # used by UI to sort pipelines for codebasebranches
           app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
+          app.edp.epam.com/codebase: $(tt.params.codebase)
       spec:
         serviceAccountName: tekton
         pipelineRef:
@@ -44,7 +47,9 @@ spec:
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
-            value: $(tt.params.gerritproject)
+            value: $(tt.params.codebase)
+          - name: CODEBASEBRANCH_NAME
+            value: $(tt.params.codebasebranch)
           - name: changeNumber
             value: $(tt.params.changeNumber)
           - name: patchsetNumber

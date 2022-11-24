@@ -29,8 +29,8 @@
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-        -Dsonar.projectKey=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
-        -Dsonar.projectName=$(tasks.init-values.results.CODEBASEBRANCH_NAME) \
+        -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
+        -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
         -Dsonar.host.url=$(params.SONAR_URL) \
         -Dsonar.qualitygate.wait=true \
         sonarqube

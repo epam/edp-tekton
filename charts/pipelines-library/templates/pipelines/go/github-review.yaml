@@ -37,6 +37,9 @@ spec:
       default: "golang-go"
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: go-image-version
       default: 'golang:1.18.4-alpine3.16'
       description: "go image version"
@@ -108,9 +111,9 @@ spec:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
           workspace: shared-workspace

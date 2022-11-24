@@ -25,6 +25,9 @@ spec:
       default: 'terraform-terraform'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -36,7 +39,7 @@ spec:
         - init-values
       params:
         - name: CODEBASEBRANCH_NAME
-          value: $(tasks.init-values.results.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASEBRANCH_NAME)
 
 {{- include "terraform-build-common" . | nindent 4 }}
 

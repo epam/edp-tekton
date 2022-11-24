@@ -109,6 +109,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 		Continue: true,
 		Extensions: map[string]interface{}{
 			"spec":           codebase.Spec,
+			"codebase":       codebase.Name,
 			"codebasebranch": fmt.Sprintf("%s-%s", codebase.Name, event.Branch),
 		},
 	}

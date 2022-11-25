@@ -1,0 +1,91 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: promote-images
+spec:
+  params:
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      type: string
+      default: bitnami/kubectl:1.25.4
+    - name: CODEBASE_TAG
+      description: "Codebases with a tag, separated by tabs. Example: foo=1.23 bar=master-1 baz=0.0.1-SNAPSHOT"
+      type: string
+      default: ""
+    - name: CDPIPELINE_CR
+      description: CDPipeline custom resource name
+      type: string
+      default: ""
+    - name: CDPIPELINE_STAGE
+      description: Stage name in CD Pipeline
+      type: string
+      default: ""
+    - name: CBIS_CRD
+      description: CodebaseImageStream custom resource definition.
+      type: string
+      default: "cbis.v2.edp.epam.com"
+    - name: STAGE_CRD
+      description: Stage custom resource definition.
+      type: string
+      default: "stages.v2.edp.epam.com"
+    - name: CDPIPELINE_CRD
+      description: CDPipeline custom resource definition.
+      type: string
+      default: "cdpipelines.v2.edp.epam.com"
+  steps:
+    - name: annotate
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CODEBASE_TAG
+          value: "$(params.CODEBASE_TAG)"
+        - name: CDPIPELINE_CR
+          value: "$(params.CDPIPELINE_CR)"
+        - name: CDPIPELINE_STAGE
+          value: "$(params.CDPIPELINE_STAGE)"
+        - name: STAGE_CRD
+          value: "$(params.STAGE_CRD)"
+      script: |
+        set -ex
+        STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
+        for i in ${CODEBASE_TAG}; do
+          kubectl annotate --overwrite "${STAGE_CRD}" "${STAGE_CR}" "app.edp.epam.com/${i}"
+        done
+    - name: promote-images
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CDPIPELINE_CR
+          value: "$(params.CDPIPELINE_CR)"
+        - name: CDPIPELINE_STAGE
+          value: "$(params.CDPIPELINE_STAGE)"
+        - name: CDPIPELINE_CRD
+          value: "$(params.CDPIPELINE_CRD)"
+        - name: CBIS_CRD
+          value: "$(params.CBIS_CRD)"
+        - name: STAGE_CRD
+          value: "$(params.STAGE_CRD)"
+      script: |
+        set -ex
+
+        APPS_PROMOTE=$(kubectl get "${CDPIPELINE_CRD}" "${CDPIPELINE_CR}" -o jsonpath='{.spec.applicationsToPromote[*]}')
+        DATE_FORMAT=$(date +"%Y-%m-%dT%T")
+        STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
+
+        for APP in ${APPS_PROMOTE}; do
+          VERIFIED_SBIS="${STAGE_CR}-${APP}-verified"
+          IMAGE_TAG=$(kubectl get "${STAGE_CRD}" "${STAGE_CR}" -o jsonpath="{.metadata.annotations.app\.edp\.epam\.com/${APP}}")
+
+          if [ -n "${IMAGE_TAG}" ]; then
+            CBIS_TAG=$(kubectl get "${CBIS_CRD}" "${VERIFIED_SBIS}" -o jsonpath='{.spec.tags[*].name}')
+            NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT}\"}"
+
+            if [ -n "${CBIS_TAG}" ] && [ "${CBIS_TAG}" = "$(printf '%s' "${CBIS_TAG}" | sed 's/'"${IMAGE_TAG}"'//g')" ]; then
+              echo "[TEKTON][DEBUG] ImageStream ${VERIFIED_SBIS} doesn't contain ${IMAGE_TAG} tag ... it will be added."
+              kubectl patch "${CBIS_CRD}" "${VERIFIED_SBIS}" --type json \
+                -p "[{\"op\": \"add\", \"path\": \"/spec/tags/-\", \"value\": ${NEW_CBIS_TAG} }]"
+            elif [ -z "${CBIS_TAG}" ]; then
+              echo "[TEKTON][DEBUG] There're no tags in imageStream ${VERIFIED_SBIS} ... the first one will be added."
+              kubectl patch "${CBIS_CRD}" "${VERIFIED_SBIS}" --type=merge \
+                -p "{\"spec\":{\"tags\":[${NEW_CBIS_TAG}]}}"
+            fi
+          fi
+        done

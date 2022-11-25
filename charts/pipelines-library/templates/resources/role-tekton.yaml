@@ -19,10 +19,12 @@ rules:
   - apiGroups:
       - 'v2.edp.epam.com'
     resources:
+      - cdpipelines
       - codebasebranches
       - codebasebranches/status
       - codebaseimagestreams
       - codebases
+      - stages
     verbs:
       - get
       - update

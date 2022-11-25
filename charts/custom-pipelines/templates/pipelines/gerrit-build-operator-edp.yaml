@@ -41,9 +41,25 @@ spec:
       description: "go image with make installed"
       type: string
     - name: changeNumber
-      description: Change number from Merge Request
+      description: "Change number from Merge Request"
     - name: patchsetNumber
-      description: Patchset number from Merge Request
+      description: "Patchset number from Merge Request"
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: COMMIT_ID
+      description: "Commit id"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: PIPELINE_URL
+      description: "Pipeline url"
+    - name: VCS_TAG
+      description: "VCS_TAG"
+    - name: VERSION
+      description: "VERSION"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -130,30 +146,59 @@ spec:
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 
-    # TODO
-    # - name: create-jira-issue-metadata
+    # - name: push-to-jira
     #   taskRef:
-    #     name: create-jira-issue-metadata
-    # - name: ecr-to-docker
-    #   taskRef:
-    #     name: ecr-to-docker
-    #   runAfter:
-    #     - create-jira-issue-metadata
+    #     name: push-to-jira
     #   params:
-    #     - name: ECR_HOST
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-    #     - name: ECR_IMAGE
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-    #     - name: IMAGE_TAG
-    #       value: "$(tasks.get-version.results.VERSION)"
+    #     - name: TICKET_NAME_PATTERN
+    #       value: "$(params.TICKET_NAME_PATTERN)"
+    #     - name: COMMIT_MESSAGE_PATTERN
+    #       value: "$(params.COMMIT_MESSAGE_PATTERN)"
+    #     - name: COMMIT_MESSAGE
+    #       value: "$(params.COMMIT_MESSAGE)"
+    #     - name: COMMIT_ID
+    #       value: "$(params.COMMIT_ID)"
+    #     - name: JIRA_ISSUE_METADATA_PAYLOAD
+    #       value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
     #     - name: CODEBASE_NAME
     #       value: "$(params.CODEBASE_NAME)"
-    # TODO
-    # - name: set-version
-    #   taskRef:
-    #     name: set-version
-    # TODO
-    # - name: helm-push-gh-pages
-    #   taskRef:
-    #     name: helm-push-gh-pages
+    #     - name: PIPELINE_URL
+    #       value: "$(params.PIPELINE_URL)"
+    #     - name: VCS_TAG
+    #       value: "$(params.VCS_TAG)"
+    #     - name: VERSION
+    #       value: "$(params.VERSION)"
+    - name: ecr-to-docker
+      taskRef:
+        name: ecr-to-docker
+      runAfter:
+        - create-ecr-repository
+      params:
+        - name: ECR_HOST
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
+        - name: ECR_IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: IMAGE_TAG
+          value: "$(tasks.get-version.results.VERSION)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+    - name: set-version
+      taskRef:
+        name: set-version
+      runAfter:
+        - create-ecr-repository
+      params:
+        - name: IS_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: helm-push-gh-pages
+      taskRef:
+        name: helm-push-gh-pages
+      runAfter:
+        - set-version
+      params:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
 {{ end }}

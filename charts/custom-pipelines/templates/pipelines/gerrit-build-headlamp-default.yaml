@@ -182,15 +182,15 @@ spec:
 {{ include "build-pipeline-end" . | nindent 4 }}
 
     # TODO
-    # - name: create-jira-issue-metadata
+    # - name: push-to-jira
     #   taskRef:
-    #     name: create-jira-issue-metadata
+    #     name: push-to-jira
 
     # - name: ecr-to-docker
     #   taskRef:
     #     name: ecr-to-docker
     #   runAfter:
-    #     - create-jira-issue-metadata
+    #     - push-to-jira
     #   params:
     #     - name: ECR_HOST
     #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"

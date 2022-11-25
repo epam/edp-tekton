@@ -19,7 +19,7 @@ gitlab:
     assert "eventlistener" not in r
     assert "triggerbinding" not in r
     assert "triggertemplate" not in r
-    assert "pipeline" not in r
+    assert "cdpipeline" in r["pipeline"]
 
 
 def test_github_is_enabled():

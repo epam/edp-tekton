@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: run-quality-gate
+spec:
+  params:
+    - name: BASE_IMAGE
+      description: The base image for the task (different for buildtools).
+      type: string
+      default: ""
+    - name: EXTRA_COMMANDS
+      type: string
+      description: Extra commands
+      default: ""
+  steps:
+    - name: run
+      image: $(params.BASE_IMAGE)
+      script: |
+        set -ex
+        $(params.EXTRA_COMMANDS)

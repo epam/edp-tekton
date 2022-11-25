@@ -47,18 +47,24 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-    # - name: commit-validate
-    #   taskRef:
-    #     name: commit-validate
-    #   runAfter:
-    #     - init-values
-    #   params:
-    #     - name: COMMIT_MESSAGE_PATTERN
-    #       value: "$(params.COMMIT_MESSAGE_PATTERN)"
+    - name: commit-validate
+      taskRef:
+        name: commit-validate
+      runAfter:
+        - init-values
+      params:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: "$(params.COMMIT_MESSAGE_PATTERN)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
 
     - name: crdocs-build
       taskRef:
@@ -77,6 +83,10 @@ spec:
         name: helm-docs
       runAfter:
         - init-values
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            GOPROXY=https://athens.eks-core.aws.main.edp.projects.epam.com make validate-docs
       workspaces:
         - name: source
           workspace: shared-workspace

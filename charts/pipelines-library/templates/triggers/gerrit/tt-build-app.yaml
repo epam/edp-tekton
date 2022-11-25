@@ -26,6 +26,22 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: ticketNamePattern
+      description: Ticket name pattern
+    - name: commitMessagePattern
+      description: Commit message pattern to run commit-validate task
+    - name: commitMessage
+      description: Commit message
+    - name: commitId
+      description: Commit ID
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: Jira issue payload
+    - name: PIPELINE_URL
+      description: Pipeline url
+    - name: VCS_TAG
+      description: VCS_TAG
+    - name: VERSION
+      description: VERSION
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -57,6 +73,22 @@ spec:
             value: $(tt.params.changeNumber)
           - name: patchsetNumber
             value: $(tt.params.patchsetNumber)
+          - name: TICKET_NAME_PATTERN
+            value: $(tt.params.ticketNamePattern)
+          - name: COMMIT_MESSAGE_PATTERN
+            value: $(tt.params.commitMessagePattern)
+          - name: COMMIT_MESSAGE
+            value: $(tt.params.commitMessage)
+          - name: COMMIT_ID
+            value: $(tt.params.commitId)
+          - name: JIRA_ISSUE_METADATA_PAYLOAD
+            value: $(tt.params.JIRA_ISSUE_METADATA_PAYLOAD)
+          - name: PIPELINE_URL
+            value: $(tt.params.PIPELINE_URL)
+          - name: VCS_TAG
+            value: $(tt.params.VCS_TAG)
+          - name: VERSION
+            value: $(tt.params.VERSION)
         workspaces:
           - name: settings
             configMap:

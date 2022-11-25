@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gerrit-code-review-app-container-template
+  name: gerrit-code-review-no-dockerbuil-verify-app-container-template
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:
@@ -26,6 +26,8 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: codebase
+      description: Codebase name used in pipeline
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun

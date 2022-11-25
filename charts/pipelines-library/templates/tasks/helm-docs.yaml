@@ -13,7 +13,10 @@ spec:
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
-      default: jnorwood/helm-docs:v1.11.0@sha256:e438eb9f879e4bb8389ce4acd0f7e9193e3d62e877a1a3cd5abd0393dbe55fe5
+      default: docker.io/library/golang:1.18.4-bullseye
+    - name: EXTRA_COMMANDS
+      description: Arguments to add to the helm-docs step
+      default: ""
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
@@ -21,14 +24,17 @@ spec:
     - image: $(params.BASE_IMAGE)
       name: helm-docs
       script: |
-        #!/bin/sh
         set -ex
+        $(params.EXTRA_COMMANDS)
+      # script: |
+      #   #!/bin/sh
+      #   set -ex
 
-        helmDocsReadme="deploy-templates/README.md"
+      #   helmDocsReadme="deploy-templates/README.md"
 
-        [ -f "${helmDocsReadme}" ] || (echo "The ${helmDocsReadme} file was not found. Run helm-docs to address the issue."; exit 1)
-        cp ${helmDocsReadme} ${helmDocsReadme}.orig
-        helm-docs
-        diff ${helmDocsReadme} ${helmDocsReadme}.orig || \
-            (echo "The ${helmDocsReadme} file was not updated. Run 'helm-docs' to address the issue."; exit 1)
+      #   [ -f "${helmDocsReadme}" ] || (echo "The ${helmDocsReadme} file was not found. Run helm-docs to address the issue."; exit 1)
+      #   cp ${helmDocsReadme} ${helmDocsReadme}.orig
+      #   helm-docs
+      #   diff ${helmDocsReadme} ${helmDocsReadme}.orig || \
+      #       (echo "The ${helmDocsReadme} file was not updated. Run 'helm-docs' to address the issue."; exit 1)
       workingDir: $(workspaces.source.path)

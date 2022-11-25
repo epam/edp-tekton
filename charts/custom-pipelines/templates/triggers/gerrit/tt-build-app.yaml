@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gerrit-build-app-template
+  name: gerrit-build-no-kaniko-app-template
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:
@@ -21,7 +21,7 @@ spec:
     - name: versioning-type
       description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: codebase
-      description: Codebase bane used in pipeline
+      description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
     - name: changeNumber

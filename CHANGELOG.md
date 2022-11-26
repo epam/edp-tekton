@@ -2,6 +2,25 @@
 ## [Unreleased]
 
 
+<a name="v0.1.7"></a>
+## [v0.1.7] - 2022-11-25
+### Features
+
+- Grab codebase name from events [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+
+### Bug Fixes
+
+- Use codebase from interceptor [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+
+### Code Refactoring
+
+- Use codebase from interceptor [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+
+### Routine
+
+- Align for work with other framework [EPMDEDP-11008](https://jiraeu.epam.com/browse/EPMDEDP-11008)
+
+
 <a name="v0.1.6"></a>
 ## [v0.1.6] - 2022-11-24
 ### Features
@@ -267,7 +286,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.7...HEAD
+[v0.1.7]: https://github.com/epam/edp-tekton/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/epam/edp-tekton/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/epam/edp-tekton/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/epam/edp-tekton/compare/v0.1.3...v0.1.4

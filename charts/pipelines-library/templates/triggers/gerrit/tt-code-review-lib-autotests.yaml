@@ -33,6 +33,11 @@ spec:
       kind: PipelineRun
       metadata:
         generateName: $(tt.params.codebase)-review-
+        labels:
+          # used by UI to sort pipelines for codebasebranches
+          app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
+          app.edp.epam.com/codebase: $(tt.params.codebase)
+          app.edp.epam.com/pipelinetype: review
       spec:
         serviceAccountName: tekton
         pipelineRef:

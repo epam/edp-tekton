@@ -40,7 +40,7 @@ spec:
 
     - name: SSH_SECRET_NAME
       type: string
-      default: ""
+      default: "github-pages-helm-chart-sshkey"
 
     - name: PROJECT_DIR
       type: string
@@ -60,7 +60,7 @@ spec:
         secretName: $(params.SSH_SECRET_NAME)
 
   steps:
-    - name: set-version-to-chart
+    - name: helm-push-gh-pages
       image: epamedp/tekton-helm:0.1.0-SNAPSHOT.1
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       volumeMounts:

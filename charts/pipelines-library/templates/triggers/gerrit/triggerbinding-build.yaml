@@ -30,4 +30,10 @@ spec:
       value: "$(extensions.codebase)"
     - name: codebasebranch
       value: "$(extensions.codebasebranch)"
+    - name: commitMessage
+      value: "$(body.change.commitMessage)"
+    - name: jiraIssueMetadataPayload
+      value: "$(extensions.spec.jiraIssueMetadataPayload)"
+    - name: ticketNamePattern
+      value: "$(extensions.spec.ticketNamePattern)"
 {{ end }}

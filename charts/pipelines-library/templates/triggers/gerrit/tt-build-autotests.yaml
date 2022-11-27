@@ -35,6 +35,7 @@ spec:
           # used by UI to sort pipelines for codebasebranches
           app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
           app.edp.epam.com/codebase: $(tt.params.codebase)
+          app.edp.epam.com/pipelinetype: build
       spec:
         serviceAccountName: tekton
         pipelineRef:

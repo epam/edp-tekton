@@ -38,6 +38,7 @@ rules:
       - jiraissuemetadatas
     verbs:
       - create
+      - get
 
   # we need to get url for docker registry from edpcomponent
   - apiGroups:

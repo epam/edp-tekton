@@ -70,7 +70,7 @@ spec:
       taskRef:
         name: crdocs
       runAfter:
-        - init-values
+        - commit-validate
       params:
         - name: BASE_IMAGE
           value: $(params.go-image-version)
@@ -82,7 +82,7 @@ spec:
       taskRef:
         name: helm-docs
       runAfter:
-        - init-values
+        - crdocs-build
       params:
         - name: EXTRA_COMMANDS
           value: |
@@ -95,7 +95,7 @@ spec:
       taskRef:
         name: golang
       runAfter:
-        - init-values
+        - helm-docs
       params:
         - name: BASE_IMAGE
           value: $(params.go-image-version)

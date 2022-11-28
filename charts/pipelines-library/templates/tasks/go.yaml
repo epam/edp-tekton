@@ -25,10 +25,10 @@ spec:
       default: auto
     - name: GOCACHE
       description: "Go caching directory path"
-      default: "$(workspaces.source.path)"
+      default: "/workspaces/go-cache"
     - name: GOMODCACHE
       description: "Go mod caching directory path"
-      default: ""
+      default: "/workspaces/go-cache"
     - name: CGO_ENABLED
       description: "Toggle cgo tool during Go build. Use value '0' to disable cgo (for static builds)."
       default: 0
@@ -47,10 +47,21 @@ spec:
       default: ""
   workspaces:
     - name: source
+
+  volumes:
+    - name: go-cache
+      persistentVolumeClaim:
+        claimName: go-cache
+
   steps:
     - name: golang
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)
+
+      volumeMounts:
+        - name: go-cache
+          mountPath: $(params.GOCACHE)
+
       script: |
         set -ex
         $(params.EXTRA_COMMANDS)

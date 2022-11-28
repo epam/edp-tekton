@@ -44,7 +44,7 @@ spec:
     default: "docker.io/library/golang:1.18.4-bullseye"
   - name: GOPROXY
     description: "Go proxy server"
-    default: "http://athens.eks-core.aws.main.edp.projects.epam.com"
+    default: ""
   workspaces:
   - name: source
   steps:

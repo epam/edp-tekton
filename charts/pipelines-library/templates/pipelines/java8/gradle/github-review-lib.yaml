@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -116,8 +115,6 @@ spec:
             compileJava \
             -x test
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -135,8 +132,6 @@ spec:
             test \
             jacocoTestReport
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -157,8 +152,6 @@ spec:
             -Dsonar.qualitygate.wait=true \
             sonarqube
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

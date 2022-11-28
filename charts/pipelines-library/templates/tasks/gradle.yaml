@@ -17,10 +17,6 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of the gradle project.
-    - name: gradle-settings
-      description: >-
-        The workspace consisting of the custom gradle settings
-        provided by the user.
   params:
     - name: BASE_IMAGE
       description: Gradle base image.
@@ -48,9 +44,16 @@ spec:
       default: |
         -Dorg.gradle.internal.publish.checksums.insecure=true \
         publish
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: custom-gradle-settings
   steps:
     - name: gradle-tasks
       image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         #!/bin/bash
@@ -58,7 +61,7 @@ spec:
 
         gradle \
           -I \
-          $(workspaces.gradle-settings.path)/init.gradle \
+          /var/configmap/init.gradle \
           -PnexusLogin=${CI_USERNAME} \
           -PnexusPassword=${CI_PASSWORD} \
           $(params.EXTRA_ARGS)

@@ -75,9 +75,6 @@ spec:
           - name: JIRA_ISSUE_METADATA_PAYLOAD
             value: $(tt.params.jiraIssueMetadataPayload)
         workspaces:
-          - name: settings
-            configMap:
-              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

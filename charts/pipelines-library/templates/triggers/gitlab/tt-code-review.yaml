@@ -48,9 +48,6 @@ spec:
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
         workspaces:
-          - name: settings
-            configMap:
-              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

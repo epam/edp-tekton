@@ -53,9 +53,6 @@ spec:
           - name: gitsha
             value: $(tt.params.gitsha)
         workspaces:
-          - name: settings
-            configMap:
-              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

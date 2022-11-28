@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -67,8 +66,6 @@ spec:
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
             build -x test
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

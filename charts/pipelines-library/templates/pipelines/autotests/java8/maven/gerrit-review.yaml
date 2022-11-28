@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -63,8 +62,6 @@ spec:
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -131,8 +128,6 @@ spec:
             - '-Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)'
             - sonar:sonar
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

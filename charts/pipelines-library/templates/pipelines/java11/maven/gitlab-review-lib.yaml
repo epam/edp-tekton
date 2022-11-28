@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -118,8 +117,6 @@ spec:
             - '-Dartifactory.groupPath=edp-maven-group'
             - compile
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -143,8 +140,6 @@ spec:
             - verify
             - org.jacoco:jacoco-maven-plugin:report
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -170,8 +165,6 @@ spec:
             - verify
             - sonar:sonar
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

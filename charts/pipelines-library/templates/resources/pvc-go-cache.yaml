@@ -1,0 +1,16 @@
+{{- $storageClassName :=  .Values.buildTool.go.cache.persistentVolume.storageClass -}}
+{{- $storageSize :=  .Values.buildTool.go.cache.persistentVolume.size -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: go-cache
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "{{ $storageClassName }}"
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "{{ $storageSize }}"

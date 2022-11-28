@@ -41,6 +41,8 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| buildTool.go.cache.persistentVolume.size | string | `"5Gi"` |  |
+| buildTool.go.cache.persistentVolume.storageClass | string | `"ebs-sc"` |  |
 | fullnameOverride | string | `""` |  |
 | gerrit.enabled | bool | `true` | Deploy Gerrit related components. Default: true |
 | gerrit.sshPort | int | `30003` | Gerrit port |

@@ -61,3 +61,10 @@ tekton:
     keep: 1
     # -- Supported resources for auto prune are 'taskrun' and 'pipelinerun'
     resources: "pipelinerun,taskrun"
+
+buildTool:
+  go:
+    cache:
+      persistentVolume:
+        size: 5Gi
+        storageClass: ebs-sc

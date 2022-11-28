@@ -40,6 +40,10 @@ spec:
       default: 'golang:1.18.4-bullseye'
       description: "go image with make installed"
       type: string
+    - name: GOPROXY
+      default: "http://athens-athens-proxy:80"
+      description: "Go proxy link"
+      type: string
     - name: changeNumber
       description: "Change number from Merge Request"
     - name: patchsetNumber
@@ -89,9 +93,11 @@ spec:
       params:
         - name: BASE_IMAGE
           value: $(params.go-image-version)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
-            GOPROXY=http://athens.eks-core.aws.main.edp.projects.epam.com make test
+            make test
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -120,9 +126,11 @@ spec:
       params:
         - name: BASE_IMAGE
           value: $(params.go-image-version)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
-            VERSION=$(tasks.get-version.results.VERSION) GOPROXY=http://athens.eks-core.aws.main.edp.projects.epam.com make build
+            VERSION=$(tasks.get-version.results.VERSION) make build
       workspaces:
         - name: source
           workspace: shared-workspace

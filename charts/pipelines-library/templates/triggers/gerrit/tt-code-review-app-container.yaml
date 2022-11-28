@@ -67,9 +67,6 @@ spec:
           - name: COMMIT_MESSAGE_PATTERN
             value: $(tt.params.commitMessagePattern)
         workspaces:
-          - name: settings
-            configMap:
-              name: custom-$(tt.params.buildtool)-settings
           - name: shared-workspace
             volumeClaimTemplate:
               spec:

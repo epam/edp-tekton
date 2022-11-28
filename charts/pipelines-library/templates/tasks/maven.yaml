@@ -17,10 +17,6 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of maven project.
-    - name: maven-settings
-      description: >-
-        The workspace consisting of the custom maven settings
-        provided by the user.
   params:
     - name: MAVEN_IMAGE
       type: string
@@ -45,14 +41,21 @@ spec:
       type: string
       description: name of the secret holding the CI sonar secret
       default: sonar-ciuser-token
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: custom-maven-settings
   steps:
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
       workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
       command: ["/usr/bin/mvn"]
       args:
         - -s
-        - $(workspaces.maven-settings.path)/settings.xml
+        - /var/configmap/settings.xml
         - "$(params.GOALS)"
       env:
         - name: HOME

@@ -19,8 +19,6 @@
         - verify
         - org.jacoco:jacoco-maven-plugin:report
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -46,8 +44,6 @@
         - verify
         - sonar:sonar
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -70,8 +66,6 @@
         - package
         - '-DskipTests=true'
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -107,8 +101,6 @@
         - '-DskipTests=true'
         - '-DaltDeploymentRepository=nexus::default::$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)'
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 {{- end -}}
@@ -131,8 +123,6 @@
         - '-Dartifactory.groupPath=edp-maven-group'
         - compile
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -156,8 +146,6 @@
         - verify
         - org.jacoco:jacoco-maven-plugin:report
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -225,8 +213,6 @@
         - verify
         - sonar:sonar
   workspaces:
-    - name: maven-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 {{- end -}}

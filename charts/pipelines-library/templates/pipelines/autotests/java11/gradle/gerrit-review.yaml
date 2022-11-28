@@ -111,8 +111,6 @@ spec:
             -Dsonar.qualitygate.wait=true \
             sonarqube
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

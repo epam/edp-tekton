@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl

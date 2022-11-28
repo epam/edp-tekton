@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: git-source-url
@@ -82,8 +81,6 @@ spec:
         - name: BASE_IMAGE
           value: $(params.maven-image-version)
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -104,8 +101,6 @@ spec:
             - '-Dartifactory.groupPath=edp-maven-group'
             - compile
       workspaces:
-        - name: maven-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

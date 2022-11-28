@@ -13,8 +13,6 @@
         test \
         jacocoTestReport
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -35,8 +33,6 @@
         -Dsonar.qualitygate.wait=true \
         sonarqube
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -53,8 +49,6 @@
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
         build -x test
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -85,8 +79,6 @@
         -PnexusMavenRepositoryUrl=$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL) \
         publish
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 {{- end -}}
@@ -107,8 +99,6 @@
         compileJava \
         -x test
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -126,8 +116,6 @@
         test \
         jacocoTestReport
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 
@@ -190,8 +178,6 @@
         -Dsonar.qualitygate.wait=true \
         sonarqube
   workspaces:
-    - name: gradle-settings
-      workspace: settings
     - name: source
       workspace: shared-workspace
 {{- end -}}

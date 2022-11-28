@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: pipelineUrl
@@ -118,8 +117,6 @@ spec:
             -Dsonar.qualitygate.wait=true \
             sonarqube
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

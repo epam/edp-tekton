@@ -8,7 +8,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: settings
     - name: ssh-creds
   params:
     - name: git-source-url
@@ -78,8 +77,6 @@ spec:
         - name: BASE_IMAGE
           value: $(params.gradle-image-version)
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -101,8 +98,6 @@ spec:
             -x compileGroovy \
             sonarqube
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 
@@ -119,8 +114,6 @@ spec:
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
             build -x test -x compileGroovy
       workspaces:
-        - name: gradle-settings
-          workspace: settings
         - name: source
           workspace: shared-workspace
 

@@ -47,7 +47,8 @@ spec:
 
         BUILD_VERSION="${VERSION}-${BUILD_ID}"
         VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
-        IS_TAG=${VCS_TAG}
+        NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
+        IS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
 
         echo "Application version - ${BUILD_VERSION}"
         echo "VCS tag - ${VCS_TAG}"

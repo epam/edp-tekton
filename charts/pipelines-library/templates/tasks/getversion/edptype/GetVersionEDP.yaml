@@ -45,6 +45,9 @@ spec:
         # Get current version
         VERSION=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.version})
 
+        # Replace slashes
+        VERSION=$(printf '%s' ${VERSION} | sed 's/\//-/g')
+
         BRANCH_VERSION=${VERSION}
         VERSION="${VERSION}.${BUILD_ID}"
         VCS_TAG="build/${VERSION}"

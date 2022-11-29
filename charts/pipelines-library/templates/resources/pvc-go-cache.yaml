@@ -9,7 +9,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+{{ if $storageClassName }}
   storageClassName: "{{ $storageClassName }}"
+{{ end }}
   volumeMode: Filesystem
   resources:
     requests:

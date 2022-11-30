@@ -2,8 +2,37 @@
 ## [Unreleased]
 
 
+<a name="v0.1.8"></a>
+## [v0.1.8] - 2022-11-30
+### Features
+
+- Implement CDPipeline in Tekton [EPMDEDP-11043](https://jiraeu.epam.com/browse/EPMDEDP-11043)
+- Add EDP labels to PipelineRuns [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+- Add volume for caching files of Go [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+
+### Bug Fixes
+
+- Add CODEBASEBRANCH_NAME parameter for gitlab java lib [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
+
+### Code Refactoring
+
+- Add label for deploy Pipeline [EPMDEDP-11041](https://jiraeu.epam.com/browse/EPMDEDP-11041)
+
+### Routine
+
+- Enable Jira integration [EPMDEDP-11008](https://jiraeu.epam.com/browse/EPMDEDP-11008)
+- Remove the cm settings block from TriggerTemplates get-version for gradle/maven [EPMDEDP-11051](https://jiraeu.epam.com/browse/EPMDEDP-11051)
+- Remove the cm settings block from TriggerTemplates [EPMDEDP-11051](https://jiraeu.epam.com/browse/EPMDEDP-11051)
+- Move common tasks of GitHub and GitLab pipelines to common-library [EPMDEDP-11059](https://jiraeu.epam.com/browse/EPMDEDP-11059)
+- If storageClass is not specified, use default storageClass for go-cache volume [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+- Remove gerrit-go-other-app-build-default Task and trigger folder [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+- Align Tasks to a general form [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+- Change go proxy link to an internal one [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+- Align the sequence of tasks in the Review pipeline [EPMDEDP-11082](https://jiraeu.epam.com/browse/EPMDEDP-11082)
+
+
 <a name="v0.1.7"></a>
-## [v0.1.7] - 2022-11-25
+## [v0.1.7] - 2022-11-26
 ### Features
 
 - Grab codebase name from events [EPMDEDP-11064](https://jiraeu.epam.com/browse/EPMDEDP-11064)
@@ -286,7 +315,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.8...HEAD
+[v0.1.8]: https://github.com/epam/edp-tekton/compare/v0.1.7...v0.1.8
 [v0.1.7]: https://github.com/epam/edp-tekton/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/epam/edp-tekton/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/epam/edp-tekton/compare/v0.1.4...v0.1.5

@@ -1,13 +1,6 @@
 # Maven
 
 This Task can be used to run a Maven goals on a simple maven project or on a multi-module maven project.
-
-## Install the Task
-
-```bash
-kubectl apply -f https://api.hub.tekton.dev/v1/resource/tekton/task/maven/0.2/raw
-```
-
 ## Parameters
 
 - **MAVEN_IMAGE**: The base image for maven (_default_: `gcr.io/cloud-builders/mvn`)
@@ -52,7 +45,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
   tasks:
     - name: fetch-repository
       taskRef:
@@ -81,8 +73,6 @@ spec:
             - clean
             - package
       workspaces:
-        - name: maven-settings
-          workspace: maven-settings
         - name: source
           workspace: shared-workspace
 ---
@@ -94,8 +84,6 @@ spec:
   pipelineRef:
     name: maven-test-pipeline
   workspaces:
-    - name: maven-settings
-      emptyDir: {}
     - name: shared-workspace
       persistentvolumeclaim:
         claimName: maven-source-pvc
@@ -113,7 +101,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
   tasks:
     - name: fetch-repository
       taskRef:
@@ -142,8 +129,6 @@ spec:
             - clean
             - package
       workspaces:
-        - name: maven-settings
-          workspace: maven-settings
         - name: source
           workspace: shared-workspace
 ```
@@ -154,8 +139,9 @@ spec:
 
 ### With Custom /.m2/settings.yaml
 
-A user provided custom `settings.xml` can be used with the Maven Task. To do this we need to mount the `settings.xml` on the Maven Task.
-Following steps demonstrate the use of a ConfigMap to mount a custom `settings.xml`.
+A user provided custom `settings.xml` can be used with the Maven Task. To do this we need to mount volume with `settings.xml` on the Maven Task.
+
+Following steps demonstrate the use of a ConfigMap to mount like a volume to Task `settings.xml`.
 
 1. create configmap
 
@@ -195,7 +181,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-    - name: maven-settings
   tasks:
     - name: fetch-repository
       taskRef:
@@ -224,8 +209,6 @@ spec:
             - clean
             - package
       workspaces:
-        - name: maven-settings
-          workspace: maven-settings
         - name: source
           workspace: shared-workspace
 ---
@@ -237,10 +220,84 @@ spec:
   pipelineRef:
     name: maven-test-pipeline
   workspaces:
-    - name: maven-settings
-      configMap:
-        name: custom-maven-settings
     - name: shared-workspace
       persistentvolumeclaim:
         claimName: maven-source-pvc
+```
+3. create `Task`
+
+```yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: maven
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a Maven build.
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: MAVEN_IMAGE
+      type: string
+      description: Maven base image
+      default: maven:3.8.6-openjdk-11-slim
+    - name: GOALS
+      description: maven goals to run
+      type: array
+      default:
+        - "package"
+    - name: CONTEXT_DIR
+      type: string
+      description: >-
+        The context directory within the repository for sources on
+        which we want to execute maven goals.
+      default: "."
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+    - name: ci-sonar-secret
+      type: string
+      description: name of the secret holding the CI sonar secret
+      default: sonar-ciuser-token
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: custom-maven-settings
+  steps:
+    - name: mvn-goals
+      image: $(params.MAVEN_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
+      command: ["/usr/bin/mvn"]
+      args:
+        - -s
+        - /var/configmap/settings.xml
+        - "$(params.GOALS)"
+      env:
+        - name: HOME
+          value: $(workspaces.source.path)
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonar-secret)
+              key: secret
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
 ```

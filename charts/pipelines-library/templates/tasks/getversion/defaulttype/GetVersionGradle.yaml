@@ -7,10 +7,6 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of gradle project.
-    - name: gradle-settings
-      description: >-
-        The workspace consisting of the custom gradle settings
-        provided by the user.
   params:
     - name: BRANCH_NAME
       type: string
@@ -35,6 +31,10 @@ spec:
     - name: DEPLOYABLE_MODULE_DIR
     - name: TIMESTAMP
       description: Current timestamp
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: custom-gradle-settings
   steps:
     - name: get-timestamp
       image: alpine:3.16.2
@@ -45,6 +45,9 @@ spec:
 
     - name: get-version
       image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"
@@ -69,7 +72,7 @@ spec:
 
         VERSION=$(gradle \
           -I \
-          $(workspaces.gradle-settings.path)/init.gradle \
+          /var/configmap/init.gradle \
           -PnexusLogin=${CI_USERNAME} \
           -PnexusPassword=${CI_PASSWORD} \
           -PnexusMavenRepositoryUrl=${NEXUS_URL}/repository/edp-maven-group \

@@ -49,55 +49,7 @@ spec:
       type: string
   tasks:
 
-    - name: report-pipeline-start-to-gitlab
-      taskRef:
-        name: gitlab-set-status
-      params:
-        - name: "STATE"
-          value: "pending"
-        - name: "GITLAB_HOST_URL"
-          value: "{{ .Values.gitlab.host }}"
-        - name: "REPO_FULL_NAME"
-          value: "$(params.gitfullrepositoryname)"
-        - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: {{ .Values.gitlab.webhook.existingSecret }}
-        - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
-        - name: "SHA"
-          value: "$(params.git-source-revision)"
-        - name: "TARGET_URL"
-          value: $(params.pipelineUrl)
-        - name: "CONTEXT"
-          value: "ci-pipeline"
-        - name: "DESCRIPTION"
-          value: "Managed by EDP. Run with Tekton"
-
-    - name: fetch-repository
-      taskRef:
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: refspec
-          value: $(params.git-refspec)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: init-values
-      taskRef:
-        name: init-values
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+{{- include "gitlab-review-start" . | nindent 4 }}
 
     - name: build
       taskRef:
@@ -183,59 +135,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-  finally:
-    - name: gitlab-set-failure-status
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Failed"]
-      taskRef:
-        name: gitlab-set-status
-      params:
-        - name: "STATE"
-          value: "failed"
-        - name: "GITLAB_HOST_URL"
-          value: "{{ .Values.gitlab.host }}"
-        - name: "REPO_FULL_NAME"
-          value: "$(params.gitfullrepositoryname)"
-        - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: {{ .Values.gitlab.webhook.existingSecret }}
-        - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
-        - name: "SHA"
-          value: "$(params.git-source-revision)"
-        - name: "TARGET_URL"
-          value: $(params.pipelineUrl)
-        - name: "CONTEXT"
-          value: "ci-pipeline"
-        - name: "DESCRIPTION"
-          value: "Managed by EDP. Run with Tekton"
-
-    - name: gitlab-set-success-status
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Succeeded"]
-      taskRef:
-        name: gitlab-set-status
-      params:
-        - name: "STATE"
-          value: "success"
-        - name: "GITLAB_HOST_URL"
-          value: "{{ .Values.gitlab.host }}"
-        - name: "REPO_FULL_NAME"
-          value: "$(params.gitfullrepositoryname)"
-        - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: {{ .Values.gitlab.webhook.existingSecret }}
-        - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
-        - name: "SHA"
-          value: "$(params.git-source-revision)"
-        - name: "TARGET_URL"
-          value: $(params.pipelineUrl)
-        - name: "CONTEXT"
-          value: "ci-pipeline"
-        - name: "DESCRIPTION"
-          value: "Managed by EDP. Run with Tekton"
+{{ include "gitlab-review-vote" . | nindent 2 }}
 
 {{ end }}

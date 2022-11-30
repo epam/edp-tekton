@@ -183,8 +183,8 @@ gitlab:
             assert "dockerfile-lint" in rt[6]["name"]
             assert "dockerbuild-verify" in rt[7]["name"]
             assert "helm-lint" in rt[8]["name"]
-            assert "gitlab-set-failure-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
-            assert "gitlab-set-success-status" in r["pipeline"][review_pipeline]["spec"]["finally"][1]["name"]
+            assert "gitlab-set-success-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
+            assert "gitlab-set-failure-status" in r["pipeline"][review_pipeline]["spec"]["finally"][1]["name"]
 
             # build with default versioning
             btd = r["pipeline"][build_pipeline_def]["spec"]["tasks"]

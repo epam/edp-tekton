@@ -27,30 +27,7 @@ spec:
       type: string
   tasks:
 
-    - name: fetch-repository
-      taskRef:
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: init-values
-      taskRef:
-        name: init-values
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+{{- include "github-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:

@@ -48,53 +48,7 @@ spec:
       type: string
   tasks:
 
-    - name: github-set-pending-status
-      taskRef:
-        name: github-set-status
-      params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has started"
-        - name: STATE
-          value: "pending"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
-          value: $(params.pipelineUrl)
-
-    - name: fetch-repository
-      taskRef:
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: refspec
-          value: $(params.git-refspec)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: init-values
-      taskRef:
-        name: init-values
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+{{- include "github-review-start" . | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -152,54 +106,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-  finally:
-    - name: github-set-success-status
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Succeeded"]
-      taskRef:
-        name: github-set-status
-      params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build was successful"
-        - name: STATE
-          value: "success"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
-          value: $(params.pipelineUrl)
+{{ include "github-review-vote" . | nindent 2 }}
 
-    - name: github-set-failure-status
-      when:
-        - input: "$(tasks.status)"
-          operator: in
-          values: ["Failed"]
-      taskRef:
-        name: github-set-status
-      params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Build has failed"
-        - name: STATE
-          value: "failure"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: {{ .Values.github.webhook.existingSecret }}
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
-          value: $(params.pipelineUrl)
 {{ end }}

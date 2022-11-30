@@ -9,10 +9,6 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of maven project.
-    - name: maven-settings
-      description: >-
-        The workspace consisting of the custom maven settings
-        provided by the user.
   params:
     - name: NEXUS_URL
       type: string
@@ -29,6 +25,10 @@ spec:
   results:
     - name: COMMAND
       description: ""
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: custom-maven-settings
   steps:
     - name: check-run-json-file
       image: "python:3.9.14-alpine3.16"
@@ -77,6 +77,9 @@ spec:
 
     - name: run-tests
       image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
       workingDir: $(workspaces.source.path)
       env:
         - name: NEXUS_URL
@@ -101,4 +104,4 @@ spec:
         -Dartifactory.snapshotsPath=edp-maven-snapshots \
         -Dartifactory.groupPath=edp-maven-group \
         --settings \
-        $(workspaces.maven-settings.path)/settings.xml
+        /var/configmap/settings.xml

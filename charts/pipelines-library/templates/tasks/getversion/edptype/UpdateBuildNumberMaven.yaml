@@ -9,10 +9,6 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of maven project.
-    - name: maven-settings
-      description: >-
-        The workspace consisting of the custom maven settings
-        provided by the user.
   params:
     - name: NEXUS_URL
       type: string
@@ -31,9 +27,16 @@ spec:
       default: nexus-ci.user
     - name: BASE_IMAGE
       description: "The base image for the task"
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: custom-maven-settings
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
       workingDir: $(workspaces.source.path)
       env:
         - name: NEXUS_URL
@@ -65,7 +68,7 @@ spec:
 
         /usr/bin/mvn \
         -s \
-        $(workspaces.maven-settings.path)/settings.xml \
+        /var/configmap/settings.xml \
         -B \
         -Dartifactory.baseUrl=${NEXUS_URL} \
         -Dartifactory.releasePath=edp-maven-releases \

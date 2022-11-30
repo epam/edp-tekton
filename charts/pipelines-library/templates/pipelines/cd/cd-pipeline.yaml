@@ -4,7 +4,8 @@ metadata:
   name: cdpipeline
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
-    app.edp.epam.com/pipeline: custom-cd
+    app.edp.epam.com/pipeline: general-deployment
+    app.edp.epam.com/pipelinetype: deploy
 spec:
   params:
     - name: pipelineUrl

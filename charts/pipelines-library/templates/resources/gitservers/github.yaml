@@ -1,0 +1,15 @@
+{{ if .Values.github.enabled }}
+apiVersion: v2.edp.epam.com/v1
+kind: GitServer
+metadata:
+  name: github
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  gitHost: {{ .Values.github.host }}
+  gitProvider: github
+  gitUser: git
+  httpsPort: 443
+  nameSshKeySecret: {{ .Values.github.webhook.existingSecret }}
+  sshPort: 22
+{{ end }}

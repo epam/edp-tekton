@@ -47,6 +47,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | gerrit.enabled | bool | `true` | Deploy Gerrit related components. Default: true |
 | gerrit.sshPort | int | `30003` | Gerrit port |
 | github.enabled | bool | `false` |  |
+| github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github.com-config"` | Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator |
 | github.webhook.secretKeys.secretKey | string | `"secretString"` |  |
 | github.webhook.secretKeys.tokenKey | string | `"token"` |  |

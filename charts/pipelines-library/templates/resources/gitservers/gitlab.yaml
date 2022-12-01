@@ -1,0 +1,15 @@
+{{ if .Values.gitlab.enabled }}
+apiVersion: v2.edp.epam.com/v1
+kind: GitServer
+metadata:
+  name: gitlab
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  gitHost: {{ .Values.gitlab.host }}
+  gitProvider: gitlab
+  gitUser: git
+  httpsPort: 443
+  nameSshKeySecret: {{ .Values.gitlab.webhook.existingSecret }}
+  sshPort: 22
+{{ end }}

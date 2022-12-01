@@ -20,6 +20,7 @@ gitlab:
     assert "triggerbinding" not in r
     assert "triggertemplate" not in r
     assert "cdpipeline" in r["pipeline"]
+    assert "gitserver" not in r
 
 
 def test_github_is_enabled():
@@ -40,6 +41,7 @@ github:
     glcb = r["eventlistener"]["github-listener"]["spec"]["triggers"][3]["interceptors"][0]["params"][0]["value"]
     glaccr = r["eventlistener"]["github-listener"]["spec"]["triggers"][4]["interceptors"][0]["params"][0]["value"]
     gllatcr = r["eventlistener"]["github-listener"]["spec"]["triggers"][5]["interceptors"][0]["params"][0]["value"]
+    gitserver = r["gitserver"]["github"]["spec"]
 
     assert "secretString" \
            == glatb["secretKey"] \
@@ -55,3 +57,9 @@ github:
            == glcb["secretName"] \
            == glaccr["secretName"] \
            == gllatcr["secretName"]
+    assert "github.com" == gitserver["gitHost"]
+    assert "github" == gitserver["gitProvider"]
+    assert "git" == gitserver["gitUser"]
+    assert 443 == gitserver["httpsPort"]
+    assert "github.com-config" == gitserver["nameSshKeySecret"]
+    assert 22 == gitserver["sshPort"]

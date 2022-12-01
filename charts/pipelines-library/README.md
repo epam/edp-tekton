@@ -35,7 +35,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.1.8 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.1.9 |
 
 ## Values
 
@@ -49,13 +49,9 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | github.enabled | bool | `false` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github-config"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
-| github.webhook.secretKeys.secretKey | string | `"secretString"` | Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
-| github.webhook.secretKeys.tokenKey | string | `"token"` | Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | gitlab.enabled | bool | `false` |  |
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"gitlab-config"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
-| gitlab.webhook.secretKeys.secretKey | string | `"secretString"` | Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
-| gitlab.webhook.secretKeys.tokenKey | string | `"token"` | Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |

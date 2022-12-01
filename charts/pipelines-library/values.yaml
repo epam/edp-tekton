@@ -33,11 +33,6 @@ github:
   webhook:
     # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
     existingSecret: github-config
-    secretKeys:
-      # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
-      tokenKey: token
-      # -- Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
-      secretKey: secretString
 
 gitlab:
   enabled: false
@@ -46,11 +41,6 @@ gitlab:
   webhook:
     # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
     existingSecret: gitlab-config
-    secretKeys:
-      # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
-      tokenKey: token
-      # -- Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
-      secretKey: secretString
 
 tekton:
   # Pruner provides auto clean up feature for the Tekton resources

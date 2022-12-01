@@ -31,10 +31,12 @@ github:
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com
   host: github.com
   webhook:
-    # -- Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator
-    existingSecret: github.com-config
+    # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
+    existingSecret: github-config
     secretKeys:
+      # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
       tokenKey: token
+      # -- Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token
       secretKey: secretString
 
 gitlab:
@@ -42,8 +44,8 @@ gitlab:
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: git.epam.com
   webhook:
-    # -- Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator
-    existingSecret: gitlab.com-config
+    # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
+    existingSecret: gitlab-config
     secretKeys:
       # -- Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token
       tokenKey: token

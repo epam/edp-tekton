@@ -48,12 +48,12 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | gerrit.sshPort | int | `30003` | Gerrit port |
 | github.enabled | bool | `false` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
-| github.webhook.existingSecret | string | `"github.com-config"` | Existing secret which holds both GitHub Access and Secret Token, default is github-configuration, which is aligned with codebase-operator |
-| github.webhook.secretKeys.secretKey | string | `"secretString"` |  |
-| github.webhook.secretKeys.tokenKey | string | `"token"` |  |
+| github.webhook.existingSecret | string | `"github-config"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
+| github.webhook.secretKeys.secretKey | string | `"secretString"` | Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
+| github.webhook.secretKeys.tokenKey | string | `"token"` | Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | gitlab.enabled | bool | `false` |  |
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
-| gitlab.webhook.existingSecret | string | `"gitlab.com-config"` | Existing secret which holds both GitLab Access and Secret Token, default is gitlab-configuration, which is aligned with codebase-operator |
+| gitlab.webhook.existingSecret | string | `"gitlab-config"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | gitlab.webhook.secretKeys.secretKey | string | `"secretString"` | Key in existingSecret. Generated on Tekton side and populated in GitLab for each Project in section: PROJECT_NAME > Settings > Webhooks > Secret Token |
 | gitlab.webhook.secretKeys.tokenKey | string | `"token"` | Key in existingSecret. Generated on GitLab side in section: (User Settings) or (Project Settings) or (Group Settings) > Access Token |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |

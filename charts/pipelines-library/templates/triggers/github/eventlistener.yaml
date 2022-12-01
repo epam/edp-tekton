@@ -15,7 +15,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["push"]
         - ref:
@@ -49,7 +49,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["push"]
         - ref:
@@ -83,7 +83,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["push"]
         - ref:
@@ -117,7 +117,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["push"]
         - ref:
@@ -151,7 +151,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["pull_request"]
         - ref:
@@ -190,7 +190,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: {{ .Values.github.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["pull_request"]
         - ref:

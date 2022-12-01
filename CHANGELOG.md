@@ -2,6 +2,28 @@
 ## [Unreleased]
 
 
+<a name="v0.1.9"></a>
+## [v0.1.9] - 2022-12-01
+### Features
+
+- Add gitlab, github gitservers provisioning [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+
+### Bug Fixes
+
+- Allow Kaniko to work with branches with slash [EPMDEDP-11067](https://jiraeu.epam.com/browse/EPMDEDP-11067)
+
+### Code Refactoring
+
+- Trigger pipelines for all Github branches [EPMDEDP-11077](https://jiraeu.epam.com/browse/EPMDEDP-11077)
+- Explicitly define secret Keys for GitHub/GitLab [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+
+### Routine
+
+- Remove the cm settings block from TriggerTemplates update autotests and docs [EPMDEDP-11051](https://jiraeu.epam.com/browse/EPMDEDP-11051)
+- Use common-library for GitHub and GitLab pipelines [EPMDEDP-11059](https://jiraeu.epam.com/browse/EPMDEDP-11059)
+- Bump dependency version to 0.1.8 [EPMDEDP-11059](https://jiraeu.epam.com/browse/EPMDEDP-11059)
+
+
 <a name="v0.1.8"></a>
 ## [v0.1.8] - 2022-11-30
 ### Features
@@ -315,7 +337,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.9...HEAD
+[v0.1.9]: https://github.com/epam/edp-tekton/compare/v0.1.8...v0.1.9
 [v0.1.8]: https://github.com/epam/edp-tekton/compare/v0.1.7...v0.1.8
 [v0.1.7]: https://github.com/epam/edp-tekton/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/epam/edp-tekton/compare/v0.1.5...v0.1.6

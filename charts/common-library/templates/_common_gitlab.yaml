@@ -41,7 +41,7 @@
     - name: "GITLAB_TOKEN_SECRET_NAME"
       value: {{ .Values.gitlab.webhook.existingSecret }}
     - name: "GITLAB_TOKEN_SECRET_KEY"
-      value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+      value: token
     - name: "SHA"
       value: "$(params.git-source-revision)"
     - name: "TARGET_URL"
@@ -102,7 +102,7 @@ finally:
       - name: "GITLAB_TOKEN_SECRET_NAME"
         value: {{ .Values.gitlab.webhook.existingSecret }}
       - name: "GITLAB_TOKEN_SECRET_KEY"
-        value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        value: token
       - name: "SHA"
         value: "$(params.git-source-revision)"
       - name: "TARGET_URL"
@@ -128,7 +128,7 @@ finally:
       - name: "GITLAB_TOKEN_SECRET_NAME"
         value: {{ .Values.gitlab.webhook.existingSecret }}
       - name: "GITLAB_TOKEN_SECRET_KEY"
-        value: {{ .Values.gitlab.webhook.secretKeys.tokenKey }}
+        value: token
       - name: "SHA"
         value: "$(params.git-source-revision)"
       - name: "TARGET_URL"

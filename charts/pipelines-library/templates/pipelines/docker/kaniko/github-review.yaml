@@ -48,7 +48,7 @@ spec:
         - name: GITHUB_TOKEN_SECRET_NAME
           value: {{ .Values.github.webhook.existingSecret }}
         - name: GITHUB_TOKEN_SECRET_KEY
-          value: {{ .Values.github.webhook.secretKeys.tokenKey }}
+          value: token
         - name: SHA
           value: $(params.gitsha)
         - name: TARGET_URL

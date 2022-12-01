@@ -15,7 +15,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
-                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:
@@ -47,7 +47,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
-                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:
@@ -79,7 +79,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
-                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:
@@ -111,7 +111,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
-                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:
@@ -143,7 +143,7 @@ spec:
             - name: "secretRef"
               value:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
-                secretKey: {{ .Values.gitlab.webhook.secretKeys.secretKey }}
+                secretKey: secretString
             - name: "eventTypes"
               value: ["Merge Request Hook"]
         - ref:

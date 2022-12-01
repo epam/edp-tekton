@@ -26,11 +26,6 @@ spec:
                 - key: branch_name
                   expression: "body.ref.split('/')[2]"
         - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.branch_name in ['edp','main','master']"
-        - ref:
             name: "edp"
         - ref:
             name: "cel"
@@ -64,11 +59,6 @@ spec:
               value:
                 - key: branch_name
                   expression: "body.ref.split('/')[2]"
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.branch_name in ['edp','main','master']"
         - ref:
             name: "edp"
         - ref:
@@ -104,11 +94,6 @@ spec:
                 - key: branch_name
                   expression: "body.ref.split('/')[2]"
         - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.branch_name in ['edp','main','master']"
-        - ref:
             name: "edp"
         - ref:
             name: "cel"
@@ -143,11 +128,6 @@ spec:
                 - key: branch_name
                   expression: "body.ref.split('/')[2]"
         - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.branch_name in ['edp','main','master']"
-        - ref:
             name: "edp"
         - ref:
             name: "cel"
@@ -179,11 +159,6 @@ spec:
           params:
             - name: "filter"
               value: "body.action in ['opened', 'synchronize', 'edited']"
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.pull_request.base.ref in ['edp','main','master']"
         - ref:
             name: "cel"
           params:
@@ -223,11 +198,6 @@ spec:
           params:
             - name: "filter"
               value: "body.action in ['opened', 'synchronize', 'edited']"
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.pull_request.base.ref in ['edp','main','master']"
         - ref:
             name: "cel"
           params:

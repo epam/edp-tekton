@@ -23,7 +23,7 @@ spec:
       default: ""
     - name: GitHubSecretName
       description: "The Secret name for GitHub access token. This is always mounted and must exist"
-      default: "github-configuration"
+      default: "github"
     - name: GitHubAccessTokenKey
       description: "The GitHub access token key name"
       default: "token"

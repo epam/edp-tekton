@@ -50,7 +50,7 @@ github:
            == glcb["secretKey"] \
            == glaccr["secretKey"] \
            == gllatcr["secretKey"]
-    assert "github-config" \
+    assert "github" \
            == glatb["secretName"] \
            == glab["secretName"] \
            == gllb["secretName"] \
@@ -61,5 +61,5 @@ github:
     assert "github" == gitserver["gitProvider"]
     assert "git" == gitserver["gitUser"]
     assert 443 == gitserver["httpsPort"]
-    assert "github-config" == gitserver["nameSshKeySecret"]
+    assert "github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]

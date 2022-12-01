@@ -17,7 +17,7 @@ spec:
       default: ""
     - name: GitLabSecretName
       description: "The Secret name for GitLab access token. This is always mounted and must exist"
-      default: "gitlab-configuration"
+      default: "gitlab"
     - name: GitLabAccessTokenKey
       description: "The GitLab access token key name"
       default: "token"

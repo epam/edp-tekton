@@ -20,6 +20,7 @@ gitlab:
     assert "triggerbinding" not in r
     assert "triggertemplate" not in r
     assert "cdpipeline" in r["pipeline"]
+    assert "gitserver" not in r
 
 
 def test_gerrit_is_enabled_with_custom_port():

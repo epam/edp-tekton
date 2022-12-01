@@ -32,7 +32,7 @@ github:
   host: github.com
   webhook:
     # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: github-config
+    existingSecret: github
 
 gitlab:
   enabled: false
@@ -40,7 +40,7 @@ gitlab:
   host: git.epam.com
   webhook:
     # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: gitlab-config
+    existingSecret: gitlab
 
 tekton:
   # Pruner provides auto clean up feature for the Tekton resources

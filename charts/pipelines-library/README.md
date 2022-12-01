@@ -48,10 +48,10 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | gerrit.sshPort | int | `30003` | Gerrit port |
 | github.enabled | bool | `false` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
-| github.webhook.existingSecret | string | `"github-config"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
+| github.webhook.existingSecret | string | `"github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | gitlab.enabled | bool | `false` |  |
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
-| gitlab.webhook.existingSecret | string | `"gitlab-config"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
+| gitlab.webhook.existingSecret | string | `"gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
 | kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |

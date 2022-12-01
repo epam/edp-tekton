@@ -1,5 +1,5 @@
-{{- if or .Values.gitlab.enabled .Values.github.enabled -}}
-{{- $elName := ternary "el-gitlab-listener" "el-github-listener" .Values.gitlab.enabled -}}
+{{- if ne .Values.global.gitProvider "gerrit" -}}
+{{- $elName := printf "el-%s-listener" .Values.global.gitProvider -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

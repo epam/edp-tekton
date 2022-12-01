@@ -6,8 +6,8 @@ from .helpers import helm_template
 
 def test_terraform_pipelines_gerrit():
     config = """
-gerrit:
-  enabled: true
+global:
+  gitProvider: gerrit
     """
 
     r = helm_template(config)
@@ -64,8 +64,8 @@ gerrit:
 
 def test_terraform_pipelines_github():
     config = """
-github:
-  enabled: true
+global:
+  gitProvider: github
     """
 
     r = helm_template(config)
@@ -121,8 +121,8 @@ github:
 
 def test_terraform_pipelines_gitlab():
     config = """
-gitlab:
-  enabled: true
+global:
+  gitProvider: gitlab
     """
 
     r = helm_template(config)

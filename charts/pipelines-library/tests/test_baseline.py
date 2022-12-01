@@ -31,10 +31,7 @@ def test_ingress_for_gitlab_el():
     config = """
 global:
   dnsWildCard: "example.com"
-gitlab:
-  enabled: true
-github:
-  enabled: false
+  gitProvider: gitlab
     """
 
     el_Name = "el-gitlab-listener"
@@ -49,10 +46,7 @@ def test_ingress_for_github_el():
     config = """
 global:
   dnsWildCard: "example.com"
-github:
-  enabled: true
-gitlab:
-  enabled: false
+  gitProvider: github
     """
 
     el_Name = "el-github-listener"

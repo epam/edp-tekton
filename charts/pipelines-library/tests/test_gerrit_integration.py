@@ -6,12 +6,8 @@ from .helpers import helm_template
 
 def test_gerrit_is_disabled():
     config = """
-gerrit:
-  enabled: false
-github:
-  enabled: false
-gitlab:
-  enabled: false
+global:
+  gitProvider: unsupported
     """
 
     r = helm_template(config)
@@ -25,8 +21,9 @@ gitlab:
 
 def test_gerrit_is_enabled_with_custom_port():
     config = """
+global:
+  gitProvider: gerrit
 gerrit:
-  enabled: true
   sshPort: 777
     """
 

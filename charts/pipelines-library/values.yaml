@@ -6,6 +6,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 global:
+  # -- Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github
+  gitProvider: gerrit
   # -- a cluster DNS wildcard name
   dnsWildCard: "eks-sandbox.aws.main.edp.projects.epam.com"
 
@@ -21,13 +23,10 @@ kaniko:
   roleArn: arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko
 
 gerrit:
-  # -- Deploy Gerrit related components. Default: true
-  enabled: true
   # -- Gerrit port
   sshPort: 30003
 
 github:
-  enabled: false
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com
   host: github.com
   webhook:
@@ -35,7 +34,6 @@ github:
     existingSecret: github
 
 gitlab:
-  enabled: false
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: git.epam.com
   webhook:

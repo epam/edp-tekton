@@ -1,4 +1,4 @@
-{{ if .Values.gitlab.enabled }}
+{{ if eq .Values.global.gitProvider "gitlab" }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:

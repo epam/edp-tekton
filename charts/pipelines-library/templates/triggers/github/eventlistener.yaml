@@ -1,4 +1,4 @@
-{{ if .Values.github.enabled }}
+{{ if eq .Values.global.gitProvider "github" }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:

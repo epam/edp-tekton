@@ -4,33 +4,10 @@ import sys
 from .helpers import helm_template
 
 
-def test_github_is_disabled():
-    config = """
-gerrit:
-  enabled: false
-github:
-  enabled: false
-gitlab:
-  enabled: false
-    """
-
-    r = helm_template(config)
-
-    assert "eventlistener" not in r
-    assert "triggerbinding" not in r
-    assert "triggertemplate" not in r
-    assert "cdpipeline" in r["pipeline"]
-    assert "gitserver" not in r
-
-
 def test_github_is_enabled():
     config = """
-gerrit:
-  enabled: false
-gitlab:
-  enabled: false
-github:
-  enabled: true
+global:
+  gitProvider: github
     """
 
     r = helm_template(config)

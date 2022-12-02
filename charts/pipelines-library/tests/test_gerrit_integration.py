@@ -23,8 +23,7 @@ def test_gerrit_is_enabled_with_custom_port():
     config = """
 global:
   gitProvider: gerrit
-gerrit:
-  sshPort: 777
+  gerritSSHPort: "777"
     """
 
     r = helm_template(config)

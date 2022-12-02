@@ -8,6 +8,8 @@ fullnameOverride: ""
 global:
   # -- a cluster DNS wildcard name
   dnsWildCard: "eks-sandbox.aws.main.edp.projects.epam.com"
+  # -- Gerrit SSH node port
+  gerritSSHPort: "30003"
 
 # -- Tekton URL. Link to tekton Dashboard
 tektonUrl: https://tekton.eks-sandbox.aws.main.edp.projects.epam.com

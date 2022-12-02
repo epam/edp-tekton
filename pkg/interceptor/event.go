@@ -16,9 +16,9 @@ type GitHubEvent struct {
 		FullName string `json:"full_name"`
 	} `json:"repository"`
 	PullRequest struct {
-		Head struct {
+		Base struct {
 			Ref string `json:"ref"`
-		} `json:"head"`
+		} `json:"base"`
 	} `json:"pull_request"`
 }
 

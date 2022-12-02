@@ -86,7 +86,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 			},
 			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"full_name": "demo/repo1"}, "pull_request": {"head": {"ref": "feature/1"}}}`,
+				Body:    `{"repository": {"full_name": "demo/repo1"}, "pull_request": {"base": {"ref": "feature/1"}}}`,
 				Header:  map[string][]string{"X-Github-Event": {"data"}},
 				Context: triggersContext,
 			},

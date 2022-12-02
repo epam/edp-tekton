@@ -10,6 +10,8 @@ global:
   gitProvider: gerrit
   # -- a cluster DNS wildcard name
   dnsWildCard: "eks-sandbox.aws.main.edp.projects.epam.com"
+  # -- Gerrit SSH node port
+  gerritSSHPort: "30003"
 
 # -- Tekton URL. Link to tekton Dashboard
 tektonUrl: https://tekton.eks-sandbox.aws.main.edp.projects.epam.com
@@ -24,7 +26,7 @@ kaniko:
 
 gerrit:
   # -- Gerrit port
-  sshPort: 30003
+  sshPort: 777
 
 github:
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com

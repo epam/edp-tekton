@@ -42,7 +42,7 @@ spec:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
-            value: "ssh://edp-ci@gerrit:{{ .Values.gerrit.sshPort }}/$(tt.params.gerritproject)"
+            value: "ssh://edp-ci@gerrit:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME

@@ -25,5 +25,3 @@ kaniko:
 gerrit:
   # -- Deploy Gerrit related components. Default: true
   enabled: true
-  # -- Gerrit port
-  sshPort: 30003

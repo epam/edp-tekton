@@ -20,6 +20,8 @@ spec:
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: codebase
       description: Codebase name used in pipeline
+    - name: codebasebranch
+      description: Codebasebranch name used in pipeline
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -41,6 +43,8 @@ spec:
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.codebase)
+          - name: CODEBASEBRANCH_NAME
+            value: $(tt.params.codebasebranch)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: gitsha

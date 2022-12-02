@@ -2,6 +2,23 @@
 ## [Unreleased]
 
 
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2022-12-02
+### Bug Fixes
+
+- Define codebasebranch parameter for github flow [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+
+### Code Refactoring
+
+- Define gitProvider parameter [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+- Rename secret for GitHub/GitLab [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+- Update secret usage approach [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+
+### Routine
+
+- Get gerrit sshPort from global section [EPMDEDP-10642](https://jiraeu.epam.com/browse/EPMDEDP-10642)
+
+
 <a name="v0.1.9"></a>
 ## [v0.1.9] - 2022-12-01
 ### Features
@@ -337,7 +354,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/epam/edp-tekton/compare/v0.1.9...v0.2.0
 [v0.1.9]: https://github.com/epam/edp-tekton/compare/v0.1.8...v0.1.9
 [v0.1.8]: https://github.com/epam/edp-tekton/compare/v0.1.7...v0.1.8
 [v0.1.7]: https://github.com/epam/edp-tekton/compare/v0.1.6...v0.1.7

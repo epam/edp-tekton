@@ -35,7 +35,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.1.9 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.0 |
 
 ## Values
 
@@ -44,7 +44,6 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | buildTool.go.cache.persistentVolume.size | string | `"5Gi"` |  |
 | buildTool.go.cache.persistentVolume.storageClass | string | `"ebs-sc"` |  |
 | fullnameOverride | string | `""` |  |
-| gerrit.sshPort | int | `777` | Gerrit port |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |

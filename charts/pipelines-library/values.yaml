@@ -9,12 +9,12 @@ global:
   # -- Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github
   gitProvider: gerrit
   # -- a cluster DNS wildcard name
-  dnsWildCard: "eks-sandbox.aws.main.edp.projects.epam.com"
+  dnsWildCard: ""
   # -- Gerrit SSH node port
   gerritSSHPort: "30003"
 
 # -- Tekton URL. Link to tekton Dashboard
-tektonUrl: https://tekton.eks-sandbox.aws.main.edp.projects.epam.com
+tektonUrl: ""
 
 # Kaniko configuration section
 kaniko:
@@ -22,7 +22,7 @@ kaniko:
     # -- Specifies whether a service account should be created
     create: false
   # -- AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
-  roleArn: arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko
+  roleArn: ""
 
 github:
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com

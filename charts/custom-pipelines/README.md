@@ -33,10 +33,6 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | fullnameOverride | string | `""` |  |
-| gerrit.enabled | bool | `true` | Deploy Gerrit related components. Default: true |
-| global.dnsWildCard | string | `"eks-sandbox.aws.main.edp.projects.epam.com"` | a cluster DNS wildcard name |
+| global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
-| kaniko.roleArn | string | `"arn:aws:iam::093899590031:role/AWSIRSACoreSandboxEdpDeliveryKaniko"` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
-| kaniko.serviceAccount.create | bool | `false` | Specifies whether a service account should be created |
 | nameOverride | string | `""` |  |
-| tektonUrl | string | `"https://tekton.eks-sandbox.aws.main.edp.projects.epam.com"` | Tekton URL. Link to tekton Dashboard |

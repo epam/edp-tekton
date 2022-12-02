@@ -8,7 +8,7 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(extensions.branch_name)
+      value: $(body.pull_request.head.ref)
     - name: gitrepositoryurl
       value: $(body.repository.ssh_url)
     - name: gitrepositoryname

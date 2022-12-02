@@ -17,14 +17,12 @@ spec:
                 secretName: {{ .Values.github.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["push"]
+              value: ["pull_request"]
         - ref:
-            name: cel
+            name: "cel"
           params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.ref.split('/')[2]"
+            - name: "filter"
+              value: "body.action in ['closed']"
         - ref:
             name: "edp"
         - ref:
@@ -51,14 +49,12 @@ spec:
                 secretName: {{ .Values.github.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["push"]
+              value: ["pull_request"]
         - ref:
-            name: cel
+            name: "cel"
           params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.ref.split('/')[2]"
+            - name: "filter"
+              value: "body.action in ['closed']"
         - ref:
             name: "edp"
         - ref:
@@ -85,14 +81,12 @@ spec:
                 secretName: {{ .Values.github.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["push"]
+              value: ["pull_request"]
         - ref:
-            name: cel
+            name: "cel"
           params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.ref.split('/')[2]"
+            - name: "filter"
+              value: "body.action in ['closed']"
         - ref:
             name: "edp"
         - ref:
@@ -119,14 +113,12 @@ spec:
                 secretName: {{ .Values.github.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["push"]
+              value: ["pull_request"]
         - ref:
-            name: cel
+            name: "cel"
           params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.ref.split('/')[2]"
+            - name: "filter"
+              value: "body.action in ['closed']"
         - ref:
             name: "edp"
         - ref:
@@ -160,13 +152,6 @@ spec:
             - name: "filter"
               value: "body.action in ['opened', 'synchronize', 'edited']"
         - ref:
-            name: "cel"
-          params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.pull_request.head.ref"
-        - ref:
             name: "edp"
         - ref:
             name: "cel"
@@ -198,13 +183,6 @@ spec:
           params:
             - name: "filter"
               value: "body.action in ['opened', 'synchronize', 'edited']"
-        - ref:
-            name: "cel"
-          params:
-            - name: "overlays"
-              value:
-                - key: branch_name
-                  expression: "body.pull_request.head.ref"
         - ref:
             name: "edp"
         - ref:

@@ -71,7 +71,7 @@ spec:
       taskRef:
         name: python
       runAfter:
-        - fetch-repository
+        - compile
       params:
         - name: BASE_IMAGE
           value: $(params.python-image-version)

@@ -179,7 +179,7 @@ func getEventInfo(r *triggersv1.InterceptorRequest) (*eventInfo, error) {
 		return &eventInfo{
 			GitProvider: gitProviderGitHub,
 			RepoPath:    convertRepositoryPath(gitHubEvent.Repository.FullName),
-			Branch:      convertBranchName(gitHubEvent.PullRequest.Head.Ref),
+			Branch:      convertBranchName(gitHubEvent.PullRequest.Base.Ref),
 		}, nil
 	}
 
@@ -224,7 +224,7 @@ func unmarshalGitHubEvent(body []byte) (*GitHubEvent, error) {
 		return nil, errors.New("github repository path empty")
 	}
 
-	if gitHubEvent.PullRequest.Head.Ref == "" {
+	if gitHubEvent.PullRequest.Base.Ref == "" {
 		return nil, errors.New("github target branch empty")
 	}
 

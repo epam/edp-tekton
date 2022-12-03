@@ -38,7 +38,7 @@ global:
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "event-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-gitlab-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
     assert el_Name in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
@@ -53,7 +53,7 @@ global:
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "event-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-github-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
     assert el_Name in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 

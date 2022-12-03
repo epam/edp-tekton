@@ -8,7 +8,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   rules:
-    - host: event-listener-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    - host: {{ $elName }}-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
       http:
         paths:
           - path: /

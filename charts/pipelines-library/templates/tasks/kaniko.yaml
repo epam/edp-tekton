@@ -30,7 +30,7 @@ spec:
       default: []
     - name: BUILDER_IMAGE
       description: The image on which builds will run (default is v1.9.1)
-      default: gcr.io/kaniko-project/executor:v1.9.1@sha256:23ae6ccaba2b0f599966dbc5ecf38aa4404f4cd799add224167eaf285696551a
+      default: gcr.io/kaniko-project/executor:v1.9.1@sha256:7d1923bcf2a9ed1e33e1918c3e208c7a60dd2def7c6bd302cde0c839c5bf5425
   workspaces:
     - name: source
       description: Holds the context and Dockerfile

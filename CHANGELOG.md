@@ -2,6 +2,24 @@
 ## [Unreleased]
 
 
+<a name="v0.2.1"></a>
+## [v0.2.1] - 2022-12-03
+### Bug Fixes
+
+- GitHub event change target branch from head.ref to base.ref [EPMDEDP-11124](https://jiraeu.epam.com/browse/EPMDEDP-11124)
+
+### Code Refactoring
+
+- Use different hostnames for Github/GitLab EL [EPMDEDP-11078](https://jiraeu.epam.com/browse/EPMDEDP-11078)
+- Change eventTypes from push to pull_request for triggering build pipelines [EPMDEDP-11124](https://jiraeu.epam.com/browse/EPMDEDP-11124)
+
+### Routine
+
+- Align values.yaml [EPMDEDP-10642](https://jiraeu.epam.com/browse/EPMDEDP-10642)
+- Bump tekton version [EPMDEDP-10642](https://jiraeu.epam.com/browse/EPMDEDP-10642)
+- Align the sequence of tasks for GitHub and GitLab [EPMDEDP-11124](https://jiraeu.epam.com/browse/EPMDEDP-11124)
+
+
 <a name="v0.2.0"></a>
 ## [v0.2.0] - 2022-12-02
 ### Bug Fixes
@@ -354,7 +372,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.1...HEAD
+[v0.2.1]: https://github.com/epam/edp-tekton/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/epam/edp-tekton/compare/v0.1.9...v0.2.0
 [v0.1.9]: https://github.com/epam/edp-tekton/compare/v0.1.8...v0.1.9
 [v0.1.8]: https://github.com/epam/edp-tekton/compare/v0.1.7...v0.1.8

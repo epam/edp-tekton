@@ -36,6 +36,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | Repository | Name | Version |
 |------------|------|---------|
 | https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.0 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-interceptor | 0.2.2 |
 
 ## Values
 
@@ -43,6 +44,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 |-----|------|---------|-------------|
 | buildTool.go.cache.persistentVolume.size | string | `"5Gi"` |  |
 | buildTool.go.cache.persistentVolume.storageClass | string | `"ebs-sc"` |  |
+| edp-tekton-interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |

@@ -25,6 +25,7 @@ spec:
               value: "body.object_attributes.action in ['merge']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -57,6 +58,7 @@ spec:
               value: "body.object_attributes.action in ['merge']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -89,6 +91,7 @@ spec:
               value: "body.object_attributes.action in ['merge']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -121,6 +124,7 @@ spec:
               value: "body.object_attributes.action in ['merge']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -153,6 +157,7 @@ spec:
               value: "body.object_attributes.action in ['open', 'reopen', 'update']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:

@@ -25,6 +25,7 @@ spec:
               value: "body.action in ['closed']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -57,6 +58,7 @@ spec:
               value: "body.action in ['closed']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -89,6 +91,7 @@ spec:
               value: "body.action in ['closed']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -121,6 +124,7 @@ spec:
               value: "body.action in ['closed']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -153,6 +157,7 @@ spec:
               value: "body.action in ['opened', 'synchronize', 'edited']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -185,6 +190,7 @@ spec:
               value: "body.action in ['opened', 'synchronize', 'edited']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:

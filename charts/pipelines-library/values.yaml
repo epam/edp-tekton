@@ -50,6 +50,11 @@ tekton:
     # -- Supported resources for auto prune are 'taskrun' and 'pipelinerun'
     resources: "pipelinerun,taskrun"
 
+# Deploy EDP Tekton Interceptor together with pipelines library
+edp-tekton-interceptor:
+  # -- Deploy EDP interceptor as a part of pipeline library when true. Default: true
+  enabled: true
+
 buildTool:
   go:
     cache:

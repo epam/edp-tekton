@@ -16,6 +16,7 @@ spec:
               value: "body.change.status in ['MERGED']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -39,6 +40,7 @@ spec:
               value: "body.change.status in ['MERGED']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -62,6 +64,7 @@ spec:
               value: "body.change.status in ['MERGED']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -85,6 +88,7 @@ spec:
               value: "body.change.status in ['MERGED']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -108,6 +112,7 @@ spec:
               value: "body.change.status in ['NEW']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:
@@ -131,6 +136,7 @@ spec:
               value: "body.change.status in ['NEW']"
         - ref:
             name: "edp"
+            kind: NamespacedInterceptor
         - ref:
             name: "cel"
           params:

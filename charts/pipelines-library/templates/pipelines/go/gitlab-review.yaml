@@ -53,7 +53,7 @@ spec:
 
     - name: build
       taskRef:
-        name: golang-build
+        name: golang
       runAfter:
         - init-values
       params:
@@ -68,7 +68,7 @@ spec:
 
     - name: test
       taskRef:
-        name: golang-build
+        name: golang
       runAfter:
         - build
       params:

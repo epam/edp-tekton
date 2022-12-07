@@ -41,8 +41,8 @@ type edpInterceptorHandler struct {
 }
 
 type config struct {
-	Namespace              string
-	ClusterInterceptorName string
+	Namespace       string
+	InterceptorName string
 }
 
 func main() {
@@ -77,18 +77,18 @@ func main() {
 
 	ctx := context.Background()
 
-	certData, err := secretService.CreateCertsSecret(ctx, conf.Namespace, conf.ClusterInterceptorName)
+	certData, err := secretService.CreateCertsSecret(ctx, conf.Namespace, conf.InterceptorName)
 	if err != nil {
 		logger.Fatalf("Failed to create certs secret: %v", err)
 	}
 
 	logger.Infof("The secret %s was populated with certs ", interceptor.SecretCertsName)
 
-	if err = secretService.UpdateCABundle(ctx, conf.Namespace, conf.ClusterInterceptorName, certData.CaCert); err != nil {
+	if err = secretService.UpdateCABundle(ctx, conf.Namespace, conf.InterceptorName, certData.CaCert); err != nil {
 		logger.Fatalf("Failed to update cABundle: %v", err)
 	}
 
-	logger.Infof("ClusterInterceptor %s caBundle updated successfully", conf.ClusterInterceptorName)
+	logger.Infof("Interceptor %s caBundle updated successfully", conf.InterceptorName)
 
 	mux := http.NewServeMux()
 	mux.Handle(
@@ -196,13 +196,13 @@ func initEnv() (*config, error) {
 		return nil, errors.New("env SYSTEM_NAMESPACE is required")
 	}
 
-	clusterInterceptorName, ok := os.LookupEnv("CLUSTER_INTERCEPTOR_NAME")
+	interceptorName, ok := os.LookupEnv("INTERCEPTOR_NAME")
 	if !ok {
-		return nil, errors.New("env CLUSTER_INTERCEPTOR_NAME is required")
+		return nil, errors.New("env INTERCEPTOR_NAME is required")
 	}
 
 	return &config{
-		Namespace:              namespace,
-		ClusterInterceptorName: clusterInterceptorName,
+		Namespace:       namespace,
+		InterceptorName: interceptorName,
 	}, nil
 }

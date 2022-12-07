@@ -45,24 +45,24 @@ func NewSecretService(client ctrlClient.Client) *SecretService {
 
 // CreateCertsSecret creates and returns a CA certificate and certificate and key for the server.
 // serverKey and serverCert are used by the server to establish trust for clients, CA certificate is used by the
-// client to verify the server authentication chain. Certificates are based on ClusterInterceptor spec.
+// client to verify the server authentication chain. Certificates are based on Interceptor spec.
 // After generation all certificates are stored in secret: SecretCertsName.
 func (s *SecretService) CreateCertsSecret(
 	ctx context.Context,
 	namespace,
-	clusterInterceptorName string,
+	interceptorName string,
 ) (*CertData, error) {
-	clusterInterceptor := &triggersApi.ClusterInterceptor{}
+	interceptor := &triggersApi.Interceptor{}
 
-	err := s.client.Get(ctx, ctrlClient.ObjectKey{Namespace: namespace, Name: clusterInterceptorName}, clusterInterceptor)
+	err := s.client.Get(ctx, ctrlClient.ObjectKey{Namespace: namespace, Name: interceptorName}, interceptor)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get ClusterInterceptor: %w", err)
+		return nil, fmt.Errorf("failed to get Interceptor: %w", err)
 	}
 
 	serKey, serCert, cacert, err := certresources.CreateCerts(
 		ctx,
-		clusterInterceptor.Spec.ClientConfig.Service.Name,
-		clusterInterceptor.Spec.ClientConfig.Service.Namespace,
+		interceptor.Spec.ClientConfig.Service.Name,
+		interceptor.Spec.ClientConfig.Service.Namespace,
 		time.Now().Add(decade),
 	)
 	if err != nil {
@@ -109,24 +109,24 @@ func (s *SecretService) CreateCertsSecret(
 	return certData, nil
 }
 
-// UpdateCABundle updates ClusterInterceptor CaBundle spec with CA certificate.
+// UpdateCABundle updates Interceptor CaBundle spec with CA certificate.
 func (s *SecretService) UpdateCABundle(
 	ctx context.Context,
 	namespace,
-	clusterInterceptorName string,
+	interceptorName string,
 	ca []byte,
 ) error {
-	clusterInterceptor := &triggersApi.ClusterInterceptor{}
+	interceptor := &triggersApi.Interceptor{}
 
-	err := s.client.Get(ctx, ctrlClient.ObjectKey{Namespace: namespace, Name: clusterInterceptorName}, clusterInterceptor)
+	err := s.client.Get(ctx, ctrlClient.ObjectKey{Namespace: namespace, Name: interceptorName}, interceptor)
 	if err != nil {
-		return fmt.Errorf("failed to get ClusterInterceptor: %w", err)
+		return fmt.Errorf("failed to get Interceptor: %w", err)
 	}
 
-	clusterInterceptor.Spec.ClientConfig.CaBundle = ca
+	interceptor.Spec.ClientConfig.CaBundle = ca
 
-	if err = s.client.Update(ctx, clusterInterceptor); err != nil {
-		return fmt.Errorf("failed to update ClusterInterceptor caBundle: %w", err)
+	if err = s.client.Update(ctx, interceptor); err != nil {
+		return fmt.Errorf("failed to update Interceptor caBundle: %w", err)
 	}
 
 	return nil

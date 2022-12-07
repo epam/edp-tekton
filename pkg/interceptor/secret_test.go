@@ -22,8 +22,8 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 	utilruntime.Must(triggersApi.AddToScheme(scheme))
 
 	type args struct {
-		namespace              string
-		clusterInterceptorName string
+		namespace       string
+		interceptorName string
 	}
 
 	tests := []struct {
@@ -37,12 +37,12 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 		{
 			name: "success, secret created",
 			objects: []runtime.Object{
-				&triggersApi.ClusterInterceptor{
+				&triggersApi.Interceptor{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
 						Name:      "edp",
 					},
-					Spec: triggersApi.ClusterInterceptorSpec{
+					Spec: triggersApi.InterceptorSpec{
 						ClientConfig: triggersApi.ClientConfig{
 							Service: &triggersApi.ServiceReference{
 								Name:      "edp-service",
@@ -53,8 +53,8 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 				},
 			},
 			args: args{
-				namespace:              "default",
-				clusterInterceptorName: "edp",
+				namespace:       "default",
+				interceptorName: "edp",
 			},
 			wantCertData:            assert.NotNil,
 			wantErr:                 assert.NoError,
@@ -63,12 +63,12 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 		{
 			name: "success, secret updated",
 			objects: []runtime.Object{
-				&triggersApi.ClusterInterceptor{
+				&triggersApi.Interceptor{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
 						Name:      "edp",
 					},
-					Spec: triggersApi.ClusterInterceptorSpec{
+					Spec: triggersApi.InterceptorSpec{
 						ClientConfig: triggersApi.ClientConfig{
 							Service: &triggersApi.ServiceReference{
 								Name:      "edp-service",
@@ -85,18 +85,18 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 				},
 			},
 			args: args{
-				namespace:              "default",
-				clusterInterceptorName: "edp",
+				namespace:       "default",
+				interceptorName: "edp",
 			},
 			wantCertData:            assert.NotNil,
 			wantErr:                 assert.NoError,
 			wantGetCreatedSecretErr: assert.NoError,
 		},
 		{
-			name: "failed, ClusterInterceptor not found",
+			name: "failed, Interceptor not found",
 			args: args{
-				namespace:              "default",
-				clusterInterceptorName: "edp",
+				namespace:       "default",
+				interceptorName: "edp",
 			},
 			wantCertData:            assert.Nil,
 			wantErr:                 assert.Error,
@@ -113,7 +113,7 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 
 			s := NewSecretService(fakeClient)
 
-			gotCertData, err := s.CreateCertsSecret(context.Background(), tt.args.namespace, tt.args.clusterInterceptorName)
+			gotCertData, err := s.CreateCertsSecret(context.Background(), tt.args.namespace, tt.args.interceptorName)
 
 			tt.wantErr(t, err)
 			tt.wantCertData(t, gotCertData)
@@ -132,23 +132,23 @@ func TestSecretService_UpdateCABundle(t *testing.T) {
 	utilruntime.Must(triggersApi.AddToScheme(scheme))
 
 	type args struct {
-		namespace              string
-		clusterInterceptorName string
-		ca                     []byte
+		namespace       string
+		interceptorName string
+		ca              []byte
 	}
 
 	tests := []struct {
-		name                         string
-		objects                      []runtime.Object
-		args                         args
-		wantErr                      assert.ErrorAssertionFunc
-		wantGetClusterInterceptorErr assert.ErrorAssertionFunc
-		wantCaBundle                 []byte
+		name                  string
+		objects               []runtime.Object
+		args                  args
+		wantErr               assert.ErrorAssertionFunc
+		wantGetInterceptorErr assert.ErrorAssertionFunc
+		wantCaBundle          []byte
 	}{
 		{
 			name: "success",
 			objects: []runtime.Object{
-				&triggersApi.ClusterInterceptor{
+				&triggersApi.Interceptor{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: "default",
 						Name:      "edp",
@@ -156,23 +156,23 @@ func TestSecretService_UpdateCABundle(t *testing.T) {
 				},
 			},
 			args: args{
-				namespace:              "default",
-				clusterInterceptorName: "edp",
-				ca:                     []byte("test-ca"),
+				namespace:       "default",
+				interceptorName: "edp",
+				ca:              []byte("test-ca"),
 			},
-			wantErr:                      assert.NoError,
-			wantGetClusterInterceptorErr: assert.NoError,
-			wantCaBundle:                 []byte("test-ca"),
+			wantErr:               assert.NoError,
+			wantGetInterceptorErr: assert.NoError,
+			wantCaBundle:          []byte("test-ca"),
 		},
 		{
-			name: "failed, ClusterInterceptor not found",
+			name: "failed, Interceptor not found",
 			args: args{
-				namespace:              "default",
-				clusterInterceptorName: "edp",
-				ca:                     []byte("test-ca"),
+				namespace:       "default",
+				interceptorName: "edp",
+				ca:              []byte("test-ca"),
 			},
-			wantErr:                      assert.Error,
-			wantGetClusterInterceptorErr: assert.Error,
+			wantErr:               assert.Error,
+			wantGetInterceptorErr: assert.Error,
 		},
 	}
 
@@ -185,14 +185,14 @@ func TestSecretService_UpdateCABundle(t *testing.T) {
 
 			s := NewSecretService(fakeClient)
 
-			err := s.UpdateCABundle(context.Background(), tt.args.namespace, tt.args.clusterInterceptorName, tt.args.ca)
+			err := s.UpdateCABundle(context.Background(), tt.args.namespace, tt.args.interceptorName, tt.args.ca)
 
 			tt.wantErr(t, err)
 
-			clusterInterceptor := &triggersApi.ClusterInterceptor{}
-			err = s.client.Get(context.Background(), client.ObjectKey{Namespace: tt.args.namespace, Name: tt.args.clusterInterceptorName}, clusterInterceptor)
-			tt.wantGetClusterInterceptorErr(t, err)
-			assert.Equal(t, tt.wantCaBundle, clusterInterceptor.Spec.ClientConfig.CaBundle)
+			interceptor := &triggersApi.Interceptor{}
+			err = s.client.Get(context.Background(), client.ObjectKey{Namespace: tt.args.namespace, Name: tt.args.interceptorName}, interceptor)
+			tt.wantGetInterceptorErr(t, err)
+			assert.Equal(t, tt.wantCaBundle, interceptor.Spec.ClientConfig.CaBundle)
 		})
 	}
 }

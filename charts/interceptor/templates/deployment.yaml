@@ -44,7 +44,7 @@ spec:
               value: config-observability-triggers
             - name: METRICS_DOMAIN
               value: tekton.dev/triggers
-            - name: CLUSTER_INTERCEPTOR_NAME
+            - name: INTERCEPTOR_NAME
               value: edp
           name: tekton-triggers-edp-interceptor
           securityContext:

@@ -66,7 +66,7 @@ spec:
 
     - name: test
       taskRef:
-        name: golang-build
+        name: golang
       runAfter:
         - sast
       params:
@@ -97,7 +97,7 @@ spec:
 
     - name: build
       taskRef:
-        name: golang-build
+        name: golang
       runAfter:
         - sonar
       params:

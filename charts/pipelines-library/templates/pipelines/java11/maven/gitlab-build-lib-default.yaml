@@ -37,10 +37,6 @@ spec:
       default: 'maven:3.8.6-openjdk-11-slim'
       description: "maven image version"
       type: string
-    - name: changeNumber
-      description: Change number from Merge Request
-    - name: patchsetNumber
-      description: Patchset number from Merge Request
   tasks:
 
 {{- include "gitlab-build-start" . | nindent 4 }}

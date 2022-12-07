@@ -1,5 +1,5 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   name: tekton-triggers-edp-interceptor
   labels:
@@ -13,7 +13,7 @@ rules:
     apiGroups:
       - triggers.tekton.dev
     resources:
-      - clusterinterceptors
+      - interceptors
 
   - verbs:
       - get

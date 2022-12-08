@@ -20,13 +20,27 @@ spec:
               command:
                 - /bin/sh
                 - '-c'
-                - >-
-                  function prune() { n=$1; a=$2; resources=$3; old_ifs=" ";
-                  IFS=","; for r in $resources; do tkn $r delete -n=$n $a -f;
-                  done; IFS=$old_ifs; }; echo $conf; for c in $*; do ns=$(echo
-                  $c | cut -d ";" -f 1); args=$(echo $c | cut -d ";" -f 2);
-                  resources=$(echo $c | cut -d ";" -f 3); prune $ns $args
-                  $resources; done;
+                - |
+                  function prune() {
+                      n=$1;
+                      a=$2;
+                      r=$3;
+                      #old_ifs=" ";
+                      #IFS=$'\n';
+                      pipeline_list=$(tkn pipeline list -o jsonpath='{range .items[*]}{.metadata.name}{" "}')
+                      for p in $pipeline_list;
+                      do
+                          tkn $r delete --namespace $n --pipeline $p $a -f || true;
+                      done; 
+                      #IFS=$old_ifs;
+                  };
+                  for c in $*; 
+                  do 
+                      ns=$(echo $c | cut -d ";" -f 1);
+                      args=$(echo $c | cut -d ";" -f 2);
+                      resources=$(echo $c | cut -d ";" -f 3);
+                      prune $ns $args $resources; 
+                  done;
               args:
                 - '-s'
                 - ' {{ .Release.Namespace }};--keep={{ .Values.tekton.pruner.keep }};{{ .Values.tekton.pruner.resources }}'

@@ -9,7 +9,7 @@ metadata:
 spec:
   params:
     - name: pipelineUrl
-      default: https://tekton.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: CODEBASE_TAG
       description: "Codebases with a tag separated with a space."

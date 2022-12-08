@@ -39,5 +39,5 @@ annotations:
 # we use templates from common library
 dependencies:
   - name: edp-tekton-common-library
-    version: 0.2.0
+    version: 0.2.1
     repository: https://epam.github.io/edp-helm-charts/stable

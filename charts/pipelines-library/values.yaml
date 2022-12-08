@@ -44,8 +44,8 @@ tekton:
     schedule: "0 18 * * *"
     # -- Maximum number of resources to keep while deleting removing
     keep: 1
-    # -- Supported resources for auto prune are 'taskrun' and 'pipelinerun'
-    resources: "pipelinerun,taskrun"
+    # -- Supported resource for auto prune is 'pipelinerun'
+    resources: "pipelinerun"
 
 # Deploy EDP Tekton Interceptor together with pipelines library
 edp-tekton-interceptor:

@@ -59,5 +59,5 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | nameOverride | string | `""` |  |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
 | tekton.pruner.keep | int | `1` | Maximum number of resources to keep while deleting removing |
-| tekton.pruner.resources | string | `"pipelinerun,taskrun"` | Supported resources for auto prune are 'taskrun' and 'pipelinerun' |
+| tekton.pruner.resources | string | `"pipelinerun"` | Supported resource for auto prune is 'pipelinerun' |
 | tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |

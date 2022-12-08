@@ -61,4 +61,3 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | tekton.pruner.keep | int | `1` | Maximum number of resources to keep while deleting removing |
 | tekton.pruner.resources | string | `"pipelinerun,taskrun"` | Supported resources for auto prune are 'taskrun' and 'pipelinerun' |
 | tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |
-| tektonUrl | string | `""` | Tekton URL. Link to tekton Dashboard |

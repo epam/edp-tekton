@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-go-beego-app-build-default
+  name: github-go-operator-sdk-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -11,7 +11,7 @@ spec:
     - name: ssh-creds
   params:
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-beego"
+      default: "https://github.com/epmd-edp/go-go-operator-sdk"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -39,7 +39,7 @@ spec:
       type: string
   tasks:
 
-  {{- include "github-build-start" . | nindent 4 }}
+{{- include "github-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -53,7 +53,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "golang-build-common" . | nindent 4 }}
+{{- include "golang-build-operator-sdk-common" . | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

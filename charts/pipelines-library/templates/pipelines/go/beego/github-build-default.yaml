@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-go-beego-app-build-edp
+  name: github-go-beego-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -39,16 +39,19 @@ spec:
       type: string
   tasks:
 
-  {{- include "github-build-start" . | nindent 4 }}
+{{- include "github-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-go-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
 {{- include "golang-build-common" . | nindent 4 }}
 

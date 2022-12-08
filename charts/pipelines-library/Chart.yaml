@@ -45,3 +45,7 @@ dependencies:
     version: 0.2.2
     repository: https://epam.github.io/edp-helm-charts/stable
     condition: edp-tekton-interceptor.enabled
+  - name: edp-tekton-dashboard
+    version: 0.30.0
+    repository: https://epam.github.io/edp-helm-charts/stable
+    condition: edp-tekton-dashboard.enabled

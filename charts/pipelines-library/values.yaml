@@ -13,9 +13,6 @@ global:
   # -- Gerrit SSH node port
   gerritSSHPort: "30003"
 
-# -- Tekton URL. Link to tekton Dashboard
-tektonUrl: ""
-
 # Kaniko configuration section
 kaniko:
   serviceAccount:

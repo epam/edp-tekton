@@ -51,7 +51,7 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-{{- include "golang-review-common" . | nindent 4 }}
+{{- include "golang-review-operator-sdk-common" . | nindent 4 }}
 
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
     # because the fetch-repository Task fetches only user changes.

@@ -54,7 +54,7 @@ spec:
 
 {{- include "github-review-start" . | nindent 4 }}
 
-{{- include "golang-review-common" . | nindent 4 }}
+{{- include "golang-review-operator-sdk-common" . | nindent 4 }}
 
     - name: sonar
       taskRef:

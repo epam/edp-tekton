@@ -207,3 +207,20 @@ finally:
       - name: ssh-directory
         workspace: ssh-creds
 {{- end -}}
+
+# final section for all build pipelines that use edp versioning
+{{- define "update-cbb" -}}
+finally:
+  - name: update-cbb
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      name: update-cbb
+    params:
+      - name: CODEBASEBRANCH_NAME
+        value: $(params.CODEBASEBRANCH_NAME)
+      - name: CURRENT_BUILD_NUMBER
+        value: $(tasks.get-version.results.BUILD_ID)
+{{- end -}}

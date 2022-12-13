@@ -90,4 +90,6 @@ spec:
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 
+{{ include "update-cbb" . | nindent 2 }}
+
 {{ end }}

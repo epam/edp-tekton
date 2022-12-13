@@ -61,6 +61,7 @@ global:
                 assert "terraform-lint" in btedp[5]["name"]
                 assert buildtool == btedp[5]["taskRef"]["name"]
                 assert "git-tag" in btedp[6]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_terraform_pipelines_github():
     config = """
@@ -118,6 +119,7 @@ global:
                 assert "terraform-lint" in btedp[4]["name"]
                 assert buildtool == btedp[4]["taskRef"]["name"]
                 assert "git-tag" in btedp[5]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_terraform_pipelines_gitlab():
     config = """
@@ -175,3 +177,4 @@ global:
                 assert "terraform-lint" in btedp[4]["name"]
                 assert buildtool == btedp[4]["taskRef"]["name"]
                 assert "git-tag" in btedp[5]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

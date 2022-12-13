@@ -44,4 +44,6 @@ spec:
 
 {{- include "opa-build-common" . | nindent 4 }}
 
+{{ include "update-cbb" . | nindent 2 }}
+
 {{ end }}

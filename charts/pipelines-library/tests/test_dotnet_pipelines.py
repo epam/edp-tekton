@@ -98,6 +98,7 @@ global:
                     assert "update-cbis" in btedp[15]["name"]
                 else:
                     assert "git-tag" in btedp[12]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_dotnet_pipelines_github():
     config = """
@@ -187,6 +188,7 @@ global:
                     assert "update-cbis" in btedp[13]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_dotnet_pipelines_gitlab():
     config = """
@@ -276,3 +278,4 @@ global:
                     assert "update-cbis" in btedp[13]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

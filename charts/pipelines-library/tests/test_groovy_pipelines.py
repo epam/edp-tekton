@@ -70,6 +70,7 @@ global:
             assert "codenarc" == btedp[7]["taskRef"]["name"]
             assert "git-tag" in btedp[8]["name"]
             assert "update-cbis" in btedp[9]["name"]
+            assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_groovy_pipelines_github():
     config = """
@@ -132,6 +133,7 @@ global:
             assert "codenarc" == btedp[5]["taskRef"]["name"]
             assert "git-tag" in btedp[6]["name"]
             assert "update-cbis" in btedp[7]["name"]
+            assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_groovy_pipelines_gitlab():
     config = """
@@ -194,3 +196,4 @@ global:
             assert "codenarc" == btedp[5]["taskRef"]["name"]
             assert "git-tag" in btedp[6]["name"]
             assert "update-cbis" in btedp[7]["name"]
+            assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

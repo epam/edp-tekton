@@ -56,6 +56,7 @@ global:
                 assert "test" in btedp[4]["name"]
                 assert buildtool == btedp[4]["taskRef"]["name"]
                 assert "git-tag" in btedp[5]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_opa_pipelines_github():
     config = """
@@ -79,12 +80,10 @@ global:
                 assert github_build_pipeline_def in r["pipeline"]
                 assert github_build_pipeline_edp in r["pipeline"]
 
-
                 rt = r["pipeline"][github_review_pipeline]["spec"]["tasks"]
                 assert "github-set-pending-status" in rt[0]["name"]
                 assert "fetch-repository" in rt[1]["name"]
                 assert "test" in rt[2]["name"]
-
                 assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -108,6 +107,7 @@ global:
                 assert "test" in btedp[3]["name"]
                 assert buildtool == btedp[3]["taskRef"]["name"]
                 assert "git-tag" in btedp[4]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_opa_pipelines_gitlab():
     config = """
@@ -131,12 +131,10 @@ global:
                 assert gitlab_build_pipeline_def in r["pipeline"]
                 assert gitlab_build_pipeline_edp in r["pipeline"]
 
-
                 rt = r["pipeline"][gitlab_review_pipeline]["spec"]["tasks"]
                 assert "report-pipeline-start-to-gitlab" in rt[0]["name"]
                 assert "fetch-repository" in rt[1]["name"]
                 assert "test" in rt[2]["name"]
-
                 assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -160,3 +158,4 @@ global:
                 assert "test" in btedp[3]["name"]
                 assert buildtool == btedp[3]["taskRef"]["name"]
                 assert "git-tag" in btedp[4]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

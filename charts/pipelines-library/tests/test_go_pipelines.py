@@ -80,6 +80,7 @@ global:
             assert "kaniko-build" in btedp[10]["name"]
             assert "git-tag" in btedp[11]["name"]
             assert "update-cbis" in btedp[12]["name"]
+            assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_go_pipelines_github():
     config = """
@@ -151,6 +152,7 @@ global:
             assert "kaniko-build" in btedp[8]["name"]
             assert "git-tag" in btedp[9]["name"]
             assert "update-cbis" in btedp[10]["name"]
+            assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_go_pipelines_gitlab():
     config = """
@@ -222,3 +224,4 @@ global:
             assert "kaniko-build" in btedp[8]["name"]
             assert "git-tag" in btedp[9]["name"]
             assert "update-cbis" in btedp[10]["name"]
+            assert "update-cbb" in r["pipeline"][build_pipeline_edp]["spec"]["finally"][0]["name"]

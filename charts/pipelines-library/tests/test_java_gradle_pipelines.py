@@ -134,6 +134,7 @@ global:
                     assert "push" in btedp[idx+7]["name"]
                     assert buildtool == btedp[idx+7]["taskRef"]["name"]
                     assert "git-tag" in btedp[idx+8]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_java_pipelines_github():
     config = """
@@ -247,6 +248,7 @@ global:
                     assert "push" in btedp[9]["name"]
                     assert buildtool == btedp[9]["taskRef"]["name"]
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_java_pipelines_gitlab():
     config = """
@@ -278,6 +280,7 @@ global:
                     assert "helm-lint" in rt[9]["name"]
                 assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]
+
                 # build with default versioning
                 btd = r["pipeline"][gitlab_build_pipeline_def]["spec"]["tasks"]
                 assert "fetch-repository" in btd[0]["name"]
@@ -315,6 +318,7 @@ global:
                     assert "push" in btd[8]["name"]
                     assert buildtool == btd[8]["taskRef"]["name"]
                     assert "git-tag" in btd[9]["name"]
+
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
                 assert "fetch-repository" in btedp[0]["name"]
@@ -352,3 +356,4 @@ global:
                     assert "push" in btedp[9]["name"]
                     assert buildtool == btedp[9]["taskRef"]["name"]
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

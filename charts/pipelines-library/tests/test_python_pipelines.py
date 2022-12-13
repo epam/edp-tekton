@@ -36,9 +36,9 @@ global:
                 assert "sonar-prepare-files-general" == rt[6]["taskRef"]["name"]
                 assert "sonar" in rt[7]["name"]
                 if cbtype == "app":
-                        assert "dockerfile-lint" in rt[8]["name"]
-                        assert "dockerbuild-verify" in rt[9]["name"]
-                        assert "helm-lint" in rt[10]["name"]
+                    assert "dockerfile-lint" in rt[8]["name"]
+                    assert "dockerbuild-verify" in rt[9]["name"]
+                    assert "helm-lint" in rt[10]["name"]
 
                 assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]
@@ -96,6 +96,7 @@ global:
                     assert "update-cbis" in btedp[14]["name"]
                 else:
                     assert "git-tag" in btedp[11]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_python_pipelines_github():
     config = """
@@ -182,6 +183,7 @@ global:
                     assert "update-cbis" in btedp[12]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btedp[9]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_python_pipelines_gitlab():
     config = """
@@ -268,3 +270,4 @@ global:
                     assert "update-cbis" in btedp[12]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btedp[9]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

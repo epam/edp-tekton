@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-cbb
+spec:
+  params:
+    - name: CODEBASEBRANCH_NAME
+      type: string
+      description: "Codebase branch name with only letters and dashes"
+    - name: CURRENT_BUILD_NUMBER
+      type: string
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      type: string
+      default: bitnami/kubectl:1.25.2
+  steps:
+    - name: update-cbis
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CBB_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
+        - name: CURRENT_BUILD_NUMBER
+          value: "$(params.CURRENT_BUILD_NUMBER)"
+      script: |
+        #!/usr/bin/env bash
+        set -ex
+
+        kubectl patch codebasebranches.v2.edp.epam.com ${CBB_NAME} \
+        --subresource=status \
+        --type=merge \
+        -p "{\"status\": {\"lastSuccessfulBuild\": \"${CURRENT_BUILD_NUMBER}\"}}"

@@ -113,4 +113,6 @@ spec:
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 
+{{ include "update-cbb" . | nindent 2 }}
+
 {{ end }}

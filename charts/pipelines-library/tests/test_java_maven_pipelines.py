@@ -123,6 +123,7 @@ global:
                     assert "push" in btedp[11]["name"]
                     assert buildtool == btedp[11]["taskRef"]["name"]
                     assert "git-tag" in btedp[12]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_java_pipelines_github():
     config = """
@@ -235,6 +236,7 @@ global:
                     assert "push" in btedp[9]["name"]
                     assert buildtool == btedp[9]["taskRef"]["name"]
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
 
 def test_java_pipelines_gitlab():
     config = """
@@ -347,3 +349,4 @@ global:
                     assert "push" in btedp[9]["name"]
                     assert buildtool == btedp[9]["taskRef"]["name"]
                     assert "git-tag" in btedp[10]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]

@@ -136,4 +136,6 @@ spec:
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.IS_TAG)
 
+{{ include "update-cbb" . | nindent 2 }}
+
 {{ end }}

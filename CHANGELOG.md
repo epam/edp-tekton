@@ -2,8 +2,43 @@
 ## [Unreleased]
 
 
+<a name="v0.2.2"></a>
+## [v0.2.2] - 2022-12-13
+### Features
+
+- Update link to tekton-dashboard [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+- Implement tekton-dashboard dependency [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+- Implement tekton dashboard with impersonation [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+- Implement Pipeline for Operator SDK [EPMDEDP-11075](https://jiraeu.epam.com/browse/EPMDEDP-11075)
+- Use Interceptor instead of ClusterInterceptor [EPMDEDP-11138](https://jiraeu.epam.com/browse/EPMDEDP-11138)
+
+### Bug Fixes
+
+- Change include for review [EPMDEDP-11075](https://jiraeu.epam.com/browse/EPMDEDP-11075)
+- Change Image Version for Operator Sdk [EPMDEDP-11075](https://jiraeu.epam.com/browse/EPMDEDP-11075)
+- Rename golang-build to golang for gitlab pipelines [EPMDEDP-11144](https://jiraeu.epam.com/browse/EPMDEDP-11144)
+- Remove changeNumber and patchsetNumber parameters from build pipelines for GitHub [EPMDEDP-11153](https://jiraeu.epam.com/browse/EPMDEDP-11153)
+
+### Code Refactoring
+
+- Remove unused tektonUrl param [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+- Switch tekton dashboard from cluster to namespace [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+
+### Routine
+
+- Updated tekton dependencies [EPMDEDP-11027](https://jiraeu.epam.com/browse/EPMDEDP-11027)
+- Use Role instead of ClusterRole for interceptor [EPMDEDP-11028](https://jiraeu.epam.com/browse/EPMDEDP-11028)
+- Use namespaced edp interceptor for EventListeners [EPMDEDP-11028](https://jiraeu.epam.com/browse/EPMDEDP-11028)
+- Bump up Kaniko to latest stable version [EPMDEDP-11088](https://jiraeu.epam.com/browse/EPMDEDP-11088)
+- Update pruner logic [EPMDEDP-11109](https://jiraeu.epam.com/browse/EPMDEDP-11109)
+- Define git-refspec parameter [EPMDEDP-11119](https://jiraeu.epam.com/browse/EPMDEDP-11119)
+- Remove changeNumber and patchsetNumber from gitlab build pipelines [EPMDEDP-11143](https://jiraeu.epam.com/browse/EPMDEDP-11143)
+- Add finally block which contains update-cbb Tasks [EPMDEDP-11183](https://jiraeu.epam.com/browse/EPMDEDP-11183)
+- Add update-cbb block to common-library [EPMDEDP-11183](https://jiraeu.epam.com/browse/EPMDEDP-11183)
+
+
 <a name="v0.2.1"></a>
-## [v0.2.1] - 2022-12-03
+## [v0.2.1] - 2022-12-05
 ### Bug Fixes
 
 - GitHub event change target branch from head.ref to base.ref [EPMDEDP-11124](https://jiraeu.epam.com/browse/EPMDEDP-11124)
@@ -372,7 +407,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.2...HEAD
+[v0.2.2]: https://github.com/epam/edp-tekton/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/epam/edp-tekton/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/epam/edp-tekton/compare/v0.1.9...v0.2.0
 [v0.1.9]: https://github.com/epam/edp-tekton/compare/v0.1.8...v0.1.9

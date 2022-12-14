@@ -11,4 +11,4 @@ global:
   # -- namespace or a project name
   edpName: ""
   # base image for tekton-dashboard
-  image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.30.0@sha256:85f7d38086fadb07556052ce873d44861c29ef690f47735f32d7e6a153ca8a92
+  image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.31.0@sha256:454a405aa4f874a0c22db7ab47ccb225a95addd3de904084e35c5de78e4f2c48

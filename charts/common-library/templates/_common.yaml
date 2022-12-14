@@ -224,3 +224,70 @@ finally:
       - name: CURRENT_BUILD_NUMBER
         value: $(tasks.get-version.results.BUILD_ID)
 {{- end -}}
+
+{{- define "update-codebasebranch" -}}
+- name: update-cbb
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Succeeded"]
+  taskRef:
+    name: update-cbb
+  params:
+    - name: CODEBASEBRANCH_NAME
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: CURRENT_BUILD_NUMBER
+      value: $(tasks.get-version.results.BUILD_ID)
+{{- end -}}
+
+{{- define "push-to-jira" -}}
+- name: push-to-jira
+  taskRef:
+    name: push-to-jira
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Succeeded"]
+    - input: "$(params.JIRA_SERVER)"
+      operator: notin
+      values: [ "" ]
+  params:
+    - name: TICKET_NAME_PATTERN
+      value: "$(params.TICKET_NAME_PATTERN)"
+    - name: COMMIT_MESSAGE_PATTERN
+      value: "$(params.COMMIT_MESSAGE_PATTERN)"
+    - name: COMMIT_MESSAGE
+      value: "$(params.COMMIT_MESSAGE)"
+    - name: COMMIT_ID
+      value: "$(tasks.fetch-repository.results.commit)"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
+    - name: CODEBASE_NAME
+      value: "$(params.CODEBASE_NAME)"
+    - name: PIPELINE_URL
+      value: "$(params.pipelineUrl)"
+    - name: VCS_TAG
+      value: "$(tasks.get-version.results.VCS_TAG)"
+    - name: VERSION
+      value: "$(tasks.get-version.results.VERSION)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+# final section for all build pipelines that use default versioning
+{{- define "finally-block-default" -}}
+finally:
+
+{{ include "push-to-jira" . | nindent 2 }}
+
+{{- end -}}
+
+# final section for all build pipelines that use edp versioning
+{{- define "finally-block-edp" -}}
+finally:
+{{ include "update-codebasebranch" . | nindent 2 }}
+
+{{ include "push-to-jira" . | nindent 2 }}
+
+{{- end -}}

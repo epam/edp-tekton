@@ -3,8 +3,8 @@ description: A Helm chart for EDP Tekton Interceptor
 home: https://epam.github.io/edp-install/
 name: edp-tekton-interceptor
 type: application
-version: 0.2.2
-appVersion: 0.2.2
+version: 0.2.3
+appVersion: 0.2.3
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - edp

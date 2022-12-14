@@ -1,6 +1,6 @@
 # edp-tekton-dashboard
 
-![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.2](https://img.shields.io/badge/AppVersion-0.2.2-informational?style=flat-square)
+![Version: 0.31.0](https://img.shields.io/badge/Version-0.31.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.31.0](https://img.shields.io/badge/AppVersion-0.31.0-informational?style=flat-square)
 
 Tekton dashboard
 
@@ -24,6 +24,6 @@ Tekton dashboard
 | fullnameOverride | string | `""` |  |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.edpName | string | `""` | namespace or a project name |
-| global.image | string | `"gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.30.0@sha256:85f7d38086fadb07556052ce873d44861c29ef690f47735f32d7e6a153ca8a92"` |  |
+| global.image | string | `"gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.31.0@sha256:454a405aa4f874a0c22db7ab47ccb225a95addd3de904084e35c5de78e4f2c48"` |  |
 | nameOverride | string | `"tekton-dashboard"` |  |
 

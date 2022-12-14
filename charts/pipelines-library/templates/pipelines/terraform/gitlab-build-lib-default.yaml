@@ -10,6 +10,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/epmd-edp/terraform-terraform-terraform"
       description: git url to clone
@@ -22,6 +25,16 @@ spec:
       default: 'terraform-terraform'
       description: "Project name"
       type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira server name"
   tasks:
 
 {{- include "gitlab-build-start" . | nindent 4 }}
@@ -39,5 +52,7 @@ spec:
           workspace: shared-workspace
 
 {{- include "terraform-build-common" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

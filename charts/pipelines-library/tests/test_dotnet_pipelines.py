@@ -69,6 +69,7 @@ global:
                     assert "update-cbis" in btd[14]["name"]
                 else:
                     assert "git-tag" in btd[11]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -99,6 +100,7 @@ global:
                 else:
                     assert "git-tag" in btedp[12]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_dotnet_pipelines_github():
     config = """
@@ -161,6 +163,7 @@ global:
                     assert "update-cbis" in btd[12]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btd[9]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -189,6 +192,7 @@ global:
                 if cbtype == "lib":
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_dotnet_pipelines_gitlab():
     config = """
@@ -251,6 +255,7 @@ global:
                     assert "update-cbis" in btd[12]["name"]
                 if cbtype == "lib":
                     assert "git-tag" in btd[9]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -279,3 +284,4 @@ global:
                 if cbtype == "lib":
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]

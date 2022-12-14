@@ -45,6 +45,7 @@ global:
                 assert "test" in btd[4]["name"]
                 assert buildtool == btd[4]["taskRef"]["name"]
                 assert "git-tag" in btd[5]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -57,6 +58,7 @@ global:
                 assert buildtool == btedp[4]["taskRef"]["name"]
                 assert "git-tag" in btedp[5]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_opa_pipelines_github():
     config = """
@@ -97,6 +99,7 @@ global:
                 assert "test" in btd[3]["name"]
                 assert buildtool == btd[3]["taskRef"]["name"]
                 assert "git-tag" in btd[4]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -108,6 +111,7 @@ global:
                 assert buildtool == btedp[3]["taskRef"]["name"]
                 assert "git-tag" in btedp[4]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_opa_pipelines_gitlab():
     config = """
@@ -148,6 +152,7 @@ global:
                 assert "test" in btd[3]["name"]
                 assert buildtool == btd[3]["taskRef"]["name"]
                 assert "git-tag" in btd[4]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -159,3 +164,4 @@ global:
                 assert buildtool == btedp[3]["taskRef"]["name"]
                 assert "git-tag" in btedp[4]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]

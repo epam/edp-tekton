@@ -29,6 +29,16 @@ spec:
       default: 'ghcr.io/hadolint/hadolint:v2.10.0-alpine'
       description: "kaniko image version"
       type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira server name"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -64,5 +74,7 @@ spec:
           value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
 
 {{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

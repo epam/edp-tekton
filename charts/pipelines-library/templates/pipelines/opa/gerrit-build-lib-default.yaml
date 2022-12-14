@@ -33,6 +33,16 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira server name"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -50,5 +60,7 @@ spec:
           workspace: shared-workspace
 
 {{- include "opa-build-common" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

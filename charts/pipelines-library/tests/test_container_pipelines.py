@@ -49,6 +49,7 @@ global:
             assert buildtool == btd[6]["taskRef"]["name"]
             assert "git-tag" in btd[7]["name"]
             assert "update-cbis" in btd[8]["name"]
+            assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
             btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -63,6 +64,7 @@ global:
             assert "git-tag" in btedp[7]["name"]
             assert "update-cbis" in btedp[8]["name"]
             assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
+            assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_container_pipelines_github():
     config = """
@@ -107,6 +109,7 @@ global:
             assert buildtool == btd[5]["taskRef"]["name"]
             assert "git-tag" in btd[6]["name"]
             assert "update-cbis" in btd[7]["name"]
+            assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
             btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -120,6 +123,7 @@ global:
             assert "git-tag" in btedp[6]["name"]
             assert "update-cbis" in btedp[7]["name"]
             assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
+            assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_container_pipelines_gitlab():
     config = """
@@ -164,6 +168,7 @@ global:
             assert buildtool == btd[5]["taskRef"]["name"]
             assert "git-tag" in btd[6]["name"]
             assert "update-cbis" in btd[7]["name"]
+            assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
             btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -177,3 +182,4 @@ global:
             assert "git-tag" in btedp[6]["name"]
             assert "update-cbis" in btedp[7]["name"]
             assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
+            assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]

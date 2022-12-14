@@ -24,16 +24,23 @@ spec:
       value: "$(body.change.number)"
     - name: patchsetNumber
       value: "$(body.patchSet.number)"
-    - name: commitMessagePattern
-      value: "$(extensions.spec.commitMessagePattern)"
     - name: codebase
       value: "$(extensions.codebase)"
     - name: codebasebranch
       value: "$(extensions.codebasebranch)"
+    # commitMessage is used for 'push-to-jira' Task
     - name: commitMessage
       value: "$(body.change.commitMessage)"
+    # commitMessagePattern is used for 'commit-validate' and 'push-to-jira' Tasks
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
+    # jiraIssueMetadataPayload is used for 'push-to-jira' Task
     - name: jiraIssueMetadataPayload
       value: "$(extensions.spec.jiraIssueMetadataPayload)"
+    # ticketNamePattern is used for 'push-to-jira' Task
     - name: ticketNamePattern
       value: "$(extensions.spec.ticketNamePattern)"
+    # jiraServer is used for 'push-to-jira' Task
+    - name: jiraServer
+      value: "$(extensions.spec.jiraServer)"
 {{ end }}

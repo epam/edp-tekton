@@ -34,6 +34,8 @@ spec:
       description: Commit message
     - name: jiraIssueMetadataPayload
       description: Jira issue payload
+    - name: jiraServer
+      description: Jira server name
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -74,6 +76,8 @@ spec:
             value: $(tt.params.commitMessage)
           - name: JIRA_ISSUE_METADATA_PAYLOAD
             value: $(tt.params.jiraIssueMetadataPayload)
+          - name: JIRA_SERVER
+            value: $(tt.params.jiraServer)
         workspaces:
           - name: shared-workspace
             volumeClaimTemplate:

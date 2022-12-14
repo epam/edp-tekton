@@ -39,13 +39,13 @@ annotations:
 # we use templates from common library
 dependencies:
   - name: edp-tekton-common-library
-    version: 0.2.2
+    version: 0.2.3
     repository: https://epam.github.io/edp-helm-charts/stable
   - name: edp-tekton-interceptor
-    version: 0.2.2
+    version: 0.2.3
     repository: https://epam.github.io/edp-helm-charts/stable
     condition: edp-tekton-interceptor.enabled
   - name: edp-tekton-dashboard
-    version: 0.30.0
+    version: 0.31.0
     repository: https://epam.github.io/edp-helm-charts/stable
     condition: edp-tekton-dashboard.enabled

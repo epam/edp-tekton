@@ -10,6 +10,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/epmd-edp/go-go-beego"
       description: git url to clone
@@ -37,6 +40,16 @@ spec:
       default: 'golang:1.18.4-alpine3.16'
       description: "go image version"
       type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira server name"
   tasks:
 
 {{- include "github-build-start" . | nindent 4 }}
@@ -56,5 +69,7 @@ spec:
 {{- include "golang-build-common" . | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

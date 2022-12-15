@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.2.3"></a>
+## [v0.2.3] - 2022-12-14
+### Features
+
+- Add Jira Task in each build pipeline [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
+- Return empty string when JiraServer is not defined [EPMDEDP-11190](https://jiraeu.epam.com/browse/EPMDEDP-11190)
+
+### Routine
+
+- Add finally-block which contains push-to-jira Task [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
+- Bump interceptor version to 0.2.3 [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
+- Bump tekton-dashboard version to 0.31.0 [EPMDEDP-11197](https://jiraeu.epam.com/browse/EPMDEDP-11197)
+
+
 <a name="v0.2.2"></a>
 ## [v0.2.2] - 2022-12-13
 ### Features
@@ -407,7 +421,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.3...HEAD
+[v0.2.3]: https://github.com/epam/edp-tekton/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/epam/edp-tekton/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/epam/edp-tekton/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/epam/edp-tekton/compare/v0.1.9...v0.2.0

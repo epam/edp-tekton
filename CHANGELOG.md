@@ -2,8 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.2.4"></a>
+## [v0.2.4] - 2022-12-15
+### Routine
+
+- Set default field for parameters [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
+
+
 <a name="v0.2.3"></a>
-## [v0.2.3] - 2022-12-14
+## [v0.2.3] - 2022-12-15
 ### Features
 
 - Add Jira Task in each build pipeline [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
@@ -421,7 +428,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.4...HEAD
+[v0.2.4]: https://github.com/epam/edp-tekton/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/epam/edp-tekton/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/epam/edp-tekton/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/epam/edp-tekton/compare/v0.2.0...v0.2.1

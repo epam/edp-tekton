@@ -51,35 +51,7 @@ spec:
 
 {{- include "gitlab-review-start" . | nindent 4 }}
 
-    - name: build
-      taskRef:
-        name: golang
-      runAfter:
-        - init-values
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            make build
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        name: golang
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.go-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            make test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "golang-review-operator-sdk-common" . | nindent 4 }}
 
     - name: sonar
       taskRef:

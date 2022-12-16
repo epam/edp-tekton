@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.2.8"></a>
+## [v0.2.8] - 2022-12-16
+### Bug Fixes
+
+- Fix go-sdk build pipeline for gitlab [EPMDEDP-11075](https://jiraeu.epam.com/browse/EPMDEDP-11075)
+
+
 <a name="v0.2.7"></a>
 ## [v0.2.7] - 2022-12-16
 ### Bug Fixes
@@ -453,7 +460,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.7...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.8...HEAD
+[v0.2.8]: https://github.com/epam/edp-tekton/compare/v0.2.7...v0.2.8
 [v0.2.7]: https://github.com/epam/edp-tekton/compare/v0.2.6...v0.2.7
 [v0.2.6]: https://github.com/epam/edp-tekton/compare/v0.2.5...v0.2.6
 [v0.2.5]: https://github.com/epam/edp-tekton/compare/v0.2.4...v0.2.5

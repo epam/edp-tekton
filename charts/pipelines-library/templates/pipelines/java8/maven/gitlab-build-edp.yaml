@@ -13,9 +13,6 @@ spec:
     - name: pipelineUrl
       default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
-    - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
-      type: string
     - name: git-source-url
       default: "https://gitlab.com/sergk/spring-petclinic"
       description: git url to clone

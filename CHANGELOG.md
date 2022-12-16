@@ -2,6 +2,13 @@
 ## [Unreleased]
 
 
+<a name="v0.2.6"></a>
+## [v0.2.6] - 2022-12-16
+### Bug Fixes
+
+- Remove extra parameter from pipeline [EPMDEDP-11186](https://jiraeu.epam.com/browse/EPMDEDP-11186)
+
+
 <a name="v0.2.5"></a>
 ## [v0.2.5] - 2022-12-16
 ### Bug Fixes
@@ -435,7 +442,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.5...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.6...HEAD
+[v0.2.6]: https://github.com/epam/edp-tekton/compare/v0.2.5...v0.2.6
 [v0.2.5]: https://github.com/epam/edp-tekton/compare/v0.2.4...v0.2.5
 [v0.2.4]: https://github.com/epam/edp-tekton/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/epam/edp-tekton/compare/v0.2.2...v0.2.3

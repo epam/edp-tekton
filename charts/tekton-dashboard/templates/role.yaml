@@ -101,6 +101,7 @@ rules:
       - triggerbindings
       - triggers
       - triggertemplates
+      - interceptors
     verbs:
       - get
       - list
@@ -126,6 +127,7 @@ rules:
       - triggerbindings
       - triggers
       - triggertemplates
+      - interceptors
     verbs:
       - create
       - update

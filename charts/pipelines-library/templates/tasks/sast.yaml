@@ -17,7 +17,7 @@ spec:
     - name: BASE_IMAGE
       type: string
       description: Semgrep image
-      default: returntocorp/semgrep:0.111.1
+      default: returntocorp/semgrep:1.2.1
     - name: ci-defectdojo-secret
       type: string
       description: name of the secret holding the DefectDojo secret
@@ -40,7 +40,7 @@ spec:
       workingDir: $(workspaces.source.path)
       script: |
         set -e
-        semgrep --config=auto . --json --output $(params.reportDataPath)
+        semgrep --jobs 1 --config=auto . --json --output $(params.reportDataPath)
       env:
         - name: HOME
           value: "$(workspaces.source.path)"

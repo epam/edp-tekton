@@ -40,7 +40,7 @@ spec:
 
         DEPLOYABLE_MODULE=$(find ./ -name '*.csproj' | xargs awk  -F '[><]' '/<DeployableModule>/ {print $3}')
 
-        VERSION=$(find ${DEPLOYABLE_MODULE} -name '*.csproj' | xargs awk  -F '[><]' '/<Version>/ {print $3}')
+        VERSION=$(find ${DEPLOYABLE_MODULE} -name '*.csproj' | xargs awk  -F '[><]' '/<Version>/ {print $3}' | tr '[:upper:]' '[:lower:]')
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

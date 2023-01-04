@@ -76,7 +76,7 @@ spec:
           -PnexusLogin=${CI_USERNAME} \
           -PnexusPassword=${CI_PASSWORD} \
           -PnexusMavenRepositoryUrl=${NEXUS_URL}/repository/edp-maven-group \
-          properties -q | grep "version:" | awk '{print $2}' )
+          properties -q | grep "version:" | awk '{print $2}' | tr '[:upper:]' '[:lower:]')
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

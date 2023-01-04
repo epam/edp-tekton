@@ -79,7 +79,7 @@ spec:
         -Dartifactory.groupPath=edp-maven-group \
         org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate \
         -Dexpression=project.version \
-        | grep -Ev '(^\[|Download\w+:)' )
+        | grep -Ev '(^\[|Download\w+:)' | tr '[:upper:]' '[:lower:]')
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

@@ -42,7 +42,7 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        VERSION=$(python setup.py version | sed -n 2p)
+        VERSION=$(python setup.py version | sed -n 2p | tr '[:upper:]' '[:lower:]')
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

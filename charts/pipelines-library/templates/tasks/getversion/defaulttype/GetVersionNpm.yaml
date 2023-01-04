@@ -42,7 +42,7 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        VERSION=$(node -p "require('./package.json').version")
+        VERSION=$(node -p "require('./package.json').version" | tr '[:upper:]' '[:lower:]')
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))

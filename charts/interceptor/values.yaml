@@ -1,3 +1,7 @@
+global:
+  # -- platform type that can be "kubernetes" or "openshift"
+  platform: "kubernetes"
+
 image:
   repository: epamedp/edp-tekton
   pullPolicy: IfNotPresent

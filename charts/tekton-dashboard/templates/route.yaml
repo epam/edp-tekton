@@ -1,0 +1,22 @@
+{{- if eq .Values.global.platform "openshift" -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    {{- include "tekton-dashboard.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+    host: tekton-{{ .Values.global.edpName }}.{{ .Values.global.dnsWildCard }}
+    tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+    to:
+        kind: Service
+        name: {{ .Chart.Name }}
+        weight: 100
+    wildcardPolicy: None
+{{- end -}}

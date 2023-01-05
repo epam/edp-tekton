@@ -3,8 +3,8 @@ description: Tekton dashboard
 home: https://epam.github.io/edp-install/
 name: edp-tekton-dashboard
 type: application
-version: 0.31.0
-appVersion: 0.31.0
+version: 0.31.1
+appVersion: 0.31.1
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - edp

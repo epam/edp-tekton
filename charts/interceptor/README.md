@@ -1,6 +1,6 @@
 # edp-tekton-interceptor
 
-![Version: 0.2.3](https://img.shields.io/badge/Version-0.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.3](https://img.shields.io/badge/AppVersion-0.2.3-informational?style=flat-square)
+![Version: 0.2.4](https://img.shields.io/badge/Version-0.2.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.4](https://img.shields.io/badge/AppVersion-0.2.4-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
 A Helm chart for EDP Tekton Interceptor
@@ -49,6 +49,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"epamedp/edp-tekton"` |  |
 | image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |

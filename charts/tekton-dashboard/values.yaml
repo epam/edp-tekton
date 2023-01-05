@@ -8,7 +8,22 @@ fullnameOverride: ""
 global:
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
+  # -- platform type that can be "kubernetes" or "openshift"
+  platform: "kubernetes"
   # -- namespace or a project name
   edpName: ""
   # base image for tekton-dashboard
   image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.31.0@sha256:454a405aa4f874a0c22db7ab47ccb225a95addd3de904084e35c5de78e4f2c48
+
+ingress:
+  # -- Annotations for Ingress resource
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Hostname(s) for the Ingress resource
+  # -- Ingress TLS configuration
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local

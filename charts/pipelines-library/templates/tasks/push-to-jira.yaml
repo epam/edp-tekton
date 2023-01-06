@@ -139,7 +139,7 @@ spec:
         values = {
             "EDP_COMPONENT": codebase,
             "EDP_VERSION": version,
-            "EDP_SEM_VERSION": re.sub("(-RC|-SNAPSHOT)\.\d", "", version),
+            "EDP_SEM_VERSION": re.sub("(-RC|-SNAPSHOT)\.\d+", "", version),
             "EDP_GITTAG": vcs_tag
         }
         print("[TEKTON] EDP predefined variables:\n{}".format(json.dumps(values, indent = 4)))

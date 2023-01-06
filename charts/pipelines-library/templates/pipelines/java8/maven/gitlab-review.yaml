@@ -130,16 +130,10 @@ spec:
 
     - name: dockerbuild-verify
       taskRef:
-        name: kaniko
+        name: dockerbuild-verify
       runAfter:
         - sonar
         - dockerfile-lint
-      params:
-        - name: IMAGE
-          value: "placeholder:latest"
-        - name: EXTRA_ARGS
-          value:
-            - --no-push
       workspaces:
         - name: source
           workspace: shared-workspace

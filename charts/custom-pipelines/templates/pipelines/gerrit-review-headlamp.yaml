@@ -41,6 +41,12 @@ spec:
       default: 'docker.io/library/node:18.10-alpine3.16'
       description: "npm image version"
       type: string
+    - name: GOPROXY
+      default: "http://athens-athens-proxy:80"
+      description: "Go proxy link"
+      type: string
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
     - name: targetBranch
       description: Target branch of Merge Request
     - name: changeNumber
@@ -51,14 +57,7 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-    # - name: commit-validate
-    #   taskRef:
-    #     name: commit-validate
-    #   runAfter:
-    #     - init-values
-    #   params:
-    #     - name: COMMIT_MESSAGE_PATTERN
-    #       value: "$(params.COMMIT_MESSAGE_PATTERN)"
+{{ include "gerrit-common" . | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -77,15 +76,6 @@ spec:
             npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
             npm install
             npm run build:clean
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-docs
-      taskRef:
-        name: helm-docs
-      runAfter:
-        - init-values
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -217,19 +207,6 @@ spec:
         - name: EXTRA_ARGS
           value:
             - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-lint
-      taskRef:
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --validate-maintainers=false --charts deploy-templates/
       workspaces:
         - name: source
           workspace: shared-workspace

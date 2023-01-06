@@ -1,0 +1,45 @@
+{{- define "gerrit-common" -}}
+
+- name: commit-validate
+  taskRef:
+    name: commit-validate
+  runAfter:
+    - fetch-repository
+  params:
+    - name: COMMIT_MESSAGE_PATTERN
+      value: $(params.COMMIT_MESSAGE_PATTERN)
+  when:
+    - input: "$(params.COMMIT_MESSAGE_PATTERN)"
+      operator: notin
+      values: [""]
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: helm-docs
+  taskRef:
+    name: helm-docs
+  runAfter:
+    - init-values
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        GOPROXY=$(params.GOPROXY) make validate-docs
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: helm-lint
+  taskRef:
+    name: helm-lint
+  runAfter:
+    - fetch-repository
+  params:
+  - name: EXTRA_COMMANDS
+    value: |
+      ct lint --validate-maintainers=false --charts deploy-templates/
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+{{- end -}}

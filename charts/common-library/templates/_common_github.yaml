@@ -64,21 +64,6 @@
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
-- name: commit-validate
-  taskRef:
-    name: commit-validate
-  runAfter:
-    - fetch-repository
-  params:
-    - name: COMMIT_MESSAGE_PATTERN
-      value: $(params.COMMIT_MESSAGE_PATTERN)
-  when:
-    - input: "$(params.COMMIT_MESSAGE_PATTERN)"
-      operator: notin
-      values: [""]
-  workspaces:
-    - name: source
-      workspace: shared-workspace
 - name: init-values
   taskRef:
     name: init-values

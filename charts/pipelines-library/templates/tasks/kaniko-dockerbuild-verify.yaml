@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: kaniko
+  name: dockerbuild-verify
   labels:
     app.kubernetes.io/based-on: "0.6"
     {{- include "edp-tekton.labels" . | nindent 4 }}
@@ -13,12 +13,11 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This Task builds a simple Dockerfile with kaniko and pushes to a registry.
-    This Task stores the image name and digest as results, allowing Tekton Chains to pick up
-    that an image was built & sign it.
+    This Task builds a Dockerfile with kaniko.
   params:
     - name: IMAGE
       description: Name (reference) of the image to build.
+      default: "placeholder:latest"
     - name: DOCKERFILE
       description: Path to the Dockerfile to build.
       default: ./Dockerfile
@@ -31,9 +30,6 @@ spec:
     - name: BUILDER_IMAGE
       description: The image on which builds will run (default is v1.9.1)
       default: gcr.io/kaniko-project/executor:v1.9.1@sha256:7d1923bcf2a9ed1e33e1918c3e208c7a60dd2def7c6bd302cde0c839c5bf5425
-    - name: KANIKO_CACHE_REPO
-      description: The repo where Kaniko stores cached image layers
-      default: ""
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
@@ -47,7 +43,7 @@ spec:
     - name: IMAGE_URL
       description: URL of the image just built.
   steps:
-    - name: build-and-push
+    - name: build-no-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)
       args:
@@ -56,16 +52,9 @@ spec:
         - --context=$(workspaces.source.path)/$(params.CONTEXT) # The user does not need to care of the workspace and the source.
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --cache=true
-        - --cache-repo=$(params.KANIKO_CACHE_REPO)
+        - --no-push
       # kaniko assumes it is running as root, which means this example fails on platforms
       # that default to run containers as random uid (like OpenShift). Adding this securityContext
       # makes it explicit that it needs to run as root.
       securityContext:
         runAsUser: 0
-    - name: write-url
-      image: alpine:3.17.1
-      script: |
-        set -e
-        image="$(params.IMAGE)"
-        echo -n "${image}" | tee "$(results.IMAGE_URL.path)"

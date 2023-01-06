@@ -35,7 +35,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.3 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.4 |
 | https://epam.github.io/edp-helm-charts/stable | edp-tekton-dashboard | 0.31.1 |
 | https://epam.github.io/edp-helm-charts/stable | edp-tekton-interceptor | 0.2.4 |
 

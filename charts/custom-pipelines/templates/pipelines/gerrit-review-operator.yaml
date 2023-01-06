@@ -57,18 +57,7 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-    - name: commit-validate
-      taskRef:
-        name: commit-validate
-      runAfter:
-        - init-values
-      params:
-        - name: COMMIT_MESSAGE_PATTERN
-          value: "$(params.COMMIT_MESSAGE_PATTERN)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
+{{ include "gerrit-common" . | nindent 4 }}
 
     - name: crdocs-build
       taskRef:
@@ -80,19 +69,6 @@ spec:
           value: $(params.go-image-version)
         - name: GOPROXY
           value: $(params.GOPROXY)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-docs
-      taskRef:
-        name: helm-docs
-      runAfter:
-        - crdocs-build
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            GOPROXY=$(params.GOPROXY) make validate-docs
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -228,19 +204,6 @@ spec:
         - name: EXTRA_ARGS
           value:
             - --no-push
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: helm-lint
-      taskRef:
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --validate-maintainers=false --charts deploy-templates/
       workspaces:
         - name: source
           workspace: shared-workspace

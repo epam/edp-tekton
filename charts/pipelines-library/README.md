@@ -44,7 +44,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | buildTool.go.cache.persistentVolume.size | string | `"5Gi"` |  |
-| buildTool.go.cache.persistentVolume.storageClass | string | `"ebs-sc"` |  |
+| buildTool.go.cache.persistentVolume.storageClass | string | `nil` | Specifies storageClass type. If not specified, a default storageClass for go-cache volume is used |
 | edp-tekton-interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |

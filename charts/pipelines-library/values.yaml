@@ -57,4 +57,5 @@ buildTool:
     cache:
       persistentVolume:
         size: 5Gi
-        storageClass: ebs-sc
+        # -- Specifies storageClass type. If not specified, a default storageClass for go-cache volume is used
+        storageClass:

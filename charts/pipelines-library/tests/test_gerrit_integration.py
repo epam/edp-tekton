@@ -33,4 +33,6 @@ global:
     assert gerrit_port_param in r["pipeline"]["gerrit-maven-java11-app-build-default"]["spec"]["tasks"][1]["params"]
     assert gerrit_port_param in r["pipeline"]["gerrit-gradle-java11-app-review"]["spec"]["finally"][1]["params"]
 
-    assert {'name': 'git-source-url', 'value': 'ssh://edp-ci@gerrit:777/$(tt.params.gerritproject)'} in r["triggertemplate"]["gerrit-build-app-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]
+    git_source_url_param = {'name': 'git-source-url', 'value': 'ssh://edp-ci@gerrit:777/$(tt.params.gerritproject)'}
+    assert git_source_url_param in r["triggertemplate"]["gerrit-build-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]
+    assert git_source_url_param in r["triggertemplate"]["gerrit-review-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]

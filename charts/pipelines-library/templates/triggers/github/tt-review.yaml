@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: github-build-app-template
+  name: github-review-template
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -10,47 +10,32 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: gitfullrepositoryname
+    - name: gitsha
     - name: buildtool
-      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+      description: Build tool for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: framework
-      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+      description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: cbtype
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: versioning-type
-      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
-    - name: ticketNamePattern
-      description: Ticket name pattern
-    - name: commitMessagePattern
-      description: Commit message pattern to run commit-validate task
-    - name: commitMessage
-      description: Commit message
-    - name: jiraIssueMetadataPayload
-      description: Jira issue payload
-    - name: jiraServer
-      description: Jira server name
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.codebasebranch)-build-
+        generateName: $(tt.params.codebasebranch)-review-
         labels:
           # used by UI to sort pipelines for codebasebranches
           app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
           app.edp.epam.com/codebase: $(tt.params.codebase)
-          app.edp.epam.com/pipelinetype: build
+          app.edp.epam.com/pipelinetype: review
       spec:
         serviceAccountName: tekton
-        taskRunSpecs:
-          - pipelineTaskName: create-ecr-repository
-            taskServiceAccountName: edp-kaniko
-          - pipelineTaskName: kaniko-build
-            taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
+          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
@@ -60,16 +45,10 @@ spec:
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME
             value: $(tt.params.codebasebranch)
-          - name: TICKET_NAME_PATTERN
-            value: $(tt.params.ticketNamePattern)
-          - name: COMMIT_MESSAGE_PATTERN
-            value: $(tt.params.commitMessagePattern)
-          - name: COMMIT_MESSAGE
-            value: $(tt.params.commitMessage)
-          - name: JIRA_ISSUE_METADATA_PAYLOAD
-            value: $(tt.params.jiraIssueMetadataPayload)
-          - name: JIRA_SERVER
-            value: $(tt.params.jiraServer)
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
+          - name: gitsha
+            value: $(tt.params.gitsha)
         workspaces:
           - name: shared-workspace
             volumeClaimTemplate:

@@ -7,7 +7,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   triggers:
-    - name: github-listener-autotests-build
+    - name: github-listener-build
       interceptors:
         - ref:
             name: "github"
@@ -29,8 +29,6 @@ spec:
         - ref:
             name: "cel"
           params:
-            - name: "filter"
-              value: "extensions.spec.type in ['autotests']"
             - name: "overlays"
               value:
                 - key: cbtype_short
@@ -38,108 +36,9 @@ spec:
       bindings:
         - ref: github-binding-build
       template:
-        ref: github-build-lib-autotests-template
+        ref: github-build-template
 
-    - name: github-listener-app-build
-      interceptors:
-        - ref:
-            name: "github"
-          params:
-            - name: "secretRef"
-              value:
-                secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: secretString
-            - name: "eventTypes"
-              value: ["pull_request"]
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.action in ['closed']"
-        - ref:
-            name: "edp"
-            kind: NamespacedInterceptor
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.spec.type in ['application']"
-            - name: "overlays"
-              value:
-              - key: cbtype_short
-                expression: "extensions.spec.type.truncate(3)"
-      bindings:
-        - ref: github-binding-build
-      template:
-        ref: github-build-app-template
-
-    - name: github-listener-lib-build
-      interceptors:
-        - ref:
-            name: "github"
-          params:
-            - name: "secretRef"
-              value:
-                secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: secretString
-            - name: "eventTypes"
-              value: ["pull_request"]
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.action in ['closed']"
-        - ref:
-            name: "edp"
-            kind: NamespacedInterceptor
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.spec.type in ['library'] && extensions.spec.framework != 'docker'"
-            - name: "overlays"
-              value:
-                - key: cbtype_short
-                  expression: "extensions.spec.type.truncate(3)"
-      bindings:
-        - ref: github-binding-build
-      template:
-        ref: github-build-lib-autotests-template
-
-    - name: github-listener-container-build
-      interceptors:
-        - ref:
-            name: "github"
-          params:
-            - name: "secretRef"
-              value:
-                secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: secretString
-            - name: "eventTypes"
-              value: ["pull_request"]
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.action in ['closed']"
-        - ref:
-            name: "edp"
-            kind: NamespacedInterceptor
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.spec.type in ['library'] && extensions.spec.framework == 'docker'"
-            - name: "overlays"
-              value:
-                - key: cbtype_short
-                  expression: "extensions.spec.type.truncate(3)"
-      bindings:
-        - ref: github-binding-build
-      template:
-        ref: github-build-app-template
-
-    - name: github-listener-app-container-code-review
+    - name: github-listener-review
       interceptors:
         - ref:
             name: "github"
@@ -161,8 +60,6 @@ spec:
         - ref:
             name: "cel"
           params:
-            - name: "filter"
-              value: "extensions.spec.type in ['application'] || (extensions.spec.type in ['library'] && extensions.spec.framework == 'docker')"
             - name: "overlays"
               value:
               - key: cbtype_short
@@ -170,40 +67,7 @@ spec:
       bindings:
         - ref: github-binding-review
       template:
-        ref: github-code-review-app-container-template
-
-    - name: github-listener-lib-autotests-code-review
-      interceptors:
-        - ref:
-            name: "github"
-          params:
-            - name: "secretRef"
-              value:
-                secretName: {{ .Values.github.webhook.existingSecret }}
-                secretKey: secretString
-            - name: "eventTypes"
-              value: ["pull_request"]
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "body.action in ['opened', 'synchronize', 'edited']"
-        - ref:
-            name: "edp"
-            kind: NamespacedInterceptor
-        - ref:
-            name: "cel"
-          params:
-            - name: "filter"
-              value: "extensions.spec.type in ['autotests'] || (extensions.spec.type in ['library'] && extensions.spec.framework != 'docker')"
-            - name: "overlays"
-              value:
-                - key: cbtype_short
-                  expression: "extensions.spec.type.truncate(3)"
-      bindings:
-        - ref: github-binding-review
-      template:
-        ref: github-code-review-lib-autotests-template
+        ref: github-review-template
 
   resources:
     kubernetesResource:

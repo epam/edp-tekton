@@ -7,15 +7,13 @@ from .helpers import helm_template
 def test_required_resources():
     config = """
 kaniko:
-  serviceAccount:
-    create: true
   roleArn: AWSIRSARoleKaniko
     """
 
     r = helm_template(config)
 
-    assert "edp-kaniko" in r["serviceaccount"]
-    assert "AWSIRSARoleKaniko" in r["serviceaccount"]["edp-kaniko"]["metadata"]["annotations"]["eks.amazonaws.com/role-arn"]
+    assert "tekton" in r["serviceaccount"]
+    assert "AWSIRSARoleKaniko" in r["serviceaccount"]["tekton"]["metadata"]["annotations"]["eks.amazonaws.com/role-arn"]
 
     assert "tekton-triggers-sa-ns" in r["serviceaccount"]
 

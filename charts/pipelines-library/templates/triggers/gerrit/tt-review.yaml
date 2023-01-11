@@ -1,27 +1,35 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if eq .Values.global.gitProvider "gerrit" }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: github-code-review-app-container-template
-  labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: gerrit-review-template
 spec:
   params:
     - name: gitrevision
-    - name: gitrepositoryurl
-    - name: gitrepositoryname
-    - name: gitfullrepositoryname
-    - name: gitsha
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
+    - name: gerritrefspec
+      description: Gerrit PatchSet Reference in format "refs/changes/62/62/2"
     - name: buildtool
       description: Build tool for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: framework
       description: Framework for codebase. Used to generate code-review pipeline name. Populated by edp interceptor
     - name: cbtype
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: targetBranch
+      description: Target branch of Merge Request
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: commitMessagePattern
+      description: Commit message pattern to run commit-validate task
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -34,24 +42,27 @@ spec:
           app.edp.epam.com/pipelinetype: review
       spec:
         serviceAccountName: tekton
-        taskRunSpecs:
-          - pipelineTaskName: dockerbuild-verify
-            taskServiceAccountName: edp-kaniko
         pipelineRef:
-          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:
           - name: git-source-url
-            value: $(tt.params.gitrepositoryurl)
+            value: "ssh://edp-ci@gerrit:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
+          - name: git-refspec
+            value: $(tt.params.gerritrefspec)
           - name: CODEBASE_NAME
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME
             value: $(tt.params.codebasebranch)
-          - name: gitfullrepositoryname
-            value: $(tt.params.gitfullrepositoryname)
-          - name: gitsha
-            value: $(tt.params.gitsha)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
+          - name: COMMIT_MESSAGE_PATTERN
+            value: $(tt.params.commitMessagePattern)
         workspaces:
           - name: shared-workspace
             volumeClaimTemplate:
@@ -60,9 +71,9 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 1Gi
+                    storage: 3Gi
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: {{ .Values.github.webhook.existingSecret }}
+              secretName: gerrit-ciuser-sshkey
 {{ end }}

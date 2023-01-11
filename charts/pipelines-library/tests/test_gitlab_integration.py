@@ -13,14 +13,11 @@ global:
 
     r = helm_template(config)
 
-    glatb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    glab = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
-    gllb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][2]["interceptors"][0]["params"][0]["value"]
-    glcb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][3]["interceptors"][0]["params"][0]["value"]
-    glcr = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][4]["interceptors"][0]["params"][0]["value"]
+    glb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
+    glr = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
     gitserver = r["gitserver"]["gitlab"]["spec"]
-    assert "secretString" == glatb["secretKey"] == glab["secretKey"] == gllb["secretKey"] == glcb["secretKey"] == glcr["secretKey"]
-    assert "gitlab" == glatb["secretName"] == glab["secretName"] == gllb["secretName"] == glcb["secretName"] == glcr["secretName"]
+    assert "secretString" == glb["secretKey"] == glr["secretKey"]
+    assert "gitlab" == glb["secretName"] == glr["secretName"]
     assert "git.epam.com" == gitserver["gitHost"]
     assert "gitlab" == gitserver["gitProvider"]
     assert "git" == gitserver["gitUser"]

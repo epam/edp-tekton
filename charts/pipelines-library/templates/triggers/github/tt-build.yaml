@@ -1,15 +1,15 @@
-{{ if eq .Values.global.gitProvider "gerrit" }}
+{{ if eq .Values.global.gitProvider "github" }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gerrit-build-lib-template
+  name: github-build-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
     - name: gitrevision
-      description: The git revision
-      default: master
-    - name: gerritproject
-      description: Gerrit project name
+    - name: gitrepositoryurl
+    - name: gitrepositoryname
     - name: buildtool
       description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: framework
@@ -22,10 +22,6 @@ spec:
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
-    - name: changeNumber
-      description: Change number from Merge Request
-    - name: patchsetNumber
-      description: Patchset number from Merge Request
     - name: ticketNamePattern
       description: Ticket name pattern
     - name: commitMessagePattern
@@ -35,7 +31,7 @@ spec:
     - name: jiraIssueMetadataPayload
       description: Jira issue payload
     - name: jiraServer
-      description: Name of Jira server
+      description: Jira server name
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -49,20 +45,16 @@ spec:
       spec:
         serviceAccountName: tekton
         pipelineRef:
-          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
+          name: github-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:
           - name: git-source-url
-            value: "ssh://edp-ci@gerrit:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
+            value: $(tt.params.gitrepositoryurl)
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME
             value: $(tt.params.codebasebranch)
-          - name: changeNumber
-            value: $(tt.params.changeNumber)
-          - name: patchsetNumber
-            value: $(tt.params.patchsetNumber)
           - name: TICKET_NAME_PATTERN
             value: $(tt.params.ticketNamePattern)
           - name: COMMIT_MESSAGE_PATTERN
@@ -85,5 +77,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: gerrit-ciuser-sshkey
+              secretName: {{ .Values.github.webhook.existingSecret }}
 {{ end }}

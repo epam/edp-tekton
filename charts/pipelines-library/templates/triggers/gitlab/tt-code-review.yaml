@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: gitlab-code-review-template
+  name: gitlab-review-template
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

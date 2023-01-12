@@ -6,6 +6,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 global:
+  # -- Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github
+  gitProvider: gerrit
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
   # -- Gerrit SSH node port

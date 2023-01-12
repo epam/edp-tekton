@@ -35,4 +35,5 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 | fullnameOverride | string | `""` |  |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
+| global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | nameOverride | string | `""` |  |

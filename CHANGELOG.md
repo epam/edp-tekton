@@ -2,6 +2,33 @@
 ## [Unreleased]
 
 
+<a name="v0.3.1"></a>
+## [v0.3.1] - 2023-01-12
+### Features
+
+- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
+- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
+- Add commit-validate step to custom-pipelines [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Enable Route for Tekton dashboard [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
+
+### Bug Fixes
+
+- Allow default storageClass [EPMDEDP-11230](https://jiraeu.epam.com/browse/EPMDEDP-11230)
+- Remove build version from sem version of Jira [EPMDEDP-11287](https://jiraeu.epam.com/browse/EPMDEDP-11287)
+
+### Routine
+
+- Convert application version to lowercase [EPMDEDP-11216](https://jiraeu.epam.com/browse/EPMDEDP-11216)
+- Bump Semgrep version to 1.2.1, add --jobs flag to the executable command [EPMDEDP-11219](https://jiraeu.epam.com/browse/EPMDEDP-11219)
+- Align Tekton dependencies [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
+- Change codebase parameter to codebasebranch in PipelineRun name [EPMDEDP-11293](https://jiraeu.epam.com/browse/EPMDEDP-11293)
+
+
+<a name="v0.3.0"></a>
+## [v0.3.0] - 2022-12-19
+
 <a name="v0.2.9"></a>
 ## [v0.2.9] - 2022-12-17
 ### Bug Fixes
@@ -468,7 +495,9 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.2.9...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/epam/edp-tekton/compare/v0.3.0...v0.3.1
+[v0.3.0]: https://github.com/epam/edp-tekton/compare/v0.2.9...v0.3.0
 [v0.2.9]: https://github.com/epam/edp-tekton/compare/v0.2.8...v0.2.9
 [v0.2.8]: https://github.com/epam/edp-tekton/compare/v0.2.7...v0.2.8
 [v0.2.7]: https://github.com/epam/edp-tekton/compare/v0.2.6...v0.2.7

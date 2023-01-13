@@ -3,8 +3,8 @@ description: A Helm chart for EDP4EDP Tekton Pipelines
 home: https://epam.github.io/edp-install/
 name: edp-custom-pipelines
 type: application
-version: 0.4.0
-appVersion: 0.4.0
+version: 0.3.1
+appVersion: 0.3.1
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - cd

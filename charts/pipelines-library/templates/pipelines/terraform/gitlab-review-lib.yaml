@@ -38,6 +38,7 @@ spec:
 
     - name: terraform-format
       taskRef:
+        kind: Task
         name: terraform
       runAfter:
         - init-values
@@ -59,6 +60,7 @@ spec:
 
     - name: terraform-lint
       taskRef:
+        kind: Task
         name: terraform
       runAfter:
         - terraform-format

@@ -39,6 +39,7 @@ spec:
 
     - name: github-set-pending-status
       taskRef:
+        kind: Task
         name: github-set-status
       params:
         - name: REPO_FULL_NAME
@@ -60,6 +61,7 @@ spec:
 
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       params:
         - name: url
@@ -76,6 +78,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: opa
       runAfter:
         - fetch-repository

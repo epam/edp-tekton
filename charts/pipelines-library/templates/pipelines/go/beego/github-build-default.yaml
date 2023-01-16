@@ -61,6 +61,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-go-default
       runAfter:
         - init-values

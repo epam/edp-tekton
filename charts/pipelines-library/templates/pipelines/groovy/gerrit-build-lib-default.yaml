@@ -65,6 +65,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-gradle-default
       runAfter:
         - init-values
@@ -83,6 +84,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - get-version
@@ -104,6 +106,7 @@ spec:
 
     - name: build
       taskRef:
+        kind: Task
         name: codenarc
       runAfter:
         - sonar
@@ -120,6 +123,7 @@ spec:
 
     - name: git-tag
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - build
@@ -140,6 +144,7 @@ spec:
 
     - name: update-cbis
       taskRef:
+        kind: Task
         name: update-cbis
       runAfter:
         - git-tag

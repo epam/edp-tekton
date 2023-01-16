@@ -53,6 +53,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - init-values

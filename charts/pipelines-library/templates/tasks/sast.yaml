@@ -24,15 +24,12 @@ spec:
       default: defectdojo-ciuser-token
     - name: reportDataPath
       type: string
-      description: ""
       default: "sast-semgrep-report.json"
     - name: reportDataProductName
       type: string
-      description: ""
       default: ""
     - name: reportDataEngagementName
       type: string
-      description: ""
       default: ""
   steps:
     - name: semgrep-scan

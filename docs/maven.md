@@ -48,6 +48,7 @@ spec:
   tasks:
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       workspaces:
         - name: output
@@ -61,6 +62,7 @@ spec:
           value: "true"
     - name: maven-run
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - fetch-repository
@@ -104,6 +106,7 @@ spec:
   tasks:
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       workspaces:
         - name: output
@@ -117,6 +120,7 @@ spec:
           value: "true"
     - name: maven-run
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - fetch-repository
@@ -184,6 +188,7 @@ spec:
   tasks:
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       workspaces:
         - name: output
@@ -197,6 +202,7 @@ spec:
           value: "true"
     - name: maven-run
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - fetch-repository

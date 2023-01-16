@@ -40,6 +40,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-gradle-default
       runAfter:
         - init-values
@@ -56,6 +57,7 @@ spec:
 
     - name: git-tag
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - get-version

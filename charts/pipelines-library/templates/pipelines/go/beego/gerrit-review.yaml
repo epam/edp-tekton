@@ -57,6 +57,7 @@ spec:
     # because the fetch-repository Task fetches only user changes.
     - name: fetch-target-branch
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - test
@@ -76,6 +77,7 @@ spec:
 
     - name: sonar-prepare-files
       taskRef:
+        kind: Task
         name: sonar-prepare-files-general
       runAfter:
         - fetch-target-branch
@@ -96,6 +98,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: sonarqube-scanner
       runAfter:
         - sonar-prepare-files
@@ -114,6 +117,7 @@ spec:
 
     - name: dockerfile-lint
       taskRef:
+        kind: Task
         name: hadolint
       runAfter:
         - fetch-repository
@@ -123,6 +127,7 @@ spec:
 
     - name: dockerbuild-verify
       taskRef:
+        kind: Task
         name: dockerbuild-verify
       runAfter:
         - sonar
@@ -133,6 +138,7 @@ spec:
 
     - name: helm-lint
       taskRef:
+        kind: Task
         name: helm-lint
       runAfter:
         - fetch-repository

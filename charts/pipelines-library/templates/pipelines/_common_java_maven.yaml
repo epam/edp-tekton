@@ -1,6 +1,7 @@
 {{- define "java-maven-build-common" -}}
 - name: test
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - compile
@@ -24,6 +25,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - test
@@ -49,6 +51,7 @@
 
 - name: build
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - sonar
@@ -71,6 +74,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
+    kind: Task
     name: get-nexus-repository-url
   runAfter:
     - build
@@ -84,6 +88,7 @@
 
 - name: push
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - get-nexus-repository-url
@@ -108,6 +113,7 @@
 {{- define "java-maven-review-common" -}}
 - name: compile
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - init-values
@@ -128,6 +134,7 @@
 
 - name: test
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - compile
@@ -153,6 +160,7 @@
 # because the fetch-repository Task fetches only user changes.
 - name: fetch-target-branch
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - test
@@ -172,6 +180,7 @@
 
 - name: sonar-prepare-files
   taskRef:
+    kind: Task
     name: sonar-prepare-files-maven
   runAfter:
     - fetch-target-branch
@@ -192,6 +201,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: maven
   runAfter:
     - sonar-prepare-files

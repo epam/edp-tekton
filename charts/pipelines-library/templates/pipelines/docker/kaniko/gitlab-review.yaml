@@ -32,6 +32,7 @@ spec:
 
     - name: report-pipeline-start-to-gitlab
       taskRef:
+        kind: Task
         name: gitlab-set-status
       params:
         - name: "STATE"
@@ -55,6 +56,7 @@ spec:
 
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       params:
         - name: url
@@ -71,6 +73,7 @@ spec:
 
     - name: dockerfile-lint
       taskRef:
+        kind: Task
         name: hadolint
       runAfter:
         - fetch-repository
@@ -80,6 +83,7 @@ spec:
 
     - name: dockerbuild-verify
       taskRef:
+        kind: Task
         name: dockerbuild-verify
       runAfter:
         - dockerfile-lint

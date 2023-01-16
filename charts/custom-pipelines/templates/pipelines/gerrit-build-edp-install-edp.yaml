@@ -38,6 +38,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-edp
       runAfter:
         - init-values
@@ -47,6 +48,7 @@ spec:
 
     - name: mkdocs-build
       taskRef:
+        kind: Task
         name: mkdocs
       runAfter:
         - get-version
@@ -58,6 +60,7 @@ spec:
 
     - name: git-tag
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - mkdocs-build
@@ -79,9 +82,11 @@ spec:
     # TODO
     # - name: push-to-jira
     #   taskRef:
+    #     kind: Task
     #     name: push-to-jira
     # - name: ecr-to-docker
     #   taskRef:
+    #     kind: Task
     #     name: ecr-to-docker
     #   runAfter:
     #     - push-to-jira
@@ -97,9 +102,11 @@ spec:
     # TODO
     # - name: set-version
     #   taskRef:
+    #     kind: Task
     #     name: set-version
     # TODO
     # - name: helm-push-gh-pages
     #   taskRef:
+    #     kind: Task
     #     name: helm-push-gh-pages
 {{ end }}

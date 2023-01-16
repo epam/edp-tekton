@@ -24,7 +24,7 @@ spec:
       description: "The base image for the task"
   results:
     - name: COMMAND
-      description: ""
+      type: string
   volumes:
     - name: settings-maven
       configMap:

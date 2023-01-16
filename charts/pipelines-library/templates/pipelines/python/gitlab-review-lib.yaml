@@ -53,6 +53,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: python
       runAfter:
         - init-values
@@ -69,6 +70,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: python
       runAfter:
         - compile
@@ -87,6 +89,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: sonarqube-scanner
       runAfter:
         - test

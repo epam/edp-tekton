@@ -65,6 +65,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-edp
       runAfter:
         - init-values

@@ -14,6 +14,7 @@ spec:
   tasks:
     - name: create-webhook
       taskRef:
+        kind: Task
         name: gitlab-create-webhook
       params:
         - name: GitLabDomain

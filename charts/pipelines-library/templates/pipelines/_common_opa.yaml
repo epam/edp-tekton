@@ -17,6 +17,7 @@
 
 - name: git-tag
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - test

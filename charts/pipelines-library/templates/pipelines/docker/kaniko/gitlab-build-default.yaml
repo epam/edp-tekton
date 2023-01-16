@@ -46,6 +46,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-kaniko-default
       runAfter:
         - init-values
@@ -58,6 +59,7 @@ spec:
 
     - name: dockerfile-lint
       taskRef:
+        kind: Task
         name: hadolint
       runAfter:
         - fetch-repository
@@ -67,6 +69,7 @@ spec:
 
     - name: create-ecr-repository
       taskRef:
+        kind: Task
         name: create-ecr-repository
       runAfter:
         - dockerfile-lint

@@ -50,6 +50,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-edp
       runAfter:
         - init-values
@@ -59,6 +60,7 @@ spec:
 
     - name: update-build-number
       taskRef:
+        kind: Task
         name: update-build-number-npm
       runAfter:
         - get-version
@@ -77,6 +79,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - get-version
@@ -98,6 +101,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - compile
@@ -114,6 +118,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: sonarqube-scanner
       runAfter:
         - test
@@ -130,6 +135,7 @@ spec:
 
     - name: build
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - sonar
@@ -151,6 +157,7 @@ spec:
 
     - name: get-nexus-repository-url
       taskRef:
+        kind: Task
         name: get-nexus-repository-url-npm
       runAfter:
         - build
@@ -162,6 +169,7 @@ spec:
 
     - name: push
       taskRef:
+        kind: Task
         name: npm-push
       runAfter:
         - get-nexus-repository-url
@@ -183,6 +191,7 @@ spec:
 
     - name: create-ecr-repository
       taskRef:
+        kind: Task
         name: create-ecr-repository
       runAfter:
         - push
@@ -195,10 +204,12 @@ spec:
     # TODO
     # - name: push-to-jira
     #   taskRef:
+    #     kind: Task
     #     name: push-to-jira
 
     # - name: ecr-to-docker
     #   taskRef:
+    #     kind: Task
     #     name: ecr-to-docker
     #   runAfter:
     #     - push-to-jira
@@ -215,10 +226,12 @@ spec:
     # TODO
     # - name: set-version
     #   taskRef:
+    #     kind: Task
     #     name: set-version
 
     # TODO
     # - name: helm-push-gh-pages
     #   taskRef:
+    #     kind: Task
     #     name: helm-push-gh-pages
 {{ end }}

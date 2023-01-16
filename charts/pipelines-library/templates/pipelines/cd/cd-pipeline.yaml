@@ -23,6 +23,7 @@ spec:
   tasks:
     - name: autotests
       taskRef:
+        kind: Task
         name: run-quality-gate
       params:
         - name: BASE_IMAGE
@@ -33,6 +34,7 @@ spec:
 
     - name: promote-images
       taskRef:
+        kind: Task
         name: promote-images
       runAfter:
         - autotests

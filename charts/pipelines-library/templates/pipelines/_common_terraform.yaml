@@ -1,6 +1,7 @@
 {{- define "terraform-build-common" -}}
 - name: terraform-format
   taskRef:
+    kind: Task
     name: terraform
   runAfter:
     - get-version
@@ -22,6 +23,7 @@
 
 - name: terraform-lint
   taskRef:
+    kind: Task
     name: terraform
   runAfter:
     - terraform-format
@@ -37,6 +39,7 @@
 
 - name: git-tag
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - terraform-lint

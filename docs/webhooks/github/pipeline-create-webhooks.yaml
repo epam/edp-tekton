@@ -16,6 +16,7 @@ spec:
   tasks:
     - name: create-webhook-run-for-build-pipelines
       taskRef:
+        kind: Task
         name: github-create-webhook
       params:
         - name: GitHubOrg
@@ -29,6 +30,7 @@ spec:
 
     - name: create-webhook-run-for-code-review-pipelines
       taskRef:
+        kind: Task
         name: github-create-webhook
       params:
         - name: GitHubOrg

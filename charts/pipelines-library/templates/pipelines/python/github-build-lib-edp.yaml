@@ -61,6 +61,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-edp
       runAfter:
         - init-values
@@ -70,6 +71,7 @@ spec:
 
     - name: update-build-number
       taskRef:
+        kind: Task
         name: update-build-number-python
       runAfter:
         - get-version
@@ -82,6 +84,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: python
       runAfter:
         - update-build-number

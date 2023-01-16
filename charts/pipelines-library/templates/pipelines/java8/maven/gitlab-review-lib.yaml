@@ -53,6 +53,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - init-values
@@ -73,6 +74,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - compile
@@ -96,6 +98,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - test

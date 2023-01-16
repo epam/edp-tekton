@@ -17,34 +17,44 @@ spec:
     - name: GOOS
       description: "running program's operating system target"
       default: linux
+      type: string
     - name: GOARCH
       description: "running program's architecture target"
       default: amd64
+      type: string
     - name: GO111MODULE
       description: "value of module support"
       default: auto
+      type: string
     - name: GOCACHE
       description: "Go caching directory path"
       default: "/workspaces/go-cache"
+      type: string
     - name: GOMODCACHE
       description: "Go mod caching directory path"
       default: "/workspaces/go-cache"
+      type: string
     - name: CGO_ENABLED
       description: "Toggle cgo tool during Go build. Use value '0' to disable cgo (for static builds)."
-      default: 0
+      default: '0'
+      type: string
     - name: GOSUMDB
       description: "Go checksum database url. Use value 'off' to disable checksum validation."
       default: ""
+      type: string
     - name: EXTRA_COMMANDS
       type: string
       description: Extra commands
       default: ""
+      type: string
     - name: BASE_IMAGE
       description: "Base image"
       default: "docker.io/library/golang:1.18.4-alpine3.16"
+      type: string
     - name: GOPROXY
       description: "Go proxy server"
       default: ""
+      type: string
   workspaces:
     - name: source
 

@@ -20,10 +20,10 @@ spec:
       type: string
       default: "."
     - name: OPA_RESULTS
-      description: ""
+      type: string
       default: '/workspace/opa_results'
     - name: JUNIT_SCRIPT
-      description: ""
+      type: string
       default: '/workspace/opa_test_to_junit.py'
     - name: EXTRA_COMMANDS
       type: string

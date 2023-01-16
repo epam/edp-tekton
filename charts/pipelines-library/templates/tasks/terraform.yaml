@@ -37,7 +37,7 @@ spec:
         set -ex
         $(params.EXTRA_COMMANDS)
       env:
-        - NAME: TFENV_CONFIG_DIR
+        - name: TFENV_CONFIG_DIR
           value: /tekton/home
         - name: TFENV_TERRAFORM_VERSION
           value: $(params.TFENV_TERRAFORM_VERSION)

@@ -36,6 +36,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-maven-default
       runAfter:
         - init-values
@@ -52,6 +53,7 @@ spec:
 
     - name: git-tag
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - get-version

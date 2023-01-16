@@ -61,6 +61,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-dotnet-default
       runAfter:
         - init-values
@@ -73,6 +74,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: dotnet
       runAfter:
         - get-version
@@ -91,6 +93,7 @@ spec:
 
     - name: create-ecr-repository
       taskRef:
+        kind: Task
         name: create-ecr-repository
       runAfter:
         - push

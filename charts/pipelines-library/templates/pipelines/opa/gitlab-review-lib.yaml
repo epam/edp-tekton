@@ -36,6 +36,7 @@ spec:
 
     - name: report-pipeline-start-to-gitlab
       taskRef:
+        kind: Task
         name: gitlab-set-status
       params:
         - name: "STATE"
@@ -59,6 +60,7 @@ spec:
 
     - name: fetch-repository
       taskRef:
+        kind: Task
         name: git-clone
       params:
         - name: url
@@ -75,6 +77,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: opa
       runAfter:
         - fetch-repository

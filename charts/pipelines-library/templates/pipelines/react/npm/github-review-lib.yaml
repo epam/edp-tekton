@@ -56,6 +56,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - init-values
@@ -77,6 +78,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - compile
@@ -92,6 +94,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: sonarqube-scanner
       runAfter:
         - test

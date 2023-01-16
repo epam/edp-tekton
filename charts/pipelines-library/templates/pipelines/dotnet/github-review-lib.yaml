@@ -52,6 +52,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: dotnet
       runAfter:
         - fetch-repository
@@ -68,6 +69,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: dotnet
       runAfter:
         - compile
@@ -85,6 +87,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: dotnet
       runAfter:
         - test

@@ -115,6 +115,7 @@ hold your credentials and bind to this workspace.
       tasks:
       - name: fetch-source
         taskRef:
+          kind: Task
           name: git-clone
         workspaces:
         - name: ssh-directory
@@ -177,6 +178,7 @@ hold your credentials and bind to this workspace.
       tasks:
       - name: fetch-source
         taskRef:
+        kind: Task
           name: git-clone
         workspaces:
         - name: ssl-ca-directory

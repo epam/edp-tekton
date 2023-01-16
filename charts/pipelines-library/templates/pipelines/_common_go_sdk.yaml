@@ -1,6 +1,7 @@
 {{- define "golang-build-operator-sdk-common" -}}
 - name: sast
   taskRef:
+    kind: Task
     name: sast
   runAfter:
     - get-version
@@ -15,6 +16,7 @@
 
 - name: test
   taskRef:
+    kind: Task
     name: golang
   runAfter:
     - sast
@@ -30,6 +32,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: sonarqube-scanner
   runAfter:
     - test
@@ -46,6 +49,7 @@
 
 - name: build
   taskRef:
+    kind: Task
     name: golang
   runAfter:
     - sonar
@@ -61,6 +65,7 @@
 
 - name: create-ecr-repository
   taskRef:
+    kind: Task
     name: create-ecr-repository
   runAfter:
     - build
@@ -72,6 +77,7 @@
 {{- define "golang-review-operator-sdk-common" -}}
 - name: build
   taskRef:
+    kind: Task
     name: golang
   runAfter:
     - init-values
@@ -87,6 +93,7 @@
 
 - name: test
   taskRef:
+    kind: Task
     name: golang
   runAfter:
     - build

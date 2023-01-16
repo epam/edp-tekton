@@ -53,6 +53,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - init-values
@@ -71,6 +72,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - compile
@@ -88,6 +90,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - test

@@ -55,6 +55,7 @@ spec:
     # because the fetch-repository Task fetches only user changes.
     - name: fetch-target-branch
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - init-values
@@ -74,6 +75,7 @@ spec:
 
     - name: sonar-prepare-files
       taskRef:
+        kind: Task
         name: sonar-prepare-files-gradle
       runAfter:
         - fetch-target-branch
@@ -94,6 +96,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: gradle
       runAfter:
         - sonar-prepare-files
@@ -116,6 +119,7 @@ spec:
 
     - name: build
       taskRef:
+        kind: Task
         name: codenarc
       runAfter:
         - sonar

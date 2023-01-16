@@ -53,6 +53,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - init-values
@@ -74,6 +75,7 @@ spec:
 
     - name: test
       taskRef:
+        kind: Task
         name: npm
       runAfter:
         - compile
@@ -89,6 +91,7 @@ spec:
 
     - name: sonar
       taskRef:
+        kind: Task
         name: sonarqube-scanner
       runAfter:
         - test
@@ -105,6 +108,7 @@ spec:
 
     - name: dockerfile-lint
       taskRef:
+        kind: Task
         name: hadolint
       runAfter:
         - fetch-repository
@@ -114,6 +118,7 @@ spec:
 
     - name: dockerbuild-verify
       taskRef:
+        kind: Task
         name: dockerbuild-verify
       runAfter:
         - sonar
@@ -124,6 +129,7 @@ spec:
 
     - name: helm-lint
       taskRef:
+        kind: Task
         name: helm-lint
       runAfter:
         - fetch-repository

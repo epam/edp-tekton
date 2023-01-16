@@ -65,6 +65,7 @@ spec:
 
     - name: get-version
       taskRef:
+        kind: Task
         name: get-version-maven-default
       runAfter:
         - init-values
@@ -83,6 +84,7 @@ spec:
 
     - name: compile
       taskRef:
+        kind: Task
         name: maven
       runAfter:
         - get-version

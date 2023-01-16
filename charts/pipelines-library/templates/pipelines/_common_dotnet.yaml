@@ -1,6 +1,7 @@
 {{- define "dotnet-build-common" -}}
 - name: test
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - compile
@@ -18,6 +19,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - test
@@ -41,6 +43,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
+    kind: Task
     name: get-nexus-repository-url
   runAfter:
     - sonar
@@ -54,6 +57,7 @@
 
 - name: get-nuget-token
   taskRef:
+    kind: Task
     name: get-nuget-token
   runAfter:
     - get-nexus-repository-url
@@ -66,6 +70,7 @@
 
 - name: push
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - get-nuget-token
@@ -90,6 +95,7 @@
 {{- define "dotnet-review-common" -}}
 - name: compile
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - fetch-repository
@@ -106,6 +112,7 @@
 
 - name: test
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - compile
@@ -125,6 +132,7 @@
 # because the fetch-repository Task fetches only user changes.
 - name: fetch-target-branch
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - test
@@ -144,6 +152,7 @@
 
 - name: sonar-prepare-files
   taskRef:
+    kind: Task
     name: sonar-prepare-files-dotnet
   runAfter:
     - fetch-target-branch
@@ -164,6 +173,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: dotnet
   runAfter:
     - sonar-prepare-files

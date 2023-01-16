@@ -1,6 +1,7 @@
 {{- define "java-gradle-build-common" -}}
 - name: test
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - compile
@@ -18,6 +19,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - test
@@ -38,6 +40,7 @@
 
 - name: build
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - sonar
@@ -54,6 +57,7 @@
 
 - name: get-nexus-repository-url
   taskRef:
+    kind: Task
     name: get-nexus-repository-url
   runAfter:
     - build
@@ -67,6 +71,7 @@
 
 - name: push
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - get-nexus-repository-url
@@ -86,6 +91,7 @@
 {{- define "java-gradle-review-common" -}}
 - name: compile
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - init-values
@@ -104,6 +110,7 @@
 
 - name: test
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - compile
@@ -123,6 +130,7 @@
 # because the fetch-repository Task fetches only user changes.
 - name: fetch-target-branch
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - test
@@ -142,6 +150,7 @@
 
 - name: sonar-prepare-files
   taskRef:
+    kind: Task
     name: sonar-prepare-files-gradle
   runAfter:
     - fetch-target-branch
@@ -162,6 +171,7 @@
 
 - name: sonar
   taskRef:
+    kind: Task
     name: gradle
   runAfter:
     - sonar-prepare-files

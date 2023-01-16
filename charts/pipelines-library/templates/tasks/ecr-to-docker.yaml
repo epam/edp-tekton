@@ -19,21 +19,21 @@ spec:
     since it uses AWS ECR authentication.
   params:
     - name: ECR_HOST
-      description: ""
+      type: string
     - name: ECR_LOGIN
-      description: ""
+      type: string
       default: '/workspace/ecr_login_pass'
     - name: ECR_USER
-      description: ""
+      type: string
       default: 'AWS'
     - name: ECR_IMAGE
-      description: ""
+      type: string
     - name: CODEBASE_NAME
-      description: ""
+      type: string
     - name: IMAGE_TAG
-      description: ""
+      type: string
     - name: DOCKERHUB_HOST
-      description: ""
+      type: string
       default: 'index.docker.io'
     - name: dockerhub-credentials
       type: string

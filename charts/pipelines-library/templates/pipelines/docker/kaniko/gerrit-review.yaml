@@ -43,6 +43,7 @@ spec:
     # because the fetch-repository Task fetches only user changes.
     - name: fetch-target-branch
       taskRef:
+        kind: Task
         name: git-cli
       runAfter:
         - fetch-repository
@@ -62,6 +63,7 @@ spec:
 
     - name: dockerfile-lint
       taskRef:
+        kind: Task
         name: hadolint
       runAfter:
         - fetch-target-branch
@@ -71,6 +73,7 @@ spec:
 
     - name: dockerbuild-verify
       taskRef:
+        kind: Task
         name: dockerbuild-verify
       runAfter:
         - dockerfile-lint

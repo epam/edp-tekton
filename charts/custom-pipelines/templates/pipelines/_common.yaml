@@ -2,6 +2,7 @@
 
 - name: commit-validate
   taskRef:
+    kind: Task
     name: commit-validate
   runAfter:
     - fetch-repository
@@ -18,6 +19,7 @@
 
 - name: helm-docs
   taskRef:
+    kind: Task
     name: helm-docs
   runAfter:
     - init-values
@@ -31,6 +33,7 @@
 
 - name: helm-lint
   taskRef:
+    kind: Task
     name: helm-lint
   runAfter:
     - fetch-repository

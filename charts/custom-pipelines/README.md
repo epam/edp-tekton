@@ -26,7 +26,7 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.4 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.5 |
 
 ## Values
 

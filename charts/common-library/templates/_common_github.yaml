@@ -2,6 +2,7 @@
 {{- define "github-build-start" -}}
 - name: fetch-repository
   taskRef:
+    kind: Task
     name: git-clone
   params:
     - name: url
@@ -15,6 +16,7 @@
       workspace: ssh-creds
 - name: init-values
   taskRef:
+    kind: Task
     name: init-values
   runAfter:
     - fetch-repository
@@ -29,6 +31,7 @@
 {{- define "github-review-start" -}}
 - name: github-set-pending-status
   taskRef:
+    kind: Task
     name: github-set-status
   params:
     - name: REPO_FULL_NAME
@@ -49,6 +52,7 @@
       value: $(params.pipelineUrl)
 - name: fetch-repository
   taskRef:
+    kind: Task
     name: git-clone
   runAfter:
     - github-set-pending-status
@@ -66,6 +70,7 @@
       workspace: ssh-creds
 - name: init-values
   taskRef:
+    kind: Task
     name: init-values
   runAfter:
     - fetch-repository
@@ -85,6 +90,7 @@ finally:
         operator: in
         values: ["Succeeded"]
     taskRef:
+      kind: Task
       name: github-set-status
     params:
       - name: REPO_FULL_NAME
@@ -109,6 +115,7 @@ finally:
         operator: in
         values: ["Failed"]
     taskRef:
+      kind: Task
       name: github-set-status
     params:
       - name: REPO_FULL_NAME

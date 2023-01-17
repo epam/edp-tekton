@@ -2,6 +2,7 @@
 {{- define "gerrit-build-start" -}}
 - name: fetch-repository
   taskRef:
+    kind: Task
     name: git-clone
   params:
     - name: url
@@ -16,23 +17,25 @@
 
 - name: gerrit-notify
   taskRef:
+    kind: Task
     name: gerrit-ssh-cmd
   runAfter:
     - fetch-repository
   params:
     - name: GERRIT_PORT
-      value: {{ .Values.global.gerritSSHPort }}
+      value: '{{ .Values.global.gerritSSHPort }}'
     - name: SSH_GERRIT_COMMAND
       value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
     # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
     - name: ERR_EXIT_CODE
-      value: 0
+      value: '0'
   workspaces:
     - name: ssh-directory
       workspace: ssh-creds
 
 - name: init-values
   taskRef:
+    kind: Task
     name: init-values
   runAfter:
     - fetch-repository
@@ -47,6 +50,7 @@
 {{- define "gerrit-review-start" -}}
 - name: fetch-repository
   taskRef:
+    kind: Task
     name: git-clone
   params:
     - name: url
@@ -63,10 +67,11 @@
 
 - name: gerrit-notify
   taskRef:
+    kind: Task
     name: gerrit-ssh-cmd
   params:
     - name: GERRIT_PORT
-      value: {{ .Values.global.gerritSSHPort }}
+      value: '{{ .Values.global.gerritSSHPort }}'
     - name: SSH_GERRIT_COMMAND
       value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
   workspaces:
@@ -75,6 +80,7 @@
 
 - name: init-values
   taskRef:
+    kind: Task
     name: init-values
   runAfter:
     - fetch-repository
@@ -88,6 +94,7 @@
 {{- define "sonar-cleanup" -}}
 - name: sonar-cleanup
   taskRef:
+    kind: Task
     name: sonar-cleanup
   runAfter:
     - init-values
@@ -108,6 +115,7 @@
 {{- define "build-pipeline-end" -}}
 - name: kaniko-build
   taskRef:
+    kind: Task
     name: kaniko
   runAfter:
     - create-ecr-repository
@@ -122,6 +130,7 @@
 
 - name: git-tag
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - kaniko-build
@@ -142,6 +151,7 @@
 
 - name: update-cbis
   taskRef:
+    kind: Task
     name: update-cbis
   runAfter:
     - git-tag
@@ -155,6 +165,7 @@
 {{- define "build-pipeline-lib-end" -}}
 - name: git-tag
   taskRef:
+    kind: Task
     name: git-cli
   runAfter:
     - push
@@ -183,10 +194,11 @@ finally:
         operator: in
         values: ["Succeeded"]
     taskRef:
+      kind: Task
       name: gerrit-ssh-cmd
     params:
       - name: GERRIT_PORT
-        value: {{ .Values.global.gerritSSHPort }}
+        value: '{{ .Values.global.gerritSSHPort }}'
       - name: SSH_GERRIT_COMMAND
         value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
     workspaces:
@@ -199,10 +211,11 @@ finally:
         operator: in
         values: ["Failed"]
     taskRef:
+      kind: Task
       name: gerrit-ssh-cmd
     params:
       - name: GERRIT_PORT
-        value: {{ .Values.global.gerritSSHPort }}
+        value: '{{ .Values.global.gerritSSHPort }}'
       - name: SSH_GERRIT_COMMAND
         value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
     workspaces:
@@ -219,6 +232,7 @@ finally:
         operator: in
         values: ["Succeeded"]
     taskRef:
+      kind: Task
       name: update-cbb
     params:
       - name: CODEBASEBRANCH_NAME
@@ -234,6 +248,7 @@ finally:
       operator: in
       values: ["Succeeded"]
   taskRef:
+    kind: Task
     name: update-cbb
   params:
     - name: CODEBASEBRANCH_NAME
@@ -245,6 +260,7 @@ finally:
 {{- define "push-to-jira" -}}
 - name: push-to-jira
   taskRef:
+    kind: Task
     name: push-to-jira
   when:
     - input: "$(tasks.status)"

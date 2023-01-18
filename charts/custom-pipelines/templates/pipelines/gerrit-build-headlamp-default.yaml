@@ -158,20 +158,22 @@ spec:
     - name: push
       taskRef:
         kind: Task
-        name: npm-push
+        name: npm
       runAfter:
         - get-nexus-repository-url
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
+        - name: NEXUS_REPOSITORY_URL
+          value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)"
         - name: EXTRA_COMMANDS
           value: |
-            token=$(grep -oE 'NpmToken\.[0-9a-zA-Z-]+' "${NEXUS_TOKEN}")
+            NPM_REPO=$(echo ${NEXUS_REPOSITORY_URL} | cut -d ':' -f2-)
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-            npm set registry $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/ --location project
-            npm set _auth=${upBase64}
-            npm set //$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/:_authToken ${token}
-            npm set 'email=edp-ci@edp.local'
+            npm set registry ${NEXUS_REPOSITORY_URL}/
+            npm set ${NPM_REPO}/:always-auth=true
+            npm set ${NPM_REPO}/:email=edp-ci@edp.local
+            npm set ${NPM_REPO}/:_auth=${upBase64} 
             npm publish
       workspaces:
         - name: source

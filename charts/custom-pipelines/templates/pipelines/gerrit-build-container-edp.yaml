@@ -1,0 +1,133 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-cont-other-app-build-edp
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-beego"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: "golang-go"
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranchname"
+      type: string
+    - name: changeNumber
+      description: "Change number from Merge Request"
+    - name: patchsetNumber
+      description: "Patchset number from Merge Request"
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+  tasks:
+
+{{- include "gerrit-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        name: get-version-edp
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
+
+    - name: dockerfile-lint
+      taskRef:
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: create-ecr-repository
+      taskRef:
+        name: create-ecr-repository
+      runAfter:
+        - dockerfile-lint
+      params:
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+
+    - name: kaniko-build
+      taskRef:
+        name: kaniko
+      runAfter:
+        - create-ecr-repository
+        - get-version
+      params:
+        - name: IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+        - name: KANIKO_CACHE_REPO
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: ecr-to-docker
+      taskRef:
+        name: ecr-to-docker
+      runAfter:
+        - kaniko-build
+      params:
+        - name: ECR_HOST
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
+        - name: ECR_IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: IMAGE_TAG
+          value: "$(tasks.get-version.results.VERSION)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+
+    - name: git-tag
+      taskRef:
+        name: git-cli
+      runAfter:
+        - ecr-to-docker
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+{{ include "finally-block-edp" . | nindent 2 }}
+
+{{ end }}

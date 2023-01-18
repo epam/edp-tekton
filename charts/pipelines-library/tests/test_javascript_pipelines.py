@@ -62,7 +62,7 @@ global:
                 assert "get-nexus-repository-url" in btd[9]["name"]
                 assert "get-nexus-repository-url" == btd[9]["taskRef"]["name"]
                 assert "push" in btd[10]["name"]
-                assert "npm-push" == btd[10]["taskRef"]["name"]
+                assert "npm" == btd[10]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btd[11]["name"]
                     assert "kaniko-build" in btd[12]["name"]
@@ -93,7 +93,7 @@ global:
                 assert "get-nexus-repository-url" in btedp[10]["name"]
                 assert "get-nexus-repository-url" == btedp[10]["taskRef"]["name"]
                 assert "push" in btedp[11]["name"]
-                assert "npm-push" == btedp[11]["taskRef"]["name"]
+                assert "npm" == btedp[11]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btedp[12]["name"]
                     assert "kaniko-build" in btedp[13]["name"]
@@ -158,7 +158,7 @@ global:
                 assert "get-nexus-repository-url" in btd[7]["name"]
                 assert "get-nexus-repository-url" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
-                assert "npm-push" == btd[8]["taskRef"]["name"]
+                assert "npm" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btd[9]["name"]
                     assert "kaniko-build" in btd[10]["name"]
@@ -187,7 +187,7 @@ global:
                 assert "get-nexus-repository-url" in btedp[8]["name"]
                 assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
                 assert "push" in btedp[9]["name"]
-                assert "npm-push" == btedp[9]["taskRef"]["name"]
+                assert "npm" == btedp[9]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btedp[10]["name"]
                     assert "kaniko-build" in btedp[11]["name"]
@@ -252,7 +252,7 @@ global:
                 assert "get-nexus-repository-url" in btd[7]["name"]
                 assert "get-nexus-repository-url" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
-                assert "npm-push" == btd[8]["taskRef"]["name"]
+                assert "npm" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btd[9]["name"]
                     assert "kaniko-build" in btd[10]["name"]
@@ -281,7 +281,7 @@ global:
                 assert "get-nexus-repository-url" in btedp[8]["name"]
                 assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
                 assert "push" in btedp[9]["name"]
-                assert "npm-push" == btedp[9]["taskRef"]["name"]
+                assert "npm" == btedp[9]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "create-ecr-repository" in btedp[10]["name"]
                     assert "kaniko-build" in btedp[11]["name"]

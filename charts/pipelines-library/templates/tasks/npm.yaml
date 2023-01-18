@@ -11,8 +11,6 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This task can be used to run npm goals on a project.
-
     This task can be used to run npm goals on a project
     where package.json is present and has some pre-defined
     npm scripts.
@@ -33,6 +31,9 @@ spec:
       type: string
       description: name of the secret holding the CI npm secret
       default: nexus-ci.user
+    - name: NEXUS_REPOSITORY_URL
+      default: "nexus:8081/repository/edp-npm-group"
+      description: Nexus repository URL
   steps:
     - name: npm
       image: $(params.BASE_IMAGE)
@@ -40,6 +41,8 @@ spec:
       env:
         - name: HOME
           value: "$(workspaces.source.path)"
+        - name: NEXUS_REPOSITORY_URL
+          value: "$(params.NEXUS_REPOSITORY_URL)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
@@ -53,4 +56,21 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
+
+        npmignore_file=".npmignore"
+        if [ ! -f "${npmignore_file}" ]; then
+          cat <<-EOF > "${npmignore_file}"
+        # Ignore rules for files and folders to be published
+        /*
+        !build/
+        !node/app/
+        node/app/.npm/
+        !package.json
+        !README*
+        !CHANGELOG*
+        !LICENSE*
+        EOF
+        cat "${npmignore_file}"
+        fi
+
         $(params.EXTRA_COMMANDS)

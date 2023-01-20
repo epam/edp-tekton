@@ -102,7 +102,7 @@ spec:
         git config --global user.email ${GH_EMAIL}
         git config --global user.name ${GH_USER_NAME}
 
-        for i in "deploy-templates" "charts/interceptor" "charts/pipelines-library" "charts/custom-pipelines"
+        for i in "deploy-templates" "charts/interceptor" "charts/pipelines-library" "charts/custom-pipelines" "charts/tekton-dashboard"
         do
             if [ -f "${i}/Chart.yaml" ]; then
                 echo "[TEKTON] Chart.yaml exists in ${i} in the repository."

@@ -28,10 +28,17 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranchname"
       type: string
-    - name: go-image-version
-      default: 'golang:1.18.4-alpine3.16'
-      description: "go image version"
-      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -58,12 +65,38 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
+    - name: set-version
+      taskRef:
+        kind: Task
+        name: set-version
+      runAfter:
+        - mkdocs-build
+      params:
+        - name: IS_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-push-gh-pages
+      taskRef:
+        kind: Task
+        name: helm-push-gh-pages
+      runAfter:
+        - set-version
+      params:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: git-tag
       taskRef:
         kind: Task
         name: git-cli
       runAfter:
-        - mkdocs-build
+        - helm-push-gh-pages
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -79,34 +112,18 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-    # TODO
-    # - name: push-to-jira
-    #   taskRef:
-    #     kind: Task
-    #     name: push-to-jira
-    # - name: ecr-to-docker
-    #   taskRef:
-    #     kind: Task
-    #     name: ecr-to-docker
-    #   runAfter:
-    #     - push-to-jira
-    #   params:
-    #     - name: ECR_HOST
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-    #     - name: ECR_IMAGE
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-    #     - name: IMAGE_TAG
-    #       value: "$(tasks.get-version.results.VERSION)"
-    #     - name: CODEBASE_NAME
-    #       value: "$(params.CODEBASE_NAME)"
-    # TODO
-    # - name: set-version
-    #   taskRef:
-    #     kind: Task
-    #     name: set-version
-    # TODO
-    # - name: helm-push-gh-pages
-    #   taskRef:
-    #     kind: Task
-    #     name: helm-push-gh-pages
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+
+{{ include "finally-block-edp" . | nindent 2 }}
+
 {{ end }}

@@ -2,8 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.3.1"></a>
+## [v0.3.1] - 2023-01-04
+### Routine
+
+- Convert application version to lowercase [EPMDEDP-11216](https://jiraeu.epam.com/browse/EPMDEDP-11216)
+
+
 <a name="v0.3.0"></a>
-## [v0.3.0] - 0001-01-01
+## [v0.3.0] - 2022-12-19
 
 <a name="v0.2.9"></a>
 ## [v0.2.9] - 2022-12-17
@@ -471,7 +478,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/epam/edp-tekton/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/epam/edp-tekton/compare/v0.2.9...v0.3.0
 [v0.2.9]: https://github.com/epam/edp-tekton/compare/v0.2.8...v0.2.9
 [v0.2.8]: https://github.com/epam/edp-tekton/compare/v0.2.7...v0.2.8

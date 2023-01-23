@@ -28,6 +28,8 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: commitMessage
+      description: Commit message
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
   resourcetemplates:
@@ -61,6 +63,8 @@ spec:
             value: $(tt.params.changeNumber)
           - name: patchsetNumber
             value: $(tt.params.patchsetNumber)
+          - name: COMMIT_MESSAGE
+            value: $(tt.params.commitMessage)
           - name: COMMIT_MESSAGE_PATTERN
             value: $(tt.params.commitMessagePattern)
         workspaces:

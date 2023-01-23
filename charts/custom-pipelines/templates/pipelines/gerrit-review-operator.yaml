@@ -51,6 +51,8 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
   tasks:

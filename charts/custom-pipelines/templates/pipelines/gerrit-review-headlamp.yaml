@@ -41,6 +41,8 @@ spec:
       default: "http://athens-athens-proxy:80"
       description: "Go proxy link"
       type: string
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
     - name: targetBranch

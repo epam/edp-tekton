@@ -9,10 +9,8 @@
   params:
     - name: COMMIT_MESSAGE_PATTERN
       value: $(params.COMMIT_MESSAGE_PATTERN)
-  when:
-    - input: "$(params.COMMIT_MESSAGE_PATTERN)"
-      operator: notin
-      values: [""]
+    - name: COMMIT_MESSAGE
+      value: $(params.COMMIT_MESSAGE)
   workspaces:
     - name: source
       workspace: shared-workspace

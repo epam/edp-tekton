@@ -26,6 +26,8 @@ spec:
       value: "$(body.change.number)"
     - name: patchsetNumber
       value: "$(body.patchSet.number)"
+    - name: commitMessage
+      value: "$(body.change.commitMessage)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     - name: codebase

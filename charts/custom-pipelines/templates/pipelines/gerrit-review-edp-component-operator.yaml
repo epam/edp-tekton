@@ -35,6 +35,8 @@ spec:
       type: string
     - name: targetBranch
       description: Target branch of Merge Request
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
   tasks:

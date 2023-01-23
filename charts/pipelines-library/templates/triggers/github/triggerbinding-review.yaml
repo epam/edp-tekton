@@ -24,6 +24,8 @@ spec:
     # Truncated cbtype type name to reduce string length
     - name: cbtype
       value: "$(extensions.cbtype_short)"
+    - name: commitMessage
+      value: "$(body.pull_request.title)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     - name: codebase

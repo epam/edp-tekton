@@ -22,6 +22,10 @@ spec:
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
+    - name: commitMessagePattern
+      description: Commit message pattern to run commit-validate task
+    - name: commitMessage
+      description: Commit message
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -47,6 +51,10 @@ spec:
             value: $(tt.params.codebasebranch)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
+          - name: COMMIT_MESSAGE_PATTERN
+            value: $(tt.params.commitMessagePattern)
+          - name: COMMIT_MESSAGE
+            value: $(tt.params.commitMessage)
         workspaces:
           - name: shared-workspace
             volumeClaimTemplate:

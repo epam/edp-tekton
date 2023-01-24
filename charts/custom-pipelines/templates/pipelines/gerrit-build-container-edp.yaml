@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-cont-other-app-build-edp
+  name: gerrit-kaniko-other-app-build-edp
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:

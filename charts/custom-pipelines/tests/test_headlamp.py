@@ -57,3 +57,5 @@ global:
     assert "npm-lint" in r[12]["name"]
     assert "dockerfile-lint" in r[13]["name"]
     assert "dockerbuild-verify" in r[14]["name"]
+    assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
+    assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]

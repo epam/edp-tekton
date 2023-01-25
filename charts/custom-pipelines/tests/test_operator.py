@@ -36,6 +36,8 @@ global:
     assert "sonar" in r[12]["name"]
     assert "dockerfile-lint" in r[13]["name"]
     assert "dockerbuild-verify" in r[14]["name"]
+    assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
+    assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
 
     b = ht["pipeline"][build]["spec"]["tasks"]
     assert "fetch-repository" in b[0]["name"]

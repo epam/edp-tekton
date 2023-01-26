@@ -44,6 +44,14 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -155,17 +163,60 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: create-ecr-repository
+      taskRef:
+        kind: Task
+        name: create-ecr-repository
+      runAfter:
+        - build
+      params:
+        - name: REPO_NAME
+          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+
+    - name: kaniko-build
+      taskRef:
+        kind: Task
+        name: kaniko
+      runAfter:
+        - create-ecr-repository
+      params:
+        - name: IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+        - name: KANIKO_CACHE_REPO
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: ecr-to-docker
+      taskRef:
+        kind: Task
+        name: ecr-to-docker
+      runAfter:
+        - kaniko-build
+      params:
+        - name: ECR_HOST
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
+        - name: ECR_IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: IMAGE_TAG
+          value: "$(tasks.get-version.results.VERSION)"
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+
     - name: get-nexus-repository-url
       taskRef:
         kind: Task
-        name: get-nexus-repository-url-npm
+        name: get-nexus-repository-url
       runAfter:
-        - build
+        - ecr-to-docker
       params:
         - name: VERSION
           value: $(tasks.get-version.results.VERSION)
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
+        - name: TOOL
+          value: npm
 
     - name: push
       taskRef:
@@ -185,55 +236,71 @@ spec:
             npm set registry ${NEXUS_REPOSITORY_URL}/
             npm set ${NPM_REPO}/:always-auth=true
             npm set ${NPM_REPO}/:email=edp-ci@edp.local
-            npm set ${NPM_REPO}/:_auth=${upBase64} 
+            npm set ${NPM_REPO}/:_auth=${upBase64}
             npm publish
       workspaces:
         - name: source
           workspace: shared-workspace
 
-    - name: create-ecr-repository
+    - name: set-version
       taskRef:
         kind: Task
-        name: create-ecr-repository
+        name: set-version
       runAfter:
         - push
       params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+        - name: IS_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+    - name: helm-push-gh-pages
+      taskRef:
+        kind: Task
+        name: helm-push-gh-pages
+      runAfter:
+        - set-version
+      params:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
-    # TODO
-    # - name: push-to-jira
-    #   taskRef:
-    #     kind: Task
-    #     name: push-to-jira
+    - name: git-tag
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - helm-push-gh-pages
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
 
-    # - name: ecr-to-docker
-    #   taskRef:
-    #     kind: Task
-    #     name: ecr-to-docker
-    #   runAfter:
-    #     - push-to-jira
-    #   params:
-    #     - name: ECR_HOST
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-    #     - name: ECR_IMAGE
-    #       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-    #     - name: IMAGE_TAG
-    #       value: "$(tasks.get-version.results.VERSION)"
-    #     - name: CODEBASE_NAME
-    #       value: "$(params.CODEBASE_NAME)"
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.IS_TAG)
 
-    # TODO
-    # - name: set-version
-    #   taskRef:
-    #     kind: Task
-    #     name: set-version
+{{ include "finally-block-edp" . | nindent 2 }}
 
-    # TODO
-    # - name: helm-push-gh-pages
-    #   taskRef:
-    #     kind: Task
-    #     name: helm-push-gh-pages
 {{ end }}

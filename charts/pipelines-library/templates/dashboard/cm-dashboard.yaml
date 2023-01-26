@@ -1,8 +1,10 @@
+{{- if eq .Values.dashboard.enabled true }}
 apiVersion: v1
 data:
-  version: {{ .Values.image.tag }}
+  version: {{ .Values.dashboard.image.tag }}
 kind: ConfigMap
 metadata:
   labels:
     app: tekton-dashboard
   name: dashboard-info
+{{- end }}

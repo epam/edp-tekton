@@ -1,3 +1,4 @@
+{{- if eq .Values.interceptor.enabled true }}
 {{- if eq .Values.global.platform "openshift" -}}
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
@@ -6,7 +7,7 @@ metadata:
     {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": "pre-install"
-  name: {{ .Chart.Name }}-{{ .Release.Namespace }}
+  name: {{ include "edp-tekton-interceptor.name" . }}-{{ .Release.Namespace }}
 runAsUser:
   type: MustRunAs
   uid: 65532
@@ -24,3 +25,4 @@ allowedCapabilities: []
 allowedFlexVolumes: []
 readOnlyRootFilesystem: false
 {{- end -}}
+{{- end }}

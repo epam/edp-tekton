@@ -10,7 +10,7 @@ Create chart name and version as used by the chart label.
 Expand the name of the chart.
 */}}
 {{- define "tekton-dashboard.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.dashboard.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*

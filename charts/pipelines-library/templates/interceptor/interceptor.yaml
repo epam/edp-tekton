@@ -1,3 +1,4 @@
+{{- if eq .Values.interceptor.enabled true }}
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: Interceptor
 metadata:
@@ -11,3 +12,4 @@ spec:
       name: tekton-triggers-edp-interceptor
       namespace: {{ .Release.Namespace }}
       port: 8443
+{{- end }}

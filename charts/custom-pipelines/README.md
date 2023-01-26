@@ -22,18 +22,14 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 
 * <https://github.com/epam/edp-tekton>
 
-## Requirements
-
-| Repository | Name | Version |
-|------------|------|---------|
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.5 |
-
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | fullnameOverride | string | `""` |  |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
+| global.edpName | string | `""` | namespace or a project name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
+| global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | nameOverride | string | `""` |  |

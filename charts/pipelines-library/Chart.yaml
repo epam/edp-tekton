@@ -35,17 +35,3 @@ annotations:
       url: https://epam.github.io/edp-install/
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/epam-delivery-platform
-
-# we use templates from common library
-dependencies:
-  - name: edp-tekton-common-library
-    version: 0.2.5
-    repository: https://epam.github.io/edp-helm-charts/stable
-  - name: edp-tekton-interceptor
-    version: 0.2.4
-    repository: https://epam.github.io/edp-helm-charts/stable
-    condition: edp-tekton-interceptor.enabled
-  - name: edp-tekton-dashboard
-    version: 0.32.0
-    repository: https://epam.github.io/edp-helm-charts/stable
-    condition: edp-tekton-dashboard.enabled

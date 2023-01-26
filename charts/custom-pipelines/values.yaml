@@ -12,3 +12,7 @@ global:
   dnsWildCard: ""
   # -- Gerrit SSH node port
   gerritSSHPort: "30003"
+  # -- namespace or a project name
+  edpName: ""
+  # -- platform type that can be "kubernetes" or "openshift"
+  platform: "kubernetes"

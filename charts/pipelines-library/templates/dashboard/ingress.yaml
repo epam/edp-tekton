@@ -1,3 +1,4 @@
+{{- if eq .Values.dashboard.enabled true }}
 {{ if eq .Values.global.platform "kubernetes" }}
 {{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
@@ -6,17 +7,17 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "tekton-dashboard.name" . }}
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.dashboard.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-{{- if .Values.ingress.tls }}
+{{- if .Values.dashboard.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.dashboard.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -32,7 +33,8 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Chart.Name }}
+                name: {{ include "tekton-dashboard.name" . }}
                 port:
                   name: http
+{{- end }}
 {{- end }}

@@ -1,9 +1,10 @@
+{{- if eq .Values.dashboard.enabled true }}
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
-  name: edp-tekton-dashboard
+  name: {{ include "tekton-dashboard.name" . }}
 spec:
   ports:
     - name: http
@@ -12,3 +13,4 @@ spec:
       targetPort: 9097
   selector:
     {{ include "tekton-dashboard.selectorLabels" . | nindent 4 }}
+{{- end }}

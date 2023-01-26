@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "edp-tekton-interceptor.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.interceptor.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -11,10 +11,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "edp-tekton-interceptor.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .Values.interceptor.fullnameOverride }}
+{{- .Values.interceptor.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- $name := default .Chart.Name .Values.interceptor.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -53,5 +53,5 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "edp-tekton-interceptor.serviceAccountName" -}}
-{{- default (include "edp-tekton-interceptor.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "edp-tekton-interceptor.name" .) .Values.interceptor.serviceAccount.name }}
 {{- end }}

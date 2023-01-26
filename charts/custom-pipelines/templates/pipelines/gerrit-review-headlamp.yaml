@@ -29,10 +29,6 @@ spec:
       default: 'http://sonar.{{ .Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
-    - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: 'react-npm-edp-version'
       description: "Project name"
@@ -86,7 +82,7 @@ spec:
         kind: Task
         name: npm
       runAfter:
-        - init-values
+        - compile
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
@@ -208,7 +204,7 @@ spec:
         kind: Task
         name: dockerbuild-verify
       runAfter:
-        - sonar
+        - npm-lint
         - dockerfile-lint
       workspaces:
         - name: source

@@ -52,6 +52,8 @@ spec:
       description: "Commit message"
     - name: JIRA_ISSUE_METADATA_PAYLOAD
       description: "Jira Payload"
+    - name: JIRA_SERVER
+      description: "Jira SERVER"
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}

@@ -1,10 +1,10 @@
 apiVersion: v2
-description: Tekton dashboard
+description: A Helm chart for EDP Tekton Dashboard
 home: https://epam.github.io/edp-install/
 name: edp-tekton-dashboard
 type: application
-version: 0.31.1
-appVersion: 0.31.1
+version: 0.32.0
+appVersion: 0.32.0
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - edp

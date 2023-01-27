@@ -12,8 +12,12 @@ global:
   platform: "kubernetes"
   # -- namespace or a project name
   edpName: ""
-  # base image for tekton-dashboard
-  image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.31.0@sha256:454a405aa4f874a0c22db7ab47ccb225a95addd3de904084e35c5de78e4f2c48
+
+image:
+  # -- Define tekton dashboard docker image name
+  repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+  # -- Define tekton dashboard docker image tag
+  tag: v0.32.0
 
 ingress:
   # -- Annotations for Ingress resource

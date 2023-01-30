@@ -50,12 +50,19 @@ spec:
       description: "Patchset number from Merge Request"
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
+      default: ""
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
+      default: ""
     - name: COMMIT_MESSAGE
       description: "Commit message"
+      default: ""
     - name: JIRA_ISSUE_METADATA_PAYLOAD
       description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}
@@ -179,41 +186,12 @@ spec:
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
 
-    - name: push-to-jira
-      taskRef:
-        kind: Task
-        name: push-to-jira
-      runAfter:
-        - ecr-to-docker
-      params:
-        - name: TICKET_NAME_PATTERN
-          value: "$(params.TICKET_NAME_PATTERN)"
-        - name: COMMIT_MESSAGE_PATTERN
-          value: "$(params.COMMIT_MESSAGE_PATTERN)"
-        - name: COMMIT_MESSAGE
-          value: "$(params.COMMIT_MESSAGE)"
-        - name: COMMIT_ID
-          value: "$(tasks.fetch-repository.results.commit)"
-        - name: JIRA_ISSUE_METADATA_PAYLOAD
-          value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
-        - name: CODEBASE_NAME
-          value: "$(params.CODEBASE_NAME)"
-        - name: PIPELINE_URL
-          value: "$(params.pipelineUrl)"
-        - name: VCS_TAG
-          value: "$(tasks.get-version.results.VCS_TAG)"
-        - name: VERSION
-          value: "$(tasks.get-version.results.VERSION)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: set-version
       taskRef:
         kind: Task
         name: set-version
       runAfter:
-        - push-to-jira
+        - ecr-to-docker
       params:
         - name: IS_TAG
           value: $(tasks.get-version.results.IS_TAG)
@@ -266,4 +244,7 @@ spec:
           value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.IS_TAG)
+
+{{ include "finally-block-edp" . | nindent 2 }}
+
 {{ end }}

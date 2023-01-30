@@ -53,7 +53,7 @@ spec:
 
     - name: get-version
       taskRef:
-        name: get-version-edp
+        name: get-version-edp-container
       runAfter:
         - init-values
       params:
@@ -104,7 +104,7 @@ spec:
         - name: ECR_IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
         - name: IMAGE_TAG
-          value: "$(tasks.get-version.results.VERSION)"
+          value: "$(tasks.get-version.results.IS_TAG)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
 

@@ -1,13 +1,10 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: get-version-edp-custom
+  name: get-version-edp-container
 spec:
   description:
   params:
-    - name: CODEBASE_NAME
-      type: string
-      description: "Codebase name"
     - name: CODEBASEBRANCH_NAME
       type: string
       description: "Codebasebranch name"
@@ -28,8 +25,6 @@ spec:
     - name: get-version
       image: bitnami/kubectl:1.25.2
       env:
-        - name: CODEBASE_NAME
-          value: "$(params.CODEBASE_NAME)"
         - name: CODEBASEBRANCH_NAME
           value: "$(params.CODEBASEBRANCH_NAME)"
       script: |
@@ -56,9 +51,7 @@ spec:
         IS_TAG=${VERSION}
         DEPLOYABLE_MODULE_DIR="."
 
-        if [[ $CODEBASE_NAME =~ .*-agent || $CODEBASE_NAME =~ alpine-wget ]]; then
-            IS_TAG=$(echo ${IS_TAG} | sed 's/[0-9]-SNAPSHOT.//g')
-        fi
+        IS_TAG=$(echo ${IS_TAG} |sed 's/[0-9]-SNAPSHOT.//g')
 
         echo "Application version - ${VERSION}"
         echo "VCS tag - ${VCS_TAG}"

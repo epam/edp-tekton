@@ -65,18 +65,22 @@ spec:
         if [ -z "${commit_docs}" ]; then
             echo "No changes related to the documentation have been found, skipping..."
         else
+            remote_repo=$(git config --get remote.origin.url)
+
             python -m venv /home/tekton/mkdocs
             source /home/tekton/mkdocs/bin/activate
             pip install -r hack/mkdocs/requirements.txt
-            mkdocs build -d /tmp/site
+            mkdocs build -d ./site
 
             git config --global user.email SupportEPMD-EDP@epam.com
             git config --global user.name edp-bot
-            git fetch origin gh-pages
-            git checkout -t -f -b gh-pages origin/gh-pages
+
+            git clone --branch=gh-pages --depth=1 "${remote_repo}" gh-pages
+            cd gh-pages
+            # remove current content in branch gh-pages
             git rm -r .
-            git clean -df -f
-            cp -r /tmp/site/* .
+            # copy new doc.
+            cp -r ../site/* .
             # try to address issue with sitemap.xml from GH-Pages
             touch .nojekyll
             echo "google-site-verification: google8d28c574bd766c92.html" > google8d28c574bd766c92.html

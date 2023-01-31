@@ -55,7 +55,50 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-{{ include "gerrit-common" . | nindent 4 }}
+    - name: commit-validate
+      taskRef:
+        kind: Task
+        name: commit-validate
+      runAfter:
+        - fetch-repository
+      params:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: $(params.COMMIT_MESSAGE_PATTERN)
+        - name: COMMIT_MESSAGE
+          value: $(params.COMMIT_MESSAGE)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-docs
+      taskRef:
+        kind: Task
+        name: helm-docs
+      runAfter:
+        - commit-validate
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            GOPROXY=$(params.GOPROXY) make validate-docs
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - commit-validate
+      params:
+      - name: EXTRA_COMMANDS
+        value: |
+          helm repo add epamedp https://epam.github.io/edp-helm-charts/stable --force-update
+          helm repo update
+          ct lint --all --validate-maintainers=false
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     - name: crdocs-build
       taskRef:

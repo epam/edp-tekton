@@ -36,7 +36,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | Repository | Name | Version |
 |------------|------|---------|
 | https://epam.github.io/edp-helm-charts/stable | edp-tekton-common-library | 0.2.5 |
-| https://epam.github.io/edp-helm-charts/stable | edp-tekton-dashboard | 0.31.1 |
+| https://epam.github.io/edp-helm-charts/stable | edp-tekton-dashboard | 0.32.0 |
 | https://epam.github.io/edp-helm-charts/stable | edp-tekton-interceptor | 0.2.4 |
 
 ## Values
@@ -52,6 +52,7 @@ EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./chart
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
+| global.edpName | string | `""` | namespace or a project name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |

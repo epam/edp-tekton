@@ -12,6 +12,8 @@ global:
   dnsWildCard: ""
   # -- Gerrit SSH node port
   gerritSSHPort: "30003"
+  # -- namespace or a project name
+  edpName: ""
 
 # Kaniko configuration section
 kaniko:

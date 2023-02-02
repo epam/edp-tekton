@@ -55,7 +55,7 @@ spec:
 
 {{ include "gerrit-common" . | nindent 4 }}
 
-    - name: compile
+    - name: npm-init
       taskRef:
         kind: Task
         name: npm
@@ -68,27 +68,40 @@ spec:
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
             npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
-            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
             npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
             npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
-            npm install
-            npm run build:clean
+            npm ci
       workspaces:
         - name: source
           workspace: shared-workspace
 
-    - name: test
+    - name: npm-lint
       taskRef:
         kind: Task
         name: npm
       runAfter:
-        - compile
+        - npm-init
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
         - name: EXTRA_COMMANDS
           value: |
-            npm i jest
+            npm run lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: npm-test
+      taskRef:
+        kind: Task
+        name: npm
+      runAfter:
+        - npm-lint
+      params:
+        - name: BASE_IMAGE
+          value: $(params.npm-image-version)
+        - name: EXTRA_COMMANDS
+          value: |
             npm run test:coverage
       workspaces:
         - name: source
@@ -101,7 +114,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - test
+        - npm-test
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -156,35 +169,19 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: npm-test
+    - name: compile
       taskRef:
         kind: Task
         name: npm
       runAfter:
         - sonar
-      params:
-        - name: BASE_IMAGE
-          value: $(params.npm-image-version)
-        - name: EXTRA_COMMANDS
-          value: |
-            npm i jest
-            npm run test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: npm-lint
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
         - npm-test
       params:
         - name: BASE_IMAGE
           value: $(params.npm-image-version)
         - name: EXTRA_COMMANDS
           value: |
-            npm run lint
+            npm run build
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -204,7 +201,7 @@ spec:
         kind: Task
         name: dockerbuild-verify
       runAfter:
-        - npm-lint
+        - compile
         - dockerfile-lint
       workspaces:
         - name: source

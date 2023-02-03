@@ -22,11 +22,11 @@ spec:
         - name: VERSION
           value: "$(params.VERSION)"
       script: |
+        #!/bin/sh
         set -ex
 
         VERSION_LOWER_CASE=$(echo "${VERSION}" | tr '[:upper:]' '[:lower:]')
-        NOT_SNAPSHOT=$(printf '%s' "${VERSION_LOWER_CASE}" | sed 's/snapshot//g')
-        if [ "${VERSION_LOWER_CASE}" != "${NOT_SNAPSHOT}" ]; then
+        if [[ ! ${VERSION_LOWER_CASE} == *"snapshot"* ]]; then
             sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
         fi
         cat version/__init__.py

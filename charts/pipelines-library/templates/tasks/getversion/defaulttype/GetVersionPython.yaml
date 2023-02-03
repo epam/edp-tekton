@@ -63,3 +63,5 @@ spec:
         DEPLOYABLE_MODULE_DIR="."
 
         printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"
+
+        sed -i 's/\(__version__\s*=\s*\).*/\1'\"${BUILD_VERSION}\"'/' version/__init__.py

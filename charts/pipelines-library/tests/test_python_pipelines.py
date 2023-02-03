@@ -277,3 +277,185 @@ global:
                     assert "git-tag" in btedp[9]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
                 assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
+
+# FastApi
+def test_python_fastapi_pipelines_gerrit():
+    config = """
+global:
+  gitProvider: gerrit
+    """
+
+    ht = helm_template(config)
+
+    buildtool = "python"
+    framework = "fastapi"
+
+    review = f"gerrit-{buildtool}-{framework}-app-review"
+    build_default = f"gerrit-{buildtool}-{framework}-app-build-default"
+    build_edp = f"gerrit-{buildtool}-{framework}-app-build-edp"
+
+    assert review in ht["pipeline"]
+    assert build_default in ht["pipeline"]
+    assert build_edp in ht["pipeline"]
+
+    r = ht["pipeline"][review]["spec"]["tasks"]
+    assert "fetch-repository" in r[0]["name"]
+    assert "gerrit-notify" in r[1]["name"]
+    assert "init-values" in r[2]["name"]
+    assert "test" in r[3]["name"]
+    assert "lint" in r[4]["name"]
+    assert "fetch-target-branch" in r[5]["name"]
+    assert "sonar-prepare-files" in r[6]["name"]
+    assert "sonar-prepare-files-general" == r[6]["taskRef"]["name"]
+    assert "sonar" in r[7]["name"]
+    assert "dockerfile-lint" in r[8]["name"]
+    assert "dockerbuild-verify" in r[9]["name"]
+    assert "helm-lint" in r[10]["name"]
+    assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
+    assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+
+    # build with default versioning
+    bd = ht["pipeline"][build_default]["spec"]["tasks"]
+    assert "fetch-repository" in bd[0]["name"]
+    assert "gerrit-notify" in bd[1]["name"]
+    assert "init-values" in bd[2]["name"]
+    assert "get-version" in bd[3]["name"]
+    assert f"get-version-{buildtool}-default" == bd[3]["taskRef"]["name"]
+    assert "sonar-cleanup" in bd[4]["name"]
+    assert "test" in bd[5]["name"]
+    assert buildtool == bd[5]["taskRef"]["name"]
+    assert "lint" in bd[6]["name"]
+    assert buildtool == bd[6]["taskRef"]["name"]
+    assert "compile" in bd[7]["name"]
+    assert buildtool == bd[7]["taskRef"]["name"]
+    assert "sonar" in bd[8]["name"]
+    assert "sonarqube-scanner" == bd[8]["taskRef"]["name"]
+    assert "get-nexus-repository-url" in bd[9]["name"]
+    assert "get-nexus-repository-url" == bd[9]["taskRef"]["name"]
+    assert "push" in bd[10]["name"]
+    assert buildtool == bd[10]["taskRef"]["name"]
+    assert "create-ecr-repository" in bd[11]["name"]
+    assert "kaniko-build" in bd[12]["name"]
+    assert "git-tag" in bd[13]["name"]
+    assert "update-cbis" in bd[14]["name"]
+    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
+
+    # build with edp versioning
+    bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
+    assert "fetch-repository" in bedp[0]["name"]
+    assert "gerrit-notify" in bedp[1]["name"]
+    assert "init-values" in bedp[2]["name"]
+    assert "get-version" in bedp[3]["name"]
+    assert "get-version-edp" == bedp[3]["taskRef"]["name"]
+    assert "update-build-number" in bedp[4]["taskRef"]["name"]
+    assert f"update-build-number-{buildtool}" == bedp[4]["taskRef"]["name"]
+    assert "sonar-cleanup" in bedp[5]["name"]
+    assert "test" in bedp[6]["name"]
+    assert buildtool == bedp[6]["taskRef"]["name"]
+    assert "lint" in bedp[7]["name"]
+    assert buildtool == bedp[7]["taskRef"]["name"]
+    assert "compile" in bedp[8]["name"]
+    assert buildtool == bedp[8]["taskRef"]["name"]
+    assert "sonar" in bedp[9]["name"]
+    assert "sonarqube-scanner" == bedp[9]["taskRef"]["name"]
+    assert "get-nexus-repository-url" in bedp[10]["name"]
+    assert "get-nexus-repository-url" == bedp[10]["taskRef"]["name"]
+    assert "push" in bedp[11]["name"]
+    assert buildtool == bedp[11]["taskRef"]["name"]
+    assert "create-ecr-repository" in bedp[12]["name"]
+    assert "kaniko-build" in bedp[13]["name"]
+    assert "git-tag" in bedp[14]["name"]
+    assert "update-cbis" in bedp[15]["name"]
+    assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
+    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
+
+# Flask
+def test_python_flask_pipelines_gerrit():
+    config = """
+global:
+  gitProvider: gerrit
+    """
+
+    ht = helm_template(config)
+
+    buildtool = "python"
+    framework = "flask"
+
+    review = f"gerrit-{buildtool}-{framework}-app-review"
+    build_default = f"gerrit-{buildtool}-{framework}-app-build-default"
+    build_edp = f"gerrit-{buildtool}-{framework}-app-build-edp"
+
+    assert review in ht["pipeline"]
+    assert build_default in ht["pipeline"]
+    assert build_edp in ht["pipeline"]
+
+    r = ht["pipeline"][review]["spec"]["tasks"]
+    assert "fetch-repository" in r[0]["name"]
+    assert "gerrit-notify" in r[1]["name"]
+    assert "init-values" in r[2]["name"]
+    assert "test" in r[3]["name"]
+    assert "lint" in r[4]["name"]
+    assert "fetch-target-branch" in r[5]["name"]
+    assert "sonar-prepare-files" in r[6]["name"]
+    assert "sonar-prepare-files-general" == r[6]["taskRef"]["name"]
+    assert "sonar" in r[7]["name"]
+    assert "dockerfile-lint" in r[8]["name"]
+    assert "dockerbuild-verify" in r[9]["name"]
+    assert "helm-lint" in r[10]["name"]
+    assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
+    assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+
+    # build with default versioning
+    bd = ht["pipeline"][build_default]["spec"]["tasks"]
+    assert "fetch-repository" in bd[0]["name"]
+    assert "gerrit-notify" in bd[1]["name"]
+    assert "init-values" in bd[2]["name"]
+    assert "get-version" in bd[3]["name"]
+    assert f"get-version-{buildtool}-default" == bd[3]["taskRef"]["name"]
+    assert "sonar-cleanup" in bd[4]["name"]
+    assert "test" in bd[5]["name"]
+    assert buildtool == bd[5]["taskRef"]["name"]
+    assert "lint" in bd[6]["name"]
+    assert buildtool == bd[6]["taskRef"]["name"]
+    assert "compile" in bd[7]["name"]
+    assert buildtool == bd[7]["taskRef"]["name"]
+    assert "sonar" in bd[8]["name"]
+    assert "sonarqube-scanner" == bd[8]["taskRef"]["name"]
+    assert "get-nexus-repository-url" in bd[9]["name"]
+    assert "get-nexus-repository-url" == bd[9]["taskRef"]["name"]
+    assert "push" in bd[10]["name"]
+    assert buildtool == bd[10]["taskRef"]["name"]
+    assert "create-ecr-repository" in bd[11]["name"]
+    assert "kaniko-build" in bd[12]["name"]
+    assert "git-tag" in bd[13]["name"]
+    assert "update-cbis" in bd[14]["name"]
+    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
+
+    # build with edp versioning
+    bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
+    assert "fetch-repository" in bedp[0]["name"]
+    assert "gerrit-notify" in bedp[1]["name"]
+    assert "init-values" in bedp[2]["name"]
+    assert "get-version" in bedp[3]["name"]
+    assert "get-version-edp" == bedp[3]["taskRef"]["name"]
+    assert "update-build-number" in bedp[4]["taskRef"]["name"]
+    assert f"update-build-number-{buildtool}" == bedp[4]["taskRef"]["name"]
+    assert "sonar-cleanup" in bedp[5]["name"]
+    assert "test" in bedp[6]["name"]
+    assert buildtool == bedp[6]["taskRef"]["name"]
+    assert "lint" in bedp[7]["name"]
+    assert buildtool == bedp[7]["taskRef"]["name"]
+    assert "compile" in bedp[8]["name"]
+    assert buildtool == bedp[8]["taskRef"]["name"]
+    assert "sonar" in bedp[9]["name"]
+    assert "sonarqube-scanner" == bedp[9]["taskRef"]["name"]
+    assert "get-nexus-repository-url" in bedp[10]["name"]
+    assert "get-nexus-repository-url" == bedp[10]["taskRef"]["name"]
+    assert "push" in bedp[11]["name"]
+    assert buildtool == bedp[11]["taskRef"]["name"]
+    assert "create-ecr-repository" in bedp[12]["name"]
+    assert "kaniko-build" in bedp[13]["name"]
+    assert "git-tag" in bedp[14]["name"]
+    assert "update-cbis" in bedp[15]["name"]
+    assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
+    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]

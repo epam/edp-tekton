@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
   name: tekton-dashboard-info
-  namespace: {{ .Values.global.edpName }}
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups:
       - ""
@@ -22,7 +22,7 @@ metadata:
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
   name: tekton-dashboard-backend
-  namespace: {{ .Values.global.edpName }}
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups:
       - apiextensions.k8s.io
@@ -61,7 +61,7 @@ metadata:
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
   name: tekton-dashboard-tenant
-  namespace: {{ .Values.global.edpName }}
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups:
       - dashboard.tekton.dev

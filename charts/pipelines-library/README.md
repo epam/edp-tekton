@@ -78,7 +78,6 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
-| global.edpName | string | `""` | namespace or a project name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |

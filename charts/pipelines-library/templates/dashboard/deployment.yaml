@@ -26,7 +26,7 @@ spec:
             - --log-format=json
             - --stream-logs=true
             - --external-logs=
-            - --namespace={{ .Values.global.edpName }}
+            - --namespace={{ .Release.Namespace }}
           env:
             - name: INSTALLED_NAMESPACE
               valueFrom:

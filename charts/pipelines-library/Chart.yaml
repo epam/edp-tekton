@@ -35,3 +35,9 @@ annotations:
       url: https://epam.github.io/edp-install/
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/epam-delivery-platform
+
+# we use templates from common library
+dependencies:
+  - name: edp-tekton-common-library
+    version: 0.2.5
+    repository: "file://../common-library"

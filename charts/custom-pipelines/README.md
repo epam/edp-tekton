@@ -22,6 +22,12 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 
 * <https://github.com/epam/edp-tekton>
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../common-library | edp-tekton-common-library | 0.2.5 |
+
 ## Values
 
 | Key | Type | Default | Description |

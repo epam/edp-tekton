@@ -1,24 +1,24 @@
 apiVersion: v2
-description: A Helm chart for EDP4EDP Tekton Pipelines
+description: A Helm chart library with common components for EDP Tekton Pipelines
 home: https://epam.github.io/edp-install/
-name: edp-custom-pipelines
-type: application
-version: 0.4.0-SNAPSHOT
-appVersion: 0.4.0-SNAPSHOT
+name: edp-tekton-common-library
+type: library
+version: 0.2.5
+appVersion: 0.2.5
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
-  - cd
+  - edp
+  - tekton
   - cd-pipeline
+  - pipelines
+  - jira
   - ci
-  - edp4edp
-  - gerrit
+  - cd
+  - promote
   - git
+  - gerrit
   - github
   - gitlab
-  - jira
-  - pipelines
-  - promote
-  - tekton
 maintainers:
   - name: epmd-edp
     email: SupportEPMD-EDP@epam.com
@@ -35,9 +35,3 @@ annotations:
       url: https://epam.github.io/edp-install/
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/epam-delivery-platform
-
-# we use templates from common library
-dependencies:
-  - name: edp-tekton-common-library
-    version: 0.2.5
-    repository: "file://../common-library"

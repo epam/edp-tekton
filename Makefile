@@ -82,6 +82,8 @@ test-chart: ${CURRENT_DIR}/.venv/bin/activate
 	( \
 		source $^; \
 		pip3 install -r ${CURRENT_DIR}/requirements.txt; \
+		helm dependency update ./charts/pipelines-library; \
+		helm dependency update ./charts/custom-pipelines; \
 		pytest -sv ./charts/pipelines-library/ --color=yes -n auto; \
 		pytest -sv ./charts/custom-pipelines/ --color=yes -n auto; \
 	)

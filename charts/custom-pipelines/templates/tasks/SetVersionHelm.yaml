@@ -27,7 +27,7 @@ spec:
       script: |
         set -ex
 
-        chartPath=$(find . -name "Chart.yaml")
+        chartPath=$(find . -name "Chart.yaml" ! -path '*/common-library/*')
         IFS=$'\n'
         for i in "${chartPath}"; do
             echo "[TEKTON] Chart path is ${i}"

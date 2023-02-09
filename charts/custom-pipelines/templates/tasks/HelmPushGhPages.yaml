@@ -102,7 +102,7 @@ spec:
         git config --global user.email ${GH_EMAIL}
         git config --global user.name ${GH_USER_NAME}
 
-        for i in "deploy-templates" "charts/interceptor" "charts/pipelines-library" "charts/custom-pipelines" "charts/tekton-dashboard"
+        for i in "deploy-templates" "charts/pipelines-library" "charts/custom-pipelines"
         do
             if [ -f "${i}/Chart.yaml" ]; then
                 echo "[TEKTON] Chart.yaml exists in ${i} in the repository."
@@ -120,6 +120,7 @@ spec:
                 git commit -m "Push ${CODEBASE_NAME} helm chart"
                 git push -u origin ${GH_BRANCH}
 
+                cd ${WORKING_DIR}
             else
                 echo "${i}/Chart.yaml does not exist."
             fi

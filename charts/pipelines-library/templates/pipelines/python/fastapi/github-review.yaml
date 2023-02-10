@@ -1,0 +1,141 @@
+{{ if eq .Values.global.gitProvider "github" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-python-fastapi-app-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: "python-app"
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: python-image-version
+      default: 'python:3.8-alpine3.16'
+      description: "python image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+  tasks:
+
+{{- include "github-review-start" . | nindent 4 }}
+
+    - name: test
+      taskRef:
+        kind: Task
+        name: python
+      runAfter:
+        - init-values
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            pip3 install -r test-requirements.txt
+            pytest -sv --color=yes
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: lint
+      taskRef:
+        kind: Task
+        name: python
+      runAfter:
+        - test
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            pip3 install -r test-requirements.txt
+            pylint --output-format=colorized *.py
+            flake8 --filename=*.py
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-scanner
+      runAfter:
+        - test
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASEBRANCH_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - sonar
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        kind: Task
+        name: dockerbuild-verify
+      runAfter:
+        - dockerfile-lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - sonar
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --validate-maintainers=false --charts deploy-templates/
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "github-review-vote" . | nindent 2 }}
+
+{{ end }}

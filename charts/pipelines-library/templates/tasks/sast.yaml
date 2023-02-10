@@ -43,6 +43,7 @@ spec:
           value: "$(workspaces.source.path)"
         - name: SEMGREP_VERSION_CACHE_PATH
           value: "$(workspaces.source.path)/.cache"
+{{- include "resources" . | nindent 6 }}
     - name: push-report
       image: curlimages/curl:7.85.0
       workingDir: $(workspaces.source.path)

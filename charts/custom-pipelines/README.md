@@ -26,7 +26,7 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../common-library | edp-tekton-common-library | 0.2.5 |
+| file://../common-library | edp-tekton-common-library | 0.2.6 |
 
 ## Values
 
@@ -38,3 +38,4 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | nameOverride | string | `""` |  |
+| tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}` | The resource limits and requests for the Tekton Tasks |

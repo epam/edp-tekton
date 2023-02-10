@@ -99,3 +99,4 @@ spec:
           value: "$(params.GOSUMDB)"
         - name: GOPROXY
           value: "$(params.GOPROXY)"
+{{- include "resources" . | nindent 6 }}

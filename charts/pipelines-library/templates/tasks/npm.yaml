@@ -74,3 +74,4 @@ spec:
         fi
 
         $(params.EXTRA_COMMANDS)
+{{- include "resources" . | nindent 6 }}

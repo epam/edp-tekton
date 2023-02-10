@@ -75,3 +75,4 @@ spec:
             secretKeyRef:
               name: $(params.ci-secret)
               key: password
+{{- include "resources" . | nindent 6 }}

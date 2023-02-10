@@ -14,3 +14,13 @@ global:
   gerritSSHPort: "30003"
   # -- platform type that can be "kubernetes" or "openshift"
   platform: "kubernetes"
+
+tekton:
+  # --The resource limits and requests for the Tekton Tasks
+  resources:
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+    requests:
+      cpu: "0.5"
+      memory: "2Gi"

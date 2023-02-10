@@ -100,3 +100,4 @@ spec:
             cat "${ECR_LOGIN}" | crane auth login "${ECR_HOST}" -u "${ECR_USER}" --password-stdin
             crane cp "${ECR_IMAGE}:${IMAGE_TAG}" "${DOCKERHUB_IMAGE_TAGGED}"
         fi
+{{- include "resources" . | nindent 6 }}

@@ -58,3 +58,4 @@ spec:
       # makes it explicit that it needs to run as root.
       securityContext:
         runAsUser: 0
+{{- include "resources" . | nindent 6 }}

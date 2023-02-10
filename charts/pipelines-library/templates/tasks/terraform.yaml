@@ -41,3 +41,4 @@ spec:
           value: /tekton/home
         - name: TFENV_TERRAFORM_VERSION
           value: $(params.TFENV_TERRAFORM_VERSION)
+{{- include "resources" . | nindent 6 }}

@@ -63,6 +63,7 @@ spec:
       # makes it explicit that it needs to run as root.
       securityContext:
         runAsUser: 0
+{{- include "resources" . | nindent 6 }}
     - name: write-url
       image: alpine:3.17.1
       script: |

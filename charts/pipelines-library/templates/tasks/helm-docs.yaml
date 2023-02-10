@@ -38,3 +38,4 @@ spec:
       #   diff ${helmDocsReadme} ${helmDocsReadme}.orig || \
       #       (echo "The ${helmDocsReadme} file was not updated. Run 'helm-docs' to address the issue."; exit 1)
       workingDir: $(workspaces.source.path)
+{{- include "resources" . | nindent 6 }}

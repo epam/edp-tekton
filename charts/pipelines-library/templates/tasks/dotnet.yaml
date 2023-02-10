@@ -48,3 +48,4 @@ spec:
             secretKeyRef:
               name: $(params.ci-sonar-secret)
               key: secret
+{{- include "resources" . | nindent 6 }}

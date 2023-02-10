@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../common-library | edp-tekton-common-library | 0.2.5 |
+| file://../common-library | edp-tekton-common-library | 0.2.6 |
 
 ## Values
 
@@ -109,3 +109,4 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.pruner.keep | int | `1` | Maximum number of resources to keep while deleting removing |
 | tekton.pruner.resources | string | `"pipelinerun"` | Supported resource for auto prune is 'pipelinerun' |
 | tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |
+| tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}` | The resource limits and requests for the Tekton Tasks |

@@ -125,3 +125,4 @@ spec:
                 echo "${i}/Chart.yaml does not exist."
             fi
         done
+{{- include "resources" . | nindent 6 }}

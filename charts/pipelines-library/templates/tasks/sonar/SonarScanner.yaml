@@ -112,3 +112,4 @@ spec:
               key: secret
       command:
         - sonar-scanner
+{{- include "resources" . | nindent 6 }}

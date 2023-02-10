@@ -88,3 +88,4 @@ spec:
             git commit -m 'Update documentation'
             git push -u origin gh-pages
         fi
+{{- include "resources" . | nindent 6 }}

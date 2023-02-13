@@ -90,7 +90,7 @@ spec:
         - test
       params:
         - name: BASE_IMAGE
-          value: 'epamedp/tekton-dotnet:0.1.0-SNAPSHOT.4'
+          value: 'epamedp/tekton-dotnet:0.1.5'
         - name: EXTRA_COMMANDS
           value: |
             slnFilename=$(ls *.sln)

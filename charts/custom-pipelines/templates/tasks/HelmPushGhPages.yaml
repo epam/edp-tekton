@@ -61,7 +61,7 @@ spec:
 
   steps:
     - name: helm-push-gh-pages
-      image: epamedp/tekton-helm:0.1.0-SNAPSHOT.1
+      image: epamedp/tekton-helm:0.1.3
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       volumeMounts:
         - name: ssh-keys

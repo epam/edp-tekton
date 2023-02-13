@@ -50,7 +50,7 @@ spec:
       default: "/tekton/home"
   steps:
     - name: ssh
-      image: 'epamedp/tekton-openssh-client:0.1.0-SNAPSHOT.2'
+      image: 'epamedp/tekton-openssh-client:0.1.4'
       env:
         - name: GERRIT_HOST
           value: "$(params.GERRIT_HOST)"

@@ -78,6 +78,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.tls | list | `[]` | Ingress TLS configuration |
 | dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
+| dashboard.readOnly | bool | `true` |  |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |

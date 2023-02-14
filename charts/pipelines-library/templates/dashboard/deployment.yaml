@@ -21,7 +21,7 @@ spec:
             - --logout-url=
             - --pipelines-namespace=tekton-pipelines
             - --triggers-namespace=tekton-pipelines
-            - --read-only=false
+            - --read-only={{ .Values.dashboard.readOnly }}
             - --log-level=info
             - --log-format=json
             - --stream-logs=true

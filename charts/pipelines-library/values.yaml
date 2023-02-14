@@ -106,6 +106,8 @@ dashboard:
 
   nameOverride: "edp-tekton-dashboard"
 
+  readOnly: true
+
   image:
     # -- Define tekton dashboard docker image name
     repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard

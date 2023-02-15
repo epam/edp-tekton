@@ -39,6 +39,7 @@ global:
     assert "update-cbis" in b[15]["name"]
     assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
     assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
+    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]
 
     r = ht["pipeline"][review]["spec"]["tasks"]
     assert "fetch-repository" in r[0]["name"]

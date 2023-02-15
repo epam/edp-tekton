@@ -246,4 +246,7 @@ spec:
           value: $(tasks.get-version.results.IS_TAG)
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "send-to-microsoft-teams-build" . | nindent 4 }}
+
 {{ end }}

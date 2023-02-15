@@ -293,10 +293,26 @@ finally:
       workspace: shared-workspace
 {{- end -}}
 
+{{- define "send-to-microsoft-teams-build" -}}
+- name: send-to-microsoft-teams-failed
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed"]
+  taskRef:
+    name: send-to-microsoft-teams
+  params:
+  - name: webhook-url-secret
+    value: microsoft-teams-webhook-url-secret
+  - name: webhook-url-secret-key
+    value: url
+  - name: message
+    value: "Build Failed CODEBASE_NAME:$(params.CODEBASE_NAME) CODEBASEBRANCH_NAME:$(params.git-source-revision) <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a> $(params.COMMIT_MESSAGE)"
+{{- end -}}
+
 # final section for all build pipelines that use default versioning
 {{- define "finally-block-default" -}}
 finally:
-
 {{ include "push-to-jira" . | nindent 2 }}
 
 {{- end -}}

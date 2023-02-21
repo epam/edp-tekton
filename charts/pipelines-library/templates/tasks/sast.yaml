@@ -17,7 +17,7 @@ spec:
     - name: BASE_IMAGE
       type: string
       description: Semgrep image
-      default: returntocorp/semgrep:1.2.1
+      default: returntocorp/semgrep:1.12.1
     - name: ci-defectdojo-secret
       type: string
       description: name of the secret holding the DefectDojo secret

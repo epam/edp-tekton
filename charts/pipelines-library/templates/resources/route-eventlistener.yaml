@@ -1,0 +1,21 @@
+{{- if ne .Values.global.gitProvider "gerrit" -}}
+{{ if eq .Values.global.platform "openshift" }}
+{{- $elName := printf "el-%s-listener" .Values.global.gitProvider -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $elName }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+    host: {{ $elName }}-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+    to:
+        kind: Service
+        name: {{ $elName }}
+        weight: 100
+    wildcardPolicy: None
+{{- end }}
+{{- end }}

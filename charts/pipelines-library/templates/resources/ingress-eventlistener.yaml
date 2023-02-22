@@ -1,4 +1,5 @@
 {{- if ne .Values.global.gitProvider "gerrit" -}}
+{{ if eq .Values.global.platform "kubernetes" }}
 {{- $elName := printf "el-%s-listener" .Values.global.gitProvider -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -18,4 +19,5 @@ spec:
                 name: {{ $elName }}
                 port:
                   number: 8080
+{{- end }}
 {{- end }}

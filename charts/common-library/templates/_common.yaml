@@ -298,7 +298,7 @@ finally:
   when:
     - input: "$(tasks.status)"
       operator: in
-      values: ["Failed"]
+      values: ["Failed", "PipelineRunTimeout"]
   taskRef:
     name: send-to-microsoft-teams
   params:
@@ -307,7 +307,7 @@ finally:
   - name: webhook-url-secret-key
     value: url
   - name: message
-    value: "Build Failed CODEBASE_NAME:$(params.CODEBASE_NAME) CODEBASEBRANCH_NAME:$(params.git-source-revision) <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a> $(params.COMMIT_MESSAGE)"
+    value: "Build Failed project:$(params.CODEBASE_NAME) branch:$(params.git-source-revision) <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a> commit message:$(params.COMMIT_MESSAGE)"
 {{- end -}}
 
 # final section for all build pipelines that use default versioning

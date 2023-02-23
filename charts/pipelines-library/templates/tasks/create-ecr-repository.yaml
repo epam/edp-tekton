@@ -24,6 +24,7 @@ spec:
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
+      {{ if ne .Values.global.platform "openshift" }}
       env:
         - name: REPO_NAME
           value: "$(params.REPO_NAME)"
@@ -34,3 +35,7 @@ spec:
               key: 'aws_region'
       command: ["/bin/sh"]
       args: ["-c", "aws ecr describe-repositories --repository-names ${REPO_NAME} || aws ecr create-repository --repository-name ${REPO_NAME}"]
+      {{ else }}
+      command: [ "/bin/sh" ]
+      args: [ "-c", "echo 'Openshift cluster, create-ecr-repository stage skipped'" ]
+      {{ end }}

@@ -58,6 +58,9 @@ spec:
         - --digest-file=$(results.IMAGE_DIGEST.path)
         - --cache=true
         - --cache-repo=$(params.KANIKO_CACHE_REPO)
+        {{ if eq .Values.global.platform "openshift" }}
+        - --skip-tls-verify
+        {{ end }}
       # kaniko assumes it is running as root, which means this example fails on platforms
       # that default to run containers as random uid (like OpenShift). Adding this securityContext
       # makes it explicit that it needs to run as root.

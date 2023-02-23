@@ -73,13 +73,15 @@ spec:
     - name: helm-docs
       taskRef:
         kind: Task
-        name: helm-docs
+        name: golang
       runAfter:
         - commit-validate
       params:
         - name: EXTRA_COMMANDS
           value: |
             GOPROXY=$(params.GOPROXY) make validate-docs
+        - name: BASE_IMAGE
+          value: "docker.io/library/golang:1.18.4-bullseye"
       workspaces:
         - name: source
           workspace: shared-workspace

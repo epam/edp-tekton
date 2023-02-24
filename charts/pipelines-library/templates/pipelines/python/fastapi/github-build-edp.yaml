@@ -104,7 +104,7 @@ spec:
           value: |
             pip3 install -r test-requirements.txt
             pylint --output-format=colorized *.py
-            flake8 --filename=*.py
+            flake8 --exclude .local --filename=*.py
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -44,7 +44,7 @@ spec:
       description: "repository full name"
       type: string
     - name: go-image-version
-      default: 'golang:1.18.4-bullseye'
+      default: 'golang:1.19.6-bullseye'
       description: "go image version"
       type: string
   tasks:

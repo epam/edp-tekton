@@ -14,16 +14,16 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11']:
+        for framework in ['java8', 'java11', 'java17']:
             for cbtype in ['app', 'lib']:
-
-                assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]
-                assert f"gerrit-{buildtool}-{framework}-{cbtype}-build-default" in r["pipeline"]
-                assert f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp" in r["pipeline"]
 
                 gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-{cbtype}-review"
                 gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-{cbtype}-build-default"
                 gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp"
+
+                assert gerrit_review_pipeline in r["pipeline"]
+                assert gerrit_build_pipeline_def in r["pipeline"]
+                assert gerrit_build_pipeline_edp in r["pipeline"]
 
                 rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
                 assert "fetch-repository" in rt[0]["name"]
@@ -36,15 +36,10 @@ global:
                 assert f"sonar-prepare-files-{buildtool}" == rt[6]["taskRef"]["name"]
                 assert "sonar" in rt[7]["name"]
                 if cbtype == "app":
-                    if buildtool == "gradle":
-                        assert "build" in rt[8]["name"]
-                        assert "dockerfile-lint" in rt[9]["name"]
-                        assert "dockerbuild-verify" in rt[10]["name"]
-                        assert "helm-lint" in rt[11]["name"]
-                    else:
-                        assert "dockerfile-lint" in rt[8]["name"]
-                        assert "dockerbuild-verify" in rt[9]["name"]
-                        assert "helm-lint" in rt[10]["name"]
+                    assert "build" in rt[8]["name"]
+                    assert "dockerfile-lint" in rt[9]["name"]
+                    assert "dockerbuild-verify" in rt[10]["name"]
+                    assert "helm-lint" in rt[11]["name"]
 
                 assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]

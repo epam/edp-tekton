@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := dict "java8" "maven:3.8.6-openjdk-8-slim" "java11" "maven:3.8.6-openjdk-11-slim" "java17" "maven:3.8.5-openjdk-17-slim" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java11-app-build-default
+  name: gerrit-maven-{{ $k }}-lib-build-default
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -22,22 +24,22 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: '{{ $v }}'
       description: "maven image version"
       type: string
     - name: changeNumber
@@ -61,7 +63,7 @@ spec:
       default: ""
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -81,21 +83,6 @@ spec:
           workspace: shared-workspace
 
 {{ include "sonar-cleanup" . | nindent 4 }}
-
-    - name: sast
-      taskRef:
-        kind: Task
-        name: sast
-      runAfter:
-        - fetch-repository
-      params:
-        - name: reportDataProductName
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: reportDataEngagementName
-          value: $(params.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
 
     - name: compile
       taskRef:
@@ -120,18 +107,10 @@ spec:
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        kind: Task
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

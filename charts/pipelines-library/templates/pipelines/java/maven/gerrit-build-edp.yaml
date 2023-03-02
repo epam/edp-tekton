@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := dict "java8" "maven:3.8.6-openjdk-8-slim" "java11" "maven:3.8.6-openjdk-11-slim" "java17" "maven:3.8.5-openjdk-17-slim" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-gradle-java11-app-build-edp
+  name: gerrit-maven-{{ $k }}-app-build-edp
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -22,23 +24,23 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: gradle-image-version
-      default: 'gradle:7.5.1-jdk11'
-      description: "gradle image version"
+    - name: maven-image-version
+      default: '{{ $v }}'
+      description: "maven image version"
       type: string
     - name: changeNumber
       description: Change number from Merge Request
@@ -61,7 +63,7 @@ spec:
       default: ""
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -76,18 +78,20 @@ spec:
     - name: update-build-number
       taskRef:
         kind: Task
-        name: update-build-number-gradle
+        name: update-build-number-maven
       runAfter:
         - get-version
       params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
         - name: BRANCH_VERSION
           value: $(tasks.get-version.results.BRANCH_VERSION)
         - name: BUILD_ID
           value: $(tasks.get-version.results.BUILD_ID)
-        - name: IS_RELEASE_BRANCH
-          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
+        - name: BASE_IMAGE
+          value: $(params.maven-image-version)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -99,7 +103,7 @@ spec:
         kind: Task
         name: sast
       runAfter:
-        - update-build-number
+        - fetch-repository
       params:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)
@@ -112,23 +116,25 @@ spec:
     - name: compile
       taskRef:
         kind: Task
-        name: gradle
+        name: maven
       runAfter:
-        - sast
+        - update-build-number
       params:
-        - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
-            clean \
-            compileJava \
-            -x test
+        - name: MAVEN_IMAGE
+          value: $(params.maven-image-version)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - compile
       workspaces:
         - name: source
           workspace: shared-workspace
 
-{{ include "java-gradle-build-common" . | nindent 4 }}
+{{- include "java-maven-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:
@@ -144,4 +150,6 @@ spec:
 
 {{ include "finally-block-edp" . | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

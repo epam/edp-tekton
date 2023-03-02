@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-java8-app-review
+  name: gerrit-gradle-{{ $k }}-app-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -26,20 +28,20 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
       default: 'java8-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-8-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: '{{ $v }}'
+      description: "gradle image version"
       type: string
     - name: targetBranch
       description: Target branch of Merge Request
@@ -49,9 +51,26 @@ spec:
       description: Patchset number from Merge Request
   tasks:
 
-{{- include "gerrit-review-start" . | nindent 4 }}
+{{- include "gerrit-review-start" $ | nindent 4 }}
 
-{{ include "java-maven-review-common" . | nindent 4 }}
+{{ include "java-gradle-review-common" . | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: gradle
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            build -x test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     - name: dockerfile-lint
       taskRef:
@@ -68,7 +87,7 @@ spec:
         kind: Task
         name: dockerbuild-verify
       runAfter:
-        - sonar
+        - build
         - dockerfile-lint
       workspaces:
         - name: source
@@ -88,6 +107,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "gerrit-review-vote" . | nindent 2 }}
+{{ include "gerrit-review-vote" $ | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

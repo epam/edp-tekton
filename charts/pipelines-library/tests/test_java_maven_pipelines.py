@@ -14,7 +14,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java8', 'java11']:
+        for framework in ['java8', 'java11', 'java17']:
             for cbtype in ['app', 'lib']:
 
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]

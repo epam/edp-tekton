@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-gradle-java8-lib-review
+  name: gitlab-gradle-{{ $k }}-lib-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -26,22 +28,22 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java8-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: gradle-image-version
-      default: 'gradle:7.5.1-jdk8'
+      default: '{{ $v }}'
       description: "gradle image version"
       type: string
     - name: gitfullrepositoryname
@@ -49,7 +51,7 @@ spec:
       type: string
   tasks:
 
-{{- include "gitlab-review-start" . | nindent 4 }}
+{{- include "gitlab-review-start" $ | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -109,6 +111,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "gitlab-review-vote" . | nindent 2 }}
+{{ include "gitlab-review-vote" $ | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

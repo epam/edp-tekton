@@ -34,7 +34,7 @@ spec:
       description: "Project name"
       type: string
     - name: go-image-version
-      default: 'golang:1.18.4-bullseye'
+      default: 'golang:1.19.6-bullseye'
       description: "go image with make installed"
       type: string
     - name: GOPROXY
@@ -81,7 +81,7 @@ spec:
           value: |
             GOPROXY=$(params.GOPROXY) make validate-docs
         - name: BASE_IMAGE
-          value: "docker.io/library/golang:1.18.4-bullseye"
+          value: "golang:1.19.6-bullseye"
       workspaces:
         - name: source
           workspace: shared-workspace

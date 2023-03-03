@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "github" }}
+{{- $resourceMapping := dict "java8" "maven:3.8.6-openjdk-8-slim" "java11" "maven:3.8.6-openjdk-11-slim" "java17" "maven:3.8.5-openjdk-17-slim" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java11-lib-review
+  name: github-maven-{{ $k }}-lib-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -26,22 +28,22 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: '{{ $v }}'
       description: "maven image version"
       type: string
     - name: gitfullrepositoryname
@@ -52,7 +54,7 @@ spec:
       type: string
   tasks:
 
-{{- include "github-review-start" . | nindent 4 }}
+{{- include "github-review-start" $ | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -125,6 +127,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "github-review-vote" . | nindent 2 }}
+{{ include "github-review-vote" $ | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

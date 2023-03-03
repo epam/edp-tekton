@@ -1,20 +1,25 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
+{{- $resourceMapping := dict "java8" "maven:3.8.6-openjdk-8-slim" "java11" "maven:3.8.6-openjdk-11-slim" "java17" "maven:3.8.5-openjdk-17-slim" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-maven-java11-lib-review
+  name: gitlab-maven-{{ $k }}-app-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
       type: string
     - name: git-source-url
-      default: "https://github.com/sergk/spring-petclinic"
+      default: "https://gitlab.com/sergk/spring-petclinic"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -26,30 +31,27 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java11-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: '{{ $v }}'
       description: "maven image version"
-      type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
       type: string
   tasks:
 
-{{- include "gitlab-review-start" . | nindent 4 }}
+{{- include "gitlab-review-start" $ | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -122,6 +124,43 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "gitlab-review-vote" . | nindent 2 }}
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
+    - name: dockerbuild-verify
+      taskRef:
+        kind: Task
+        name: dockerbuild-verify
+      runAfter:
+        - sonar
+        - dockerfile-lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --validate-maintainers=false --charts deploy-templates/
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gitlab-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
 {{ end }}

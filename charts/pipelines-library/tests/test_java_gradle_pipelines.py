@@ -257,7 +257,7 @@ global:
     r = helm_template(config)
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11']:
+        for framework in ['java8', 'java11', 'java17']:
             for cbtype in ['app', 'lib']:
                 gitlab_review_pipeline = f"gitlab-{buildtool}-{framework}-{cbtype}-review"
                 gitlab_build_pipeline_def = f"gitlab-{buildtool}-{framework}-{cbtype}-build-default"

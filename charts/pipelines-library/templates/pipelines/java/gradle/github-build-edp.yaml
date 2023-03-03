@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "github" }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-maven-java8-app-build-edp
+  name: github-gradle-{{ $k }}-app-build-edp
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
@@ -22,23 +24,23 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'java8-maven'
+      default: '{{ $k }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: maven-image-version
-      default: 'maven:3.8.6-openjdk-8-slim'
-      description: "maven image version"
+    - name: gradle-image-version
+      default: '{{ $v }}'
+      description: "gradle image version"
       type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
@@ -72,20 +74,18 @@ spec:
     - name: update-build-number
       taskRef:
         kind: Task
-        name: update-build-number-maven
+        name: update-build-number-gradle
       runAfter:
         - get-version
       params:
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
-        - name: IS_RELEASE_BRANCH
-          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
         - name: BRANCH_VERSION
           value: $(tasks.get-version.results.BRANCH_VERSION)
         - name: BUILD_ID
           value: $(tasks.get-version.results.BUILD_ID)
-        - name: BASE_IMAGE
-          value: $(params.maven-image-version)
+        - name: IS_RELEASE_BRANCH
+          value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -95,7 +95,7 @@ spec:
         kind: Task
         name: sast
       runAfter:
-        - fetch-repository
+        - update-build-number
       params:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)
@@ -108,25 +108,23 @@ spec:
     - name: compile
       taskRef:
         kind: Task
-        name: maven
+        name: gradle
       runAfter:
-        - update-build-number
+        - sast
       params:
-        - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - compile
+        - name: BASE_IMAGE
+          value: $(params.gradle-image-version)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            clean \
+            compileJava \
+            -x test
       workspaces:
         - name: source
           workspace: shared-workspace
 
-{{- include "java-maven-build-common" . | nindent 4 }}
+{{ include "java-gradle-build-common" . | nindent 4 }}
 
     - name: create-ecr-repository
       taskRef:
@@ -142,4 +140,6 @@ spec:
 
 {{ include "finally-block-edp" . | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

@@ -137,7 +137,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java11', 'java8']:
+        for framework in ['java8', 'java11', 'java17']:
             for cbtype in ['app', 'lib']:
 
                 github_review_pipeline = f"github-{buildtool}-{framework}-{cbtype}-review"

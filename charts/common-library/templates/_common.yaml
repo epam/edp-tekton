@@ -307,7 +307,8 @@ finally:
   - name: webhook-url-secret-key
     value: url
   - name: message
-    value: "Build Failed project:$(params.CODEBASE_NAME) branch:$(params.git-source-revision) <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a> commit message:$(params.COMMIT_MESSAGE)"
+    value: >-
+      Build Failed project: $(params.CODEBASE_NAME)<br> branch: $(params.git-source-revision)<br> pipeline: <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a><br> commit message: $(params.COMMIT_MESSAGE)
 {{- end -}}
 
 # final section for all build pipelines that use default versioning

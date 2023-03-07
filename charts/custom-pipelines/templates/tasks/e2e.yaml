@@ -1,0 +1,96 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: e2e
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+    app.kubernetes.io/version: "0.1"
+spec:
+  description: >-
+    This Task creates vcluster and runs kuttl tests on it.
+  workspaces:
+    - name: source
+
+  params:
+    - name: CODEBASE_NAME
+      type: string
+    - name: E2E_IMAGE_REPOSITORY
+      type: string
+    - name: E2E_IMAGE_TAG
+      type: string
+    - name: E2E_HOST_NS
+      type: string
+      default: "e2e-vcluster"
+    - name: TOOLS_IMAGE
+      type: string
+      default: "artemzahumonnyi/k8s-tools:0.3.0" # Should be migrated to dockerhub
+
+  results:
+    - name: release_name
+
+  steps:
+    - name: vcluster-start
+      image: $(params.TOOLS_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: E2E_IMAGE_REPOSITORY
+          value: $(params.E2E_IMAGE_REPOSITORY)
+        - name: E2E_IMAGE_TAG
+          value: $(params.E2E_IMAGE_TAG)
+        - name: E2E_HOST_NS
+          value: $(params.E2E_HOST_NS)
+      script: |
+        set -x
+
+        random_str=$(echo $RANDOM | md5sum | head -c 10)
+        release_name=$(echo "${CODEBASE_NAME}-${random_str}" | tr '[:upper:]' '[:lower:]')
+
+        vcluster create ${release_name} \
+         -n ${E2E_HOST_NS} \
+         --connect=false \
+         --update-current=false
+
+        printf "%s" "${release_name}" > "$(results.release_name.path)"
+
+    - name: kuttl-test
+      image: $(params.TOOLS_IMAGE)
+      workingDir: $(workspaces.source.path)
+      onError: continue
+      env:
+        - name: E2E_IMAGE_REPOSITORY
+          value: $(params.E2E_IMAGE_REPOSITORY)
+        - name: E2E_IMAGE_TAG
+          value: $(params.E2E_IMAGE_TAG)
+        - name: E2E_HOST_NS
+          value: $(params.E2E_HOST_NS)
+      script: |
+        set -x
+
+        release_name=$(cat $(results.release_name.path))
+        vcluster connect "${release_name}" --namespace ${E2E_HOST_NS} -- kubectl kuttl test
+
+    - name: vcluster-remove
+      image: $(params.TOOLS_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: E2E_HOST_NS
+          value: $(params.E2E_HOST_NS)
+      script: |
+        set -x
+
+        release_name=$(cat $(results.release_name.path))
+        vcluster -n ${E2E_HOST_NS} delete ${release_name}
+
+    - name: kuttl-test-verify-exitcode
+      image: alpine:3.17.2
+      workingDir: $(workspaces.source.path)
+      script: |
+        exitCode=`cat $(steps.step-kuttl-test.exitCode.path)`
+        if [ $exitCode == 0 ]; then
+            echo "The exit code contains zero status code: ${exitCode}"
+        else
+            echo "The exit code contains non-zero status code: ${exitCode}"
+            exit 1
+        fi

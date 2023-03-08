@@ -1,0 +1,29 @@
+# Default values for edp-tekton.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  # -- Gerrit SSH node port
+  gerritSSHPort: "30003"
+
+github:
+  webhook:
+    # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
+    existingSecret: github
+
+gitlab:
+  # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
+  host: git.epam.com
+  webhook:
+    # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
+    existingSecret: gitlab
+
+tekton:
+  # --The resource limits and requests for the Tekton Tasks
+  resources:
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+    requests:
+      cpu: "0.5"
+      memory: "2Gi"

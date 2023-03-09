@@ -70,25 +70,12 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: crdocs-build
-      taskRef:
-        kind: Task
-        name: crdocs
-      runAfter:
-        - commit-validate
-      params:
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: build
       taskRef:
         kind: Task
         name: golang
       runAfter:
-        - crdocs-build
+        - commit-validate
       params:
         - name: BASE_IMAGE
           value: $(params.image)

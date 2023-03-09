@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: go-image-version
+    - name: image
       default: 'golang:1.19.6-bullseye'
       description: "go image version"
       type: string

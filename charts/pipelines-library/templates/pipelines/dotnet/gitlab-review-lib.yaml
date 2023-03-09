@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: dotnet-sdk-image-version
+    - name: image
       default: 'mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16'
       description: "dotnet-sdk image version"
       type: string
@@ -55,7 +55,7 @@ spec:
         - fetch-repository
       params:
         - name: BASE_IMAGE
-          value: $(params.dotnet-sdk-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             slnFilename=$(ls *.sln)
@@ -72,7 +72,7 @@ spec:
         - compile
       params:
         - name: BASE_IMAGE
-          value: $(params.dotnet-sdk-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             ls *Tests*/*.csproj | while read -r file;

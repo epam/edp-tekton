@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: python-image-version
+    - name: image
       default: 'python:3.8-alpine3.16'
       description: "python image version"
       type: string
@@ -96,7 +96,7 @@ spec:
         - update-build-number
       params:
         - name: BASE_IMAGE
-          value: $(params.python-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             set -ex

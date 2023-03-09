@@ -40,7 +40,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: go-image-version
+    - name: image
       default: 'golang:1.19.6-alpine3.16'
       description: "go image version"
       type: string

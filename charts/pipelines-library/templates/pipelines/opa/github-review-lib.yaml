@@ -25,7 +25,7 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: opa-image-version
+    - name: image
       default: 'openpolicyagent/opa:0.45.0-debug'
       description: "opa image version"
       type: string
@@ -84,7 +84,7 @@ spec:
         - fetch-repository
       params:
         - name: BASE_IMAGE
-          value: $(params.opa-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             python "${JUNIT_SCRIPT}" "${OPA_RESULTS}" > testReport.xml

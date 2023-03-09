@@ -42,7 +42,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: gradle-image-version
+    - name: image
       default: '{{ $v }}'
       description: "gradle image version"
       type: string
@@ -61,7 +61,7 @@ spec:
         - init-values
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -80,7 +80,7 @@ spec:
         - compile
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -98,7 +98,7 @@ spec:
         - test
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -119,7 +119,7 @@ spec:
         - sonar
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \

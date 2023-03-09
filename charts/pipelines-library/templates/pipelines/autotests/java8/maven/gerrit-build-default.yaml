@@ -33,7 +33,7 @@ spec:
       default: 'java8-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
+    - name: image
       default: 'maven:3.8.6-openjdk-8-slim'
       description: "maven image version"
       type: string
@@ -59,7 +59,7 @@ spec:
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -33,7 +33,7 @@ spec:
       default: 'react-npm-edp-version'
       description: "Project name"
       type: string
-    - name: npm-image-version
+    - name: image
       default: 'docker.io/library/node:19.5.0-alpine3.16'
       description: "npm image version"
       type: string
@@ -65,7 +65,7 @@ spec:
         - init-values
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
@@ -85,7 +85,7 @@ spec:
         - npm-init
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             npm run lint
@@ -101,7 +101,7 @@ spec:
         - npm-lint
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             npm run test:coverage
@@ -180,7 +180,7 @@ spec:
         - npm-test
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             npm run build

@@ -39,7 +39,7 @@ spec:
       default: '{{ $k }}-maven'
       description: "Project name"
       type: string
-    - name: gradle-image-version
+    - name: image
       default: '{{ $v }}'
       description: "gradle image version"
       type: string

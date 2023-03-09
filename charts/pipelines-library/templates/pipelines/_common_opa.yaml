@@ -6,7 +6,7 @@
     - get-version
   params:
     - name: BASE_IMAGE
-      value: $(params.opa-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         python "${JUNIT_SCRIPT}" "${OPA_RESULTS}" > testReport.xml

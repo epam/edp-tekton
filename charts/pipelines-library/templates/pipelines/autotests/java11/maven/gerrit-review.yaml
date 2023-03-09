@@ -37,7 +37,7 @@ spec:
       default: 'java11-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
+    - name: image
       default: 'maven:3.8.6-openjdk-11-slim'
       description: "maven image version"
       type: string
@@ -59,7 +59,7 @@ spec:
         - init-values
       params:
         - name: BASE_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
       workspaces:
@@ -117,7 +117,7 @@ spec:
         - sonar-prepare-files
       params:
         - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
         - name: GOALS
           value:
             - -B

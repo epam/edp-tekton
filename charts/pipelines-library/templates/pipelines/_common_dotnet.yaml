@@ -7,7 +7,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         ls *Tests*/*.csproj | while read -r file;
@@ -76,7 +76,7 @@
     - get-nuget-token
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         set -x
@@ -101,7 +101,7 @@
     - fetch-repository
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
@@ -118,7 +118,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.dotnet-sdk-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         ls *Tests*/*.csproj | while read -r file;

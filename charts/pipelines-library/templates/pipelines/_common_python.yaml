@@ -7,7 +7,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.python-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         pip3 install .
@@ -78,7 +78,7 @@
     - init-values
   params:
     - name: BASE_IMAGE
-      value: $(params.python-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         python setup.py clean build install --user
@@ -94,7 +94,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.python-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         pip3 install .

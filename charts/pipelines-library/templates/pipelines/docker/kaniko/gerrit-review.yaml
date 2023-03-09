@@ -29,7 +29,7 @@ spec:
       default: 'docker-kaniko'
       description: "Project name"
       type: string
-    - name: kaniko-image-version
+    - name: image
       default: 'ghcr.io/hadolint/hadolint:v2.10.0-alpine'
       description: "kaniko image version"
       type: string

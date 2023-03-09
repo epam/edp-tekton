@@ -28,7 +28,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: kaniko-image-version
+    - name: image
       default: 'ghcr.io/hadolint/hadolint:v2.10.0-alpine'
       description: "kaniko image version"
       type: string

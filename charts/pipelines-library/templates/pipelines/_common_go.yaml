@@ -22,7 +22,7 @@
     - sast
   params:
     - name: BASE_IMAGE
-      value: $(params.go-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         go test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
@@ -55,7 +55,7 @@
     - sonar
   params:
     - name: BASE_IMAGE
-      value: $(params.go-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         go build -o go-binary "$(grep -irl 'package main')"
@@ -83,7 +83,7 @@
     - init-values
   params:
     - name: BASE_IMAGE
-      value: $(params.go-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         go build -o go-binary "$(grep -irl 'package main')"
@@ -99,7 +99,7 @@
     - build
   params:
     - name: BASE_IMAGE
-      value: $(params.go-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         go test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"

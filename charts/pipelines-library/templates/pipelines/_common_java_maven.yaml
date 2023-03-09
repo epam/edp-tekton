@@ -7,7 +7,7 @@
     - compile
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -31,7 +31,7 @@
     - test
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -57,7 +57,7 @@
     - sonar
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -94,7 +94,7 @@
     - get-nexus-repository-url
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -119,7 +119,7 @@
     - init-values
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -140,7 +140,7 @@
     - compile
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B
@@ -207,7 +207,7 @@
     - sonar-prepare-files
   params:
     - name: MAVEN_IMAGE
-      value: $(params.maven-image-version)
+      value: $(params.image)
     - name: GOALS
       value:
         - -B

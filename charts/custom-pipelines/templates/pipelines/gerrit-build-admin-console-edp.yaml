@@ -32,7 +32,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranchname"
       type: string
-    - name: go-image-version
+    - name: image
       default: 'golang:1.19.6-bullseye'
       description: "go image with make installed"
       type: string
@@ -98,7 +98,7 @@ spec:
         - sast
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
@@ -133,7 +133,7 @@ spec:
         - sonar
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS

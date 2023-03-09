@@ -38,7 +38,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: maven-image-version
+    - name: image
       default: '{{ $v }}'
       description: "maven image version"
       type: string
@@ -91,7 +91,7 @@ spec:
         - name: BUILD_ID
           value: $(tasks.get-version.results.BUILD_ID)
         - name: BASE_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -121,7 +121,7 @@ spec:
         - update-build-number
       params:
         - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
         - name: GOALS
           value:
             - -B

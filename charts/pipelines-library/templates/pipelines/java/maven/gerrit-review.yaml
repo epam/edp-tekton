@@ -39,7 +39,7 @@ spec:
       default: '{{ $k }}-maven'
       description: "Project name"
       type: string
-    - name: maven-image-version
+    - name: image
       default: '{{ $v }}'
       description: "maven image version"
       type: string

@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: gradle-image-version
+    - name: image
       default: 'gradle:7.5.1-jdk11'
       description: "gradle image version"
       type: string
@@ -75,7 +75,7 @@ spec:
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -90,7 +90,7 @@ spec:
         - get-version
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -112,7 +112,7 @@ spec:
         - sonar
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \

@@ -37,7 +37,7 @@ spec:
       default: "python-app"
       description: "Project name"
       type: string
-    - name: python-image-version
+    - name: image
       default: 'python:3.8-alpine3.16'
       description: "python image version"
       type: string

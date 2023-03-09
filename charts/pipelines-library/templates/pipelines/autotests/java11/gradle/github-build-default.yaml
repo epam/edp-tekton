@@ -30,7 +30,7 @@ spec:
       default: 'java11-gradle'
       description: "Project name"
       type: string
-    - name: gradle-image-version
+    - name: image
       default: 'gradle:7.5.1-jdk11'
       description: "gradle image version"
       type: string
@@ -50,7 +50,7 @@ spec:
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: shared-workspace

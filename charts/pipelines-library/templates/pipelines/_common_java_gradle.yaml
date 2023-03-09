@@ -7,7 +7,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -25,7 +25,7 @@
     - test
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -46,7 +46,7 @@
     - sonar
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -77,7 +77,7 @@
     - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -Dorg.gradle.internal.publish.checksums.insecure=true \
@@ -97,7 +97,7 @@
     - init-values
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -116,7 +116,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
@@ -177,7 +177,7 @@
     - sonar-prepare-files
   params:
     - name: BASE_IMAGE
-      value: $(params.gradle-image-version)
+      value: $(params.image)
     - name: EXTRA_ARGS
       value: |
         -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \

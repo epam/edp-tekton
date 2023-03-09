@@ -38,7 +38,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: maven-image-version
+    - name: image
       default: '{{ $v }}'
       description: "maven image version"
       type: string
@@ -77,7 +77,7 @@ spec:
         - name: NEXUS_URL
           value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -107,7 +107,7 @@ spec:
         - get-version
       params:
         - name: MAVEN_IMAGE
-          value: $(params.maven-image-version)
+          value: $(params.image)
         - name: GOALS
           value:
             - -B

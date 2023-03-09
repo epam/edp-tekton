@@ -37,7 +37,7 @@ spec:
       default: "golang-go"
       description: "Project name"
       type: string
-    - name: go-image-version
+    - name: image
       default: 'golang:1.19.6-bullseye'
       description: "go image with make installed"
       type: string
@@ -69,7 +69,7 @@ spec:
         - commit-validate
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
       workspaces:
@@ -84,7 +84,7 @@ spec:
         - helm-docs
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
@@ -102,7 +102,7 @@ spec:
         - build
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
@@ -120,7 +120,7 @@ spec:
         - test
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS

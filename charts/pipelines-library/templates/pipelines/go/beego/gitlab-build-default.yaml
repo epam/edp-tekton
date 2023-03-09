@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: go-image-version
+    - name: image
       default: 'golang:1.19.6-alpine3.16'
       description: "go image version"
       type: string
@@ -95,7 +95,7 @@ spec:
         - sast
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
@@ -128,7 +128,7 @@ spec:
         - sonar
       params:
         - name: BASE_IMAGE
-          value: $(params.go-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             build -o go-binary "$(grep -irl 'package main')"

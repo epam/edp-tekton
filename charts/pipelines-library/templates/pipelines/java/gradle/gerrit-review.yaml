@@ -39,7 +39,7 @@ spec:
       default: 'java8-maven'
       description: "Project name"
       type: string
-    - name: gradle-image-version
+    - name: image
       default: '{{ $v }}'
       description: "gradle image version"
       type: string
@@ -63,7 +63,7 @@ spec:
         - sonar
       params:
         - name: BASE_IMAGE
-          value: $(params.gradle-image-version)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \

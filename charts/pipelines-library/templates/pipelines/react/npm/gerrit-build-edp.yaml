@@ -36,7 +36,7 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: npm-image-version
+    - name: image
       default: 'docker.io/library/node:18.10-alpine3.16'
       description: "npm image version"
       type: string
@@ -81,7 +81,7 @@ spec:
         - get-version
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: BRANCH_VERSION
           value: $(tasks.get-version.results.BRANCH_VERSION)
         - name: BUILD_ID
@@ -100,7 +100,7 @@ spec:
         - update-build-number
       params:
         - name: BASE_IMAGE
-          value: $(params.npm-image-version)
+          value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)

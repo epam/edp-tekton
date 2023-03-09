@@ -7,7 +7,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.npm-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         npm run test:coverage
@@ -40,7 +40,7 @@
     - sonar
   params:
     - name: BASE_IMAGE
-      value: $(params.npm-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
@@ -76,7 +76,7 @@
     - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
-      value: $(params.npm-image-version)
+      value: $(params.image)
     - name: NEXUS_REPOSITORY_URL
       value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)"
     - name: EXTRA_COMMANDS
@@ -86,7 +86,7 @@
         npm set registry ${NEXUS_REPOSITORY_URL}/
         npm set ${NPM_REPO}/:always-auth=true
         npm set ${NPM_REPO}/:email=edp-ci@edp.local
-        npm set ${NPM_REPO}/:_auth=${upBase64} 
+        npm set ${NPM_REPO}/:_auth=${upBase64}
         npm publish
   workspaces:
     - name: source
@@ -102,7 +102,7 @@
     - init-values
   params:
     - name: BASE_IMAGE
-      value: $(params.npm-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
@@ -124,7 +124,7 @@
     - compile
   params:
     - name: BASE_IMAGE
-      value: $(params.npm-image-version)
+      value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
         npm run test:coverage

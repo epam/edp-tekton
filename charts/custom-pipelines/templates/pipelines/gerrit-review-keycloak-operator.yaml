@@ -79,12 +79,29 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: integration-test
+      taskRef:
+        kind: Task
+        name: keycloak-integration-tests
+      runAfter:
+        - build
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: GOLANG_IMAGE
+          value: $(params.image)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: test
       taskRef:
         kind: Task
         name: golang
       runAfter:
-        - build
+        - integration-test
       params:
         - name: BASE_IMAGE
           value: $(params.image)

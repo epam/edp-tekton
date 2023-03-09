@@ -45,19 +45,6 @@ spec:
 
 {{ include "gerrit-common" . | nindent 4 }}
 
-    - name: crdocs-build
-      taskRef:
-        kind: Task
-        name: crdocs
-      runAfter:
-        - commit-validate
-      params:
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
 {{ include "gerrit-review-vote" . | nindent 2 }}
 
 {{ end }}

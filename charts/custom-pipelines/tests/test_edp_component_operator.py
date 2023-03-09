@@ -27,7 +27,6 @@ global:
     assert "commit-validate" in r[3]["name"]
     assert "helm-docs" in r[4]["name"]
     assert "helm-lint" in r[5]["name"]
-    assert "crdocs-build" in r[6]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
 

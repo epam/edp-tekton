@@ -1,0 +1,65 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: helm-push-to-ecr
+spec:
+  description: |
+    This Task allows Uset to push a new version of the Helm Chart
+    to the repository with Snapshot versions.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  params:
+    - name: CODEBASE_NAME
+      type: string
+      description: "Codebase name"
+    - name: IS_TAG
+      type: string
+      description: "Chart version"
+    - name: chart_dir
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: edp-config
+      type: string
+      description: "This configmap holds aws_region and docker registry url parameters"
+      default: edp-config
+  steps:
+    - name: init-repository
+      image: amazon/aws-cli:2.7.35
+      env:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: IS_TAG
+          value: $(params.IS_TAG)
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.edp-config)"
+              key: 'aws_region'
+      command: ["/bin/sh"]
+      args: ["-c", "aws ecr describe-repositories --repository-names ${CODEBASE_NAME} || aws ecr create-repository --repository-name ${CODEBASE_NAME}"]
+
+    - name: push-to-ecr
+      image: alpine/k8s:1.23.17
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: IS_TAG
+          value: $(params.IS_TAG)
+        - name: CHART_DIR
+          value: $(params.chart_dir)
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.edp-config)"
+              key: 'aws_region'
+      script: |
+        set -ex
+
+        dockerRegistryHost=$(kubectl get edpcomponent docker-registry -o jsonpath='{.spec.url}')
+        helm package ${CHART_DIR}
+        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | helm registry login --username AWS --password-stdin ${dockerRegistryHost}
+        helm push ${CODEBASE_NAME}-${IS_TAG}.tgz oci://${dockerRegistryHost}
+
+{{- include "resources" . | nindent 6 }}

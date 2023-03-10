@@ -1,0 +1,104 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-helm-pipeline-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      description: "Project name"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+  tasks:
+
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-notify
+      taskRef:
+        kind: Task
+        name: gerrit-ssh-cmd
+      params:
+        - name: GERRIT_PORT
+          value: '{{ .Values.global.gerritSSHPort }}'
+        - name: SSH_GERRIT_COMMAND
+          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: helm-dependency-update
+      taskRef:
+        kind: Task
+        name: helm-dependency-update
+      runAfter:
+        - gerrit-notify
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - helm-dependency-update
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --charts .
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-template
+      taskRef:
+        kind: Task
+        name: helm-template
+      runAfter:
+        - helm-lint
+      params:
+        - name: release_name
+          value: $(params.CODEBASE_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

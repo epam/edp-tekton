@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: helm-dependency-update
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/categories: CI
+    tekton.dev/pipelines.minVersion: "0.41.0"
+    tekton.dev/tags: helm
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task will update dependencies of a helm chart
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  params:
+    - name: chart_dir
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: extra_params
+      description: "Extra parameters passed for the helm dependency build command"
+      default: ""
+    - name: helm_image
+      description: "Specify a specific helm image"
+      default: "alpine/helm:3.11.1"
+  steps:
+    - name: helm
+      image: $(params.helm_image)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.chart_dir)
+        - name: EXTRA_PARAMS
+          value: $(params.extra_params)
+      script: |
+        set -ex
+
+        helm dependency update ${CHART_DIR} ${EXTRA_PARAMS}

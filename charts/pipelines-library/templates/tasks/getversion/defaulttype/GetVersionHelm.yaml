@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-helm-chart-default
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of helm project.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Codebasebranch name
+    - name: chart_dir
+      description: The directory in source that contains the helm chart
+      default: "."
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VCS_TAG
+      description: "VCS tag"
+    - name: TIMESTAMP
+      description: Current timestamp
+  steps:
+    - name: get-timestamp
+      image: alpine:3.16
+      script: |
+        ts=$(date "+%Y%m%d-%H%M%S")
+        echo "Current Timestamp: ${ts}"
+        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+
+    - name: get-version
+      image: alpine:3.16
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+        - name: CHART_DIR
+          value: $(params.chart_dir)
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -ex
+
+        VERSION=$(awk '/^version/ {print $2}')
+
+        # get current BUILD ID
+        BUILD_ID=$(cat $(results.TIMESTAMP.path))
+
+        BUILD_VERSION="${VERSION}-${BUILD_ID}"
+        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+
+        echo "Library version - ${VERSION}"
+        echo "VCS tag - ${VCS_TAG}"
+
+        printf "%s" "${VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"

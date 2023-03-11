@@ -64,7 +64,7 @@ spec:
         - init-values
       params:
         - name: BASE_IMAGE
-          value: $(params. image)
+          value: $(params.image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \

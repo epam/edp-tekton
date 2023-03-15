@@ -23,7 +23,7 @@ spec:
       default: "e2e-vcluster"
     - name: TOOLS_IMAGE
       type: string
-      default: "artemzahumonnyi/k8s-tools:0.3.0" # Should be migrated to dockerhub
+      default: "epamedp/tekton-helm:0.1.4"
 
   results:
     - name: release_name

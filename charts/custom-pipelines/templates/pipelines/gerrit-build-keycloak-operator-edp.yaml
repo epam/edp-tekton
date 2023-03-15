@@ -170,29 +170,12 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: e2e
-      taskRef:
-        kind: Task
-        name: e2e
-      runAfter:
-        - kaniko-build
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: E2E_IMAGE_REPOSITORY
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-        - name: E2E_IMAGE_TAG
-          value: "$(tasks.get-version.results.VERSION)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: ecr-to-docker
       taskRef:
         kind: Task
         name: ecr-to-docker
       runAfter:
-        - e2e
+        - kaniko-build
       params:
         - name: ECR_HOST
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"

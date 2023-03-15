@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: edp-vcluster-namespace-admin
+  name: edp-vcluster-namespace-admin-{{ .Release.Namespace }}
   namespace: e2e-vcluster
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}

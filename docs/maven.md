@@ -252,7 +252,7 @@ spec:
     - name: MAVEN_IMAGE
       type: string
       description: Maven base image
-      default: maven:3.8.6-openjdk-11-slim
+      default: maven:3.9.0-eclipse-temurin-11
     - name: GOALS
       description: maven goals to run
       type: array

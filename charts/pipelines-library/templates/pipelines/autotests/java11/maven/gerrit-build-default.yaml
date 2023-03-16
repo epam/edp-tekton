@@ -34,7 +34,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: 'maven:3.8.6-openjdk-11-slim'
+      default: 'maven:3.9.0-eclipse-temurin-11'
       description: "maven image version"
       type: string
     - name: changeNumber

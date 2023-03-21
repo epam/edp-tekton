@@ -15,6 +15,7 @@ import (
 	"github.com/tektoncd/triggers/pkg/interceptors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
@@ -109,12 +110,31 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 		codebase.Spec.JiraServer = stringP("")
 	}
 
+	codebaseBranchName := fmt.Sprintf("%s-%s", codebase.Name, event.Branch)
+	trigger := true
+
+	codebaseBranch := codebaseApiV1.CodebaseBranch{}
+	if err := i.Client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: codebaseBranchName}, &codebaseBranch); err != nil {
+		if !k8serrors.IsNotFound(err) {
+			return interceptors.Fail(codes.Internal, err.Error())
+		}
+
+		trigger = false
+
+		i.Logger.Infof("Codebasebranch with the name %s is not found, skipping pipeline triggering. "+
+			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
+			codebaseBranchName,
+			event.Branch,
+			codebase.Name,
+		)
+	}
+
 	return &triggersv1.InterceptorResponse{
-		Continue: true,
+		Continue: trigger,
 		Extensions: map[string]interface{}{
 			"spec":           codebase.Spec,
 			"codebase":       codebase.Name,
-			"codebasebranch": fmt.Sprintf("%s-%s", codebase.Name, event.Branch),
+			"codebasebranch": codebaseBranchName,
 		},
 	}
 }

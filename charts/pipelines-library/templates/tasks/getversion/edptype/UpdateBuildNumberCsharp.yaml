@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-build-number-csharp
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "alpine:3.16.2"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        set -ex
+
+        DEPLOYABLE_MODULE=$(find ./ -name '*.csproj')
+        sed -i "s#\(<Version>\).*\(</Version>\)#\1${VERSION}\2#" ${DEPLOYABLE_MODULE}

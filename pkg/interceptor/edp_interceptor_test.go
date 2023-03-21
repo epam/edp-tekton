@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/codes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
@@ -23,7 +22,7 @@ import (
 
 func TestEDPInterceptor_Process(t *testing.T) {
 	scheme := runtime.NewScheme()
-	utilruntime.Must(codebaseApi.AddToScheme(scheme))
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
 
 	framework := "Java11"
 	codebaseMeta := metav1.ObjectMeta{
@@ -55,6 +54,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Framework: &framework,
 					},
 				},
+				&codebaseApi.CodebaseBranch{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "test-ns",
+						Name:      "demo-master",
+					},
+				},
 			},
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"project": {"name": "demo"}, "change": {"branch": "master"}}`,
@@ -83,6 +88,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						BuildTool:  "Maven",
 						Framework:  &framework,
 						GitUrlPath: stringP("/demo/Repo1"),
+					},
+				},
+				&codebaseApi.CodebaseBranch{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "test-ns",
+						Name:      "demo-feature-1",
 					},
 				},
 			},
@@ -119,6 +130,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						JiraServer:           stringP("jira-server"),
 					},
 				},
+				&codebaseApi.CodebaseBranch{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "test-ns",
+						Name:      "demo-feature.1",
+					},
+				},
 			},
 			request: &triggersv1.InterceptorRequest{
 				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "feature.1"}}`,
@@ -141,6 +158,40 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "codebasebranch not found, skip triggering",
+			objects: []runtime.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: codebaseMeta,
+					Spec: codebaseApi.CodebaseSpec{
+						BuildTool:            "Maven",
+						Framework:            &framework,
+						GitUrlPath:           stringP("/demo/repo2"),
+						CommitMessagePattern: stringP("pattern"),
+						JiraServer:           stringP("jira-server"),
+					},
+				},
+			},
+			request: &triggersv1.InterceptorRequest{
+				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "master"}}`,
+				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
+				Context: triggersContext,
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						BuildTool:            "maven",
+						Framework:            stringP("java11"),
+						GitUrlPath:           stringP("/demo/repo2"),
+						CommitMessagePattern: stringP("pattern"),
+						JiraServer:           stringP("jira-server"),
+					},
+					"codebase":       "demo",
+					"codebasebranch": "demo-master",
+				},
+				Continue: false,
+			},
+		},
+		{
 			name: "success with empty framework",
 			objects: []runtime.Object{
 				&codebaseApi.Codebase{
@@ -148,6 +199,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					Spec: codebaseApi.CodebaseSpec{
 						BuildTool:  "Maven",
 						GitUrlPath: stringP("/demo/repo2"),
+					},
+				},
+				&codebaseApi.CodebaseBranch{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: "test-ns",
+						Name:      "demo-master",
 					},
 				},
 			},
@@ -300,12 +357,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 
 func TestEDPInterceptor_Execute(t *testing.T) {
 	scheme := runtime.NewScheme()
-	utilruntime.Must(codebaseApi.AddToScheme(scheme))
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
 
 	framework := "Java11"
 	frameworkTransformed := "java11"
 	codebase := &codebaseApi.Codebase{
-		TypeMeta: metav1.TypeMeta{},
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "test-ns",
 			Name:      "demo",
@@ -316,7 +372,13 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			GitUrlPath: stringP("/demo"),
 		},
 	}
-	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase).Build()
+	codebaseBranch := &codebaseApi.CodebaseBranch{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "test-ns",
+			Name:      "demo-feature1",
+		},
+	}
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase, codebaseBranch).Build()
 	interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
 
 	tests := []struct {

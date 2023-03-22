@@ -49,6 +49,23 @@ spec:
 
 {{- include "dotnet-6-0-review-common" . | nindent 4 }}
 
+    - name: dotnet-publish
+      taskRef:
+        kind: Task
+        name: dotnet
+      runAfter:
+        - sonar
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            set -x
+            dotnet publish --configuration Release --output app
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: dockerfile-lint
       taskRef:
         kind: Task
@@ -64,7 +81,7 @@ spec:
         kind: Task
         name: dockerbuild-verify
       runAfter:
-        - sonar
+        - dotnet-publish
         - dockerfile-lint
       workspaces:
         - name: source

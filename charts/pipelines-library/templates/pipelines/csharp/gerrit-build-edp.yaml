@@ -88,7 +88,7 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-    - name: compile
+    - name: dotnet-build
       taskRef:
         kind: Task
         name: dotnet
@@ -107,12 +107,29 @@ spec:
 
 {{- include "dotnet-6-0-build-common" . | nindent 4 }}
 
+    - name: dotnet-publish
+      taskRef:
+        kind: Task
+        name: dotnet
+      runAfter:
+        - push
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            set -x
+            dotnet publish --configuration Release --output app
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: create-ecr-repository
       taskRef:
         kind: Task
         name: create-ecr-repository
       runAfter:
-        - push
+        - dotnet-publish
       params:
         - name: REPO_NAME
           value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"

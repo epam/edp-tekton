@@ -4,7 +4,7 @@
     kind: Task
     name: dotnet
   runAfter:
-    - compile
+    - dotnet-build
   params:
     - name: BASE_IMAGE
       value: $(params.image)
@@ -93,7 +93,7 @@
 {{- end -}}
 
 {{- define "dotnet-6-0-review-common" -}}
-- name: compile
+- name: dotnet-build
   taskRef:
     kind: Task
     name: dotnet
@@ -104,8 +104,7 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        slnFilename=$(ls *.sln)
-        dotnet publish $slnFilename
+        dotnet build
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -115,7 +114,7 @@
     kind: Task
     name: dotnet
   runAfter:
-    - compile
+    - dotnet-build
   params:
     - name: BASE_IMAGE
       value: $(params.image)

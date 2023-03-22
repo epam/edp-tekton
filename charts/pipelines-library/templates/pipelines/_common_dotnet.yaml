@@ -25,7 +25,7 @@
     - test
   params:
     - name: BASE_IMAGE
-      value: 'artemzahumonnyi/csharp:0.1.1-dotnet6.0' # TODO
+      value: 'epamedp/tekton-dotnet:6.0.1'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
@@ -178,7 +178,7 @@
     - sonar-prepare-files
   params:
     - name: BASE_IMAGE
-      value: 'artemzahumonnyi/csharp:0.1.1-dotnet6.0' # TODO
+      value: 'epamedp/tekton-dotnet:6.0.1'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)

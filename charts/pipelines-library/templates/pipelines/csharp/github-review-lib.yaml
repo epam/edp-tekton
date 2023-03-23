@@ -1,0 +1,113 @@
+{{ if eq .Values.global.gitProvider "github" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: github-dotnet-dotnet-6.0-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/csharp-dotnet-dotnet-6.0"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      description: SonarQube url for static code analysis
+      type: string
+    - name: CODEBASE_NAME
+      default: 'csharp-dotnet-dotnet-6.0'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: 'mcr.microsoft.com/dotnet/sdk:6.0.407-alpine3.17'
+      description: "dotnet-sdk image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+  tasks:
+
+{{- include "github-review-start" . | nindent 4 }}
+
+    - name: dotnet-build
+      taskRef:
+        kind: Task
+        name: dotnet
+      runAfter:
+        - init-values
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            dotnet build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        kind: Task
+        name: dotnet
+      runAfter:
+        - dotnet-build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            ls *Tests*/*.csproj | while read -r file;
+                do dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "${file}";
+            done
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: dotnet
+      runAfter:
+        - test
+      params:
+        - name: BASE_IMAGE
+          value: 'epamedp/tekton-dotnet:6.0.1'
+        - name: EXTRA_COMMANDS
+          value: |
+            slnFilename=$(ls *.sln)
+            # /d:sonar.qualitygate.wait=true \
+            dotnet sonarscanner begin /d:sonar.host.url=$(params.SONAR_URL) \
+              /d:sonar.login=${SONAR_TOKEN} \
+              /k:$(params.CODEBASEBRANCH_NAME) \
+              /n:$(params.CODEBASEBRANCH_NAME) \
+              /d:sonar.cs.opencover.reportsPaths=./*Tests*/*.xml
+            dotnet build ${sln_filename}
+            dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "github-review-vote" . | nindent 2 }}
+
+{{ end }}

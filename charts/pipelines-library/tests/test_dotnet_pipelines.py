@@ -478,3 +478,96 @@ global:
                 assert "git-tag" in bedp[10]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
             assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
+
+def test_dotnet_6_0_pipelines_github():
+    config = """
+global:
+  gitProvider: github
+    """
+
+    ht = helm_template(config)
+
+    buildtool = "dotnet"
+
+    for framework in ['dotnet-6.0']:
+        for cbtype in ['app','lib']:
+
+            review = f"github-{buildtool}-{framework}-{cbtype}-review"
+            build_default = f"github-{buildtool}-{framework}-{cbtype}-build-default"
+            build_edp = f"github-{buildtool}-{framework}-{cbtype}-build-edp"
+
+            assert review in ht["pipeline"]
+            assert build_default in ht["pipeline"]
+            assert build_edp in ht["pipeline"]
+
+            r = ht["pipeline"][review]["spec"]["tasks"]
+            assert "github-set-pending-status" in r[0]["name"]
+            assert "fetch-repository" in r[1]["name"]
+            assert "init-values" in r[2]["name"]
+            assert "dotnet-build" in r[3]["name"]
+            assert "test" in r[4]["name"]
+            assert "sonar" in r[5]["name"]
+            if cbtype == "app":
+                assert "dotnet-publish" in r[6]["name"]
+                assert "dockerfile-lint" in r[7]["name"]
+                assert "dockerbuild-verify" in r[8]["name"]
+                assert "helm-lint" in r[9]["name"]
+
+            assert "github-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
+            assert "github-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+
+            # build with default versioning
+            bd = ht["pipeline"][build_default]["spec"]["tasks"]
+            assert "fetch-repository" in bd[0]["name"]
+            assert "init-values" in bd[1]["name"]
+            assert "get-version" in bd[2]["name"]
+            assert f"get-version-csharp-default" == bd[2]["taskRef"]["name"]
+            assert "dotnet-build" in bd[3]["name"]
+            assert "test" in bd[4]["name"]
+            assert buildtool == bd[4]["taskRef"]["name"]
+            assert "sonar" in bd[5]["name"]
+            assert buildtool == bd[5]["taskRef"]["name"]
+            assert "get-nexus-repository-url" in bd[6]["name"]
+            assert "get-nexus-repository-url" == bd[6]["taskRef"]["name"]
+            assert "get-nuget-token" in bd[7]["name"]
+            assert "push" in bd[8]["name"]
+            assert buildtool == bd[8]["taskRef"]["name"]
+            if cbtype == "app":
+                assert "dotnet-publish" in bd[9]["name"]
+                assert "create-ecr-repository" in bd[10]["name"]
+                assert "kaniko-build" in bd[11]["name"]
+                assert "git-tag" in bd[12]["name"]
+                assert "update-cbis" in bd[13]["name"]
+            if cbtype == "lib":
+                assert "git-tag" in bd[9]["name"]
+            assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
+
+            # build with edp versioning
+            bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
+            assert "fetch-repository" in bedp[0]["name"]
+            assert "init-values" in bedp[1]["name"]
+            assert "get-version" in bedp[2]["name"]
+            assert "get-version-edp" == bedp[2]["taskRef"]["name"]
+            assert "update-build-number" in bedp[3]["taskRef"]["name"]
+            assert f"update-build-number-csharp" == bedp[3]["taskRef"]["name"]
+            assert "dotnet-build" in bedp[4]["name"]
+            assert buildtool == bedp[4]["taskRef"]["name"]
+            assert "test" in bedp[5]["name"]
+            assert buildtool == bedp[5]["taskRef"]["name"]
+            assert "sonar" in bedp[6]["name"]
+            assert buildtool == bedp[6]["taskRef"]["name"]
+            assert "get-nexus-repository-url" in bedp[7]["name"]
+            assert "get-nexus-repository-url" == bedp[7]["taskRef"]["name"]
+            assert "get-nuget-token" in bedp[8]["name"]
+            assert "push" in bedp[9]["name"]
+            assert buildtool == bedp[9]["taskRef"]["name"]
+            if cbtype == "app":
+                assert "dotnet-publish" in bedp[10]["name"]
+                assert "create-ecr-repository" in bedp[11]["name"]
+                assert "kaniko-build" in bedp[12]["name"]
+                assert "git-tag" in bedp[13]["name"]
+                assert "update-cbis" in bedp[14]["name"]
+            if cbtype == "lib":
+                assert "git-tag" in bedp[10]["name"]
+            assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
+            assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]

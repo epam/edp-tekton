@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-autotests-binding-{{ .Release.Namespace }}
+  namespace: security
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-autotests-{{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: tekton
+  namespace: {{ .Values.global.edpName }}

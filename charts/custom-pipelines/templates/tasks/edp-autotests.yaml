@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: autotests
+spec:
+  description: |
+    This task for autotests.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  params:
+    - name: clustername
+      type: string
+    - name: threads_num
+      type: string
+    - name: namespace
+      type: string
+    - name: tag
+      type: string
+    - name: ci_tool
+      type: string
+    - name: git_provider
+      type: string
+    - name: moon
+      type: string
+  steps:
+    - name: run-autotests
+      image: gradle:8.0.2-jdk8
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CLUSTERNAME
+          value: $(params.clustername)
+        - name: THREADS_NUM
+          value: $(params.threads_num)
+        - name: NAMESPACE
+          value: $(params.namespace)
+        - name: TAG
+          value: $(params.tag)
+        - name: CI_TOOL
+          value: $(params.ci_tool)
+        - name: GIT_PROVIDER
+          value: $(params.git_provider)
+        - name: MOON
+          value: $(params.moon)
+      script: |
+        set -ex
+
+        chmod +x ./gradlew
+
+        ./gradlew bootRun \
+        -Dcluster="${CLUSTERNAME}" \
+        -Dthreads.number="${THREADS_NUM}" \
+        -Dnamespace="${NAMESPACE}" \
+        -Dtags="${TAG}" \
+        -Dci.tool=${CI_TOOL} \
+        -Dgit.provider="${GIT_PROVIDER}" \
+        -Dmoon.url="${MOON}"

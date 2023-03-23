@@ -16,6 +16,8 @@ spec:
         kind: Service
         name: {{ $elName }}
         weight: 100
+    port:
+      targetPort: http-listener
     wildcardPolicy: None
 {{- end }}
 {{- end }}

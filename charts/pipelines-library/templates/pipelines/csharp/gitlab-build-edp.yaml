@@ -93,8 +93,7 @@ spec:
           value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
-            slnFilename=$(ls *.sln)
-            dotnet publish $slnFilename
+            dotnet build
       workspaces:
         - name: source
           workspace: shared-workspace

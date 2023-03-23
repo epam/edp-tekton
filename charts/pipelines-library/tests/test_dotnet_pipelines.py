@@ -297,11 +297,11 @@ global:
     buildtool = "dotnet"
 
     for framework in ['dotnet-6.0']:
-        for cbtype in ['app']:
+        for cbtype in ['app', 'lib']:
 
-            review = f"gerrit-{buildtool}-{framework}-app-review"
-            build_default = f"gerrit-{buildtool}-{framework}-app-build-default"
-            build_edp = f"gerrit-{buildtool}-{framework}-app-build-edp"
+            review = f"gerrit-{buildtool}-{framework}-{cbtype}-review"
+            build_default = f"gerrit-{buildtool}-{framework}-{cbtype}-build-default"
+            build_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp"
 
             assert review in ht["pipeline"]
             assert build_default in ht["pipeline"]
@@ -350,7 +350,7 @@ global:
                 assert "kaniko-build" in bd[13]["name"]
                 assert "git-tag" in bd[14]["name"]
                 assert "update-cbis" in bd[15]["name"]
-            else:
+            if cbtype == "lib":
                 assert "git-tag" in bd[11]["name"]
             assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
@@ -381,7 +381,7 @@ global:
                 assert "kaniko-build" in bedp[14]["name"]
                 assert "git-tag" in bedp[15]["name"]
                 assert "update-cbis" in bedp[16]["name"]
-            else:
+            if cbtype == "lib":
                 assert "git-tag" in bedp[12]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
             assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]

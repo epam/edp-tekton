@@ -17,13 +17,21 @@ spec:
     - name: EXTRA_COMMANDS
       description: Arguments to add to the helm-lint step
       default: ""
+    - name: USER_HOME
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+      type: string
+      default: "/tekton/home"
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
   steps:
     - image: $(params.BASE_IMAGE)
       name: helm-lint
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: HOME
+          value: $(params.USER_HOME)
       script: |
         set -ex
         $(params.EXTRA_COMMANDS)
-      workingDir: $(workspaces.source.path)

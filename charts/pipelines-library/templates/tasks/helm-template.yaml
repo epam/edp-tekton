@@ -31,6 +31,11 @@ spec:
     - name: helm_image
       description: "Specify a specific helm image"
       default: "alpine/helm:3.11.1"
+    - name: user_home
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+      type: string
+      default: "/tekton/home"
   steps:
     - name: helm
       image: $(params.helm_image)
@@ -42,6 +47,8 @@ spec:
           value: $(params.release_name)
         - name: TEMPLATE_EXTRA_PARAMS
           value: $(params.template_extra_params)
+        - name: HOME
+          value: $(params.user_home)
       script: |
         set -ex
 

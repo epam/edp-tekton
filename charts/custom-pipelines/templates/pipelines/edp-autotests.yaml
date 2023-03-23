@@ -1,0 +1,89 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-autotest-run-app-build-edp
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: $(params.git-source-url)
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: $(params.git-source-revision)
+      type: string
+
+    - name: clustername
+      description: 'sandbox, okd'
+      default: "sandbox"
+      type: string
+    - name: threads_num
+      description: '1, 10, 15'
+      default: "1"
+      type: string
+    - name: namespace
+      description: 'Namespace name'
+      type: string
+    - name: tag
+      description: '@Clean, @TektonGerrit, @TektonGithub, @TektonGitlab, @IntegrationJenkins, @Regression'
+      default: "@Clean"
+      type: string
+    - name: ci_tool
+      description: 'tekton, jenkins'
+      default: "tekton"
+      type: string
+    - name: git_provider
+      description: 'gerrit, github, gitlab'
+      default: "gerrit"
+      type: string
+    - name: moon
+      description: 'Moon URL'
+      type: string
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: autotests
+      taskRef:
+        kind: Task
+        name: autotests
+      runAfter:
+        - fetch-repository
+      params:
+        - name: clustername
+          value: $(params.clustername)
+        - name: threads_num
+          value: $(params.threads_num)
+        - name: namespace
+          value: $(params.namespace)
+        - name: tag
+          value: $(params.tag)
+        - name: ci_tool
+          value: $(params.ci_tool)
+        - name: git_provider
+          value: $(params.git_provider)
+        - name: moon
+          value: $(params.moon)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ end }}

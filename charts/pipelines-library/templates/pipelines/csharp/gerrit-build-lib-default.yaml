@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-dotnet-dotnet-6.0-app-build-edp
+  name: gerrit-dotnet-dotnet-6.0-lib-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -66,22 +66,12 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-edp
+        name: get-version-csharp-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        kind: Task
-        name: update-build-number-csharp
-      runAfter:
-        - get-version
-      params:
-        - name: VERSION
-          value: $(tasks.get-version.results.VERSION)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -93,7 +83,7 @@ spec:
         kind: Task
         name: dotnet
       runAfter:
-        - update-build-number
+        - get-version
       params:
         - name: BASE_IMAGE
           value: $(params.image)
@@ -106,35 +96,8 @@ spec:
 
 {{- include "dotnet-6-0-build-common" . | nindent 4 }}
 
-    - name: dotnet-publish
-      taskRef:
-        kind: Task
-        name: dotnet
-      runAfter:
-        - push
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            set -x
-            dotnet publish --configuration Release --output app
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        kind: Task
-        name: create-ecr-repository
-      runAfter:
-        - dotnet-publish
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
-
-{{ include "build-pipeline-end" . | nindent 4 }}
-
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

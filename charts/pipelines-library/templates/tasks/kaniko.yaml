@@ -67,8 +67,8 @@ spec:
       securityContext:
         runAsUser: 0
 {{- include "resources" . | nindent 6 }}
-    - name: write-url
-      image: alpine:3.17.1
+    - image: alpine:3.17.1
+      name: write-url
       script: |
         set -e
         image="$(params.IMAGE)"

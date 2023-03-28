@@ -43,8 +43,8 @@ spec:
         set -e
         opa test --bundle ./ --format json > "${OPA_RESULTS}"
         cat "${OPA_RESULTS}"
-    - name: download-converter
-      image: curlimages/curl:7.85.0
+    - image: curlimages/curl:7.85.0
+      name: download-converter
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       env:
         - name: JUNIT_SCRIPT

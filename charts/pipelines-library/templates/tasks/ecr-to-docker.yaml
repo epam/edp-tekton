@@ -44,8 +44,8 @@ spec:
       description: this configmap holds aws_region parameter
       default: edp-config
   steps:
-    - name: get-ecr-pass
-      image: amazon/aws-cli:2.7.35
+    - image: amazon/aws-cli:2.7.35
+      name: get-ecr-pass
       env:
         - name: ECR_LOGIN
           value: "$(params.ECR_LOGIN)"

@@ -1,20 +1,22 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := list "react" "angular" "vue" "express" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-npm-react-lib-review
+  name: gerrit-npm-{{ $k }}-lib-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/javascript-npm-react"
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -26,15 +28,15 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'react-npm-edp-version'
+      default: '{{ $k }}-npm-edp-version'
       description: "Project name"
       type: string
     - name: image
@@ -49,10 +51,12 @@ spec:
       description: Patchset number from Merge Request
   tasks:
 
-{{- include "gerrit-review-start" . | nindent 4 }}
+{{- include "gerrit-review-start" $ | nindent 4 }}
 
-{{- include "reactjs-npm-review-common" . | nindent 4 }}
+{{- include "js-npm-review-common" . | nindent 4 }}
 
-{{ include "gerrit-review-vote" . | nindent 2 }}
+{{ include "gerrit-review-vote" $ | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

@@ -1,4 +1,4 @@
-{{- define "reactjs-npm-build-common" -}}
+{{- define "js-npm-build-common" -}}
 - name: test
   taskRef:
     kind: Task
@@ -93,7 +93,7 @@
       workspace: shared-workspace
 {{- end -}}
 
-{{- define "reactjs-npm-review-common" -}}
+{{- define "js-npm-review-common" -}}
 - name: compile
   taskRef:
     kind: Task

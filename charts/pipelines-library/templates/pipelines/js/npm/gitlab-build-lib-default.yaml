@@ -1,20 +1,22 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if eq .Values.global.gitProvider "gitlab" }}
+{{- $resourceMapping := list "react" "angular" "vue" "express" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-npm-react-app-build-edp
+  name: gitlab-npm-{{ $k }}-lib-build-default
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/javascript-npm-react"
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -22,15 +24,15 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'react-npm-edp-version'
+      default: '{{ $k }}-npm-edp-version'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
@@ -57,31 +59,19 @@ spec:
       default: ""
   tasks:
 
-{{- include "github-build-start" . | nindent 4 }}
+{{- include "gitlab-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-edp
+        name: get-version-npm-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        kind: Task
-        name: update-build-number-npm
-      runAfter:
-        - get-version
-      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: BRANCH_VERSION
-          value: $(tasks.get-version.results.BRANCH_VERSION)
-        - name: BUILD_ID
-          value: $(tasks.get-version.results.BUILD_ID)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -91,7 +81,7 @@ spec:
         kind: Task
         name: npm
       runAfter:
-        - update-build-number
+        - get-version
       params:
         - name: BASE_IMAGE
           value: $(params.image)
@@ -108,20 +98,12 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "reactjs-npm-build-common" . | nindent 4 }}
+{{ include "js-npm-build-common" . | nindent 4 }}
 
-    - name: create-ecr-repository
-      taskRef:
-        kind: Task
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "finally-block-default" . | nindent 2 }}
 
-{{ include "finally-block-edp" . | nindent 2 }}
-
+---
+{{ end }}
 {{ end }}

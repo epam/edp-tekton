@@ -14,7 +14,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['npm']:
-        for framework in ['react']:
+        for framework in ['react', 'angular', 'vue', 'express']:
             for cbtype in ['app', 'lib']:
 
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]
@@ -115,7 +115,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['npm']:
-        for framework in ['react']:
+        for framework in ['react', 'angular', 'vue', 'express']:
             for cbtype in ['app', 'lib']:
 
                 github_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -209,7 +209,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['npm']:
-        for framework in ['react']:
+        for framework in ['react', 'angular', 'vue', 'express']:
             for cbtype in ['app', 'lib']:
 
                 gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"

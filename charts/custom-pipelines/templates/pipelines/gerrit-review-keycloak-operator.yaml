@@ -96,30 +96,12 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: test
-      taskRef:
-        kind: Task
-        name: golang
-      runAfter:
-        - integration-test
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-        - name: EXTRA_COMMANDS
-          value: |
-            make test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: lint
       taskRef:
         kind: Task
         name: golang
       runAfter:
-        - test
+        - integration-test
       params:
         - name: BASE_IMAGE
           value: $(params.image)

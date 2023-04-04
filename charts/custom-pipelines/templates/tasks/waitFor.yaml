@@ -1,0 +1,54 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: wait-for
+spec:
+  params:
+    - name: task_name
+      description: "The name of the task we are looking for"
+      default: "helm-push-gh-pages"
+    - name: wait_time
+      description: "Delay between search attempts"
+      default: 20
+    - name: counter
+      description: "Number of repeats"
+      default: 0
+    - name: max_counter
+      description: "Maximum number of repeats"
+      default: 1000
+  steps:
+    - name: wait-for
+      image: epamedp/tekton-helm:0.1.4
+      env:
+        - name: TASK
+          value: $(params.task_name)
+        - name: WAIT_TIME
+          value: $(params.wait_time)
+        - name: COUNTER
+          value: $(params.counter)
+        - name: MAX_COUNTER
+          value: $(params.max_counter)
+      command:
+        - /bin/sh
+      args:
+        - -c
+        - |
+          set -ex
+
+          while true; do
+            taskrun_list=$(kubectl get taskrun -o=jsonpath='{range .items[?(@.status.conditions[].reason=="Pending")]}{.metadata.name}{"\n"}{end}' 2>/dev/null \
+            && kubectl get taskrun -o=jsonpath='{range .items[?(@.status.conditions[].reason=="Running")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep ${TASK} || true)
+            echo "echo ${taskrun_list}"
+            if echo ${taskrun_list} | grep ${TASK} ; then
+              echo "TaskRun running and contains task ${TASK}"
+              sleep ${WAIT_TIME}
+              COUNTER=$((COUNTER+1))
+              if [ "${COUNTER}" = "${MAX_COUNTER}" ]; then
+                echo "Maximum number of retries reached, exiting script"
+                exit 1
+              fi
+            else
+              echo "${TASK} is not running, go to the next task"
+              break
+            fi
+          done

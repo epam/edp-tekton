@@ -78,12 +78,19 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: wait-for
+      taskRef:
+        kind: Task
+        name: wait-for
+      runAfter:
+        - set-version
+
     - name: helm-push-gh-pages
       taskRef:
         kind: Task
         name: helm-push-gh-pages
       runAfter:
-        - set-version
+        - wait-for
       params:
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"

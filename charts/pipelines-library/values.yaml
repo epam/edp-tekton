@@ -54,20 +54,6 @@ tekton:
       cpu: "0.5"
       memory: "2Gi"
 
-buildTool:
-  go:
-    cache:
-      persistentVolume:
-        size: 5Gi
-        # -- Specifies storageClass type. If not specified, a default storageClass for go-cache volume is used
-        storageClass:
-  npm:
-    cache:
-      persistentVolume:
-        size: 5Gi
-        # -- Specifies storageClass type. If not specified, a default storageClass for npm-cache volume is used
-        storageClass:
-
 # Deploy EDP Tekton Interceptor along with pipelines library
 interceptor:
   # -- Deploy EDP interceptor as a part of pipeline library when true. Default: true

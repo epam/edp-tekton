@@ -7,10 +7,6 @@ metadata:
 spec:
   workspaces:
     - name: source
-  volumes:
-    - name: go-cache
-      persistentVolumeClaim:
-        claimName: go-cache
   params:
     - name: CODEBASE_NAME
       type: string
@@ -25,11 +21,11 @@ spec:
       default: "epamedp/tekton-helm:0.1.4"
     - name: GOCACHE
       description: "Go caching directory path"
-      default: "/workspaces/go-cache"
+      default: "$(workspaces.source.path)"
       type: string
     - name: GOMODCACHE
       description: "Go mod caching directory path"
-      default: "/workspaces/go-cache"
+      default: ""
       type: string
     - name: GOPROXY
       description: "Go proxy server"
@@ -106,9 +102,6 @@ spec:
       script: |
         svc_name=$(cat $(results.svc_name.path))
         TEST_KEYCLOAK_URL="http://${svc_name}.${E2E_HOST_NS}:8081" make test
-      volumeMounts:
-        - name: go-cache
-          mountPath: $(params.GOCACHE)
 
     - name: vcluster-remove
       image: $(params.TOOLS_IMAGE)

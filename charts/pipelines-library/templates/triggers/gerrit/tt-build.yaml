@@ -81,7 +81,7 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 3Gi
+                    storage: {{ .Values.tekton.workspaceSize }}
             subPath: codebase
           - name: ssh-creds
             secret:

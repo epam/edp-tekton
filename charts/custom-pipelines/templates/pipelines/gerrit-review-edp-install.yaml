@@ -39,6 +39,9 @@ spec:
       description: "Pattern to validate a commit message"
     - name: targetBranch
       description: Target branch of Merge Request
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}

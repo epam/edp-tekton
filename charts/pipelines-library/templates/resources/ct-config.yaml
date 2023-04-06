@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ct-config
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  ct.yaml: |
+    validate-maintainers: false
+  chart-schema.yaml: |
+    name: str()
+    home: str()
+    version: str()
+    type: str()
+    apiVersion: str()
+    appVersion: any(str(), num())
+    description: str()
+    keywords: list(str(), required=False)
+    sources: list(str(), required=True)
+    maintainers: list(include('maintainer'), required=True)
+    dependencies: list(include('dependency'), required=False)
+    icon: str(required=False)
+    engine: str(required=False)
+    condition: str(required=False)
+    tags: str(required=False)
+    deprecated: bool(required=False)
+    kubeVersion: str(required=False)
+    annotations: map(str(), str(), required=False)
+    ---
+    maintainer:
+      name: str(required=True)
+      email: str(required=False)
+      url: str(required=False)
+    ---
+    dependency:
+      name: str()
+      version: str()
+      repository: str()
+      condition: str(required=False)
+      tags: list(str(), required=False)
+      enabled: bool(required=False)
+      import-values: any(list(str()), list(include('import-value')), required=False)
+      alias: str(required=False)
+  lintconf.yaml: |
+    ---
+    rules:
+      braces:
+        min-spaces-inside: 0
+        max-spaces-inside: 0
+        min-spaces-inside-empty: -1
+        max-spaces-inside-empty: -1
+      brackets:
+        min-spaces-inside: 0
+        max-spaces-inside: 0
+        min-spaces-inside-empty: -1
+        max-spaces-inside-empty: -1
+      colons:
+        max-spaces-before: 0
+        max-spaces-after: 1
+      commas:
+        max-spaces-before: 0
+        min-spaces-after: 1
+        max-spaces-after: 1
+      comments:
+        require-starting-space: true
+        min-spaces-from-content: 2
+      document-end: disable
+      document-start: disable           # No --- to start a file
+      empty-lines:
+        max: 2
+        max-start: 0
+        max-end: 0
+      hyphens:
+        max-spaces-after: 1
+      indentation:
+        spaces: consistent
+        indent-sequences: whatever      # - list indentation will handle both indentation and without
+        check-multi-line-strings: false
+      key-duplicates: enable
+      line-length: disable              # Lines can be any length
+      new-line-at-end-of-file: enable
+      new-lines:
+        type: unix
+      trailing-spaces: enable
+      truthy:
+        level: warning

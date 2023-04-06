@@ -50,6 +50,9 @@ spec:
     - name: gitsha
       description: "commit sha"
       type: string
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
 {{- include "github-review-start" . | nindent 4 }}
@@ -101,9 +104,8 @@ spec:
       runAfter:
         - fetch-repository
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --validate-maintainers=false --charts deploy-templates/
+        - name: CHART_DIR
+          value: $(params.deploy-templates-dir)
       workspaces:
         - name: source
           workspace: shared-workspace

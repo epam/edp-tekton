@@ -22,9 +22,16 @@ spec:
         Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
       type: string
       default: "/tekton/home"
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
+  volumes:
+    - name: ct-config-volume
+      configMap:
+        name: ct-config
   steps:
     - image: $(params.BASE_IMAGE)
       name: helm-lint
@@ -34,4 +41,12 @@ spec:
           value: $(params.USER_HOME)
       script: |
         set -ex
+        ct lint \
+        --charts $(params.CHART_DIR) \
+        --config ct-configs/ct.yaml \
+        --lint-conf ct-configs/lintconf.yaml \
+        --chart-yaml-schema ct-configs/chart-schema.yaml
         $(params.EXTRA_COMMANDS)
+      volumeMounts:
+        - name: ct-config-volume
+          mountPath: /workspace/source/ct-configs/

@@ -39,7 +39,9 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
-
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
 {{- include "gitlab-review-start" . | nindent 4 }}
@@ -119,9 +121,8 @@ spec:
       runAfter:
         - sonar
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --validate-maintainers=false --charts deploy-templates/
+        - name: CHART_DIR
+          value: $(params.deploy-templates-dir)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -37,9 +37,8 @@
   runAfter:
     - fetch-repository
   params:
-  - name: EXTRA_COMMANDS
-    value: |
-      ct lint --validate-maintainers=false --charts deploy-templates/
+  - name: CHART_DIR
+    value: $(params.deploy-templates-dir)
   workspaces:
     - name: source
       workspace: shared-workspace

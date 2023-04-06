@@ -55,6 +55,9 @@ spec:
       description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}

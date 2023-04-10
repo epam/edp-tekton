@@ -55,6 +55,7 @@ global:
     assert "sonar-prepare-files" in r[9]["name"]
     assert "sonar" in r[10]["name"]
     assert "dockerfile-lint" in r[11]["name"]
-    assert "dockerbuild-verify" in r[12]["name"]
+    assert "kaniko-build" in r[12]["name"]
+    assert "trivy-scanner" in r[13]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]

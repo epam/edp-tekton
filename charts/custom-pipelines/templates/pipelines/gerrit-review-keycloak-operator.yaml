@@ -203,6 +203,19 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: trivy-scanner
+      taskRef:
+        kind: Task
+        name: trivy-scanner
+      runAfter:
+        - kaniko-build
+      params:
+        - name: IMAGE_TO_SCAN
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: e2e
       taskRef:
         kind: Task

@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: trivy-scanner
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Security
+    tekton.dev/tags: CLI, trivy
+    tekton.dev/displayName: "trivy scanner"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    Trivy is a simple and comprehensive scanner for
+    vulnerabilities in container images,file systems
+    ,and Git repositories, as well as for configuration issues.
+
+    This task can be used to scan for vulnenrabilities on the source code
+    in stand alone mode.
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE_TO_SCAN
+      description: The image to be passed to Trivy command.
+      type: string
+      default: ""
+    - name: image
+      default: docker.io/aquasec/trivy@sha256:dea76d4b50c75125cada676a87ac23de2b7ba4374752c6f908253c3b839201d9
+      description: Trivy scanner image to be used
+  steps:
+    - name: trivy-scan
+      image: $(params.image)
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env sh
+          trivy image $(params.IMAGE_TO_SCAN)

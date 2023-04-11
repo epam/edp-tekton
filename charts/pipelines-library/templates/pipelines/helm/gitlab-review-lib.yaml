@@ -31,6 +31,9 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
     - name: report-pipeline-start-to-gitlab
@@ -93,9 +96,8 @@ spec:
       runAfter:
         - helm-dependency-update
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --charts .
+        - name: CHART_DIR
+          value: $(params.deploy-templates-dir)
       workspaces:
         - name: source
           workspace: shared-workspace

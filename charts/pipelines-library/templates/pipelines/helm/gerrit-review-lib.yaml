@@ -30,6 +30,9 @@ spec:
       type: string
     - name: targetBranch
       description: Target branch of Merge Request
+    - name: deploy-templates-dir
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates/"
   tasks:
 
     - name: fetch-repository
@@ -79,9 +82,8 @@ spec:
       runAfter:
         - helm-dependency-update
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --charts .
+        - name: CHART_DIR
+          value: $(params.deploy-templates-dir)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -39,6 +39,12 @@ spec:
     - name: JIRA_SERVER
       description: "Jira server name"
       default: ""
+    - name: CHART_DIR
+      description: "The directory in source that contains the helm chart"
+      default: "."
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
   tasks:
 
     - name: fetch-repository
@@ -63,6 +69,8 @@ spec:
       runAfter:
         - fetch-repository
       params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
       workspaces:
@@ -75,6 +83,9 @@ spec:
         name: helm-dependency-update
       runAfter:
         - get-version
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -86,9 +97,10 @@ spec:
       runAfter:
         - helm-dependency-update
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --charts .
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -102,6 +114,8 @@ spec:
       params:
         - name: release_name
           value: $(params.CODEBASE_NAME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace

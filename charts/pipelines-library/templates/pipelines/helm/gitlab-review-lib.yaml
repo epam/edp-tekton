@@ -36,7 +36,7 @@ spec:
       default: "."
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
-      default: "ct-configs"
+      default: "."
   tasks:
 
     - name: report-pipeline-start-to-gitlab
@@ -88,6 +88,9 @@ spec:
         name: helm-dependency-update
       runAfter:
         - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -114,6 +117,8 @@ spec:
       runAfter:
         - helm-lint
       params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
         - name: release_name
           value: $(params.CODEBASE_NAME)
       workspaces:

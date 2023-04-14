@@ -12,7 +12,7 @@ spec:
     - name: VERSION
       type: string
       description: "Version"
-    - name: chart_dir
+    - name: CHART_DIR
       description: The directory in source that contains the helm chart
       default: "."
     - name: BASE_IMAGE
@@ -26,7 +26,7 @@ spec:
         - name: VERSION
           value: "$(params.VERSION)"
         - name: CHART_DIR
-          value: $(params.chart_dir)
+          value: $(params.CHART_DIR)
       script: |
         #!/bin/sh
         set -ex

@@ -1,8 +1,8 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if eq .Values.global.gitProvider "gerrit" }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-helm-pipeline-lib-build-edp
+  name: gerrit-helm-helm-app-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -44,33 +44,20 @@ spec:
       default: ""
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
-      default: "."
+      default: "deploy-templates"
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
-      default: "."
+      default: "deploy-templates"
   tasks:
 
-    - name: fetch-repository
-      taskRef:
-        kind: Task
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{- include "gerrit-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
         name: get-version-edp
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
@@ -133,12 +120,29 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: helm-push-to-ecr
+      taskRef:
+        kind: Task
+        name: helm-push-to-ecr
+      runAfter:
+        - helm-template
+      params:
+        - name: TENANT_NAME
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: IS_TAG
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: git-tag
       taskRef:
         kind: Task
         name: git-cli
       runAfter:
-        - helm-template
+        - helm-push-to-ecr
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -153,6 +157,18 @@ spec:
           workspace: shared-workspace
         - name: ssh-directory
           workspace: ssh-creds
+
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.VCS_TAG)
 
 {{ include "finally-block-edp" . | nindent 2 }}
 

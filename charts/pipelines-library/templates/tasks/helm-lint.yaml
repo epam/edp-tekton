@@ -45,16 +45,12 @@ spec:
       script: |
         set -ex
         $(params.EXTRA_COMMANDS)
-        if [ -f $(params.CHART_DIR)/ct.yaml ] && [ -f $(params.CHART_DIR)/lintconf.yaml ] && [ -f $(params.CHART_DIR)/chart_schema.yaml ]; then
-          ct lint --charts $(params.CHART_DIR)/
-        else
-          ct lint \
-          --charts $(params.CHART_DIR)/ \
-          --config $(params.CT_CONFIGS_DIR)/ct.yaml \
-          --lint-conf $(params.CT_CONFIGS_DIR)/lintconf.yaml \
-          --chart-yaml-schema $(params.CT_CONFIGS_DIR)/chart_schema.yaml
-        fi
+        ct lint \
+        --charts $(params.CHART_DIR)/ \
+        --config $(params.CT_CONFIGS_DIR)/ct.yaml \
+        --lint-conf $(params.CT_CONFIGS_DIR)/lintconf.yaml \
+        --chart-yaml-schema $(params.CT_CONFIGS_DIR)/chart_schema.yaml
 
       volumeMounts:
         - name: ct-config-volume
-          mountPath: /workspace/source/$(params.CT_CONFIGS_DIR)/
+          mountPath: /workspace/source/ct-configs/

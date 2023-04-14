@@ -10,7 +10,7 @@ spec:
     - name: BRANCH_NAME
       type: string
       description: Codebasebranch name
-    - name: chart_dir
+    - name: CHART_DIR
       description: The directory in source that contains the helm chart
       default: "."
   results:
@@ -19,7 +19,9 @@ spec:
     - name: VCS_TAG
       description: "VCS tag"
     - name: TIMESTAMP
-      description: Current timestamp
+      description: "Current timestamp"
+    - name: BUILD_VERSION
+      description: "Current build version"
   steps:
     - name: get-timestamp
       image: alpine:3.16
@@ -34,12 +36,12 @@ spec:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"
         - name: CHART_DIR
-          value: $(params.chart_dir)
+          value: $(params.CHART_DIR)
       workingDir: $(workspaces.source.path)
       script: |
         set -ex
 
-        VERSION=$(awk '/^version/ {print $2}')
+        VERSION=$(awk '/^version/ {print $2}' ${CHART_DIR}/Chart.yaml)
 
         # get current BUILD ID
         BUILD_ID=$(cat $(results.TIMESTAMP.path))
@@ -50,5 +52,6 @@ spec:
         echo "Library version - ${VERSION}"
         echo "VCS tag - ${VCS_TAG}"
 
+        printf "%s" "${BUILD_VERSION}" > "$(results.BUILD_VERSION.path)"
         printf "%s" "${VERSION}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"

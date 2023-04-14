@@ -1,8 +1,8 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if eq .Values.global.gitProvider "gerrit" }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-helm-pipeline-lib-build-edp
+  name: gerrit-helm-helm-app-build-default
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -24,9 +24,6 @@ spec:
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
-    - name: CODEBASEBRANCH_NAME
-      description: "Codebasebranch name"
-      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -44,48 +41,25 @@ spec:
       default: ""
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
-      default: "."
+      default: "deploy-templates"
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
-      default: "."
+      default: "deploy-templates"
   tasks:
 
-    - name: fetch-repository
-      taskRef:
-        kind: Task
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{- include "gerrit-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-edp
+        name: get-version-helm-chart-default
       runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
-
-    - name: update-build-number
-      taskRef:
-        kind: Task
-        name: update-build-number-helm-chart
-      runAfter:
-        - get-version
+        - init-values
       params:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: VERSION
-          value: $(tasks.get-version.results.VERSION)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -125,10 +99,27 @@ spec:
       runAfter:
         - helm-lint
       params:
-        - name: release_name
-          value: $(params.CODEBASE_NAME)
         - name: CHART_DIR
           value: $(params.CHART_DIR)
+        - name: release_name
+          value: $(params.CODEBASE_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-push-to-ecr
+      taskRef:
+        kind: Task
+        name: helm-push-to-ecr
+      runAfter:
+        - helm-template
+      params:
+        - name: TENANT_NAME
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: IS_TAG
+          value: $(tasks.get-version.results.BUILD_VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -138,7 +129,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - helm-template
+        - helm-push-to-ecr
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -154,6 +145,18 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-{{ include "finally-block-edp" . | nindent 2 }}
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.VCS_TAG)
+
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}

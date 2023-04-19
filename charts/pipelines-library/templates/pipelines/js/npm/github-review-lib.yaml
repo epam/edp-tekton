@@ -68,10 +68,9 @@ spec:
         - name: EXTRA_COMMANDS
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-            npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
-            npm set //nexus:8081/repository/edp-npm-group/:always-auth true --location project
-            npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
-            npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm set registry http://${NEXUS_REPOSITORY_URL}/
+            npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
+            npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64
             npm install
             npm run build:clean
       workspaces:

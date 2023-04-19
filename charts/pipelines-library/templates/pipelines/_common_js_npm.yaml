@@ -43,11 +43,6 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        npm set registry http://${NEXUS_REPOSITORY_URL}/ --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:always-auth true --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:email edp-ci@edp.local --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:_auth $upBase64 --location project
         npm install
         npm run build:prod
   workspaces:
@@ -84,7 +79,6 @@
         NPM_REPO=$(echo ${NEXUS_REPOSITORY_URL} | cut -d ':' -f2-)
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
         npm set registry ${NEXUS_REPOSITORY_URL}/
-        npm set ${NPM_REPO}/:always-auth=true
         npm set ${NPM_REPO}/:email=edp-ci@edp.local
         npm set ${NPM_REPO}/:_auth=${upBase64}
         npm publish
@@ -107,9 +101,8 @@
       value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
         npm set registry http://${NEXUS_REPOSITORY_URL}/ --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:always-auth true --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:email edp-ci@edp.local --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:_auth $upBase64 --location project
+        npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local --location project
+        npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64 --location project
         npm install
         npm run build:clean
   workspaces:

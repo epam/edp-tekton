@@ -37,8 +37,10 @@
   runAfter:
     - fetch-repository
   params:
-  - name: CHART_DIR
-    value: $(params.deploy-templates-dir)
+    - name: CHART_DIR
+      value: $(params.CHART_DIR)
+    - name: CT_CONFIGS_DIR
+      value: $(params.CT_CONFIGS_DIR)
   workspaces:
     - name: source
       workspace: shared-workspace

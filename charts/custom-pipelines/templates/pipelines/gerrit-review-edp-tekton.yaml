@@ -93,11 +93,12 @@ spec:
       runAfter:
         - commit-validate
       params:
-      - name: EXTRA_COMMANDS
-        value: |
-          helm repo add epamedp https://epam.github.io/edp-helm-charts/stable --force-update
-          helm repo update
-          ct lint --all --validate-maintainers=false
+        - name: EXTRA_COMMANDS
+          value: |
+            ct lint --all \
+            --config $(params.CT_CONFIGS_DIR)/ct.yaml \
+            --lint-conf $(params.CT_CONFIGS_DIR)/lintconf.yaml \
+            --chart-yaml-schema $(params.CT_CONFIGS_DIR)/chart_schema.yaml
       workspaces:
         - name: source
           workspace: shared-workspace

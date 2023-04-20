@@ -7,7 +7,7 @@ metadata:
 data:
   ct.yaml: |
     validate-maintainers: false
-  chart-schema.yaml: |
+  chart_schema.yaml: |
     name: str()
     home: str()
     version: str()

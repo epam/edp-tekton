@@ -24,7 +24,10 @@ spec:
       default: "/tekton/home"
     - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
-      default: "deploy-templates/"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
@@ -41,12 +44,17 @@ spec:
           value: $(params.USER_HOME)
       script: |
         set -ex
-        ct lint \
-        --charts $(params.CHART_DIR) \
-        --config ct-configs/ct.yaml \
-        --lint-conf ct-configs/lintconf.yaml \
-        --chart-yaml-schema ct-configs/chart-schema.yaml
         $(params.EXTRA_COMMANDS)
+        if [ -f $(params.CHART_DIR)/ct.yaml ] && [ -f $(params.CHART_DIR)/lintconf.yaml ] && [ -f $(params.CHART_DIR)/chart_schema.yaml ]; then
+          ct lint --charts $(params.CHART_DIR)/
+        else
+          ct lint \
+          --charts $(params.CHART_DIR)/ \
+          --config $(params.CT_CONFIGS_DIR)/ct.yaml \
+          --lint-conf $(params.CT_CONFIGS_DIR)/lintconf.yaml \
+          --chart-yaml-schema $(params.CT_CONFIGS_DIR)/chart_schema.yaml
+        fi
+
       volumeMounts:
         - name: ct-config-volume
-          mountPath: /workspace/source/ct-configs/
+          mountPath: /workspace/source/$(params.CT_CONFIGS_DIR)/

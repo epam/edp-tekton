@@ -26,7 +26,7 @@ spec:
         set -e
 
         cbisCrTags=$(kubectl get cbis.v2.edp.epam.com ${CBIS_NAME} --output=jsonpath={.spec.tags})
-        dateFormat=$(date "+%Y-%m-%d'T'%H:%M:%S")
+        dateFormat=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
         newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\"}"
 
         if [ "${cbisCrTags}" = "" ] ; then

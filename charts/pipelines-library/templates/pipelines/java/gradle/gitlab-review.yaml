@@ -49,9 +49,12 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
-    - name: deploy-templates-dir
+    - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
-      default: "deploy-templates/"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
   tasks:
 
 {{- include "gitlab-review-start" $ | nindent 4 }}
@@ -160,7 +163,9 @@ spec:
         - fetch-repository
       params:
         - name: CHART_DIR
-          value: $(params.deploy-templates-dir)
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -47,9 +47,12 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
-    - name: deploy-templates-dir
+    - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
-      default: "deploy-templates/"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -85,7 +88,9 @@ spec:
         - fetch-repository
       params:
         - name: CHART_DIR
-          value: $(params.deploy-templates-dir)
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace

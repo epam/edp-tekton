@@ -16,7 +16,7 @@ spec:
     - description: A workspace that contains fetched git repo.
       name: source
   params:
-    - name: chart_dir
+    - name: CHART_DIR
       description: The directory in source that contains the helm chart
       default: "."
     - name: extra_params
@@ -36,7 +36,7 @@ spec:
       workingDir: $(workspaces.source.path)
       env:
         - name: CHART_DIR
-          value: $(params.chart_dir)
+          value: $(params.CHART_DIR)
         - name: EXTRA_PARAMS
           value: $(params.extra_params)
         - name: HOME

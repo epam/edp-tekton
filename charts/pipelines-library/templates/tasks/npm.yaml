@@ -59,22 +59,5 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
-
-        npmignore_file=".npmignore"
-        if [ ! -f "${npmignore_file}" ]; then
-          cat <<-EOF > "${npmignore_file}"
-        # Ignore rules for files and folders to be published
-        /*
-        !build/
-        !node/app/
-        node/app/.npm/
-        !package.json
-        !README*
-        !CHANGELOG*
-        !LICENSE*
-        EOF
-        cat "${npmignore_file}"
-        fi
-
         $(params.EXTRA_COMMANDS)
 {{- include "resources" . | nindent 6 }}

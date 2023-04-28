@@ -1,20 +1,22 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := dict "dotnet-3.1" "mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16" "dotnet-6.0" "mcr.microsoft.com/dotnet/sdk:6.0.407-alpine3.17" -}}
+{{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-dotnet-dotnet-6.0-app-build-default
+  name: gerrit-dotnet-{{ $k }}-app-build-default
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/csharp-dotnet-dotnet-6.0"
+      default: "https://github.com/epmd-edp/csharp-dotnet-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -22,22 +24,22 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: 'csharp-dotnet-dotnet-6.0'
+      default: 'csharp-dotnet-{{ $k }}'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'mcr.microsoft.com/dotnet/sdk:6.0.407-alpine3.17'
+      default: "{{ $v }}"
       description: "dotnet-sdk image version"
       type: string
     - name: changeNumber
@@ -61,7 +63,7 @@ spec:
       default: ""
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -126,5 +128,6 @@ spec:
 {{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
-
+---
+{{ end }}
 {{ end }}

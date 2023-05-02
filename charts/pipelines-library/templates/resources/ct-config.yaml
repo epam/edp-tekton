@@ -7,5 +7,5 @@ metadata:
 data:
   ct.yaml: |
     validate-maintainers: {{ default "false" .Values.ctLint.validateMaintainers }}
-    chart_schema.yaml:{{ toYaml .Values.ctLint.chartSchema | nindent 4 }}
-    lintconf.yaml:{{ toYaml .Values.ctLint.lintconf | nindent 4 }}
+  chart_schema.yaml:{{ toYaml .Values.ctLint.chartSchema | nindent 4 }}
+  lintconf.yaml:{{ toYaml .Values.ctLint.lintconf | nindent 4 }}

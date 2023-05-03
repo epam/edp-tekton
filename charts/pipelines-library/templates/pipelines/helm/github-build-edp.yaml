@@ -168,7 +168,7 @@ spec:
         - name: CBIS_NAME
           value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
         - name: IMAGE_TAG
-          value: $(tasks.get-version.results.VCS_TAG)
+          value: $(tasks.get-version.results.IS_TAG)
 
 {{ include "finally-block-edp" . | nindent 2 }}
 

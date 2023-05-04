@@ -8,7 +8,7 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.pull_request.head.ref)
+      value: $(extensions.pullRequest.headRef)
     - name: gitrepositoryurl
       value: $(body.repository.ssh_url)
     - name: gitrepositoryname
@@ -16,7 +16,7 @@ spec:
     - name: gitfullrepositoryname
       value: $(body.repository.full_name)
     - name: gitsha
-      value: $(body.pull_request.head.sha)
+      value: $(extensions.pullRequest.headSha)
     - name: buildtool
       value: "$(extensions.spec.buildTool)"
     - name: framework
@@ -25,7 +25,7 @@ spec:
     - name: cbtype
       value: "$(extensions.cbtype_short)"
     - name: commitMessage
-      value: "$(body.pull_request.title)"
+      value: "$(extensions.pullRequest.title)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     - name: codebase

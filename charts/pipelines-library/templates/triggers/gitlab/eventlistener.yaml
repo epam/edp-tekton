@@ -48,12 +48,12 @@ spec:
                 secretName: {{ .Values.gitlab.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["Merge Request Hook"]
+              value: ["Merge Request Hook", "Note Hook"]
         - ref:
             name: "cel"
           params:
             - name: "filter"
-              value: "body.object_attributes.action in ['open', 'reopen', 'update']"
+              value: "body.object_attributes.action in ['open', 'reopen', 'update'] || (body.object_kind == 'note' && has(body.merge_request))"
         - ref:
             name: "edp"
             kind: NamespacedInterceptor

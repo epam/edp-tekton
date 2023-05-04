@@ -23,6 +23,7 @@ import (
 	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
 	buildInfo "github.com/epam/edp-common/pkg/config"
 
+	"github.com/epam/edp-tekton/pkg/event_processor"
 	"github.com/epam/edp-tekton/pkg/interceptor"
 )
 
@@ -94,8 +95,14 @@ func main() {
 	mux.Handle(
 		"/",
 		&edpInterceptorHandler{
-			EDPInterceptor: interceptor.NewEDPInterceptor(client, logger),
-			Logger:         logger,
+			EDPInterceptor: interceptor.NewEDPInterceptor(
+				client,
+				event_processor.NewGitHubEventProcessor(client, &event_processor.GitHubEventProcessorOptions{Logger: logger}),
+				event_processor.NewGitLabEventProcessor(client, logger),
+				event_processor.NewGerritEventProcessor(client, logger),
+				logger,
+			),
+			Logger: logger,
 		},
 	)
 	mux.HandleFunc("/ready", readinessHandler)

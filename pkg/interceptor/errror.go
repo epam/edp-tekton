@@ -1,6 +1,8 @@
 package interceptor
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Error represents a handler error. It provides methods for an HTTP status
 // code and embeds the built-in error interface.

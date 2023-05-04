@@ -3,404 +3,88 @@ package interceptor
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"testing"
 
+	"github.com/google/go-github/v31/github"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	triggersv1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
-	"github.com/tektoncd/triggers/pkg/interceptors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
+	"github.com/epam/edp-tekton/pkg/event_processor/mocks"
 )
 
-func TestEDPInterceptor_Process(t *testing.T) {
-	scheme := runtime.NewScheme()
-	require.NoError(t, codebaseApi.AddToScheme(scheme))
-
-	framework := "Java11"
-	codebaseMeta := metav1.ObjectMeta{
-		Namespace: "test-ns",
-		Name:      "demo",
-	}
-
-	triggersContext := &triggersv1.TriggerContext{
-		TriggerID: "namespace/test-ns/triggers/name",
-	}
-
-	tests := []struct {
-		name        string
-		objects     []runtime.Object
-		request     *triggersv1.InterceptorRequest
-		want        *triggersv1.InterceptorResponse
-		containsErr string
-	}{
-		{
-			name: "success gerrit payload",
-			objects: []runtime.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: "test-ns",
-						Name:      "demo",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						BuildTool: "Maven",
-						Framework: &framework,
-					},
-				},
-				&codebaseApi.CodebaseBranch{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: "test-ns",
-						Name:      "demo-master",
-					},
-				},
-			},
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"name": "demo"}, "change": {"branch": "master"}}`,
-				Context: triggersContext,
-			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: map[string]interface{}{
-					"spec": codebaseApi.CodebaseSpec{
-						Framework:            stringP("java11"),
-						BuildTool:            "maven",
-						CommitMessagePattern: stringP(""),
-						JiraServer:           stringP(""),
-					},
-					"codebase":       "demo",
-					"codebasebranch": "demo-master",
-				},
-				Continue: true,
-			},
-		},
-		{
-			name: "success github payload",
-			objects: []runtime.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: codebaseMeta,
-					Spec: codebaseApi.CodebaseSpec{
-						BuildTool:  "Maven",
-						Framework:  &framework,
-						GitUrlPath: stringP("/demo/Repo1"),
-					},
-				},
-				&codebaseApi.CodebaseBranch{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: "test-ns",
-						Name:      "demo-feature-1",
-					},
-				},
-			},
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"full_name": "demo/repo1"}, "pull_request": {"base": {"ref": "feature/1"}}}`,
-				Header:  map[string][]string{"X-Github-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: map[string]interface{}{
-					"spec": codebaseApi.CodebaseSpec{
-						Framework:            stringP("java11"),
-						BuildTool:            "maven",
-						GitUrlPath:           stringP("/demo/Repo1"),
-						CommitMessagePattern: stringP(""),
-						JiraServer:           stringP(""),
-					},
-					"codebase":       "demo",
-					"codebasebranch": "demo-feature-1",
-				},
-				Continue: true,
-			},
-		},
-		{
-			name: "success gitlab payload",
-			objects: []runtime.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: codebaseMeta,
-					Spec: codebaseApi.CodebaseSpec{
-						BuildTool:            "Maven",
-						Framework:            &framework,
-						GitUrlPath:           stringP("/demo/repo2"),
-						CommitMessagePattern: stringP("pattern"),
-						JiraServer:           stringP("jira-server"),
-					},
-				},
-				&codebaseApi.CodebaseBranch{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: "test-ns",
-						Name:      "demo-feature.1",
-					},
-				},
-			},
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "feature.1"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: map[string]interface{}{
-					"spec": codebaseApi.CodebaseSpec{
-						BuildTool:            "maven",
-						Framework:            stringP("java11"),
-						GitUrlPath:           stringP("/demo/repo2"),
-						CommitMessagePattern: stringP("pattern"),
-						JiraServer:           stringP("jira-server"),
-					},
-					"codebase":       "demo",
-					"codebasebranch": "demo-feature.1",
-				},
-				Continue: true,
-			},
-		},
-		{
-			name: "codebasebranch not found, skip triggering",
-			objects: []runtime.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: codebaseMeta,
-					Spec: codebaseApi.CodebaseSpec{
-						BuildTool:            "Maven",
-						Framework:            &framework,
-						GitUrlPath:           stringP("/demo/repo2"),
-						CommitMessagePattern: stringP("pattern"),
-						JiraServer:           stringP("jira-server"),
-					},
-				},
-			},
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "master"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: map[string]interface{}{
-					"spec": codebaseApi.CodebaseSpec{
-						BuildTool:            "maven",
-						Framework:            stringP("java11"),
-						GitUrlPath:           stringP("/demo/repo2"),
-						CommitMessagePattern: stringP("pattern"),
-						JiraServer:           stringP("jira-server"),
-					},
-					"codebase":       "demo",
-					"codebasebranch": "demo-master",
-				},
-				Continue: false,
-			},
-		},
-		{
-			name: "success with empty framework",
-			objects: []runtime.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: codebaseMeta,
-					Spec: codebaseApi.CodebaseSpec{
-						BuildTool:  "Maven",
-						GitUrlPath: stringP("/demo/repo2"),
-					},
-				},
-				&codebaseApi.CodebaseBranch{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: "test-ns",
-						Name:      "demo-master",
-					},
-				},
-			},
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/repo2"}, "object_attributes": {"target_branch": "master"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want: &triggersv1.InterceptorResponse{
-				Extensions: map[string]interface{}{
-					"spec": codebaseApi.CodebaseSpec{
-						BuildTool:            "maven",
-						GitUrlPath:           stringP("/demo/repo2"),
-						CommitMessagePattern: stringP(""),
-						JiraServer:           stringP(""),
-					},
-					"codebase":       "demo",
-					"codebasebranch": "demo-master",
-				},
-				Continue: true,
-			},
-		},
-		{
-			name: "failed to unmarshal gerrit payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": `,
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "failed to unmarshal Gerrit event",
-		},
-		{
-			name: "no project name in gerrit payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"field": "demo"}}`,
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "gerrit repository path empty",
-		},
-		{
-			name: "no branch name in gerrit payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"name": "demo"}}`,
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "gerrit target branch empty",
-		},
-		{
-			name: "failed to unmarshal github payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": `,
-				Header:  map[string][]string{"X-Github-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "failed to unmarshal GitHub event",
-		},
-		{
-			name: "no repository name in github payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"field": "demo"}}`,
-				Header:  map[string][]string{"X-Github-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "github repository path empty",
-		},
-		{
-			name: "no branch name in github payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"full_name": "demo"}}`,
-				Header:  map[string][]string{"X-Github-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "github target branch empty",
-		},
-		{
-			name: "failed to unmarshal gitlab payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": `,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "failed to unmarshal GitLab event",
-		},
-		{
-			name: "no repository name in gitlab payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"repository": {"field": "demo"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "gitlab repository path empty",
-		},
-		{
-			name: "no branch name in gitlab payload",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "gitlab target branch empty",
-		},
-		{
-			name: "codebase not found for gerrit flow",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"name": "demo2"}, "change": {"branch": "master"}}`,
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "not found",
-		},
-		{
-			name: "codebase not found in the list in gitlab flow",
-			request: &triggersv1.InterceptorRequest{
-				Body:    `{"project": {"path_with_namespace": "demo/Repo2"}, "object_attributes": {"target_branch": "master"}}`,
-				Header:  map[string][]string{"X-Gitlab-Event": {"data"}},
-				Context: triggersContext,
-			},
-			want:        interceptors.Failf(codes.InvalidArgument, "error"),
-			containsErr: "not found",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(tt.objects...).Build()
-			interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
-
-			got := interceptor.Process(context.Background(), tt.request)
-
-			if tt.containsErr != "" {
-				require.Contains(t, got.Status.Message, tt.containsErr)
-			}
-
-			// Disable checking equality of status message, equality of status code is enough.
-			got.Status.Message = ""
-			tt.want.Status.Message = ""
-
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestEDPInterceptor_Execute(t *testing.T) {
+	t.Parallel()
+
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
 
-	framework := "Java11"
-	frameworkTransformed := "java11"
-	codebase := &codebaseApi.Codebase{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
-			Name:      "demo",
-		},
-		Spec: codebaseApi.CodebaseSpec{
-			Framework:  &framework,
-			BuildTool:  "Maven",
-			GitUrlPath: stringP("/demo"),
-		},
-	}
 	codebaseBranch := &codebaseApi.CodebaseBranch{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "test-ns",
-			Name:      "demo-feature1",
+			Namespace: "default",
+			Name:      "demo-master",
 		},
 	}
-	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebase, codebaseBranch).Build()
-	interceptor := NewEDPInterceptor(fakeClient, zap.NewNop().Sugar())
+	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebaseBranch).Build()
 
 	tests := []struct {
-		name     string
-		reqBody  string
-		wantResp *triggersv1.InterceptorResponse
-		wantErr  assert.ErrorAssertionFunc
+		name            string
+		reqBody         string
+		gerritProcessor func(t *testing.T) event_processor.Processor
+		wantResp        *triggersv1.InterceptorResponse
+		wantErr         assert.ErrorAssertionFunc
 	}{
 		{
 			name:    "success",
-			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
+			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/default/triggers/name"}}`,
+			gerritProcessor: func(t *testing.T) event_processor.Processor {
+				m := &mocks.Processor{}
+				m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+					GitProvider: event_processor.GitProviderGerrit,
+					RepoPath:    "/o/r",
+					Branch:      "master",
+					Type:        event_processor.EventTypeMerge,
+					Codebase: &codebaseApi.Codebase{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "default",
+							Name:      "demo",
+						},
+						Spec: codebaseApi.CodebaseSpec{
+							BuildTool:  "maven",
+							Framework:  pointer.String("spring"),
+							GitUrlPath: pointer.String("/o/r"),
+						},
+					},
+				}, nil)
+
+				return m
+			},
 			wantResp: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            &frameworkTransformed,
+						Framework:            pointer.String("spring"),
 						BuildTool:            "maven",
-						GitUrlPath:           stringP("/demo"),
-						CommitMessagePattern: stringP(""),
-						JiraServer:           stringP(""),
+						GitUrlPath:           pointer.String("/o/r"),
+						CommitMessagePattern: pointer.String(""),
+						JiraServer:           pointer.String(""),
 					},
 					"codebase":       "demo",
-					"codebasebranch": "demo-feature1",
+					"codebasebranch": "demo-master",
+					"pullRequest":    nil,
 				},
 				Continue: true,
 			},
@@ -409,26 +93,28 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 		{
 			name:    "failed to parse body",
 			reqBody: `{"body": invalid data`,
-			wantErr: assert.Error,
-		},
-		{
-			name:    "failed to get codebase",
-			reqBody: `{"body": "{\"project\": {\"name\": \"demo2\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/test-ns/triggers/name"}}`,
-			wantResp: &triggersv1.InterceptorResponse{
-				Continue: false,
-				Status: triggersv1.Status{
-					Code:    codes.InvalidArgument,
-					Message: "failed to get codebase: codebases.v2.edp.epam.com \"demo2\" not found",
-				},
+			gerritProcessor: func(t *testing.T) event_processor.Processor {
+				return &mocks.Processor{}
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Error,
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			req, err := http.NewRequest(http.MethodPost, "https://www.tektoncd.com", strings.NewReader(tt.reqBody))
 			require.NoError(t, err)
+
+			interceptor := NewEDPInterceptor(
+				fakeClient,
+				mocks.NewProcessor(t),
+				mocks.NewProcessor(t),
+				tt.gerritProcessor(t),
+				zap.NewNop().Sugar(),
+			)
 
 			got, err := interceptor.Execute(req)
 			if !tt.wantErr(t, err) {
@@ -441,6 +127,476 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 
 				assert.JSONEq(t, string(want), string(got))
 			}
+		})
+	}
+}
+
+func TestEDPInterceptor_Process(t *testing.T) {
+	t.Parallel()
+
+	scheme := runtime.NewScheme()
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
+
+	type fields struct {
+		gitHubProcessor func(t *testing.T) event_processor.Processor
+		gitLabProcessor func(t *testing.T) event_processor.Processor
+		gerritProcessor func(t *testing.T) event_processor.Processor
+		kubeObjects     []client.Object
+	}
+
+	type args struct {
+		r       *triggersv1.InterceptorRequest
+		reqBody any
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *triggersv1.InterceptorResponse
+	}{
+		{
+			name: "github",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+						GitProvider: event_processor.GitProviderGitHub,
+						RepoPath:    "/o/r",
+						Branch:      "master",
+						Type:        event_processor.EventTypeMerge,
+						Codebase: &codebaseApi.Codebase{
+							ObjectMeta: metav1.ObjectMeta{
+								Namespace: "default",
+								Name:      "demo",
+							},
+							Spec: codebaseApi.CodebaseSpec{
+								Framework:            pointer.String("spring"),
+								BuildTool:            "maven",
+								GitUrlPath:           pointer.String("/o/r"),
+								CommitMessagePattern: pointer.String(""),
+								JiraServer:           pointer.String(""),
+							},
+						},
+						PullRequest: &event_processor.PullRequest{
+							HeadRef: "feature",
+							HeadSha: "sha",
+							Title:   "fix",
+						},
+					}, nil)
+
+					return m
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				kubeObjects: []client.Object{
+					&codebaseApi.CodebaseBranch{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "default",
+							Name:      "demo-master",
+						},
+					},
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Header: map[string][]string{
+						"X-Github-Event": {event_processor.GitHubEventTypeCommentAdded},
+					},
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: github.PullRequestEvent{
+					Repo: &github.Repository{
+						FullName: pointer.String("o/r"),
+					},
+					PullRequest: &github.PullRequest{
+						Base: &github.PullRequestBranch{
+							Ref: pointer.String("master"),
+						},
+					},
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:            pointer.String("spring"),
+						BuildTool:            "maven",
+						GitUrlPath:           pointer.String("/o/r"),
+						CommitMessagePattern: pointer.String(""),
+						JiraServer:           pointer.String(""),
+					},
+					"codebase":       "demo",
+					"codebasebranch": "demo-master",
+					"pullRequest": &event_processor.PullRequest{
+						HeadRef: "feature",
+						HeadSha: "sha",
+						Title:   "fix",
+					},
+				},
+				Continue: true,
+			},
+		},
+		{
+			name: "gitlab",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+						GitProvider: event_processor.GitProviderGitLab,
+						RepoPath:    "/o/r",
+						Branch:      "master",
+						Type:        event_processor.EventTypeMerge,
+						Codebase: &codebaseApi.Codebase{
+							ObjectMeta: metav1.ObjectMeta{
+								Namespace: "default",
+								Name:      "demo",
+							},
+							Spec: codebaseApi.CodebaseSpec{
+								Framework:            pointer.String("spring"),
+								BuildTool:            "maven",
+								GitUrlPath:           pointer.String("/o/r"),
+								CommitMessagePattern: pointer.String(""),
+								JiraServer:           pointer.String(""),
+							},
+						},
+						PullRequest: &event_processor.PullRequest{
+							HeadRef: "feature",
+							HeadSha: "sha",
+							Title:   "fix",
+						},
+					}, nil)
+
+					return m
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				kubeObjects: []client.Object{
+					&codebaseApi.CodebaseBranch{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "default",
+							Name:      "demo-master",
+						},
+					},
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Header: map[string][]string{
+						"X-Gitlab-Event": {event_processor.GitLabEventTypeCommentAdded},
+					},
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
+						PathWithNamespace: "o/r",
+					},
+					ObjectAttributes: event_processor.GitLabMergeRequest{
+						TargetBranch: "master",
+						Title:        "title",
+						LastCommit: event_processor.GitLabCommit{
+							ID: "123",
+						},
+					},
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:            pointer.String("spring"),
+						BuildTool:            "maven",
+						GitUrlPath:           pointer.String("/o/r"),
+						CommitMessagePattern: pointer.String(""),
+						JiraServer:           pointer.String(""),
+					},
+					"codebase":       "demo",
+					"codebasebranch": "demo-master",
+					"pullRequest": &event_processor.PullRequest{
+						HeadRef: "feature",
+						HeadSha: "sha",
+						Title:   "fix",
+					},
+				},
+				Continue: true,
+			},
+		},
+		{
+			name: "gerrit",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+						GitProvider: event_processor.GitProviderGerrit,
+						RepoPath:    "/o/r",
+						Branch:      "master",
+						Type:        event_processor.EventTypeMerge,
+						Codebase: &codebaseApi.Codebase{
+							ObjectMeta: metav1.ObjectMeta{
+								Namespace: "default",
+								Name:      "demo",
+							},
+							Spec: codebaseApi.CodebaseSpec{
+								Framework:            pointer.String("spring"),
+								BuildTool:            "maven",
+								GitUrlPath:           pointer.String("/o/r"),
+								CommitMessagePattern: pointer.String(""),
+								JiraServer:           pointer.String(""),
+							},
+						},
+					}, nil)
+
+					return m
+				},
+				kubeObjects: []client.Object{
+					&codebaseApi.CodebaseBranch{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "default",
+							Name:      "demo-master",
+						},
+					},
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: event_processor.GerritEvent{
+					Project: struct {
+						Name string `json:"name"`
+					}{
+						Name: "o/r",
+					},
+					Change: struct {
+						Branch string `json:"branch"`
+					}{
+						Branch: "master",
+					},
+					Type: "patch-created",
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:            pointer.String("spring"),
+						BuildTool:            "maven",
+						GitUrlPath:           pointer.String("/o/r"),
+						CommitMessagePattern: pointer.String(""),
+						JiraServer:           pointer.String(""),
+					},
+					"codebase":       "demo",
+					"codebasebranch": "demo-master",
+					"pullRequest":    event_processor.EventInfo{}.PullRequest,
+				},
+				Continue: true,
+			},
+		},
+		{
+			name: "codebasebranch not found",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+						GitProvider: event_processor.GitProviderGerrit,
+						RepoPath:    "/o/r",
+						Branch:      "master",
+						Type:        event_processor.EventTypeMerge,
+						Codebase: &codebaseApi.Codebase{
+							ObjectMeta: metav1.ObjectMeta{
+								Namespace: "default",
+								Name:      "demo",
+							},
+							Spec: codebaseApi.CodebaseSpec{
+								Framework:            pointer.String("spring"),
+								BuildTool:            "maven",
+								GitUrlPath:           pointer.String("/o/r"),
+								CommitMessagePattern: pointer.String(""),
+								JiraServer:           pointer.String(""),
+							},
+						},
+					}, nil)
+
+					return m
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: event_processor.GerritEvent{
+					Project: struct {
+						Name string `json:"name"`
+					}{
+						Name: "o/r",
+					},
+					Change: struct {
+						Branch string `json:"branch"`
+					}{
+						Branch: "master",
+					},
+					Type: "patch-created",
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Extensions: map[string]interface{}{
+					"spec": codebaseApi.CodebaseSpec{
+						Framework:            pointer.String("spring"),
+						BuildTool:            "maven",
+						GitUrlPath:           pointer.String("/o/r"),
+						CommitMessagePattern: pointer.String(""),
+						JiraServer:           pointer.String(""),
+					},
+					"codebase":       "demo",
+					"codebasebranch": "demo-master",
+					"pullRequest":    event_processor.EventInfo{}.PullRequest,
+				},
+				Continue: false,
+			},
+		},
+		{
+			name: "comment event with no recheck",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+						GitProvider:        event_processor.GitProviderGerrit,
+						Type:               event_processor.EventTypeReviewComment,
+						HasPipelineRecheck: false,
+					}, nil)
+
+					return m
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: event_processor.GerritEvent{
+					Project: struct {
+						Name string `json:"name"`
+					}{
+						Name: "o/r",
+					},
+					Change: struct {
+						Branch string `json:"branch"`
+					}{
+						Branch: "master",
+					},
+					Type: "patch-created",
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Continue: false,
+			},
+		},
+		{
+			name: "failed to process event",
+			fields: fields{
+				gitHubProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gitLabProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					m := &mocks.Processor{}
+
+					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(
+						nil,
+						errors.New("failed to process event"),
+					)
+
+					return m
+				},
+			},
+			args: args{
+				r: &triggersv1.InterceptorRequest{
+					Context: &triggersv1.TriggerContext{
+						TriggerID: "namespace/default/triggers/name",
+					},
+				},
+				reqBody: event_processor.GerritEvent{
+					Project: struct {
+						Name string `json:"name"`
+					}{
+						Name: "o/r",
+					},
+					Change: struct {
+						Branch string `json:"branch"`
+					}{
+						Branch: "master",
+					},
+					Type: "patch-created",
+				},
+			},
+			want: &triggersv1.InterceptorResponse{
+				Continue: false,
+				Status: triggersv1.Status{
+					Code:    codes.InvalidArgument,
+					Message: "failed to process Gerrit event: failed to process event",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			body, err := json.Marshal(tt.args.reqBody)
+			require.NoError(t, err)
+
+			tt.args.r.Body = string(body)
+
+			i := NewEDPInterceptor(
+				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.fields.kubeObjects...).Build(),
+				tt.fields.gitHubProcessor(t),
+				tt.fields.gitLabProcessor(t),
+				tt.fields.gerritProcessor(t),
+				zap.NewNop().Sugar(),
+			)
+
+			got := i.Process(context.Background(), tt.args.r)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

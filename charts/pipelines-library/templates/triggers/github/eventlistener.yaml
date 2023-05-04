@@ -48,12 +48,12 @@ spec:
                 secretName: {{ .Values.github.webhook.existingSecret }}
                 secretKey: secretString
             - name: "eventTypes"
-              value: ["pull_request"]
+              value: ["pull_request", "issue_comment"]
         - ref:
             name: "cel"
           params:
             - name: "filter"
-              value: "body.action in ['opened', 'synchronize', 'edited']"
+              value: "body.action in ['opened', 'synchronize', 'edited', 'created']"
         - ref:
             name: "edp"
             kind: NamespacedInterceptor

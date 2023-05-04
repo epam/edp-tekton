@@ -31,6 +31,13 @@ rules:
 
   - verbs:
       - get
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+
+  - verbs:
+      - get
       - list
       - watch
     apiGroups:
@@ -50,4 +57,15 @@ rules:
       - codebasebranches
       - codebasebranches/status
       - codebasebranches/finalizers
+
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - v2.edp.epam.com
+    resources:
+      - gitservers
+      - gitservers/status
+      - gitservers/finalizers
 {{- end }}

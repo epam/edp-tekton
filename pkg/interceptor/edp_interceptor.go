@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,14 +15,17 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/utils/pointer"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
 const (
-	executeTimeOut    = 3 * time.Second
-	codebaseListLimit = 1000
+	executeTimeOut = 3 * time.Second
+	recheckComment = "/recheck"
 )
 
 // EDPInterceptorInterface is an interface for EDPInterceptor.
@@ -33,15 +35,27 @@ type EDPInterceptorInterface interface {
 
 // EDPInterceptor is an interceptor for EDP.
 type EDPInterceptor struct {
-	Client ctrlClient.Reader
-	Logger *zap.SugaredLogger
+	gitHubProcessor event_processor.Processor
+	gitLabProcessor event_processor.Processor
+	gerritProcessor event_processor.Processor
+	client          ctrlClient.Reader
+	logger          *zap.SugaredLogger
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
-func NewEDPInterceptor(c ctrlClient.Reader, l *zap.SugaredLogger) *EDPInterceptor {
+func NewEDPInterceptor(
+	c ctrlClient.Reader,
+	gitHubProcessor event_processor.Processor,
+	gitLabProcessor event_processor.Processor,
+	gerritProcessor event_processor.Processor,
+	l *zap.SugaredLogger,
+) *EDPInterceptor {
 	return &EDPInterceptor{
-		Client: c,
-		Logger: l,
+		gitHubProcessor: gitHubProcessor,
+		gitLabProcessor: gitLabProcessor,
+		gerritProcessor: gerritProcessor,
+		client:          c,
+		logger:          l,
 	}
 }
 
@@ -54,7 +68,7 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 
 	defer func() {
 		if err := r.Body.Close(); err != nil {
-			i.Logger.Errorf("Failed to close body: %s", err)
+			i.logger.Errorf("Failed to close body: %s", err)
 		}
 	}()
 
@@ -67,7 +81,7 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 		return nil, badRequest(fmt.Errorf("failed to parse body as InterceptorRequest: %w", err))
 	}
 
-	i.Logger.Infof("Interceptor request is: %s", body.Bytes())
+	i.logger.Infof("Interceptor request is: %s", body.Bytes())
 
 	iresp := i.Process(ctx, &ireq)
 
@@ -76,25 +90,106 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 		return nil, internal(err)
 	}
 
-	i.Logger.Infof("Interceptor response is: %s", respBytes)
+	i.logger.Infof("Interceptor response is: %s", respBytes)
 
 	return respBytes, nil
 }
 
 // Process processes the interceptor request.
 func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorRequest) *triggersv1.InterceptorResponse {
+	event, err := i.processEvent(ctx, r)
+	if err != nil {
+		return interceptors.Fail(codes.InvalidArgument, err.Error())
+	}
+
+	if event.IsReviewCommentEvent() {
+		if !event.HasPipelineRecheck {
+			i.logger.Infof("Pipeline recheck comment is not found, skipping pipeline triggering")
+
+			return &triggersv1.InterceptorResponse{
+				Continue: false,
+			}
+		}
+
+		i.logger.Infof("Found pipeline %s comment, triggering pipeline", recheckComment)
+	}
+
+	prepareCodebase(event.Codebase)
+
+	codebaseBranchName := fmt.Sprintf("%s-%s", event.Codebase.Name, event.Branch)
+	trigger := true
 	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
-	event, err := getEventInfo(r)
-	if err != nil {
-		return interceptors.Fail(codes.InvalidArgument, err.Error())
+	codebaseBranch := codebaseApi.CodebaseBranch{}
+	if err = i.client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: codebaseBranchName}, &codebaseBranch); err != nil {
+		if !k8serrors.IsNotFound(err) {
+			return interceptors.Fail(codes.Internal, err.Error())
+		}
+
+		trigger = false
+
+		i.logger.Infof("Codebasebranch with the name %s is not found, skipping pipeline triggering. "+
+			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
+			codebaseBranchName,
+			event.Branch,
+			event.Codebase.Name,
+		)
 	}
 
-	codebase, err := i.getCodeBaseFromEventInfo(ctx, event, ns)
-	if err != nil {
-		return interceptors.Fail(codes.InvalidArgument, err.Error())
+	return &triggersv1.InterceptorResponse{
+		Continue: trigger,
+		Extensions: map[string]interface{}{
+			"spec":           event.Codebase.Spec,
+			"codebase":       event.Codebase.Name,
+			"codebasebranch": codebaseBranchName,
+			"pullRequest":    event.PullRequest,
+		},
+	}
+}
+
+// processEvent returns event info from interceptor request.
+func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.InterceptorRequest) (*event_processor.EventInfo, error) {
+	githubEventType, isGitHubEvent := r.Header["X-Github-Event"]
+	gitLabEventType, isGitLabEvent := r.Header["X-Gitlab-Event"]
+	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
+
+	if isGitLabEvent {
+		event, err := i.gitLabProcessor.Process(ctx, []byte(r.Body), ns, getEventTypeFromHeader(gitLabEventType))
+		if err != nil {
+			return nil, fmt.Errorf("failed to process GitLab event: %w", err)
+		}
+
+		return event, nil
 	}
 
+	if isGitHubEvent {
+		event, err := i.gitHubProcessor.Process(ctx, []byte(r.Body), ns, getEventTypeFromHeader(githubEventType))
+		if err != nil {
+			return nil, fmt.Errorf("failed to process GitHub event: %w", err)
+		}
+
+		return event, nil
+	}
+
+	event, err := i.gerritProcessor.Process(ctx, []byte(r.Body), ns, "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to process Gerrit event: %w", err)
+	}
+
+	return event, nil
+}
+
+// getEventTypeFromHeader returns event type from header.
+func getEventTypeFromHeader(headerData []string) string {
+	if len(headerData) == 0 {
+		return ""
+	}
+
+	return headerData[0]
+}
+
+// prepareCodebase prepares codebase for interceptor response.
+func prepareCodebase(codebase *codebaseApi.Codebase) {
 	if codebase.Spec.Framework != nil {
 		framework := strings.ToLower(*codebase.Spec.Framework)
 		codebase.Spec.Framework = &framework
@@ -103,193 +198,10 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
 	if codebase.Spec.CommitMessagePattern == nil {
-		codebase.Spec.CommitMessagePattern = stringP("")
+		codebase.Spec.CommitMessagePattern = pointer.String("")
 	}
 
 	if codebase.Spec.JiraServer == nil {
-		codebase.Spec.JiraServer = stringP("")
+		codebase.Spec.JiraServer = pointer.String("")
 	}
-
-	codebaseBranchName := fmt.Sprintf("%s-%s", codebase.Name, event.Branch)
-	trigger := true
-
-	codebaseBranch := codebaseApiV1.CodebaseBranch{}
-	if err := i.Client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: codebaseBranchName}, &codebaseBranch); err != nil {
-		if !k8serrors.IsNotFound(err) {
-			return interceptors.Fail(codes.Internal, err.Error())
-		}
-
-		trigger = false
-
-		i.Logger.Infof("Codebasebranch with the name %s is not found, skipping pipeline triggering. "+
-			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
-			codebaseBranchName,
-			event.Branch,
-			codebase.Name,
-		)
-	}
-
-	return &triggersv1.InterceptorResponse{
-		Continue: trigger,
-		Extensions: map[string]interface{}{
-			"spec":           codebase.Spec,
-			"codebase":       codebase.Name,
-			"codebasebranch": codebaseBranchName,
-		},
-	}
-}
-
-// getCodeBaseFromEventInfo returns codebase from the git provider event.
-// If the event is from gerrit, we search codebase by name what is equal to the gerrit project name.
-// If the event is from GitHub/GitLab, we search codebase by gitUrlPath.
-func (i *EDPInterceptor) getCodeBaseFromEventInfo(ctx context.Context, event *eventInfo, namespace string) (*codebaseApiV1.Codebase, error) {
-	if event.GitProvider == gitProviderGerrit {
-		codebase := &codebaseApiV1.Codebase{}
-		if err := i.Client.Get(ctx, ctrlClient.ObjectKey{Namespace: namespace, Name: event.RepoPath}, codebase); err != nil {
-			return nil, fmt.Errorf("failed to get codebase: %w", err)
-		}
-
-		return codebase, nil
-	}
-
-	codebase, err := i.getCodebaseByRepoPath(ctx, namespace, event.RepoPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return codebase, nil
-}
-
-// getCodebaseByRepoPath returns codebase by repository path.
-func (i *EDPInterceptor) getCodebaseByRepoPath(ctx context.Context, ns, repoPath string) (*codebaseApiV1.Codebase, error) {
-	codebaseList := &codebaseApiV1.CodebaseList{}
-	if err := i.Client.List(ctx, codebaseList, ctrlClient.InNamespace(ns), ctrlClient.Limit(codebaseListLimit)); err != nil {
-		return nil, fmt.Errorf("unable to get codebase list: %w", err)
-	}
-
-	for n := range codebaseList.Items {
-		if codebaseList.Items[n].Spec.GitUrlPath != nil && strings.EqualFold(*codebaseList.Items[n].Spec.GitUrlPath, repoPath) {
-			return &codebaseList.Items[n], nil
-		}
-	}
-
-	return nil, fmt.Errorf("codebase with repository path %s not found", repoPath)
-}
-
-// getEventInfo returns event info from interceptor request.
-func getEventInfo(r *triggersv1.InterceptorRequest) (*eventInfo, error) {
-	_, isGitHubEvent := r.Header["X-Github-Event"]
-	_, isGitLabEvent := r.Header["X-Gitlab-Event"]
-
-	if isGitLabEvent {
-		gitLabEvent, err := unmarshalGitLabEvent([]byte(r.Body))
-		if err != nil {
-			return nil, err
-		}
-
-		return &eventInfo{
-			GitProvider: gitProviderGitLab,
-			RepoPath:    convertRepositoryPath(gitLabEvent.Project.PathWithNamespace),
-			Branch:      convertBranchName(gitLabEvent.ObjectAttributes.TargetBranch),
-		}, nil
-	}
-
-	if isGitHubEvent {
-		gitHubEvent, err := unmarshalGitHubEvent([]byte(r.Body))
-		if err != nil {
-			return nil, err
-		}
-
-		return &eventInfo{
-			GitProvider: gitProviderGitHub,
-			RepoPath:    convertRepositoryPath(gitHubEvent.Repository.FullName),
-			Branch:      convertBranchName(gitHubEvent.PullRequest.Base.Ref),
-		}, nil
-	}
-
-	gerritEvent, err := unmarshalGerritEvent([]byte(r.Body))
-	if err != nil {
-		return nil, err
-	}
-
-	return &eventInfo{
-		GitProvider: gitProviderGerrit,
-		RepoPath:    strings.ToLower(gerritEvent.Project.Name),
-		Branch:      convertBranchName(gerritEvent.Change.Branch),
-	}, nil
-}
-
-// unmarshalGitLabEvent unmarshal GitLab event from json payload.
-func unmarshalGitLabEvent(body []byte) (*GitLabEvent, error) {
-	gitLabEvent := &GitLabEvent{}
-	if err := json.Unmarshal(body, gitLabEvent); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal GitLab event: %w", err)
-	}
-
-	if gitLabEvent.Project.PathWithNamespace == "" {
-		return nil, errors.New("gitlab repository path empty")
-	}
-
-	if gitLabEvent.ObjectAttributes.TargetBranch == "" {
-		return nil, errors.New("gitlab target branch empty")
-	}
-
-	return gitLabEvent, nil
-}
-
-// unmarshalGitHubEvent unmarshal GitHub event from json payload.
-func unmarshalGitHubEvent(body []byte) (*GitHubEvent, error) {
-	gitHubEvent := &GitHubEvent{}
-	if err := json.Unmarshal(body, gitHubEvent); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal GitHub event: %w", err)
-	}
-
-	if gitHubEvent.Repository.FullName == "" {
-		return nil, errors.New("github repository path empty")
-	}
-
-	if gitHubEvent.PullRequest.Base.Ref == "" {
-		return nil, errors.New("github target branch empty")
-	}
-
-	return gitHubEvent, nil
-}
-
-// unmarshalGerritEvent unmarshal Gerrit event from json payload.
-func unmarshalGerritEvent(body []byte) (*GerritEvent, error) {
-	gerritEventBody := &GerritEvent{}
-	if err := json.Unmarshal(body, gerritEventBody); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Gerrit event: %w", err)
-	}
-
-	if gerritEventBody.Project.Name == "" {
-		return nil, errors.New("gerrit repository path empty")
-	}
-
-	if gerritEventBody.Change.Branch == "" {
-		return nil, errors.New("gerrit target branch empty")
-	}
-
-	return gerritEventBody, nil
-}
-
-// stringPtr returns a pointer to the string value passed in.
-func stringP(value string) *string {
-	return &value
-}
-
-// convertRepositoryPath converts repository path to the format which is used in codebase.
-func convertRepositoryPath(repo string) string {
-	if !strings.HasPrefix(repo, "/") {
-		repo = "/" + repo
-	}
-
-	return strings.ToLower(repo)
-}
-
-// convertBranchName converts the branch name to the format used in the codebase for Kubernetes resource naming.
-func convertBranchName(branch string) string {
-	r := strings.NewReplacer("/", "-")
-
-	return r.Replace(branch)
 }

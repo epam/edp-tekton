@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: autotests-gradle
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/SergK/autotests.git"
+    - name: git-source-revision
+      default: "master"
+    - name: stage-name
+      default: "dev"
+  tasks:
+    - name: fetch-repository
+      taskRef:
+          kind: Task
+          name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: run-autotest
+      taskRef:
+        kind: Task
+        name: run-autotests-gradle
+      runAfter:
+        - fetch-repository
+      params:
+        - name: stage-name
+          value: "$(params.stage-name)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace

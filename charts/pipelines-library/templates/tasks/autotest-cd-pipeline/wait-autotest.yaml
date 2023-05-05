@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: wait-for-autotests
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of csharp project.
+  params:
+    - name: AUTOTEST_PIPELINES
+      default: 'autotes-pipeline'
+  steps:
+    - name: wait-for
+      image: alezander/tkn:1.6
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: AUTOTEST_PIPELINES
+          value: "$(params.AUTOTEST_PIPELINES)"
+      script: |
+        #!/usr/bin/env python
+
+        import subprocess
+        import json
+        import os
+        import time
+
+        pipelines = os.getenv('AUTOTEST_PIPELINES')
+        output = ""
+        pipelines_name = []
+
+        with open(pipelines, 'r') as f:
+            output = f.read()
+
+        pipelines_name = output.split()
+
+        while pipelines_name:
+            value = pipelines_name[0]
+            result = subprocess.check_output(["kubectl", "get", "pipelinerun", value, "-o=jsonpath='{.status.conditions[].reason}'"]).decode("utf-8").strip("'")
+            if result.strip() == 'Succeeded':
+                pipelines_name.pop(0)
+            if result.strip() == 'Failed':
+                print("[DEBUG]: Autotest failed.")
+                exit(1)
+            else:
+                continue
+
+        print("[DEBUG]: All autotests finished.")

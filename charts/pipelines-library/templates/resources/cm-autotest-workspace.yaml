@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autotests-workspace-template
+data:
+  volumeclaimtemplate.yaml: |
+    metadata:
+      name: shared-workspace
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: {{ .Values.tekton.workspaceSize }}
+
+

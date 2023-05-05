@@ -1,0 +1,69 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: autotest-runner
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: stage-name
+      default: ""
+    - name: cd-pipeline-name
+      default: ""
+    - name: autotes-pipeline
+      default: "autotes-pipeline"
+    - name: codebase-tags
+      default: "codebase_tags"
+  tasks:
+    - name: init-autotest
+      taskRef:
+          kind: Task
+          name: init-autotest
+      params:
+        - name: stage-name
+          value: $(params.stage-name)
+        - name: cd-pipeline-name
+          value: $(params.cd-pipeline-name)
+        - name: AUTOTEST_PIPELINES
+          value: $(params.autotes-pipeline)
+        - name: codebase-tags
+          value: $(params.codebase-tags)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+
+    - name: wait-for-autotests
+      taskRef:
+          kind: Task
+          name: wait-for-autotests
+      runAfter:
+         - init-autotest
+      params:
+        - name: AUTOTEST_PIPELINES
+          value: $(params.autotes-pipeline)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: promote-images
+      taskRef:
+        kind: Task
+        name: promote-images
+      runAfter:
+        - wait-for-autotests
+      params:
+        - name: codebase-tags
+          value: "$(params.codebase-tags)"
+        - name: CDPIPELINE_STAGE
+          value: "$(params.stage-name)"
+        - name: CDPIPELINE_CR
+          value: "$(params.cd-pipeline-name)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace

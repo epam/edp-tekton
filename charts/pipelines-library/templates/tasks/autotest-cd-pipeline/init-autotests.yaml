@@ -1,0 +1,121 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: init-autotest
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of csharp project.
+  params:
+    - name: stage-name
+      type: string
+    - name: cd-pipeline-name
+      type: string
+    - name: AUTOTEST_PIPELINES
+      default: 'autotes-pipeline'
+    - name: codebase-tags
+      default: 'codebase_tags'
+  volumes:
+    - name: autotests-workspace
+      configMap:
+        name: autotests-workspace
+  results:
+    - name: AUTOTEST_PIPELINES
+      type: string
+  steps:
+    - name: init-autotest
+      image: alezander/tkn:1.6
+      workingDir: $(workspaces.source.path)
+      volumeMounts:
+        - name: autotests-workspace
+          mountPath: "/var/configmap"
+      env:
+        - name: CODEBASE_TAGS
+          value: "$(params.codebase-tags)"
+        - name: AUTOTEST_PIPELINES
+          value: "$(params.AUTOTEST_PIPELINES)"
+        - name: STAGE_NAME
+          value: $(params.stage-name)
+        - name: CD_PIPELINE_NAME
+          value: $(params.cd-pipeline-name)
+        - name: GIT_PROVIDER
+          value: "{{ .Values.global.gitProvider }}"
+        - name: GERRIT_PORT
+          value: "{{ .Values.global.gerritSSHPort }}"
+
+      script: |
+        #!/usr/bin/env python
+
+        import subprocess
+        import json
+        import os
+        import re
+
+        autotestsList = []
+        autotestBuildTool = []
+        gitAutotesUrl = []
+        autotestsBranch = []
+        pipelines = ""
+        applications = []
+        tags = []
+        codebases = ""
+
+        cdPipelineName = os.getenv('CD_PIPELINE_NAME')
+        stage = os.getenv('STAGE_NAME')
+        gitProvider = os.getenv('GIT_PROVIDER')
+        gerritPort = os.getenv('GERRIT_PORT')
+
+        autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+        gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", gitProvider , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+
+        for element in autotests["qualityGates"]:
+            autotestsList.append(element["autotestName"])
+            autotestsBranch.append(re.sub(element["autotestName"], '', element["branchName"]).strip().strip("-"))
+            autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+            if gitProvider == "gerrit":
+                gitAutotesUrl.append("ssh://edp-ci@" + gitserver['gitHost'] + ":" + gerritPort + autotest['gitUrlPath'])
+            else:
+                gitAutotesUrl.append("https://" + gitserver['gitHost'] + autotest['gitUrlPath'])
+            autotestBuildTool.append(autotest["buildTool"])
+
+        gitSecret = gitserver['nameSshKeySecret']
+
+        for count, element in enumerate(autotestsList):
+            command = "tkn pipeline start autotests-" + autotestBuildTool[count] + " \
+            --use-param-defaults \
+            -p git-source-url=" + gitAutotesUrl[count] + " \
+            -p git-source-revision=" + autotestsBranch[count] + " \
+            -p stage-name=" + os.getenv('STAGE_NAME') +" \
+            --labels app.edp.epam.com/cdpipelinnname=" + cdPipelineName + " \
+            --labels app.edp.epam.com/stagename=" + stage + " \
+            --labels app.edp.epam.com/autotestname=" + autotestsList[count] + " \
+            --workspace name=ssh-creds,secret=" + gitSecret + " \
+            --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
+
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            output = re.search("autotests(-[A-Za-z0-9]*)* ", result.stdout)
+            pipelines += output.group() + " "
+
+        autotests_pipelines_file = os.getenv("AUTOTEST_PIPELINES")
+        with open(autotests_pipelines_file, "w") as outfile:
+            outfile.write(pipelines)
+
+        listApplications = json.loads(subprocess.check_output(["kubectl", "get", "cdpipeline", cdPipelineName , "-o=jsonpath='{.spec.applicationsToPromote}'"]).decode("utf-8").strip("'"))
+
+        kindApplications = subprocess.check_output(["kubectl", "get", "applications"])
+
+        for element in listApplications:
+            output = re.search(element + "(-[A-Za-z0-9]*)* ", str(kindApplications))
+            applications.append(output.group())
+
+        for count, element in enumerate(applications):
+            temp = subprocess.check_output(["kubectl", "get", "application", element.strip(" ") , "-o=jsonpath='{.spec.source.helm.parameters[0].value}'"]).decode("utf-8").strip("'")
+            codebases += listApplications[count] + "=" + temp + " "
+
+        codebaseFileTags = os.getenv('CODEBASE_TAGS')
+
+        with open(codebaseFileTags, "w") as outfile:
+            outfile.write(codebases)
+
+
+{{- include "resources" . | nindent 6 }}

@@ -85,10 +85,10 @@ spec:
             --use-param-defaults \
             -p git-source-url=" + gitAutotesUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
-            -p stage-name=" + os.getenv('STAGE_NAME') +" \
-            --labels app.edp.epam.com/cdpipelinnname=" + cdPipelineName + " \
-            --labels app.edp.epam.com/stagename=" + stage + " \
-            --labels app.edp.epam.com/autotestname=" + autotestsList[count] + " \
+            -p stage-name=" + stage +" \
+            --labels app.edp.epam.com/cdpipeline=" + cdPipelineName + " \
+            --labels app.edp.epam.com/stage=" + stage + " \
+            --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \
             --workspace name=ssh-creds,secret=" + gitSecret + " \
             --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
 

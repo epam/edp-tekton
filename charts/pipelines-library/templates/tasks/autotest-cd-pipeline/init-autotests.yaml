@@ -16,9 +16,9 @@ spec:
     - name: codebase-tags
       default: 'codebase_tags'
   volumes:
-    - name: autotests-workspace
+    - name: autotests-workspace-template
       configMap:
-        name: autotests-workspace
+        name: autotests-workspace-template
   results:
     - name: AUTOTEST_PIPELINES
       type: string
@@ -27,7 +27,7 @@ spec:
       image: alezander/tkn:1.6
       workingDir: $(workspaces.source.path)
       volumeMounts:
-        - name: autotests-workspace
+        - name: autotests-workspace-template
           mountPath: "/var/configmap"
       env:
         - name: CODEBASE_TAGS

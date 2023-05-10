@@ -70,7 +70,7 @@ spec:
 
         for element in autotests["qualityGates"]:
             autotestsList.append(element["autotestName"])
-            autotestsBranch.append(re.sub(element["autotestName"], '', element["branchName"]).strip().strip("-"))
+            autotestsBranch.append(element["branchName"])
             autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
             if gitProvider == "gerrit":
                 gitAutotesUrl.append("ssh://edp-ci@" + gitserver['gitHost'] + ":" + gerritPort + autotest['gitUrlPath'])
@@ -86,9 +86,10 @@ spec:
             -p git-source-url=" + gitAutotesUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
             -p stage-name=" + stage +" \
-            --labels app.edp.epam.com/cdpipeline=" + cdPipelineName + " \
+            --labels app.edp.epam.com/pipeline=" + cdPipelineName + " \
             --labels app.edp.epam.com/stage=" + stage + " \
             --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \
+            --labels app.edp.epam.com/branch=" + autotestsBranch[count] + " \
             --workspace name=ssh-creds,secret=" + gitSecret + " \
             --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
 

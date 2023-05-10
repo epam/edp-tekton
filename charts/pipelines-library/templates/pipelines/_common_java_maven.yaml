@@ -225,4 +225,27 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+
+- name: build
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - sonar
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.releasePath=edp-maven-releases'
+        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+        - '-Dartifactory.groupPath=edp-maven-group'
+        - clean
+        - package
+        - '-DskipTests=true'
+  workspaces:
+    - name: source
+      workspace: shared-workspace
 {{- end -}}

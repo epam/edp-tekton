@@ -36,9 +36,10 @@ global:
                 assert f"sonar-prepare-files-{buildtool}" == rt[6]["taskRef"]["name"]
                 assert "sonar" in rt[7]["name"]
                 if cbtype == "app":
-                    assert "dockerfile-lint" in rt[8]["name"]
-                    assert "dockerbuild-verify" in rt[9]["name"]
-                    assert "helm-lint" in rt[10]["name"]
+                    assert "build" in rt[8]["name"]
+                    assert "dockerfile-lint" in rt[9]["name"]
+                    assert "dockerbuild-verify" in rt[10]["name"]
+                    assert "helm-lint" in rt[11]["name"]
 
                 assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]
@@ -156,9 +157,10 @@ global:
                 assert "test" in rt[4]["name"]
                 assert "sonar" in rt[5]["name"]
                 if cbtype == "app":
-                    assert "dockerfile-lint" in rt[6]["name"]
-                    assert "dockerbuild-verify" in rt[7]["name"]
-                    assert "helm-lint" in rt[8]["name"]
+                    assert "build" in rt[6]["name"]
+                    assert "dockerfile-lint" in rt[7]["name"]
+                    assert "dockerbuild-verify" in rt[8]["name"]
+                    assert "helm-lint" in rt[9]["name"]
 
                 assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
@@ -271,9 +273,10 @@ global:
                 assert "test" in rt[4]["name"]
                 assert "sonar" in rt[5]["name"]
                 if cbtype == "app":
-                    assert "dockerfile-lint" in rt[6]["name"]
-                    assert "dockerbuild-verify" in rt[7]["name"]
-                    assert "helm-lint" in rt[8]["name"]
+                    assert "build" in rt[6]["name"]
+                    assert "dockerfile-lint" in rt[7]["name"]
+                    assert "dockerbuild-verify" in rt[8]["name"]
+                    assert "helm-lint" in rt[9]["name"]
 
                 assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]

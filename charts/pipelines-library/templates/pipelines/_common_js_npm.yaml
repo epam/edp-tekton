@@ -88,7 +88,7 @@
 {{- end -}}
 
 {{- define "js-npm-review-common" -}}
-- name: compile
+- name: npm-init
   taskRef:
     kind: Task
     name: npm
@@ -103,8 +103,23 @@
         npm set registry http://${NEXUS_REPOSITORY_URL}/ --location project
         npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local --location project
         npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64 --location project
-        npm install
-        npm run build:clean
+        npm ci
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: build
+  taskRef:
+    kind: Task
+    name: npm
+  runAfter:
+    - npm-init
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
+        npm run build:prod
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -114,7 +129,7 @@
     kind: Task
     name: npm
   runAfter:
-    - compile
+    - build
   params:
     - name: BASE_IMAGE
       value: $(params.image)

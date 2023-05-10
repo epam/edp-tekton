@@ -56,7 +56,7 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
-    - name: compile
+    - name: npm-init
       taskRef:
         kind: Task
         name: npm
@@ -71,8 +71,23 @@ spec:
             npm set registry http://${NEXUS_REPOSITORY_URL}/
             npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
             npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64
-            npm install
-            npm run build:clean
+            npm ci
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: npm
+      runAfter:
+        - npm-init
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            npm run build:prod
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -82,7 +97,7 @@ spec:
         kind: Task
         name: npm
       runAfter:
-        - compile
+        - build
       params:
         - name: BASE_IMAGE
           value: $(params.image)

@@ -58,3 +58,42 @@
     - name: ssh-directory
       workspace: ssh-creds
 {{- end -}}
+
+{{- define "terraform-check-common" -}}
+
+- name: terraform-check
+  taskRef:
+    kind: Task
+    name: terraform-check
+  runAfter:
+    - get-version
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        pre-commit run --all-files
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - terraform-check
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+{{- end -}}

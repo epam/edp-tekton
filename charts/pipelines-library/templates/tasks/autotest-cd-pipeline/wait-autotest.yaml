@@ -11,7 +11,7 @@ spec:
       default: 'autotes-pipeline'
   steps:
     - name: wait-for
-      image: alezander/tkn:1.6
+      image: epamedp/tekton-autotest:0.1.1
       workingDir: $(workspaces.source.path)
       env:
         - name: AUTOTEST_PIPELINES

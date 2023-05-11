@@ -1,0 +1,64 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-terraform-aws-inf-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/terraform-terraform-aws"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'terraform-terraform'
+      description: "Project name"
+      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+  tasks:
+
+{{- include "gerrit-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-terraform-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "terraform-check-common" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+{{ end }}

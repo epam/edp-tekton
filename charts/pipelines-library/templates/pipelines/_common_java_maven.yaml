@@ -249,3 +249,15 @@
     - name: source
       workspace: shared-workspace
 {{- end -}}
+
+{{- define "java-maven-get-module" -}}
+- name: get-maven-module
+  taskRef:
+    kind: Task
+    name: get-maven-module
+  runAfter:
+    - init-values
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}

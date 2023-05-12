@@ -59,6 +59,8 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "java-maven-get-module" . | nindent 4 }}
+
 {{- include "java-maven-review-common" . | nindent 4 }}
 
     - name: dockerfile-lint
@@ -76,8 +78,12 @@ spec:
         kind: Task
         name: dockerbuild-verify
       runAfter:
+        - get-maven-module
         - build
         - dockerfile-lint
+      params:
+        - name: CONTEXT
+          value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
       workspaces:
         - name: source
           workspace: shared-workspace

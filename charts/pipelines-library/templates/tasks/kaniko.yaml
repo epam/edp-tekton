@@ -20,8 +20,8 @@ spec:
     - name: IMAGE
       description: Name (reference) of the image to build.
     - name: DOCKERFILE
-      description: Path to the Dockerfile to build.
-      default: ./Dockerfile
+      description: Dockerfile name.
+      default: "Dockerfile"
     - name: CONTEXT
       description: The build context used by Kaniko.
       default: ./
@@ -52,7 +52,7 @@ spec:
       image: $(params.BUILDER_IMAGE)
       args:
         - $(params.EXTRA_ARGS)
-        - --dockerfile=$(params.DOCKERFILE)
+        - --dockerfile=$(workspaces.source.path)/$(params.DOCKERFILE)
         - --context=$(workspaces.source.path)/$(params.CONTEXT) # The user does not need to care of the workspace and the source.
         - --destination=$(params.IMAGE)
         - --digest-file=$(results.IMAGE_DIGEST.path)

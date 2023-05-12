@@ -70,7 +70,9 @@ spec:
         SONAR_SOURCES="codereviewAnalysisRunDir"
         mkdir -p "${SONAR_SOURCES}"
 
-        if [ -f "target" ]; then
+        DEPLOYABLE_MODULE=$(grep '<deployable.module>' pom.xml | awk -F '[><]' '{print $3}' || true)
+
+        if [ -z "${DEPLOYABLE_MODULE}" ] ; then
             echo "[TEKTON][DEBUG] Project with usual structure"
             export LANG=en_US.utf-8
             git config --local core.quotepath false
@@ -99,6 +101,7 @@ spec:
             for targets in $(find . -type d -name "target")
                 do cp --parents -r ${targets} ${SONAR_SOURCES}
             done
+            SONAR_SOURCES="../${SONAR_SOURCES}"
         fi
 
         SONAR_PROJECT_KEY="${CODEBASE_NAME}-${NORMALIZED_BRANCH}:change-${CHANGE_NUMBER}-${PATCHSET_NUMBER}"

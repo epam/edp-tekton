@@ -162,6 +162,60 @@
       value: $(tasks.get-version.results.IS_TAG)
 {{- end -}}
 
+# The last section for Build Pipeline
+{{- define "build-pipeline-end-java-maven" -}}
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - get-maven-module
+    - create-ecr-repository
+  params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+    - name: KANIKO_CACHE_REPO
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+    - name: CONTEXT
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - kaniko-build
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: update-cbis
+  taskRef:
+    kind: Task
+    name: update-cbis
+  runAfter:
+    - git-tag
+  params:
+    - name: CBIS_NAME
+      value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+    - name: IMAGE_TAG
+      value: $(tasks.get-version.results.IS_TAG)
+{{- end -}}
+
 {{- define "build-pipeline-lib-end" -}}
 - name: git-tag
   taskRef:

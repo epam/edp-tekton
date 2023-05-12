@@ -28,8 +28,6 @@ spec:
       description: "VCS tag"
     - name: IS_TAG
       description: "CodebaseImageStream tag"
-    - name: DEPLOYABLE_MODULE
-    - name: DEPLOYABLE_MODULE_DIR
     - name: TIMESTAMP
       description: Current timestamp
   volumes:
@@ -96,15 +94,3 @@ spec:
         printf "%s" "${VERSION}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
-
-        DEPLOYABLE_MODULE=$(cat pom.xml | grep -Poh '<deployable.module>\K[^<]*' || echo "")
-        echo "Deployable module: ${DEPLOYABLE_MODULE}"
-
-        if [ "${DEPLOYABLE_MODULE}" = "" ] ; then
-            DEPLOYABLE_MODULE_DIR="."
-        else
-            DEPLOYABLE_MODULE_DIR="./DEPLOYABLE_MODULE"
-        fi
-
-        printf "%s" "${DEPLOYABLE_MODULE}" > "$(results.DEPLOYABLE_MODULE.path)"
-        printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"

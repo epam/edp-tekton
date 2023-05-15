@@ -129,7 +129,7 @@ spec:
         - build
       params:
         - name: BASE_IMAGE
-          value: 'epamedp/tekton-python-make:0.1.2'
+          value: 'epamedp/tekton-python-make:0.1.3'
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS

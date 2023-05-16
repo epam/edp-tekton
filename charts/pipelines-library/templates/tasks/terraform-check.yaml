@@ -23,7 +23,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: alezander/pre-commit:1.1
+      default: epamedp/tekton-pre-commit:0.1.3
       description: The terraform-check image.
   steps:
     - name: terraform

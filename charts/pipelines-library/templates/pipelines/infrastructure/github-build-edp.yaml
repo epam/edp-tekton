@@ -54,11 +54,8 @@ spec:
       runAfter:
         - init-values
       params:
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
 
 {{- include "terraform-check-common" . | nindent 4 }}
 

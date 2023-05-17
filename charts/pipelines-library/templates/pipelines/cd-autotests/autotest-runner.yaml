@@ -19,6 +19,8 @@ spec:
       default: "autotes-pipeline"
     - name: codebase-tags
       default: "codebase_tags"
+    - name: parent-pipeline-name
+      default: $(context.pipelineRun.name)
   tasks:
     - name: init-autotest
       taskRef:
@@ -33,6 +35,8 @@ spec:
           value: $(params.autotes-pipeline)
         - name: codebase-tags
           value: $(params.codebase-tags)
+        - name: parent-pipeline-name
+          value: $(params.parent-pipeline-name)
       workspaces:
         - name: source
           workspace: shared-workspace

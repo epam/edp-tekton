@@ -15,6 +15,8 @@ spec:
       default: 'autotes-pipeline'
     - name: codebase-tags
       default: 'codebase_tags'
+    - name: parent-pipeline-name
+      default: ''
   volumes:
     - name: autotests-workspace-template
       configMap:
@@ -42,6 +44,8 @@ spec:
           value: "{{ .Values.global.gitProvider }}"
         - name: GERRIT_PORT
           value: "{{ .Values.global.gerritSSHPort }}"
+        - name: PARENT_PIPELINE_NAME
+          value: $(params.parent-pipeline-name)
 
       script: |
         #!/usr/bin/env python
@@ -63,6 +67,7 @@ spec:
         cdPipelineName = os.getenv('CD_PIPELINE_NAME')
         stage = os.getenv('STAGE_NAME')
         gitProvider = os.getenv('GIT_PROVIDER')
+        parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
         gerritPort = os.getenv('GERRIT_PORT')
 
         autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
@@ -90,6 +95,7 @@ spec:
             --labels app.edp.epam.com/stage=" + stage + " \
             --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \
             --labels app.edp.epam.com/branch=" + autotestsBranch[count] + " \
+            --labels app.edp.epam.com/parentPipelineRun=" + parentPipelineName + " \
             --workspace name=ssh-creds,secret=" + gitSecret + " \
             --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
 

@@ -54,7 +54,7 @@ spec:
     - name: promote-images
       taskRef:
         kind: Task
-        name: promote-images
+        name: promote-images-autotests
       runAfter:
         - wait-for-autotests
       params:

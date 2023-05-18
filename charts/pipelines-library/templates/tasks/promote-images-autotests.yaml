@@ -1,8 +1,11 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: promote-images
+  name: promote-images-autotests
 spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of csharp project.
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
@@ -32,9 +35,12 @@ spec:
       description: CDPipeline custom resource definition.
       type: string
       default: "cdpipelines.v2.edp.epam.com"
+    - name: codebase-tags
+      type: string
   steps:
     - name: annotate
       image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
       env:
         - name: CODEBASE_TAG
           value: "$(params.CODEBASE_TAG)"
@@ -44,14 +50,22 @@ spec:
           value: "$(params.CDPIPELINE_STAGE)"
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
+        - name: CODEBASE_TAGS
+          value: "$(params.codebase-tags)"
       script: |
         set -ex
+
+        if [ -n "${CODEBASE_TAGS}" ]; then
+          CODEBASE_TAG=$(cat ${CODEBASE_TAGS})
+        fi
+
         STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
         for i in ${CODEBASE_TAG}; do
           kubectl annotate --overwrite "${STAGE_CRD}" "${STAGE_CR}" "app.edp.epam.com/${i}"
         done
     - name: promote-images
       image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
       env:
         - name: CDPIPELINE_CR
           value: "$(params.CDPIPELINE_CR)"
@@ -63,8 +77,14 @@ spec:
           value: "$(params.CBIS_CRD)"
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
+        - name: CODEBASE_TAGS
+          value: "$(params.codebase-tags)"
       script: |
         set -ex
+
+        if [ -n "${CODEBASE_TAGS}" ]; then
+          CODEBASE_TAG=$(cat ${CODEBASE_TAGS})
+        fi
 
         APPS_PROMOTE=$(kubectl get "${CDPIPELINE_CRD}" "${CDPIPELINE_CR}" -o jsonpath='{.spec.applicationsToPromote[*]}')
         DATE_FORMAT=$(date +"%Y-%m-%dT%T")

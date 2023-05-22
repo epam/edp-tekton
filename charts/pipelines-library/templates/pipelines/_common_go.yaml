@@ -25,7 +25,7 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        go test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
+        make test
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -58,7 +58,7 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        go build -o go-binary "$(grep -irl 'package main')"
+        make build
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -86,7 +86,7 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        go build -o go-binary "$(grep -irl 'package main')"
+        make build
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -102,7 +102,7 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        go test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
+        make test
   workspaces:
     - name: source
       workspace: shared-workspace

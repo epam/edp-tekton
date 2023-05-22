@@ -1,20 +1,22 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-go-operator-sdk-app-build-default
+  name: gerrit-go-{{ $k }}-app-build-edp
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-operator-sdk"
+      default: "https://github.com/epmd-edp/go-go-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -22,15 +24,15 @@ spec:
       default: "master"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: "golang-go"
+      default: "{{ $k }}-go"
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
@@ -61,27 +63,26 @@ spec:
       default: ""
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-go-default
+        name: get-version-edp
       runAfter:
         - init-values
       params:
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{- include "golang-build-operator-sdk-common" . | nindent 4 }}
+{{- include "golang-build-common" . | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 
-{{ include "finally-block-default" . | nindent 2 }}
+{{ include "finally-block-edp" . | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

@@ -1,20 +1,22 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-go-beego-app-build-default
+  name: gerrit-go-{{ $k }}-app-build-default
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-beego"
+      default: "https://github.com/epmd-edp/go-go-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -22,22 +24,22 @@ spec:
       default: "master"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: "golang-go"
+      default: "{{ $k }}-go"
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'golang:1.19.6-alpine3.16'
+      default: 'golang:1.19.6-bullseye'
       description: "go image version"
       type: string
     - name: changeNumber
@@ -61,7 +63,7 @@ spec:
       default: ""
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -84,4 +86,6 @@ spec:
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

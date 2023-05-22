@@ -14,7 +14,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['go']:
-        for framework in ['beego', 'operator-sdk']:
+        for framework in ['beego', 'gin', 'operator-sdk']:
 
             assert f"gerrit-go-{framework}-app-review" in r["pipeline"]
             assert f"gerrit-go-{framework}-app-build-default" in r["pipeline"]
@@ -95,7 +95,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['go']:
-        for framework in ['beego', 'operator-sdk']:
+        for framework in ['beego', 'gin', 'operator-sdk']:
 
             github_review_pipeline = f"{vcs}-{buildtool}-{framework}-app-review"
             github_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-app-build-default"
@@ -169,7 +169,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['go']:
-        for framework in ['beego', 'operator-sdk']:
+        for framework in ['beego', 'gin', 'operator-sdk']:
 
             review_pipeline = f"{vcs}-{buildtool}-{framework}-app-review"
             build_pipeline_def = f"{vcs}-{buildtool}-{framework}-app-build-default"

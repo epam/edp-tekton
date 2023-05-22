@@ -1,20 +1,22 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-go-beego-app-review
+  name: gerrit-go-{{ $k }}-app-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-beego"
+      default: "https://github.com/epmd-edp/go-go-{{ $k }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -26,27 +28,27 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: 'http://sonar.{{ $.Release.Namespace }}:9000'
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME
-      default: "golang-go"
+      default: "{{ $k }}-go"
       description: "Project name"
       type: string
-    - name: CODEBASEBRANCH_NAME
-      description: "Codebasebranch name"
-      type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
-      type: string
     - name: image
-      default: 'golang:1.19.6-alpine3.16'
+      default: 'golang:1.19.6-bullseye'
       description: "go image version"
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
       default: "deploy-templates"
@@ -55,36 +57,49 @@ spec:
       default: "ct-configs"
   tasks:
 
-{{- include "gitlab-review-start" . | nindent 4 }}
+{{- include "gerrit-review-start" $ | nindent 4 }}
 
-    - name: build
+{{- include "golang-review-common" . | nindent 4 }}
+
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
       taskRef:
         kind: Task
-        name: golang
+        name: git-cli
       runAfter:
-        - init-values
+        - test
       params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
           value: |
-            build -o go-binary "$(grep -irl 'package main')"
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
       workspaces:
         - name: source
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
 
-    - name: test
+    - name: sonar-prepare-files
       taskRef:
         kind: Task
-        name: golang
+        name: sonar-prepare-files-general
       runAfter:
-        - build
+        - fetch-target-branch
       params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            test -v ./... -coverprofile=coverage.out "$(grep -irl 'package main')"
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -94,14 +109,16 @@ spec:
         kind: Task
         name: sonarqube-scanner
       runAfter:
-        - test
+        - sonar-prepare-files
       params:
         - name: SONAR_HOST_URL
           value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
         - name: SONAR_PROJECT_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_SOURCES
+          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -142,6 +159,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "gitlab-review-vote" . | nindent 2 }}
+{{ include "gerrit-review-vote" $ | nindent 2 }}
 
+---
+{{ end }}
 {{ end }}

@@ -70,6 +70,7 @@
   params:
     - name: EXTRA_COMMANDS
       value: |
+        chown -R $(whoami):$(whoami) .
         pre-commit run --all-files
   workspaces:
     - name: source

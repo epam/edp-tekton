@@ -32,4 +32,6 @@ spec:
       script: |
         set -ex
         $(params.EXTRA_COMMANDS)
+      securityContext:
+        runAsUser: 0
 {{- include "resources" . | nindent 6 }}

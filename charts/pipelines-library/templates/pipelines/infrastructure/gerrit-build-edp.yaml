@@ -57,7 +57,7 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
-{{- include "terraform-check-common" . | nindent 4 }}
+{{- include "terraform-check-build-common" . | nindent 4 }}
 
 {{ include "finally-block-edp" . | nindent 2 }}
 

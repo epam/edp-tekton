@@ -59,7 +59,27 @@
       workspace: ssh-creds
 {{- end -}}
 
-{{- define "terraform-check-common" -}}
+
+{{- define "terraform-check-review-common" -}}
+
+- name: terraform-check
+  taskRef:
+    kind: Task
+    name: terraform-check
+  runAfter:
+    - init-values
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        chown -R $(whoami):$(whoami) .
+        pre-commit run --all-files
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+{{- end -}}
+
+{{- define "terraform-check-build-common" -}}
 
 - name: terraform-check
   taskRef:

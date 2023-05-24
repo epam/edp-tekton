@@ -36,19 +36,7 @@ spec:
 
 {{- include "gitlab-review-start" . | nindent 4 }}
 
-    - name: terraform-check
-      taskRef:
-        kind: Task
-        name: terraform-check
-      runAfter:
-        - init-values
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            pre-commit run --all-files
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "terraform-check-review-common" . | nindent 4 }}
 
 {{ include "gitlab-review-vote" . | nindent 2 }}
 

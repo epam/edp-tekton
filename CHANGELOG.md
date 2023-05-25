@@ -2,17 +2,83 @@
 ## [Unreleased]
 
 
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2023-05-25
+### Features
+
+- Add pipelines for Helm application [EPMDEDP-11478](https://jiraeu.epam.com/browse/EPMDEDP-11478)
+- Implement autotests in tekton [EPMDEDP-11660](https://jiraeu.epam.com/browse/EPMDEDP-11660)
+- Add new JS frameworks [EPMDEDP-11760](https://jiraeu.epam.com/browse/EPMDEDP-11760)
+- Add trivy-scan task to check image vulnerabilities [EPMDEDP-11763](https://jiraeu.epam.com/browse/EPMDEDP-11763)
+- Add Gin Go framework [EPMDEDP-11836](https://jiraeu.epam.com/browse/EPMDEDP-11836)
+- Add pipeline for dotnet 3.1 aplication [EPMDEDP-11881](https://jiraeu.epam.com/browse/EPMDEDP-11881)
+- Add review pipeline re-triggering by comment /recheck [EPMDEDP-11899](https://jiraeu.epam.com/browse/EPMDEDP-11899)
+- Enable support for maven multimodule project [EPMDEDP-11937](https://jiraeu.epam.com/browse/EPMDEDP-11937)
+- Implement autotest as quality gate [EPMDEDP-11966](https://jiraeu.epam.com/browse/EPMDEDP-11966)
+- Add terraform infrastructure pipeline [EPMDEDP-8292](https://jiraeu.epam.com/browse/EPMDEDP-8292)
+
+### Bug Fixes
+
+- Fix the sequence of stages run in the gerrit-kaniko-other-app-review pipeline [EPMDEDP-11763](https://jiraeu.epam.com/browse/EPMDEDP-11763)
+- Fix Tekton dashboard link for pipelines [EPMDEDP-11835](https://jiraeu.epam.com/browse/EPMDEDP-11835)
+- Fix nexus proxy usage for npm [EPMDEDP-11837](https://jiraeu.epam.com/browse/EPMDEDP-11837)
+- Refactor helm-lint task [EPMDEDP-11873](https://jiraeu.epam.com/browse/EPMDEDP-11873)
+- Refactor helm-lint task for Tekton helm pipelines [EPMDEDP-11873](https://jiraeu.epam.com/browse/EPMDEDP-11873)
+- Fix ct-lint values [EPMDEDP-11909](https://jiraeu.epam.com/browse/EPMDEDP-11909)
+- Add build step to review pipelines [EPMDEDP-11927](https://jiraeu.epam.com/browse/EPMDEDP-11927)
+- Update configmap name in deployment [EPMDEDP-11966](https://jiraeu.epam.com/browse/EPMDEDP-11966)
+- Wrong tag value for Helm app EDP strategy [EPMDEDP-11973](https://jiraeu.epam.com/browse/EPMDEDP-11973)
+- Separate promotion task for autotests and cdpipeline [EPMDEDP-12005](https://jiraeu.epam.com/browse/EPMDEDP-12005)
+- Moved the task to common and refactor to run pre-commit on OKD [EPMDEDP-12079](https://jiraeu.epam.com/browse/EPMDEDP-12079)
+- Change permission to run pre-commit on OKD [EPMDEDP-12079](https://jiraeu.epam.com/browse/EPMDEDP-12079)
+- Fix terraform infrastructure pipeline [EPMDEDP-8292](https://jiraeu.epam.com/browse/EPMDEDP-8292)
+
+### Code Refactoring
+
+- Align labels for PipelineRuns CR [EPMDEDP-12004](https://jiraeu.epam.com/browse/EPMDEDP-12004)
+
+### Routine
+
+- Update current development version [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+- Remove go and npm cache to increase performance [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+- Remove make test duplication for keycloak-operator [EPMDEDP-11552](https://jiraeu.epam.com/browse/EPMDEDP-11552)
+- Refactor the `helm-lint` Tekton Task [EPMDEDP-11695](https://jiraeu.epam.com/browse/EPMDEDP-11695)
+- Add ability to change tekton workspace size via helm values [EPMDEDP-11704](https://jiraeu.epam.com/browse/EPMDEDP-11704)
+- Add unit tests for JS frameworks [EPMDEDP-11760](https://jiraeu.epam.com/browse/EPMDEDP-11760)
+- Added task wait-for to create a wait queue for the task helm-push-gh-pages [EPMDEDP-11765](https://jiraeu.epam.com/browse/EPMDEDP-11765)
+- Align argocd tekton diff [EPMDEDP-11766](https://jiraeu.epam.com/browse/EPMDEDP-11766)
+- Remove .npmignore from npm task [EPMDEDP-11821](https://jiraeu.epam.com/browse/EPMDEDP-11821)
+- Bump version to 0.5.0 [EPMDEDP-11826](https://jiraeu.epam.com/browse/EPMDEDP-11826)
+- Update go version for GH Actions [EPMDEDP-11899](https://jiraeu.epam.com/browse/EPMDEDP-11899)
+- Switch CodebaseImageStream tags creation to RFC3339 time format [EPMDEDP-11903](https://jiraeu.epam.com/browse/EPMDEDP-11903)
+- Migrate ct-lint config to values file [EPMDEDP-11909](https://jiraeu.epam.com/browse/EPMDEDP-11909)
+- Add templates for github issues [EPMDEDP-11928](https://jiraeu.epam.com/browse/EPMDEDP-11928)
+- Bump tekton-dashboard version [EPMDEDP-11929](https://jiraeu.epam.com/browse/EPMDEDP-11929)
+- Bump semgrep version [EPMDEDP-11949](https://jiraeu.epam.com/browse/EPMDEDP-11949)
+- Update autotests [EPMDEDP-12004](https://jiraeu.epam.com/browse/EPMDEDP-12004)
+- Update base image in autotests [EPMDEDP-12004](https://jiraeu.epam.com/browse/EPMDEDP-12004)
+- Add labels to autotest pipeline [EPMDEDP-12017](https://jiraeu.epam.com/browse/EPMDEDP-12017)
+- Update image version in tekton pipeline [EPMDEDP-12020](https://jiraeu.epam.com/browse/EPMDEDP-12020)
+- Update image version in tekton pipeline [EPMDEDP-8292](https://jiraeu.epam.com/browse/EPMDEDP-8292)
+
+
 <a name="v0.4.0"></a>
 ## [v0.4.0] - 2023-03-26
 ### Features
 
+- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
+- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
+- Add commit-validate step to custom-pipelines [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
+- Enable Route for Tekton dashboard [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
 - Merge build and review TriggerTempletes into one for each [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Add pipelines for containers app [EPMDEDP-11320](https://jiraeu.epam.com/browse/EPMDEDP-11320)
+- Add  FastApi and Flask Tekton pipelines for Github VCS [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
 - FastApi and Flask Tekton pipelines for Gerrit VCS [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
 - Add FastApi and Flask Tekton pipelines for Gitlab VCS [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
-- Add  FastApi and Flask Tekton pipelines for Github VCS [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
-- Add ability for kaniko-build to operate with openshift internal registry [EPMDEDP-11429](https://jiraeu.epam.com/browse/EPMDEDP-11429)
 - Add RoleBinding to enable tekton build with openshift internal registry [EPMDEDP-11429](https://jiraeu.epam.com/browse/EPMDEDP-11429)
+- Add ability for kaniko-build to operate with openshift internal registry [EPMDEDP-11429](https://jiraeu.epam.com/browse/EPMDEDP-11429)
 - Send notification to MSteams chat when Build pipeline failed [EPMDEDP-11464](https://jiraeu.epam.com/browse/EPMDEDP-11464)
 - Implement read-only mode in tekton-dashboard [EPMDEDP-11467](https://jiraeu.epam.com/browse/EPMDEDP-11467)
 - Add e2e Tekton Task [EPMDEDP-11483](https://jiraeu.epam.com/browse/EPMDEDP-11483)
@@ -28,10 +94,12 @@
 
 ### Bug Fixes
 
+- Allow default storageClass [EPMDEDP-11230](https://jiraeu.epam.com/browse/EPMDEDP-11230)
+- Remove build version from sem version of Jira [EPMDEDP-11287](https://jiraeu.epam.com/browse/EPMDEDP-11287)
 - Add JIRA_SERVER parameter to Tekton build pipelines for headlamp application [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Fix permissions error in npm-push on OKD [EPMDEDP-11329](https://jiraeu.epam.com/browse/EPMDEDP-11329)
-- Align for common-library approach [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
 - Add updating helm chart dependencies in Makefile [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
+- Align for common-library approach [EPMDEDP-11359](https://jiraeu.epam.com/browse/EPMDEDP-11359)
 - Customization mkdocs Task [EPMDEDP-11432](https://jiraeu.epam.com/browse/EPMDEDP-11432)
 - Fix the helm-lint Task for edp-tekton app [EPMDEDP-11443](https://jiraeu.epam.com/browse/EPMDEDP-11443)
 - Bump npm version in headlamp pipeline [EPMDEDP-11458](https://jiraeu.epam.com/browse/EPMDEDP-11458)
@@ -57,18 +125,22 @@
 
 ### Routine
 
-- Tekton deployment diff common-library [EPMDEDP-11218](https://jiraeu.epam.com/browse/EPMDEDP-11218)
+- Convert application version to lowercase [EPMDEDP-11216](https://jiraeu.epam.com/browse/EPMDEDP-11216)
 - Tekton deployment diff [EPMDEDP-11218](https://jiraeu.epam.com/browse/EPMDEDP-11218)
+- Tekton deployment diff common-library [EPMDEDP-11218](https://jiraeu.epam.com/browse/EPMDEDP-11218)
+- Bump Semgrep version to 1.2.1, add --jobs flag to the executable command [EPMDEDP-11219](https://jiraeu.epam.com/browse/EPMDEDP-11219)
 - Update semgrep [EPMDEDP-11219](https://jiraeu.epam.com/browse/EPMDEDP-11219)
+- Align Tekton dependencies [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
 - Restore common-library [EPMDEDP-11265](https://jiraeu.epam.com/browse/EPMDEDP-11265)
+- Remove tekton common-library [EPMDEDP-11265](https://jiraeu.epam.com/browse/EPMDEDP-11265)
 - Align current development version [EPMDEDP-11265](https://jiraeu.epam.com/browse/EPMDEDP-11265)
 - Remove edpName from values [EPMDEDP-11265](https://jiraeu.epam.com/browse/EPMDEDP-11265)
-- Remove tekton common-library [EPMDEDP-11265](https://jiraeu.epam.com/browse/EPMDEDP-11265)
+- Change codebase parameter to codebasebranch in PipelineRun name [EPMDEDP-11293](https://jiraeu.epam.com/browse/EPMDEDP-11293)
+- Add custom pipelines for edp-admin-console [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
+- Add custom pipelines for edp-component-operator [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Add custom pipelines for edp-tekton [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Add custom pipelines for edp-install [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
-- Add custom pipelines for edp-admin-console [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Update Tekton build and review pipelines for headlamp application [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
-- Add custom pipelines for edp-component-operator [EPMDEDP-11307](https://jiraeu.epam.com/browse/EPMDEDP-11307)
 - Rename the pipelines for kaniko buildtool [EPMDEDP-11320](https://jiraeu.epam.com/browse/EPMDEDP-11320)
 - Update custom tekton-dotnet image [EPMDEDP-11328](https://jiraeu.epam.com/browse/EPMDEDP-11328)
 - Add request-limit resource block to Tasks [EPMDEDP-11374](https://jiraeu.epam.com/browse/EPMDEDP-11374)
@@ -92,36 +164,19 @@
 - Update images for Tekton maven pipelines [EPMDEDP-11643](https://jiraeu.epam.com/browse/EPMDEDP-11643)
 - Bump tekton-helm image version from epamedp/tekton-helm:0.1.3 to epamedp/tekton-helm:0.1.4 [EPMDEDP-11692](https://jiraeu.epam.com/browse/EPMDEDP-11692)
 - Move the `e2e` task from build to review pipeline [EPMDEDP-11697](https://jiraeu.epam.com/browse/EPMDEDP-11697)
+- Implement library build and review pipelines for .NET 6.0 (Gitlab) [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
 - Implement pipelines for .NET 6.0 (Gerrit) [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
 - Update pipelines for .Net 6.0 [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
 - Use container image from epamedp docker hub account [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
 - Implement library build and review pipelines for .NET 6.0 (Gerrit) [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
-- Implement library build and review pipelines for .NET 6.0 (Gitlab) [EPMDEDP-11731](https://jiraeu.epam.com/browse/EPMDEDP-11731)
 - Implement pipelines for .NET 6.0 (Gitlab) [EPMDEDP-11740](https://jiraeu.epam.com/browse/EPMDEDP-11740)
 
 
 <a name="v0.3.1"></a>
-## [v0.3.1] - 2023-01-13
-### Features
-
-- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
-- Implement Kaniko cache [EPMDEDP-10532](https://jiraeu.epam.com/browse/EPMDEDP-10532)
-- Add commit-validate step to custom-pipelines [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
-- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
-- Add commit-validate step to common-library [EPMDEDP-11210](https://jiraeu.epam.com/browse/EPMDEDP-11210)
-- Enable Route for Tekton dashboard [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
-
-### Bug Fixes
-
-- Allow default storageClass [EPMDEDP-11230](https://jiraeu.epam.com/browse/EPMDEDP-11230)
-- Remove build version from sem version of Jira [EPMDEDP-11287](https://jiraeu.epam.com/browse/EPMDEDP-11287)
-
+## [v0.3.1] - 2023-01-23
 ### Routine
 
 - Convert application version to lowercase [EPMDEDP-11216](https://jiraeu.epam.com/browse/EPMDEDP-11216)
-- Bump Semgrep version to 1.2.1, add --jobs flag to the executable command [EPMDEDP-11219](https://jiraeu.epam.com/browse/EPMDEDP-11219)
-- Align Tekton dependencies [EPMDEDP-11226](https://jiraeu.epam.com/browse/EPMDEDP-11226)
-- Change codebase parameter to codebasebranch in PipelineRun name [EPMDEDP-11293](https://jiraeu.epam.com/browse/EPMDEDP-11293)
 
 
 <a name="v0.3.0"></a>
@@ -593,7 +648,8 @@
 <a name="v0.1.0"></a>
 ## v0.1.0 - 2022-08-23
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/epam/edp-tekton/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/epam/edp-tekton/compare/v0.3.1...v0.4.0
 [v0.3.1]: https://github.com/epam/edp-tekton/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/epam/edp-tekton/compare/v0.2.9...v0.3.0

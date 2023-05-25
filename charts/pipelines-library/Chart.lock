@@ -1,6 +1,6 @@
 dependencies:
 - name: edp-tekton-common-library
   repository: file://../common-library
-  version: 0.2.7
-digest: sha256:3b56ef9dbc492b3896271680e605e4b9dd58b7d5850627aa1069938e4a69e906
-generated: "2023-03-26T17:00:33.678965+03:00"
+  version: 0.2.8
+digest: sha256:f749413f868b05ecbe2f465caad2dfd9dd54a2cb3bb4cef3274b20b44707929b
+generated: "2023-05-25T18:33:34.969019+03:00"

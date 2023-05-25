@@ -19,7 +19,7 @@ spec:
       default: "edp"
       type: string
     - name: SONAR_URL
-      default: 'http://sonar.{{ .Release.Namespace }}:9000'
+      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL

@@ -1,5 +1,5 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
-{{- $resourceMapping := list "react" "angular" "vue" "express" -}}
+{{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
 {{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline

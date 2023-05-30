@@ -43,6 +43,7 @@ spec:
   steps:
     - image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
       name: sonar-properties-create
+      resources: {}
       workingDir: $(workspaces.source.path)
       env:
         - name: SONAR_HOST_URL

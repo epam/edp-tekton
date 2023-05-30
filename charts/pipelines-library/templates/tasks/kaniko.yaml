@@ -69,6 +69,7 @@ spec:
 {{- include "resources" . | nindent 6 }}
     - image: alpine:3.17.1
       name: write-url
+      resources: {}
       script: |
         set -e
         image="$(params.IMAGE)"

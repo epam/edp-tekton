@@ -32,6 +32,7 @@ spec:
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
+      resources: {}
       {{ if ne .Values.global.platform "openshift" }}
       workingDir: $(workspaces.source.path)
       env:

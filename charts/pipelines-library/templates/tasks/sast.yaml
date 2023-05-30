@@ -34,6 +34,7 @@ spec:
   steps:
     - name: semgrep-scan
       image: $(params.BASE_IMAGE)
+      resources: {}
       workingDir: $(workspaces.source.path)
       script: |
         set -e

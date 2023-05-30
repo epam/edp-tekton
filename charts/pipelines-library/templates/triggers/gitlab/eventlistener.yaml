@@ -76,11 +76,12 @@ spec:
           spec:
             serviceAccountName: tekton-triggers-sa-{{ .Release.Namespace }}
             containers:
-              - resources:
+              - name: ''
+                resources:
                   requests:
                     memory: "64Mi"
-                    cpu: "0.05"
+                    cpu: "50m"
                   limits:
                     memory: "128Mi"
-                    cpu: "0.5"
+                    cpu: "500m"
 {{ end }}

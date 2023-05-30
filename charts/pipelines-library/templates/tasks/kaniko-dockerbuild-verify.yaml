@@ -18,6 +18,9 @@ spec:
     - name: IMAGE
       description: Name (reference) of the image to build.
       default: "placeholder:latest"
+    - name: IMAGE_TAR
+      description: Name (reference) of the image tar.
+      default: "image_tar"
     - name: DOCKERFILE
       description: Dockerfile name.
       default: "Dockerfile"

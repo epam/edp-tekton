@@ -38,6 +38,6 @@ global:
     assert "commit-validate" in r[3]["name"]
     assert "dockerfile-lint" in r[4]["name"]
     assert "kaniko-build" in r[5]["name"]
-    assert "trivy-scanner" in r[6]["name"]
+    assert "image-scan" in r[6]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]

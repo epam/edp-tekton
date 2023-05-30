@@ -1,0 +1,128 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: image-scan
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to scan images for vulnerabilites
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE
+      description: Name (reference) of the image.
+    - name: IMAGE_TAR
+      description: Name (reference) of the image tar package.
+    - name: BASE_IMAGE_TRIVY
+      type: string
+      default: "aquasec/trivy:0.41.0"
+    - name: BASE_IMAGE_GRYPE
+      type: string
+      default: "anchore/grype:v0.62.1-debug"
+    - name: BASE_IMAGE_CURL
+      type: string
+      default: "alpine/curl:3.14"
+    - name: PATH_CONTEXT
+      description: The build context used by Trivy.
+      default: "."
+    - name: JUNIT_REPORT
+      type: string
+      description: "This configmap contains Trivy JUnit XML Go template"
+      default: report-junit
+    - name: TRIVY_REPORT
+      type: string
+      description: "Trivy report name"
+      default: trivy-junit.tpl
+    - name: GRYPE_REPORT
+      type: string
+      description: "Grype report name"
+      default: grype-junit.tpl
+    - name: RP_PROPERTIES
+      type: string
+      description: "This secret contains ReportPortal credentials"
+      default: reportportal-properties
+    - name: TRIVY_SCAN_REPORT
+      type: string
+      description: "This name of the scan report"
+      default: "image-scan-trivy-report.xml"
+    - name: GRYPE_SCAN_REPORT
+      type: string
+      description: "This name of the scan report"
+      default: "image-scan-grype-report.xml"
+  steps:
+    - name: trivy
+      image: $(params.BASE_IMAGE_TRIVY)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: JUNIT_REPORT
+          valueFrom:
+            configMapKeyRef:
+              name: $(params.JUNIT_REPORT)
+              key: $(params.TRIVY_REPORT)
+      script: |
+        #!/usr/bin/env sh
+        set -e
+
+        echo "${JUNIT_REPORT}" > "$(params.TRIVY_REPORT)"
+        trivy image --format template --template "@$(params.TRIVY_REPORT)" \
+            -o $(params.TRIVY_SCAN_REPORT) $(params.IMAGE)
+        cat $(params.TRIVY_SCAN_REPORT)
+
+    - name: grype
+      image: $(params.BASE_IMAGE_GRYPE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: JUNIT_REPORT
+          valueFrom:
+            configMapKeyRef:
+              name: $(params.JUNIT_REPORT)
+              key: $(params.GRYPE_REPORT)
+      script: |
+        #!/busybox/sh
+        set -e
+
+        echo "${JUNIT_REPORT}" > "$(params.GRYPE_REPORT)"
+        /grype $(params.IMAGE_TAR).tar -o template \
+            -t $(params.GRYPE_REPORT) > $(params.GRYPE_SCAN_REPORT)
+        cat $(params.GRYPE_SCAN_REPORT)
+
+    - name: upload-report
+      image: $(params.BASE_IMAGE_CURL)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: RP_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: $(params.RP_PROPERTIES)
+              key: rp.endpoint
+        - name: RP_PROJECT
+          valueFrom:
+            secretKeyRef:
+              name: $(params.RP_PROPERTIES)
+              key: rp.project
+        - name: RP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.RP_PROPERTIES)
+              key: rp.token
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        apk add zip
+
+        for REPORT_NAME in $(params.TRIVY_SCAN_REPORT) $(params.GRYPE_SCAN_REPORT)
+        do
+            REPORT_ARCHIVE_NAME="${REPORT_NAME}_$(params.IMAGE_TAR).zip"
+            zip -r ${REPORT_ARCHIVE_NAME} ${REPORT_NAME}
+            curl -X POST "https://${RP_ENDPOINT}/api/v1/${RP_PROJECT}/launch/import" \
+                  -H  "accept: */*" \
+                  -H  "Content-Type: multipart/form-data" \
+                  -H  "Authorization: bearer ${RP_TOKEN}" \
+                  -F "file=@${REPORT_ARCHIVE_NAME};type=application/x-zip-compressed"
+        done

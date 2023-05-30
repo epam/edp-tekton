@@ -51,6 +51,12 @@ spec:
       description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -93,12 +99,10 @@ spec:
       runAfter:
         - commit-validate
       params:
-        - name: EXTRA_COMMANDS
-          value: |
-            ct lint --all \
-            --config $(params.CT_CONFIGS_DIR)/ct.yaml \
-            --lint-conf $(params.CT_CONFIGS_DIR)/lintconf.yaml \
-            --chart-yaml-schema $(params.CT_CONFIGS_DIR)/chart_schema.yaml
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -221,19 +225,23 @@ spec:
       params:
         - name: IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+        - name: IMAGE_TAR
+          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
       workspaces:
         - name: source
           workspace: shared-workspace
 
-    - name: trivy-scanner
+    - name: image-scan
       taskRef:
         kind: Task
-        name: trivy-scanner
+        name: image-scan
       runAfter:
         - kaniko-build
       params:
-        - name: IMAGE_TO_SCAN
+        - name: IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+        - name: IMAGE_TAR
+          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
       workspaces:
         - name: source
           workspace: shared-workspace

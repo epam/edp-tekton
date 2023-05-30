@@ -24,3 +24,55 @@ tekton:
     requests:
       cpu: "0.5"
       memory: "2Gi"
+
+imageScanReport:
+  enable: true
+  grypeTemplate: |
+    <?xml version="1.0" ?>
+    <testsuites name="grype">
+    {{- $failures := len $.Matches }}
+        <testsuite tests="{{ $failures }}" failures="{{ $failures }}" name="{{ $.Distro.Name }}:{{ $.Distro.Version }}" errors="0" skipped="0">
+            <properties>
+                <property name="type" value="{{ $.Distro.Name }}"></property>
+            </properties>
+            {{- range .Matches }}
+            <testcase classname="{{ .Artifact.Name }}-{{ .Artifact.Version }} ({{ .Artifact.Type }})" name="[{{ .Vulnerability.Severity }}] {{ .Vulnerability.ID }}">
+                <failure message="{{ .Artifact.Name }}: {{ .Vulnerability.ID }}" type="description">{{ .Vulnerability.Description }} {{ .Artifact.CPEs }} {{ .Vulnerability.DataSource }}</failure>
+            </testcase>
+            {{- end }}
+        </testsuite>
+    </testsuites>
+  trivyTemplate: |+
+    <?xml version="1.0" ?>
+    <testsuites name="trivy">
+    {{- range . -}}
+    {{- $failures := len .Vulnerabilities }}
+        <testsuite tests="{{ $failures }}" failures="{{ $failures }}" name="{{  .Target }}" errors="0" skipped="0">
+        {{- if not (eq .Type "") }}
+            <properties>
+                <property name="type" value="{{ .Type }}"></property>
+            </properties>
+            {{- end -}}
+            {{ range .Vulnerabilities }}
+            <testcase classname="{{ .PkgName }}-{{ .InstalledVersion }}" name="[{{ .Vulnerability.Severity }}] {{ .VulnerabilityID }}">
+                <failure message="{{ escapeXML .Title }}" type="description">{{ escapeXML .Description }}</failure>
+            </testcase>
+        {{- end }}
+        </testsuite>
+    {{- $failures := len .Misconfigurations }}
+    {{- if gt $failures 0 }}
+        <testsuite tests="{{ $failures }}" failures="{{ $failures }}" name="{{  .Target }}" errors="0" skipped="0">
+        {{- if not (eq .Type "") }}
+            <properties>
+                <property name="type" value="{{ .Type }}"></property>
+            </properties>
+            {{- end -}}
+            {{ range .Misconfigurations }}
+            <testcase classname="{{ .Type }}" name="[{{ .Severity }}] {{ .ID }}">
+                <failure message="{{ escapeXML .Title }}" type="description">{{ escapeXML .Description }}</failure>
+            </testcase>
+        {{- end }}
+        </testsuite>
+    {{- end }}
+    {{- end }}
+    </testsuites>

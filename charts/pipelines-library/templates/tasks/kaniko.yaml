@@ -19,6 +19,9 @@ spec:
   params:
     - name: IMAGE
       description: Name (reference) of the image to build.
+    - name: IMAGE_TAR
+      description: Name (reference) of the image tar.
+      default: "image_tar"
     - name: DOCKERFILE
       description: Dockerfile name.
       default: "Dockerfile"
@@ -58,6 +61,7 @@ spec:
         - --digest-file=$(results.IMAGE_DIGEST.path)
         - --cache=true
         - --cache-repo=$(params.KANIKO_CACHE_REPO)
+        - --tar-path=$(params.IMAGE_TAR).tar
         {{ if eq .Values.global.platform "openshift" }}
         - --skip-tls-verify
         {{ end }}

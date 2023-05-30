@@ -46,6 +46,7 @@ spec:
   steps:
     - image: amazon/aws-cli:2.7.35
       name: get-ecr-pass
+      resources: {}
       env:
         - name: ECR_LOGIN
           value: "$(params.ECR_LOGIN)"

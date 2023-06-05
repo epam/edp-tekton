@@ -137,6 +137,10 @@ spec:
         git config --global user.email "$(params.GIT_USER_EMAIL)"
         git config --global user.name "$(params.GIT_USER_NAME)"
 
+        # remove git-hooks. We potentially might have hooks installed by components, for example - pre-commit
+        # this leads to the situation when we have a hook and are not able to perform git command
+        rm -rf .git/hooks
+
         eval '$(params.GIT_SCRIPT)'
 
         RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"

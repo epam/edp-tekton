@@ -66,10 +66,10 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: kaniko-build
+    - name: dockerbuild-verify
       taskRef:
         kind: Task
-        name: kaniko
+        name: dockerbuild-verify
       runAfter:
         - dockerfile-lint
       params:
@@ -86,7 +86,7 @@ spec:
         kind: Task
         name: image-scan
       runAfter:
-        - kaniko-build
+        - dockerbuild-verify
       params:
         - name: IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"

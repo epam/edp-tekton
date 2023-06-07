@@ -71,7 +71,7 @@ spec:
 
         echo "${JUNIT_REPORT}" > "$(params.TRIVY_REPORT)"
         trivy image --format template --template "@$(params.TRIVY_REPORT)" \
-            -o $(params.TRIVY_SCAN_REPORT) $(params.IMAGE)
+            -o $(params.TRIVY_SCAN_REPORT) --input $(params.IMAGE_TAR).tar
         cat $(params.TRIVY_SCAN_REPORT)
 
     - name: grype

@@ -55,7 +55,7 @@ spec:
       default: "deploy-templates"
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
-      default: "ct-configs"
+      default: "."
   tasks:
 
 {{- include "github-review-start" . | nindent 4 }}

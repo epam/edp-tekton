@@ -44,7 +44,7 @@ spec:
       default: "deploy-templates"
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
-      default: "deploy-templates"
+      default: "."
   tasks:
 
 {{- include "gerrit-build-start" . | nindent 4 }}

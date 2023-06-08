@@ -79,8 +79,10 @@ spec:
             autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
             if gitProvider == "gerrit":
                 gitAutotesUrl.append("ssh://edp-ci@" + gitserver['gitHost'] + ":" + gerritPort + autotest['gitUrlPath'])
-            else:
+            elif gitProvider == "github":
                 gitAutotesUrl.append("https://" + gitserver['gitHost'] + autotest['gitUrlPath'])
+            elif gitProvider == "gitlab":
+                gitAutotesUrl.append("ssh://git@" + gitserver['gitHost'] + ":22" + autotest['gitUrlPath'])
             autotestBuildTool.append(autotest["buildTool"])
 
         gitSecret = gitserver['nameSshKeySecret']

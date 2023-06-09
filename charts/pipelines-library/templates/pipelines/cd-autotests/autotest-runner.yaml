@@ -17,7 +17,7 @@ spec:
       default: ""
     - name: autotes-pipeline
       default: "autotes-pipeline"
-    - name: codebase-tags
+    - name: codebase_tags
       default: "codebase_tags"
     - name: parent-pipeline-name
       default: $(context.pipelineRun.name)
@@ -33,8 +33,8 @@ spec:
           value: $(params.cd-pipeline-name)
         - name: AUTOTEST_PIPELINES
           value: $(params.autotes-pipeline)
-        - name: codebase-tags
-          value: $(params.codebase-tags)
+        - name: codebase_tags
+          value: $(params.codebase_tags)
         - name: parent-pipeline-name
           value: $(params.parent-pipeline-name)
       workspaces:
@@ -59,11 +59,15 @@ spec:
       taskRef:
         kind: Task
         name: promote-images-autotests
+      when:
+        - input: "$(tasks.init-autotest.results.codebase_tags)"
+          operator: notin
+          values: ["not-set"]
       runAfter:
         - wait-for-autotests
       params:
-        - name: codebase-tags
-          value: "$(params.codebase-tags)"
+        - name: codebase_tags
+          value: "$(params.codebase_tags)"
         - name: CDPIPELINE_STAGE
           value: "$(params.stage-name)"
         - name: CDPIPELINE_CR

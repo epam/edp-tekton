@@ -35,7 +35,7 @@ spec:
       description: CDPipeline custom resource definition.
       type: string
       default: "cdpipelines.v2.edp.epam.com"
-    - name: codebase-tags
+    - name: codebase_tags
       type: string
   steps:
     - name: annotate
@@ -51,7 +51,7 @@ spec:
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
         - name: CODEBASE_TAGS
-          value: "$(params.codebase-tags)"
+          value: "$(params.codebase_tags)"
       script: |
         set -ex
 
@@ -78,7 +78,7 @@ spec:
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
         - name: CODEBASE_TAGS
-          value: "$(params.codebase-tags)"
+          value: "$(params.codebase_tags)"
       script: |
         set -ex
 

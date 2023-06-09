@@ -44,4 +44,4 @@ spec:
             else:
                 continue
 
-        print("[DEBUG]: All autotests finished.")
+        print("[TEKTON][DEBUG]: All autotests finished.")

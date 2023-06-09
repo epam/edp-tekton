@@ -82,12 +82,25 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
+    - name: helm-docs
+      taskRef:
+        kind: Task
+        name: helm-docs
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: helm-dependency-update
       taskRef:
         kind: Task
         name: helm-dependency-update
       runAfter:
-        - fetch-repository
+        - helm-docs
       params:
         - name: CHART_DIR
           value: $(params.CHART_DIR)

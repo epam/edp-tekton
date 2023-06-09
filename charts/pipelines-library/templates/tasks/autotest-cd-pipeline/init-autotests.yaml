@@ -13,7 +13,7 @@ spec:
       type: string
     - name: AUTOTEST_PIPELINES
       default: 'autotes-pipeline'
-    - name: codebase-tags
+    - name: codebase_tags
       default: 'codebase_tags'
     - name: parent-pipeline-name
       default: ''
@@ -24,6 +24,8 @@ spec:
   results:
     - name: AUTOTEST_PIPELINES
       type: string
+    - name: codebase_tags
+      type: string
   steps:
     - name: init-autotest
       image: epamedp/tekton-autotest:0.1.1
@@ -33,7 +35,7 @@ spec:
           mountPath: "/var/configmap"
       env:
         - name: CODEBASE_TAGS
-          value: "$(params.codebase-tags)"
+          value: "$(params.codebase_tags)"
         - name: AUTOTEST_PIPELINES
           value: "$(params.AUTOTEST_PIPELINES)"
         - name: STAGE_NAME
@@ -42,8 +44,6 @@ spec:
           value: $(params.cd-pipeline-name)
         - name: GIT_PROVIDER
           value: "{{ .Values.global.gitProvider }}"
-        - name: GERRIT_PORT
-          value: "{{ .Values.global.gerritSSHPort }}"
         - name: PARENT_PIPELINE_NAME
           value: $(params.parent-pipeline-name)
 
@@ -68,7 +68,7 @@ spec:
         stage = os.getenv('STAGE_NAME')
         gitProvider = os.getenv('GIT_PROVIDER')
         parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
-        gerritPort = os.getenv('GERRIT_PORT')
+        codebaseFileTags = os.getenv('CODEBASE_TAGS')
 
         autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
         gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", gitProvider , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
@@ -77,17 +77,15 @@ spec:
             autotestsList.append(element["autotestName"])
             autotestsBranch.append(element["branchName"])
             autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-            if gitProvider == "gerrit":
-                gitAutotesUrl.append("ssh://edp-ci@" + gitserver['gitHost'] + ":" + gerritPort + autotest['gitUrlPath'])
-            elif gitProvider == "github":
-                gitAutotesUrl.append("https://" + gitserver['gitHost'] + autotest['gitUrlPath'])
-            elif gitProvider == "gitlab":
-                gitAutotesUrl.append("ssh://git@" + gitserver['gitHost'] + ":22" + autotest['gitUrlPath'])
+            gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
             autotestBuildTool.append(autotest["buildTool"])
 
         gitSecret = gitserver['nameSshKeySecret']
 
         for count, element in enumerate(autotestsList):
+            print("[TEKTON][DEBUG]: Run autotest - autotests-" + autotestBuildTool[count])
+            print("[TEKTON][DEBUG]: Autotest URL - " + gitAutotesUrl[count])
+            print("[TEKTON][DEBUG]: Autotest branch - " + autotestsBranch[count])
             command = "tkn pipeline start autotests-" + autotestBuildTool[count] + " \
             --use-param-defaults \
             -p git-source-url=" + gitAutotesUrl[count] + " \
@@ -109,22 +107,31 @@ spec:
         with open(autotests_pipelines_file, "w") as outfile:
             outfile.write(pipelines)
 
-        listApplications = json.loads(subprocess.check_output(["kubectl", "get", "cdpipeline", cdPipelineName , "-o=jsonpath='{.spec.applicationsToPromote}'"]).decode("utf-8").strip("'"))
+        try:
+            listApplications = json.loads(subprocess.check_output(["kubectl", "get", "cdpipeline", cdPipelineName , "-o=jsonpath='{.spec.applicationsToPromote}'"]).decode("utf-8").strip("'"))
+            kindApplications = subprocess.check_output(["kubectl", "get", "applications"])
 
-        kindApplications = subprocess.check_output(["kubectl", "get", "applications"])
+            for element in listApplications:
+                output = re.search(element + "(-[A-Za-z0-9]*)* ", str(kindApplications))
+                applications.append(output.group())
 
-        for element in listApplications:
-            output = re.search(element + "(-[A-Za-z0-9]*)* ", str(kindApplications))
-            applications.append(output.group())
+            print("[TEKTON][DEBUG]: Images to promote:")
+            for element in applications:
+                print(element)
 
-        for count, element in enumerate(applications):
-            temp = subprocess.check_output(["kubectl", "get", "application", element.strip(" ") , "-o=jsonpath='{.spec.source.helm.parameters[0].value}'"]).decode("utf-8").strip("'")
-            codebases += listApplications[count] + "=" + temp + " "
+            for count, element in enumerate(applications):
+                temp = subprocess.check_output(["kubectl", "get", "application", element.strip(" ") , "-o=jsonpath='{.spec.source.helm.parameters[0].value}'"]).decode("utf-8").strip("'")
+                codebases += listApplications[count] + "=" + temp + " "
 
-        codebaseFileTags = os.getenv('CODEBASE_TAGS')
+            with open(codebaseFileTags, "w") as outfile:
+                outfile.write(codebases)
 
-        with open(codebaseFileTags, "w") as outfile:
-            outfile.write(codebases)
+            with open("/tekton/results/" + codebaseFileTags, "w") as outfile:
+                outfile.write(codebases)
+        except:
+            with open("/tekton/results/" + codebaseFileTags, "w") as outfile:
+                outfile.write("not-set")
+            print("[TEKTON][DEBUG]: No images to promote.")
 
 
 {{- include "resources" . | nindent 6 }}

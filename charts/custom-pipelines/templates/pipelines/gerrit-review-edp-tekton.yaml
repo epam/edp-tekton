@@ -53,7 +53,7 @@ spec:
       description: "Pattern to validate a commit message"
     - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
-      default: "deploy-templates"
+      default: "charts/common-library,charts/custom-pipelines,charts/pipelines-library"
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "ct-configs"

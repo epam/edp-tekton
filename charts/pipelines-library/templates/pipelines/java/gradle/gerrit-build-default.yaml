@@ -89,7 +89,7 @@ spec:
         kind: Task
         name: sast
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)

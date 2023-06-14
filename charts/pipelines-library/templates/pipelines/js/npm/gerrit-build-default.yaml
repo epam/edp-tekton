@@ -82,6 +82,21 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
+    - name: sast
+      taskRef:
+        kind: Task
+        name: sast
+      runAfter:
+        - init-values
+      params:
+        - name: reportDataProductName
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: reportDataEngagementName
+          value: $(params.CODEBASEBRANCH_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: compile
       taskRef:
         kind: Task

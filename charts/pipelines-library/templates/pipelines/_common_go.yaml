@@ -4,7 +4,7 @@
     kind: Task
     name: sast
   runAfter:
-    - get-version
+    - init-values
   params:
     - name: reportDataProductName
       value: $(tasks.init-values.results.TENANT_NAME)

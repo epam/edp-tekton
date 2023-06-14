@@ -95,7 +95,7 @@ spec:
         kind: Task
         name: sast
       runAfter:
-        - update-build-number
+        - init-values
       params:
         - name: reportDataProductName
           value: $(tasks.init-values.results.TENANT_NAME)

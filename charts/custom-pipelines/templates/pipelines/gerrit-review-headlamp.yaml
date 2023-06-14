@@ -211,6 +211,7 @@ spec:
       runAfter:
         - sonar
         - dockerfile-lint
+        - compile
       params:
         - name: IMAGE
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"

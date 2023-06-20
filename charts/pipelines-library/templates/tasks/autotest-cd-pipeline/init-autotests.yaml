@@ -63,7 +63,16 @@ spec:
         applications = []
         tags = []
         codebases = ""
+        autotestFramework =[]
 
+        frameworks = {
+          "gradle-java8": "gradle:7.5.1-jdk8",
+          "gradle-java11": "gradle:7.5.1-jdk11",
+          "gradle-java17": "gradle:7.5.1-jdk17",
+          "maven-java8": "maven:3.9.0-eclipse-temurin-8",
+          "maven-java11": "maven:3.9.0-eclipse-temurin-11",
+          "maven-java17": "maven:3.9.0-eclipse-temurin-17"
+        }
         cdPipelineName = os.getenv('CD_PIPELINE_NAME')
         stage = os.getenv('STAGE_NAME')
         gitProvider = os.getenv('GIT_PROVIDER')
@@ -79,6 +88,7 @@ spec:
             autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
             gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
             autotestBuildTool.append(autotest["buildTool"])
+            autotestFramework.append(autotest["framework"])
 
         gitSecret = gitserver['nameSshKeySecret']
 
@@ -91,6 +101,7 @@ spec:
             -p git-source-url=" + gitAutotesUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
             -p stage-name=" + stage +" \
+            -p base-image=" + frameworks[autotestBuildTool[count] + "-" + autotestFramework[count]] + " \
             --labels app.edp.epam.com/pipeline=" + cdPipelineName + " \
             --labels app.edp.epam.com/stage=" + stage + " \
             --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \

@@ -1,16 +1,18 @@
+{{- $resourceMapping := list "maven" "gradle" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: autotests-gradle
+  name: autotests-{{ $k }}
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/SergK/autotests.git"
@@ -18,6 +20,8 @@ spec:
       default: "master"
     - name: stage-name
       default: "dev"
+    - name: base-image
+      default: ""
   tasks:
     - name: fetch-repository
       taskRef:
@@ -37,12 +41,17 @@ spec:
     - name: run-autotest
       taskRef:
         kind: Task
-        name: run-autotests-gradle
+        name: run-autotests-{{ $k }}
       runAfter:
         - fetch-repository
       params:
+        - name: base-image
+          value: "$(params.base-image)"
         - name: stage-name
           value: "$(params.stage-name)"
       workspaces:
         - name: source
           workspace: shared-workspace
+
+---
+{{ end }}

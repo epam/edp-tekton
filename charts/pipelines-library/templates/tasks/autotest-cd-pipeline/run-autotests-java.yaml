@@ -1,0 +1,35 @@
+{{- $resourceMapping := list "maven" "gradle" -}}
+{{- range $k := $resourceMapping }}
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: run-autotests-{{ $k }}
+  labels:
+    app.kubernetes.io/based-on: "0.2"
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Autootest Tools
+    tekton.dev/tags: autotest-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  params:
+    - name: stage-name
+      type: string
+    - name: base-image
+      type: string
+  steps:
+    - name: run-autotest
+      image: "$(params.base-image)"
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: STAGE_NAME
+          value: $(params.stage-name)
+      script: |
+        $(sed -n 's/.*"'$STAGE_NAME'": "\(.*\)",/\1/p' run.json | awk -F '"' '{print $1}')
+
+---
+{{ end }}

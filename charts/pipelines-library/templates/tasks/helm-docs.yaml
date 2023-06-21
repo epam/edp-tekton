@@ -59,4 +59,5 @@ spec:
       script: |
         set -ex
 
+        git config --global --add safe.directory $(pwd)
         git diff -s --exit-code ${CHART_DIR}/README.md || (echo "Run 'helm-docs' to address the issue." && git diff && exit 1)

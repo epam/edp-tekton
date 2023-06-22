@@ -25,6 +25,9 @@ spec:
       default: 'docker-kaniko'
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""

@@ -3,8 +3,8 @@ description: A Helm chart library with common components for EDP Tekton Pipeline
 home: https://epam.github.io/edp-install/
 name: edp-tekton-common-library
 type: library
-version: 0.2.8
-appVersion: 0.2.8
+version: 0.2.9
+appVersion: 0.2.9
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - edp

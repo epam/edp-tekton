@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../common-library | edp-tekton-common-library | 0.2.8 |
+| file://../common-library | edp-tekton-common-library | 0.2.9 |
 
 ## Values
 

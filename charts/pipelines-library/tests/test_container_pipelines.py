@@ -47,8 +47,9 @@ global:
             # ensure we have default versioning
             assert "kaniko-build" in btd[6]["name"]
             assert buildtool == btd[6]["taskRef"]["name"]
-            assert "git-tag" in btd[7]["name"]
-            assert "update-cbis" in btd[8]["name"]
+            assert "sast" in btd[7]["name"]
+            assert "git-tag" in btd[8]["name"]
+            assert "update-cbis" in btd[9]["name"]
             assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
@@ -61,8 +62,9 @@ global:
             assert "dockerfile-lint" in btedp[4]["name"]
             assert "create-ecr-repository" in btedp[5]["name"]
             assert "kaniko-build" in btedp[6]["name"]
-            assert "git-tag" in btedp[7]["name"]
-            assert "update-cbis" in btedp[8]["name"]
+            assert "sast" in btedp[7]["name"]
+            assert "git-tag" in btedp[8]["name"]
+            assert "update-cbis" in btedp[9]["name"]
             assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
             assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
@@ -107,8 +109,9 @@ global:
             # ensure we have default versioning
             assert "kaniko-build" in btd[5]["name"]
             assert buildtool == btd[5]["taskRef"]["name"]
-            assert "git-tag" in btd[6]["name"]
-            assert "update-cbis" in btd[7]["name"]
+            assert "sast" in btd[6]["name"]
+            assert "git-tag" in btd[7]["name"]
+            assert "update-cbis" in btd[8]["name"]
             assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
@@ -120,8 +123,9 @@ global:
             assert "dockerfile-lint" in btedp[3]["name"]
             assert "create-ecr-repository" in btedp[4]["name"]
             assert "kaniko-build" in btedp[5]["name"]
-            assert "git-tag" in btedp[6]["name"]
-            assert "update-cbis" in btedp[7]["name"]
+            assert "sast" in btedp[6]["name"]
+            assert "git-tag" in btedp[7]["name"]
+            assert "update-cbis" in btedp[8]["name"]
             assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
             assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
@@ -166,8 +170,9 @@ global:
             # ensure we have default versioning
             assert "kaniko-build" in btd[5]["name"]
             assert buildtool == btd[5]["taskRef"]["name"]
-            assert "git-tag" in btd[6]["name"]
-            assert "update-cbis" in btd[7]["name"]
+            assert "sast" in btd[6]["name"]
+            assert "git-tag" in btd[7]["name"]
+            assert "update-cbis" in btd[8]["name"]
             assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
             # build with edp versioning
@@ -179,7 +184,8 @@ global:
             assert "dockerfile-lint" in btedp[3]["name"]
             assert "create-ecr-repository" in btedp[4]["name"]
             assert "kaniko-build" in btedp[5]["name"]
-            assert "git-tag" in btedp[6]["name"]
-            assert "update-cbis" in btedp[7]["name"]
+            assert "sast" in btedp[6]["name"]
+            assert "git-tag" in btedp[7]["name"]
+            assert "update-cbis" in btedp[8]["name"]
             assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
             assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]

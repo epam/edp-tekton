@@ -111,6 +111,23 @@
       value: $(tasks.init-values.results.NORMALIZED_BRANCH)
 {{- end -}}
 
+{{- define "sast-lib" -}}
+- name: sast
+  taskRef:
+    kind: Task
+    name: sast-lib
+  runAfter:
+    - get-version
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
 # The last section for Build Pipeline
 {{- define "build-pipeline-end" -}}
 - name: kaniko-build
@@ -126,6 +143,23 @@
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
     - name: KANIKO_CACHE_REPO
       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sast
+  taskRef:
+    kind: Task
+    name: sast
+  runAfter:
+    - kaniko-build
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: targetImage
+      value: "$(tasks.kaniko-build.results.IMAGE_URL)"
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -182,6 +216,23 @@
       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
     - name: CONTEXT
       value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sast
+  taskRef:
+    kind: Task
+    name: sast
+  runAfter:
+    - kaniko-build
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: targetImage
+      value: "$(tasks.kaniko-build.results.IMAGE_URL)"
   workspaces:
     - name: source
       workspace: shared-workspace

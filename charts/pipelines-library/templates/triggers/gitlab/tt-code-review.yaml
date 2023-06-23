@@ -18,6 +18,8 @@ spec:
       description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: cbtype
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: targetBranch
+      description: Target branch of Merge Request
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
@@ -49,6 +51,8 @@ spec:
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME
             value: $(tt.params.codebasebranch)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: COMMIT_MESSAGE_PATTERN

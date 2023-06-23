@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-helm-helm-lib-review
+  name: github-helm-pipeline-lib-review
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -35,16 +35,11 @@ spec:
       description: "Commit sha"
       type: string
     - name: CHART_DIR
-      description: "The directory in source that contains the helm chart"
-      default: "charts"
+      description: "Deploy templates directory for helm-lint"
+      default: "."
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "."
-    - name: targetBranch
-      description: "Target branch of Merge Request"
-    - name: CHART_VERSION_INCREMENT
-      description: "Check Chart version increment"
-      default: true
   tasks:
     - name: github-set-pending-status
       taskRef:
@@ -90,7 +85,7 @@ spec:
     - name: helm-docs
       taskRef:
         kind: Task
-        name: helm-library-docs
+        name: helm-docs
       runAfter:
         - fetch-repository
       params:
@@ -100,7 +95,48 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "helm-library-review-common" . | nindent 4 }}
+    - name: helm-dependency-update
+      taskRef:
+        kind: Task
+        name: helm-dependency-update
+      runAfter:
+        - helm-docs
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - helm-dependency-update
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-template
+      taskRef:
+        kind: Task
+        name: helm-template
+      runAfter:
+        - helm-lint
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: release_name
+          value: $(params.CODEBASE_NAME)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
 {{ include "github-review-vote" . | nindent 2 }}
 

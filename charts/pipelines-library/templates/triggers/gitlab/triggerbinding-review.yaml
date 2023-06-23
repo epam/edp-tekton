@@ -15,6 +15,8 @@ spec:
       value: $(body.project.name)
     - name: gitfullrepositoryname
       value: $(body.project.path_with_namespace)
+    - name: targetBranch
+      value: "$(body.object_attributes.target_branch)"
     - name: buildtool
       value: "$(extensions.spec.buildTool)"
     - name: framework

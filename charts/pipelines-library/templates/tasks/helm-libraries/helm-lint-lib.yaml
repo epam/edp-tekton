@@ -1,0 +1,97 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/categories: Code Quality
+    tekton.dev/displayName: Helm-Lint
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/platforms: linux/amd64
+  name: helm-library-lint
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      default: quay.io/helmpack/chart-testing:v3.7.1
+    - name: EXTRA_COMMANDS
+      description: Arguments to add to the helm-lint step
+      default: ""
+    - name: USER_HOME
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+      type: string
+      default: "/tekton/home"
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+    - name: CHART_VERSION_INCREMENT
+      description: "Check version increment"
+      default: false
+    - name: TARGET_BRANCH
+      description: "Git branch"
+      default: "master"
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  volumes:
+    - name: ct-config-volume
+      configMap:
+        name: ct-config
+  steps:
+    - image: $(params.BASE_IMAGE)
+      name: helm-lint
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: HOME
+          value: $(params.USER_HOME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+        - name: CT_CONFIGS_DIR_DEFAULT
+          value: "ct-configs"
+      script: |
+        set -ex
+        $(params.EXTRA_COMMANDS)
+
+        CT_FILE_PATH=""
+        LINTCONF_FILE_PATH=""
+        CHART_SCHEMA_FILE_PATH=""
+
+        if [ -f "${CT_CONFIGS_DIR}/ct.yaml" ]; then
+            CT_FILE_PATH="${CT_CONFIGS_DIR}/ct.yaml"
+        else
+            CT_FILE_PATH="${CT_CONFIGS_DIR_DEFAULT}/ct.yaml"
+        fi
+
+        if [ -f "${CT_CONFIGS_DIR}/lintconf.yaml" ]; then
+            LINTCONF_FILE_PATH="${CT_CONFIGS_DIR}/lintconf.yaml"
+        else
+            LINTCONF_FILE_PATH="${CT_CONFIGS_DIR_DEFAULT}/lintconf.yaml"
+        fi
+
+        if [ -f "${CT_CONFIGS_DIR}/chart_schema.yaml" ]; then
+            CHART_SCHEMA_FILE_PATH="${CT_CONFIGS_DIR}/chart_schema.yaml"
+        else
+            CHART_SCHEMA_FILE_PATH="${CT_CONFIGS_DIR_DEFAULT}/chart_schema.yaml"
+        fi
+
+        echo "[TEKTON][INFO] Specific charts to test are located at \"${CT_FILE_PATH}\""
+        echo "[TEKTON][INFO] The config file for YAML linting is located at \"${LINTCONF_FILE_PATH}\""
+        echo "[TEKTON][INFO] The schema for chart.yml validation is located at \"${CHART_SCHEMA_FILE_PATH}\""
+
+        ct lint \
+        --debug \
+        --target-branch $(params.TARGET_BRANCH) \
+        --config ${CT_FILE_PATH} \
+        --lint-conf ${LINTCONF_FILE_PATH} \
+        --chart-yaml-schema ${CHART_SCHEMA_FILE_PATH} \
+        --check-version-increment=$(params.CHART_VERSION_INCREMENT)
+
+      volumeMounts:
+        - name: ct-config-volume
+          mountPath: /workspace/source/ct-configs/

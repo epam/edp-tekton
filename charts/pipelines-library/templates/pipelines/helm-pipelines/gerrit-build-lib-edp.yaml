@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-helm-helm-lib-build-default
+  name: gerrit-helm-pipeline-lib-build-edp
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
@@ -24,6 +24,9 @@ spec:
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -41,44 +44,109 @@ spec:
       default: ""
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
-      default: "charts"
+      default: "."
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "."
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: gerrit-notify
+      taskRef:
+        kind: Task
+        name: gerrit-ssh-cmd
+      runAfter:
+        - fetch-repository
+      params:
+        - name: GERRIT_PORT
+          value: '{{ .Values.global.gerritSSHPort }}'
+        - name: SSH_GERRIT_COMMAND
+          value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+        # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
+        - name: ERR_EXIT_CODE
+          value: '0'
+      workspaces:
+        - name: ssh-directory
+          workspace: ssh-creds
 
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-helm-library-default
+        name: get-version-edp
       runAfter:
-        - init-values
+        - gerrit-notify
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-helm-chart
+      runAfter:
+        - get-version
       params:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace
 
-{{- include "helm-library-build-common" . | nindent 4 }}
-
-    - name: helm-push-to-ecr
+    - name: helm-dependency-update
       taskRef:
         kind: Task
-        name: helm-library-push-to-ecr
+        name: helm-dependency-update
       runAfter:
-        - helm-template
+        - get-version
       params:
-        - name: TENANT_NAME
-          value: $(tasks.init-values.results.TENANT_NAME)
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: IS_TAG
-          value: $(tasks.get-version.results.BUILD_VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - helm-dependency-update
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: helm-template
+      taskRef:
+        kind: Task
+        name: helm-template
+      runAfter:
+        - helm-lint
+      params:
+        - name: release_name
+          value: $(params.CODEBASE_NAME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -88,7 +156,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - helm-push-to-ecr
+        - helm-template
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -104,6 +172,6 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-{{ include "finally-block-default" . | nindent 2 }}
+{{ include "finally-block-edp" . | nindent 2 }}
 
 {{ end }}

@@ -392,3 +392,53 @@
     - name: source
       workspace: shared-workspace
 {{- end -}}
+
+{{- define "build-pipeline-dotnet-image-build-push-common" -}}
+{{- if eq .Values.dockerRegistry.type "ecr" }}
+- name: create-ecr-repository
+  taskRef:
+    kind: Task
+    name: create-ecr-repository
+  runAfter:
+    - dotnet-publish
+  params:
+    - name: REPO_NAME
+      value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - create-ecr-repository
+  params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+    - name: IMAGE_TAR
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: KANIKO_CACHE_REPO
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end }}
+
+{{- if eq .Values.dockerRegistry.type "harbor" }}
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - dotnet-publish
+  params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+    - name: IMAGE_TAR
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: KANIKO_CACHE_REPO
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end }}
+{{- end -}}

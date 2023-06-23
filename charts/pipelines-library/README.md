@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../common-library | edp-tekton-common-library | 0.2.9 |
+| file://../common-library | edp-tekton-common-library | 0.2.10 |
 
 ## Values
 
@@ -80,6 +80,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.tls | list | `[]` | Ingress TLS configuration |
 | dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
 | dashboard.readOnly | bool | `true` |  |
+| dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |

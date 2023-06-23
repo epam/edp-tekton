@@ -79,6 +79,8 @@ spec:
 
 {{- include "golang-build-common" . | nindent 4 }}
 
+{{- include "build-pipeline-golang-image-build-push-common" $ | nindent 4 }}
+
 {{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-edp" . | nindent 2 }}

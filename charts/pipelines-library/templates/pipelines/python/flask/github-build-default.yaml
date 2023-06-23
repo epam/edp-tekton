@@ -166,15 +166,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: create-ecr-repository
-      taskRef:
-        kind: Task
-        name: create-ecr-repository
-      runAfter:
-        - push
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+{{- include "build-pipeline-python-image-build-push-common" . | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

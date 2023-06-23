@@ -1,7 +1,5 @@
 import tempfile
 import yaml
-import os
-import json
 from subprocess import check_output
 
 

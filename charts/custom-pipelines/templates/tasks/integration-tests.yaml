@@ -113,7 +113,7 @@ spec:
         vcluster -n ${E2E_HOST_NS} delete ${release_name}
 
     - name: go-test-verify-exitcode
-      image: alpine:3.17.2
+      image: alpine:3.18.2
       script: |
         exitCode=$(cat $(steps.step-go-test.exitCode.path))
         if [ $exitCode == 0 ]; then

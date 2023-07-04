@@ -13,7 +13,7 @@ spec:
       description: Codebasebranch name
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "alpine:3.16"
+      default: "alpine:3.18.2"
   results:
     - name: VERSION
       description: "Application version"
@@ -26,7 +26,7 @@ spec:
       description: Current timestamp
   steps:
     - name: get-timestamp
-      image: alpine:3.16
+      image: alpine:3.18.2
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"

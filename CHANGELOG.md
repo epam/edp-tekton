@@ -1,6 +1,37 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Add vulnerability image scanner task [EPMDEDP-11763](https://jiraeu.epam.com/browse/EPMDEDP-11763)
+- Integration with public SonarQube [EPMDEDP-12074](https://jiraeu.epam.com/browse/EPMDEDP-12074)
+- Add Next.js appliation [EPMDEDP-12080](https://jiraeu.epam.com/browse/EPMDEDP-12080)
+- Implement helm-docs tekton task [EPMDEDP-12122](https://jiraeu.epam.com/browse/EPMDEDP-12122)
+- Add Helm library pipelines [EPMDEDP-12135](https://jiraeu.epam.com/browse/EPMDEDP-12135)
+- Add the ability to push container images to either ECR or Harbor registry [EPMDEDP-12181](https://jiraeu.epam.com/browse/EPMDEDP-12181)
+
+### Bug Fixes
+
+- Change helm-lint directory for edp-tekton review [EPMDEDP-11763](https://jiraeu.epam.com/browse/EPMDEDP-11763)
+- Remove git-hooks for git-cli task [EPMDEDP-12113](https://jiraeu.epam.com/browse/EPMDEDP-12113)
+- Align autotest runner for all vcs [EPMDEDP-12147](https://jiraeu.epam.com/browse/EPMDEDP-12147)
+- Update pipeline run for autotest runner [EPMDEDP-12147](https://jiraeu.epam.com/browse/EPMDEDP-12147)
+- Add step dependency [EPMDEDP-12161](https://jiraeu.epam.com/browse/EPMDEDP-12161)
+- Fix helm-docs step on helm-helm-app pipeline [EPMDEDP-12176](https://jiraeu.epam.com/browse/EPMDEDP-12176)
+
+### Routine
+
+- Change kaniko-build to dockerbuild-verify in custom review pipelines [EPMDEDP-11763](https://jiraeu.epam.com/browse/EPMDEDP-11763)
+- Update current development version [EPMDEDP-11826](https://jiraeu.epam.com/browse/EPMDEDP-11826)
+- Align argocd tekton diff [EPMDEDP-12102](https://jiraeu.epam.com/browse/EPMDEDP-12102)
+- Bump tekton-dashboard version to 0.36.1 [EPMDEDP-12106](https://jiraeu.epam.com/browse/EPMDEDP-12106)
+- Enable SAST scan for build pipelines [EPMDEDP-12119](https://jiraeu.epam.com/browse/EPMDEDP-12119)
+- Use default ct lint configs from root folder [EPMDEDP-12122](https://jiraeu.epam.com/browse/EPMDEDP-12122)
+- Update the Kaniko Task to use its with Harbor registry [EPMDEDP-12181](https://jiraeu.epam.com/browse/EPMDEDP-12181)
+- Implement trivy scan on sast step [EPMDEDP-12183](https://jiraeu.epam.com/browse/EPMDEDP-12183)
+- Implement maven framework support for autotest [EPMDEDP-12189](https://jiraeu.epam.com/browse/EPMDEDP-12189)
+- Bump alpine docker image to 3.18.2 [EPMDEDP-12253](https://jiraeu.epam.com/browse/EPMDEDP-12253)
+
 
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2023-05-25

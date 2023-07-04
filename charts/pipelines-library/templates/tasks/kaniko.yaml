@@ -72,7 +72,7 @@ spec:
         - name: dockerconfig
           mountPath: /kaniko/.docker
 {{- include "resources" . | nindent 6 }}
-    - image: alpine:3.17.1
+    - image: alpine:3.18.2
       name: write-url
       resources: {}
       script: |

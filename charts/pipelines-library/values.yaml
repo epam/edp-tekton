@@ -183,6 +183,10 @@ ctLint:
 dashboard:
   # -- Deploy EDP Dashboard as a part of pipeline library when true. Default: true
   enabled: true
+  # -- Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines
+  pipelinesNamespace: "tekton-pipelines"
+  # -- Namespace where cluster tekton triggers deployed. Default: tekton-pipelines
+  triggersNamespace: "tekton-pipelines"
 
   nameOverride: "edp-tekton-dashboard"
 

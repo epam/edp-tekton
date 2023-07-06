@@ -79,7 +79,9 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.tls | list | `[]` | Ingress TLS configuration |
 | dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
+| dashboard.pipelinesNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines |
 | dashboard.readOnly | bool | `true` |  |
+| dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
 | dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |

@@ -1,24 +1,23 @@
 {{- if eq .Values.dashboard.enabled true }}
-{{- if eq .Values.global.platform "openshift" -}}
+{{ if eq .Values.global.platform "openshift" }}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ include "tekton-dashboard.name" . }}
   labels:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
-  {{- with .Values.dashboard.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+  name: {{ include "tekton-dashboard.name" . }}
 spec:
-    host: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
-    tls:
-        insecureEdgeTerminationPolicy: Redirect
-        termination: edge
-    to:
-        kind: Service
-        name: {{ include "tekton-dashboard.name" . }}
-        weight: 100
-    wildcardPolicy: None
-{{- end -}}
-{{- end }}
+  host: {{ include "tekton.tektonBaseUrl" . }}
+  path: /
+  port:
+    targetPort: http
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: {{ include "tekton-dashboard.name" . }}
+    weight: 100
+  wildcardPolicy: None
+{{ end }}
+{{ end }}

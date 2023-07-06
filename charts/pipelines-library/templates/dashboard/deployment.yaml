@@ -16,6 +16,48 @@ spec:
         {{- include "tekton-dashboard.labels" . | nindent 8 }}
     spec:
       containers:
+      {{ if and .Values.dashboard.openshift_proxy.enabled (eq .Values.global.platform "openshift") }}
+        - terminationMessagePath: /dev/termination-log
+          name: oauth-proxy
+          env:
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: tekton-dashboard-proxy-cookie-secret
+                  key: cookie-secret
+            - name: OAUTH2_PROXY_COOKIE_EXPIRE
+              value: 8h0m0s
+            - name: OAUTH2_PROXY_COOKIE_REFRESH
+              value: 7h45m0s
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          ports:
+            - name: proxy
+              containerPort: 4180
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          terminationMessagePolicy: File
+          image: {{ .Values.dashboard.openshift_proxy.image.repository }}:{{ .Values.dashboard.openshift_proxy.image.tag }}
+          volumeMounts:
+            - mountPath: /etc/tls/private
+              name: proxy-tls
+          args:
+            - --openshift-service-account={{ include "tekton-dashboard.name" . }}
+            - --upstream=http://localhost:9097
+            - --tls-cert=/etc/tls/private/tls.crt
+            - --tls-key=/etc/tls/private/tls.key
+            - --skip-provider-button
+            - --pass-basic-auth=false
+            - --cookie-secure=true
+            - --http-address=http://0.0.0.0:4180
+            - --skip-provider-button=true
+      {{ end }}
         - args:
             - --port=9097
             - --logout-url=
@@ -56,6 +98,12 @@ spec:
               type: RuntimeDefault
       nodeSelector:
         kubernetes.io/os: linux
+      serviceAccount: {{ include "tekton-dashboard.name" . }}
       serviceAccountName: {{ include "tekton-dashboard.name" . }}
-      volumes: []
+      {{ if and .Values.dashboard.openshift_proxy.enabled (eq .Values.global.platform "openshift") }}
+      volumes:
+        - name: proxy-tls
+          secret:
+            secretName: proxy-tls
+      {{ end }}
 {{- end }}

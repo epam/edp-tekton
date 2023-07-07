@@ -200,8 +200,21 @@ dashboard:
 
   ingress:
     # -- Annotations for Ingress resource
-    annotations:
-      {}
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    # -- Hostname(s) for the Ingress resource
+    # -- Ingress TLS configuration
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+# Event listener to listen git webhooks
+eventListener:
+  ingress:
+    # -- Annotations for Ingress resource
+    annotations: {}
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     # -- Hostname(s) for the Ingress resource

@@ -7,6 +7,10 @@ metadata:
   name: {{ $elName }}
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
+  {{- with .Values.eventListener.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
     host: {{ $elName }}-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
     tls:

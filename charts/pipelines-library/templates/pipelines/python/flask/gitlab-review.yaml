@@ -26,7 +26,7 @@ spec:
       default: ""
       type: string
     - name: SONAR_URL
-      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
+      default: '{{- include "edp-tekton.sonarUrl" $ }}'
       description: SonarQube url for static code analysis
       type: string
     - name: CODEBASE_NAME

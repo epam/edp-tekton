@@ -28,7 +28,7 @@ spec:
       description: SonarQube url for static code analysis
       type: string
     - name: NEXUS_URL
-      default: 'http://nexus.{{ $.Release.Namespace }}:8081'
+      default: '{{- include "edp-tekton.nexusUrl" $ }}'
       description: Nexus url
       type: string
     - name: CODEBASE_NAME

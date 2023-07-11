@@ -1,6 +1,6 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
-{{- $resourceMapping := dict "react" "docker.io/library/node:18.10-alpine3.16" "angular" "docker.io/library/node:18.10-alpine3.16" "vue" "docker.io/library/node:18.10-alpine3.16" "express" "docker.io/library/node:18.10-alpine3.16" "next" "docker.io/library/node:18.10-alpine3.16" "antora" "antora/antora:3.1.4" -}}
-{{- range $k, $v := $resourceMapping }}
+{{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
+{{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -40,7 +40,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: '{{ $v }}'
+      default: 'docker.io/library/node:18.10-alpine3.16'
       description: "npm image version"
       type: string
     - name: targetBranch

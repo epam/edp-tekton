@@ -1,9 +1,4 @@
-import os
-import sys
-
 from .helpers_custom import helm_template
-
-print(helm_template)
 
 def test_operator():
     config = """

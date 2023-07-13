@@ -18,7 +18,7 @@ spec:
     - name: gitsha
       value: $(extensions.pullRequest.headSha)
     - name: targetBranch
-      value: "$(body.pull_request.base.ref)"
+      value: "$(extensions.targetBranch)"
     - name: buildtool
       value: "$(extensions.spec.buildTool)"
     - name: framework

@@ -14,7 +14,7 @@ spec:
       default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/terraform-terraform-terraform"
+      default: "https://github.com/epmd-edp/hcl-terraform-terraform"
       description: git url to clone
       type: string
     - name: git-source-revision

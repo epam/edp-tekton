@@ -64,10 +64,10 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGerrit,
-				RepoPath:    "test-repo",
-				Branch:      "test-branch",
-				Type:        EventTypeMerge,
+				GitProvider:  GitProviderGerrit,
+				RepoPath:     "test-repo",
+				TargetBranch: "test-branch",
+				Type:         EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -113,7 +113,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			want: &EventInfo{
 				GitProvider:        GitProviderGerrit,
 				RepoPath:           "test-repo",
-				Branch:             "test-branch",
+				TargetBranch:       "test-branch",
 				Type:               EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
@@ -159,10 +159,10 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGerrit,
-				RepoPath:    "test-repo",
-				Branch:      "test-branch",
-				Type:        EventTypeReviewComment,
+				GitProvider:  GitProviderGerrit,
+				RepoPath:     "test-repo",
+				TargetBranch: "test-branch",
+				Type:         EventTypeReviewComment,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",

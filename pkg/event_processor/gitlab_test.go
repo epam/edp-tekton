@@ -63,10 +63,10 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGitLab,
-				RepoPath:    "/o/r",
-				Branch:      "master",
-				Type:        EventTypeMerge,
+				GitProvider:  GitProviderGitLab,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -198,7 +198,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 			want: &EventInfo{
 				GitProvider:        GitProviderGitLab,
 				RepoPath:           "/o/r",
-				Branch:             "master",
+				TargetBranch:       "master",
 				Type:               EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
@@ -249,10 +249,10 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGitLab,
-				RepoPath:    "/o/r",
-				Branch:      "master",
-				Type:        EventTypeReviewComment,
+				GitProvider:  GitProviderGitLab,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         EventTypeReviewComment,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -399,10 +399,10 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGitLab,
-				RepoPath:    "/o/r",
-				Branch:      "master",
-				Type:        EventTypeMerge,
+				GitProvider:  GitProviderGitLab,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -454,7 +454,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 			want: &EventInfo{
 				GitProvider:        GitProviderGitLab,
 				RepoPath:           "/o/r",
-				Branch:             "master",
+				TargetBranch:       "master",
 				Type:               EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{

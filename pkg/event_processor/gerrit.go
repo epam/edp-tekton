@@ -46,11 +46,11 @@ func (p *GerritEventProcessor) Process(ctx context.Context, body []byte, ns, _ s
 	}
 
 	event := &EventInfo{
-		GitProvider: GitProviderGerrit,
-		RepoPath:    strings.ToLower(gerritEvent.Project.Name),
-		Branch:      convertBranchName(gerritEvent.Change.Branch),
-		Type:        EventTypeMerge,
-		Codebase:    codebase,
+		GitProvider:  GitProviderGerrit,
+		RepoPath:     strings.ToLower(gerritEvent.Project.Name),
+		TargetBranch: gerritEvent.Change.Branch,
+		Type:         EventTypeMerge,
+		Codebase:     codebase,
 	}
 
 	if gerritEvent.Type == GerritEventTypeCommentAdded {

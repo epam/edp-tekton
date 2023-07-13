@@ -54,10 +54,10 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			gerritProcessor: func(t *testing.T) event_processor.Processor {
 				m := &mocks.Processor{}
 				m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
-					GitProvider: event_processor.GitProviderGerrit,
-					RepoPath:    "/o/r",
-					Branch:      "master",
-					Type:        event_processor.EventTypeMerge,
+					GitProvider:  event_processor.GitProviderGerrit,
+					RepoPath:     "/o/r",
+					TargetBranch: "master",
+					Type:         event_processor.EventTypeMerge,
 					Codebase: &codebaseApi.Codebase{
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
@@ -84,6 +84,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
+					"targetBranch":   "master",
 					"pullRequest":    nil,
 				},
 				Continue: true,
@@ -161,10 +162,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				gitHubProcessor: func(t *testing.T) event_processor.Processor {
 					m := &mocks.Processor{}
 					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
-						GitProvider: event_processor.GitProviderGitHub,
-						RepoPath:    "/o/r",
-						Branch:      "master",
-						Type:        event_processor.EventTypeMerge,
+						GitProvider:  event_processor.GitProviderGitHub,
+						RepoPath:     "/o/r",
+						TargetBranch: "master",
+						Type:         event_processor.EventTypeMerge,
 						Codebase: &codebaseApi.Codebase{
 							ObjectMeta: metav1.ObjectMeta{
 								Namespace: "default",
@@ -233,6 +234,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
+					"targetBranch":   "master",
 					"pullRequest": &event_processor.PullRequest{
 						HeadRef: "feature",
 						HeadSha: "sha",
@@ -252,10 +254,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					m := &mocks.Processor{}
 
 					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
-						GitProvider: event_processor.GitProviderGitLab,
-						RepoPath:    "/o/r",
-						Branch:      "master",
-						Type:        event_processor.EventTypeMerge,
+						GitProvider:  event_processor.GitProviderGitLab,
+						RepoPath:     "/o/r",
+						TargetBranch: "master",
+						Type:         event_processor.EventTypeMerge,
 						Codebase: &codebaseApi.Codebase{
 							ObjectMeta: metav1.ObjectMeta{
 								Namespace: "default",
@@ -323,6 +325,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
+					"targetBranch":   "master",
 					"pullRequest": &event_processor.PullRequest{
 						HeadRef: "feature",
 						HeadSha: "sha",
@@ -345,10 +348,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					m := &mocks.Processor{}
 
 					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
-						GitProvider: event_processor.GitProviderGerrit,
-						RepoPath:    "/o/r",
-						Branch:      "master",
-						Type:        event_processor.EventTypeMerge,
+						GitProvider:  event_processor.GitProviderGerrit,
+						RepoPath:     "/o/r",
+						TargetBranch: "master",
+						Type:         event_processor.EventTypeMerge,
 						Codebase: &codebaseApi.Codebase{
 							ObjectMeta: metav1.ObjectMeta{
 								Namespace: "default",
@@ -406,6 +409,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
+					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
 				},
 				Continue: true,
@@ -424,10 +428,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					m := &mocks.Processor{}
 
 					m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
-						GitProvider: event_processor.GitProviderGerrit,
-						RepoPath:    "/o/r",
-						Branch:      "master",
-						Type:        event_processor.EventTypeMerge,
+						GitProvider:  event_processor.GitProviderGerrit,
+						RepoPath:     "/o/r",
+						TargetBranch: "master",
+						Type:         event_processor.EventTypeMerge,
 						Codebase: &codebaseApi.Codebase{
 							ObjectMeta: metav1.ObjectMeta{
 								Namespace: "default",
@@ -477,6 +481,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
+					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
 				},
 				Continue: false,

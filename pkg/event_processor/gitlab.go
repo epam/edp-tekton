@@ -53,11 +53,11 @@ func (p *GitLabEventProcessor) processMergeEvent(ctx context.Context, body []byt
 	}
 
 	return &EventInfo{
-		GitProvider: GitProviderGitLab,
-		RepoPath:    repoPath,
-		Branch:      convertBranchName(gitLabEvent.ObjectAttributes.TargetBranch),
-		Type:        EventTypeMerge,
-		Codebase:    codebase,
+		GitProvider:  GitProviderGitLab,
+		RepoPath:     repoPath,
+		TargetBranch: gitLabEvent.ObjectAttributes.TargetBranch,
+		Type:         EventTypeMerge,
+		Codebase:     codebase,
 		PullRequest: &PullRequest{
 			HeadSha: gitLabEvent.ObjectAttributes.LastCommit.ID,
 			Title:   gitLabEvent.ObjectAttributes.Title,
@@ -95,7 +95,7 @@ func (p *GitLabEventProcessor) processCommentEvent(ctx context.Context, body []b
 	return &EventInfo{
 		GitProvider:        GitProviderGitLab,
 		RepoPath:           repoPath,
-		Branch:             convertBranchName(gitLabEvent.MergeRequest.TargetBranch),
+		TargetBranch:       gitLabEvent.MergeRequest.TargetBranch,
 		Type:               EventTypeReviewComment,
 		Codebase:           codebase,
 		HasPipelineRecheck: containsPipelineRecheck(gitLabEvent.ObjectAttributes.Note),

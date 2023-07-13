@@ -7,7 +7,7 @@ metadata:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
   name: {{ include "tekton-dashboard.name" . }}
 spec:
-  host: '{{- include "edp-tekton.nexusUrl" $ }}'
+  host: {{ include "tekton.tektonBaseUrl" . }}
   path: /
   port:
     targetPort: http

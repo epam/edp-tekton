@@ -102,11 +102,11 @@ func (p *GitHubEventProcessor) processMergeEvent(ctx context.Context, body []byt
 	}
 
 	return &EventInfo{
-		GitProvider: GitProviderGitHub,
-		RepoPath:    repoPath,
-		Branch:      convertBranchName(*gitHubEvent.PullRequest.Base.Ref),
-		Codebase:    codebase,
-		Type:        EventTypeMerge,
+		GitProvider:  GitProviderGitHub,
+		RepoPath:     repoPath,
+		TargetBranch: *gitHubEvent.PullRequest.Base.Ref,
+		Codebase:     codebase,
+		Type:         EventTypeMerge,
 		PullRequest: &PullRequest{
 			HeadRef: gitHubEvent.GetPullRequest().GetHead().GetRef(),
 			HeadSha: gitHubEvent.GetPullRequest().GetHead().GetSHA(),
@@ -179,7 +179,7 @@ func (p *GitHubEventProcessor) processCommentEvent(ctx context.Context, body []b
 	return &EventInfo{
 		GitProvider:        GitProviderGitHub,
 		RepoPath:           repoPath,
-		Branch:             convertBranchName(pullReq.GetBase().GetRef()),
+		TargetBranch:       pullReq.GetBase().GetRef(),
 		Type:               EventTypeReviewComment,
 		HasPipelineRecheck: containsPipelineRecheck(event.GetComment().GetBody()),
 		Codebase:           codebase,

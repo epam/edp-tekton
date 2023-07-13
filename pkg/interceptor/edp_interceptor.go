@@ -116,7 +116,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 
 	prepareCodebase(event.Codebase)
 
-	codebaseBranchName := fmt.Sprintf("%s-%s", event.Codebase.Name, event.Branch)
+	codebaseBranchName := convertBranchToCadebaseBranchName(event.TargetBranch, event.Codebase.Name)
 	trigger := true
 	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
@@ -131,7 +131,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 		i.logger.Infof("Codebasebranch with the name %s is not found, skipping pipeline triggering. "+
 			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
 			codebaseBranchName,
-			event.Branch,
+			event.TargetBranch,
 			event.Codebase.Name,
 		)
 	}
@@ -142,6 +142,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 			"spec":           event.Codebase.Spec,
 			"codebase":       event.Codebase.Name,
 			"codebasebranch": codebaseBranchName,
+			"targetBranch":   event.TargetBranch,
 			"pullRequest":    event.PullRequest,
 		},
 	}
@@ -204,4 +205,11 @@ func prepareCodebase(codebase *codebaseApi.Codebase) {
 	if codebase.Spec.JiraServer == nil {
 		codebase.Spec.JiraServer = pointer.String("")
 	}
+}
+
+// convertBranchToCadebaseBranchName converts branch name to CodebaseBranch CR name.
+func convertBranchToCadebaseBranchName(branch, codebaseName string) string {
+	r := strings.NewReplacer("/", "-")
+
+	return fmt.Sprintf("%s-%s", codebaseName, r.Replace(branch))
 }

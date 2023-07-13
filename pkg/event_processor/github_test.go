@@ -118,7 +118,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			want: &EventInfo{
 				GitProvider:        GitProviderGitHub,
 				RepoPath:           "/o/r",
-				Branch:             "master",
+				TargetBranch:       "master",
 				Type:               EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
@@ -216,7 +216,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			want: &EventInfo{
 				GitProvider:        GitProviderGitHub,
 				RepoPath:           "/o/r",
-				Branch:             "master",
+				TargetBranch:       "master",
 				Type:               EventTypeReviewComment,
 				HasPipelineRecheck: false,
 				Codebase: &codebaseApi.Codebase{
@@ -684,10 +684,10 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGitHub,
-				RepoPath:    "/o/r",
-				Branch:      "master",
-				Type:        EventTypeMerge,
+				GitProvider:  GitProviderGitHub,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "codebase1",
@@ -868,10 +868,10 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &EventInfo{
-				GitProvider: GitProviderGitHub,
-				RepoPath:    "/o/r",
-				Branch:      "master",
-				Type:        EventTypeMerge,
+				GitProvider:  GitProviderGitHub,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "codebase1",

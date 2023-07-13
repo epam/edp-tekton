@@ -68,7 +68,7 @@ const (
 type EventInfo struct {
 	GitProvider        string
 	RepoPath           string
-	Branch             string
+	TargetBranch       string
 	Type               string
 	Codebase           *codebaseApi.Codebase
 	HasPipelineRecheck bool
@@ -84,13 +84,6 @@ type PullRequest struct {
 // IsReviewCommentEvent returns true if the event is a review comment event.
 func (e *EventInfo) IsReviewCommentEvent() bool {
 	return e.Type == EventTypeReviewComment
-}
-
-// convertBranchName converts the branch name to the format used in the codebase for Kubernetes resource naming.
-func convertBranchName(branch string) string {
-	r := strings.NewReplacer("/", "-")
-
-	return r.Replace(branch)
 }
 
 func containsPipelineRecheck(s string) bool {

@@ -1,3 +1,4 @@
+{{- if and (eq .Values.global.platform "openshift") (eq .Values.dockerRegistry.type "ecr") }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -29,19 +30,14 @@ spec:
       description: The build context used by Kaniko.
       default: ./
     - name: BUILDER_IMAGE
-      description: The image on which builds will run (default is v1.9.1)
-      default: gcr.io/kaniko-project/executor:v1.9.1-debug
+      description: The image on which builds will run
+      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag}}-slim
     - name: KANIKO_CACHE_REPO
       description: The repo where Kaniko stores cached image layers
       default: ""
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
-  volumes:
-    - name: dockerconfig
-      secret:
-        secretName: kaniko-docker-config
-        optional: true
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
@@ -51,26 +47,21 @@ spec:
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)
-      script: |
-        /kaniko/executor \
-          --dockerfile=$(workspaces.source.path)/$(params.DOCKERFILE) \
-          --context=$(workspaces.source.path)/$(params.CONTEXT) \
-          --destination=$(params.IMAGE) \
-          --digest-file=$(results.IMAGE_DIGEST.path) \
-          --cache=true \
-          --cache-repo=$(params.KANIKO_CACHE_REPO) \
-          --tar-path=$(params.IMAGE_TAR).tar \
-          {{ if eq .Values.global.platform "openshift" }}
-          - --skip-tls-verify
-          {{ end }}
+      args:
+        - --dockerfile=$(workspaces.source.path)/$(params.DOCKERFILE)
+        - --context=$(workspaces.source.path)/$(params.CONTEXT)
+        - --destination=$(params.IMAGE)
+        - --digest-file=$(results.IMAGE_DIGEST.path)
+        - --cache=true
+        - --cache-repo=$(params.KANIKO_CACHE_REPO)
+        - --tar-path=$(params.IMAGE_TAR).tar
+        - --skip-tls-verify
+
       # kaniko assumes it is running as root, which means this example fails on platforms
       # that default to run containers as random uid (like OpenShift). Adding this securityContext
       # makes it explicit that it needs to run as root.
       securityContext:
         runAsUser: 0
-      volumeMounts:
-        - name: dockerconfig
-          mountPath: /kaniko/.docker
 {{- include "resources" . | nindent 6 }}
     - image: alpine:3.18.2
       name: write-url
@@ -79,3 +70,4 @@ spec:
         set -e
         image="$(params.IMAGE)"
         echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
+{{ end }}

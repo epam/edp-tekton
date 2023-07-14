@@ -116,6 +116,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | interceptor.securityContext.runAsUser | int | `65532` |  |
 | interceptor.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | interceptor.serviceAccount.name | string | `""` | If not set, a name is generated using the fullname template |
+| kaniko.image.repository | string | `"gcr.io/kaniko-project/executor"` |  |
+| kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |

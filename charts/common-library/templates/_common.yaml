@@ -141,8 +141,6 @@
       value: $(tasks.init-values.results.TENANT_NAME)
     - name: reportDataEngagementName
       value: $(params.CODEBASEBRANCH_NAME)
-    - name: targetImage
-      value: "$(tasks.kaniko-build.results.IMAGE_URL)"
   workspaces:
     - name: source
       workspace: shared-workspace

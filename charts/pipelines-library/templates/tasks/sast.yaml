@@ -31,9 +31,6 @@ spec:
     - name: reportDataEngagementName
       type: string
       default: ""
-    - name: targetImage
-      type: string
-      default: ""
   steps:
     - name: semgrep-scan
       image: $(params.BASE_IMAGE)
@@ -94,15 +91,3 @@ spec:
             secretKeyRef:
               name: $(params.ci-defectdojo-secret)
               key: url
-
-    - name: trivy
-      image: "aquasec/trivy:0.41.0"
-      workingDir: $(workspaces.source.path)
-      env:
-        - name: TARGET_IMAGE
-          value: $(params.targetImage)
-      script: |
-        #!/usr/bin/env sh
-        set -e
-
-        trivy image --scanners vuln --severity HIGH,CRITICAL "${TARGET_IMAGE}"

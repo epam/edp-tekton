@@ -204,7 +204,7 @@
 {{- end -}}
 
 {{- define "build-pipeline-js-image-build-push-common" -}}
-{{- if eq .Values.dockerRegistry.type "ecr" }}
+{{- if eq .Values.global.dockerRegistry.type "ecr" }}
 - name: create-ecr-repository
   taskRef:
     kind: Task
@@ -233,7 +233,7 @@
       workspace: shared-workspace
 {{- end }}
 
-{{- if eq .Values.dockerRegistry.type "harbor" }}
+{{- if eq .Values.global.dockerRegistry.type "harbor" }}
 - name: kaniko-build
   taskRef:
     kind: Task
@@ -254,7 +254,7 @@
 {{- end -}}
 
 {{- define "build-pipeline-antora-image-build-push-common" -}}
-{{- if eq .Values.dockerRegistry.type "ecr" }}
+{{- if eq .Values.global.dockerRegistry.type "ecr" }}
 - name: create-ecr-repository
   taskRef:
     kind: Task
@@ -283,7 +283,7 @@
       workspace: shared-workspace
 {{- end }}
 
-{{- if eq .Values.dockerRegistry.type "harbor" }}
+{{- if eq .Values.global.dockerRegistry.type "harbor" }}
 - name: kaniko-build
   taskRef:
     kind: Task

@@ -1,4 +1,4 @@
-{{- if and (eq .Values.global.platform "openshift") (eq .Values.dockerRegistry.type "ecr") }}
+{{- if and (eq .Values.global.platform "openshift") (eq .Values.global.dockerRegistry.type "ecr") }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:

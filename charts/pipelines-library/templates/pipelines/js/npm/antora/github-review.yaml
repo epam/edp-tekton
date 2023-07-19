@@ -96,6 +96,8 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
+{{- include "helm-docs" $ | nindent 4 }}
+
     - name: build
       taskRef:
         kind: Task

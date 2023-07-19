@@ -55,6 +55,8 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "helm-docs" $ | nindent 4 }}
+
 {{- include "dotnet-6-0-review-common" . | nindent 4 }}
 
     - name: dotnet-publish

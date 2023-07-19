@@ -59,6 +59,8 @@ spec:
 
 {{- include "gitlab-review-start" $ | nindent 4 }}
 
+{{- include "helm-docs" $ | nindent 4 }}
+
 {{- include "java-maven-get-module" . | nindent 4 }}
 
     - name: compile

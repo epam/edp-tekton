@@ -58,6 +58,8 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
+{{- include "helm-docs" $ | nindent 4 }}
+
     - name: dotnet-build
       taskRef:
         kind: Task

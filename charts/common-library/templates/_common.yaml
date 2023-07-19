@@ -91,6 +91,23 @@
       value: $(params.targetBranch)
 {{- end -}}
 
+
+{{- define "helm-docs" -}}
+- name: helm-docs
+  taskRef:
+    kind: Task
+    name: helm-docs
+  params:
+    - name: CHART_DIR
+      value: "deploy-templates"
+  runAfter:
+    - fetch-repository
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+
 {{- define "sonar-cleanup" -}}
 - name: sonar-cleanup
   taskRef:

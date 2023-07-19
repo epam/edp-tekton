@@ -5,8 +5,8 @@ def test_dotnet_pipelines_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -133,8 +133,8 @@ def test_dotnet_pipelines_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -254,8 +254,8 @@ def test_dotnet_pipelines_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -375,8 +375,8 @@ def test_dotnet_pipelines_harbor_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -501,8 +501,8 @@ def test_dotnet_pipelines_harbor_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -620,8 +620,8 @@ def test_dotnet_pipelines_harbor_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)

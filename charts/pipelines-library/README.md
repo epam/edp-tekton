@@ -86,7 +86,6 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.pipelinesNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines |
 | dashboard.readOnly | bool | `true` |  |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
-| dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
 | eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
 | fullnameOverride | string | `""` |  |
@@ -95,6 +94,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | gitlab.host | string | `"git.epam.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
+| global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | global.nexusUrl | string | `nil` | Optional parameter. Link to use custom nexus. Format: http://<service-name>.<nexus-namespace>:8081 or http://<ip-address>:<port> |

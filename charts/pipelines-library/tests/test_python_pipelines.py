@@ -5,8 +5,8 @@ def test_python_pipelines_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     r = helm_template(config)
@@ -127,8 +127,8 @@ def test_python_pipelines_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     r = helm_template(config)
@@ -242,8 +242,8 @@ def test_python_pipelines_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     r = helm_template(config)
@@ -358,8 +358,8 @@ def test_python_fastapi_pipelines_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -454,8 +454,8 @@ def test_python_flask_pipelines_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -549,8 +549,8 @@ def test_python_flask_pipelines_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -633,8 +633,8 @@ def test_python_fastapi_pipelines_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -720,8 +720,8 @@ def test_python_flask_pipelines_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -804,8 +804,8 @@ def test_python_fastapi_pipelines_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "ecr"
+  dockerRegistry:
+    type: "ecr"
     """
 
     ht = helm_template(config)
@@ -891,8 +891,8 @@ def test_python_pipelines_harbor_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     r = helm_template(config)
@@ -1011,8 +1011,8 @@ def test_python_pipelines_harbor_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     r = helm_template(config)
@@ -1124,8 +1124,8 @@ def test_python_pipelines_harbor_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     r = helm_template(config)
@@ -1238,8 +1238,8 @@ def test_python_fastapi_pipelines_harbor_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -1332,8 +1332,8 @@ def test_python_flask_pipelines_harbor_gerrit():
     config = """
 global:
   gitProvider: gerrit
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -1425,8 +1425,8 @@ def test_python_flask_pipelines_harbor_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -1507,8 +1507,8 @@ def test_python_fastapi_pipelines_harbor_gitlab():
     config = """
 global:
   gitProvider: gitlab
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -1592,8 +1592,8 @@ def test_python_flask_pipelines_harbor_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)
@@ -1674,8 +1674,8 @@ def test_python_fastapi_pipelines_harbor_github():
     config = """
 global:
   gitProvider: github
-dockerRegistry:
-  type: "harbor"
+  dockerRegistry:
+    type: "harbor"
     """
 
     ht = helm_template(config)

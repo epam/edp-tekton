@@ -59,6 +59,8 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "helm-docs" $ | nindent 4 }}
+
 {{ include "java-gradle-review-common" . | nindent 4 }}
 
     - name: build

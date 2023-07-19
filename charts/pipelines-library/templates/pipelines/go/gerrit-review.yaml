@@ -59,6 +59,8 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "helm-docs" $ | nindent 4 }}
+
 {{- include "golang-review-common" . | nindent 4 }}
 
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline

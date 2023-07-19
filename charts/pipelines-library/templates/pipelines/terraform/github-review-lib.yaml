@@ -39,43 +39,7 @@ spec:
 
 {{- include "github-review-start" . | nindent 4 }}
 
-    - name: terraform-format
-      taskRef:
-        kind: Task
-        name: terraform
-      runAfter:
-        - init-values
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            if [ -f .terraform-version ]; then
-                echo "[TEKTON][INFO] The '.terraform-version' file exists"
-                export TFENV_TERRAFORM_VERSION=""
-            else
-                echo "[TEKTON][INFO] The '.terraform-version' file does not exist. Terraform version - ${TFENV_TERRAFORM_VERSION} will be used by default"
-            fi
-            terraform init -backend=false
-            terraform fmt -check -list=true -diff
-            terraform validate
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: terraform-lint
-      taskRef:
-        kind: Task
-        name: terraform
-      runAfter:
-        - terraform-format
-      params:
-        - name: BASE_IMAGE
-          value: 'ghcr.io/terraform-linters/tflint:v0.41.0'
-        - name: EXTRA_COMMANDS
-          value: |
-            tflint --color
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "terraform-check-review-common" . | nindent 4 }}
 
 {{ include "github-review-vote" . | nindent 2 }}
 

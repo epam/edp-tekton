@@ -57,7 +57,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "terraform-build-common" . | nindent 4 }}
+{{- include "terraform-check-build-common" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
 

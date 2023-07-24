@@ -84,6 +84,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: dotnet-build
       taskRef:
         kind: Task

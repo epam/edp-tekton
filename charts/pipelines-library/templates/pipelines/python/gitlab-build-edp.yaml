@@ -82,12 +82,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: compile
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - update-build-number
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

@@ -99,6 +99,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: compile
       taskRef:
         kind: Task

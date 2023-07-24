@@ -68,12 +68,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: build
       taskRef:
         kind: Task
         name: npm
       runAfter:
-        - get-version
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

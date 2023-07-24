@@ -94,12 +94,14 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
+{{ include "sast" . | nindent 4 }}
+
     - name: compile
       taskRef:
         kind: Task
         name: npm
       runAfter:
-        - update-build-number
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

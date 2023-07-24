@@ -60,6 +60,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: dockerfile-lint
       taskRef:
         kind: Task

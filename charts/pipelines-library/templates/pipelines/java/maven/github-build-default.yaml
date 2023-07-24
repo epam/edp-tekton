@@ -80,12 +80,14 @@ spec:
 
 {{- include "java-maven-get-module" . | nindent 4 }}
 
+{{ include "sast" . | nindent 4 }}
+
     - name: compile
       taskRef:
         kind: Task
         name: maven
       runAfter:
-        - get-version
+        - sast
       params:
         - name: MAVEN_IMAGE
           value: $(params.image)

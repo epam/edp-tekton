@@ -57,6 +57,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{ include "sast" . | nindent 4 }}
+
     - name: dockerfile-lint
       taskRef:
         kind: Task

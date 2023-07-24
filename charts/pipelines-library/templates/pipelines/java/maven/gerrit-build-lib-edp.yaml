@@ -98,7 +98,7 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast-lib" . | nindent 4 }}
+{{ include "sast" . | nindent 4 }}
 
     - name: compile
       taskRef:

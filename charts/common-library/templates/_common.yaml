@@ -111,11 +111,11 @@
       value: $(tasks.init-values.results.NORMALIZED_BRANCH)
 {{- end -}}
 
-{{- define "sast-lib" -}}
+{{- define "sast" -}}
 - name: sast
   taskRef:
     kind: Task
-    name: sast-lib
+    name: sast
   runAfter:
     - get-version
   params:
@@ -130,20 +130,6 @@
 
 # The last section for Build Pipeline
 {{- define "build-pipeline-end" -}}
-- name: sast
-  taskRef:
-    kind: Task
-    name: sast
-  runAfter:
-    - kaniko-build
-  params:
-    - name: reportDataProductName
-      value: $(tasks.init-values.results.TENANT_NAME)
-    - name: reportDataEngagementName
-      value: $(params.CODEBASEBRANCH_NAME)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
 
 - name: git-tag
   taskRef:

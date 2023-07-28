@@ -41,9 +41,9 @@ spec:
         semgrep --jobs 1 --config=auto . --json --output $(params.reportDataPath) --disable-version-check
       env:
         - name: HOME
-          value: "$(workspaces.source.path)"
+          value: "/home"
         - name: SEMGREP_VERSION_CACHE_PATH
-          value: "$(workspaces.source.path)/.cache"
+          value: "/home/.cache"
 {{- include "resources" . | nindent 6 }}
     - image: curlimages/curl:7.85.0
       name: push-report

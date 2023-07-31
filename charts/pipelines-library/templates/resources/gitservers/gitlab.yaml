@@ -12,4 +12,5 @@ spec:
   httpsPort: 443
   nameSshKeySecret: {{ .Values.gitlab.webhook.existingSecret }}
   sshPort: 22
+  skipWebhookTlsVerification: {{ .Values.webhook.skipWebhookSSLVerification }}
 {{ end }}

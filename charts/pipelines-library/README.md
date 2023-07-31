@@ -126,3 +126,4 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"2Gi"}}` | The resource limits and requests for the Tekton Tasks |
 | tekton.workspaceSize | string | `"3Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |
+| webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |

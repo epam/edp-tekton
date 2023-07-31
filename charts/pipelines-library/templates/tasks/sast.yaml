@@ -38,12 +38,14 @@ spec:
       workingDir: $(workspaces.source.path)
       script: |
         set -e
+        # The .docker/config.json file contained sensitive information, so it was added to the ignorelist.
+        echo ".docker/config.json" >> .semgrepignore
         semgrep --jobs 1 --config=auto . --json --output $(params.reportDataPath) --disable-version-check
       env:
         - name: HOME
-          value: "/home"
+          value: "$(workspaces.source.path)"
         - name: SEMGREP_VERSION_CACHE_PATH
-          value: "/home/.cache"
+          value: "$(workspaces.source.path)/.cache"
 {{- include "resources" . | nindent 6 }}
     - image: curlimages/curl:7.85.0
       name: push-report

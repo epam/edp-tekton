@@ -30,8 +30,12 @@ spec:
       description: name of the secret holding the CI npm secret
       default: nexus-ci.user
     - name: NEXUS_REPOSITORY_URL
-      default: "nexus:8081/repository/edp-npm-group"
-      description: Nexus repository URL
+      default: ""
+      description: Nexus repository URL. e.g. 'nexus:8081/repository/edp-npm-group'
+    - name: NEXUS_URL
+      type: string
+      default: ""
+      description: Nexus URL
 
   workspaces:
     - name: source
@@ -56,8 +60,17 @@ spec:
             secretKeyRef:
               name: $(params.ci-secret)
               key: password
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
       script: |
         #!/usr/bin/env sh
         set -e
+
+        if [ -n "${NEXUS_URL}" ]; then
+            export NEXUS_REPOSITORY_URL="$(echo "${NEXUS_URL}" | cut -d '/' -f3-)/repository/edp-npm-group"
+        fi
+
+        echo "[TEKTON][INFO] NEXUS_REPOSITORY_URL contain ${NEXUS_REPOSITORY_URL}"
+
         $(params.EXTRA_COMMANDS)
 {{- include "resources" . | nindent 6 }}

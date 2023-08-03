@@ -27,6 +27,9 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: NEXUS_URL
+      default: '{{- include "edp-tekton.nexusUrl" $ }}'
+      description: Nexus url
     - name: CODEBASE_NAME
       default: '{{ $k }}-npm-edp-version'
       description: "Project name"
@@ -109,6 +112,8 @@ spec:
             npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64
             npm install
             npm run build:prod
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace

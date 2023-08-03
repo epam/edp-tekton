@@ -104,6 +104,8 @@
         npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local --location project
         npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64 --location project
         npm ci
+    - name: NEXUS_URL
+      value: "$(params.NEXUS_URL)"
   workspaces:
     - name: source
       workspace: shared-workspace

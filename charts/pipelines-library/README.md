@@ -95,6 +95,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | gitlab.webhook.existingSecret | string | `"gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
+| global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"` | Docker Registry endpoint |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | global.nexusUrl | string | `nil` | Optional parameter. Link to use custom nexus. Format: http://<service-name>.<nexus-namespace>:8081 or http://<ip-address>:<port> |
@@ -116,6 +117,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | interceptor.securityContext.runAsUser | int | `65532` |  |
 | interceptor.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | interceptor.serviceAccount.name | string | `""` | If not set, a name is generated using the fullname template |
+| kaniko.customCert | bool | `false` | Save cert in secret "custom-ca-certificates" with key ca.crt |
 | kaniko.image.repository | string | `"gcr.io/kaniko-project/executor"` |  |
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |

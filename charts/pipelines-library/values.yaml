@@ -21,6 +21,8 @@ global:
   dockerRegistry:
     # -- Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor
     type: "ecr"
+    # -- Docker Registry endpoint
+    url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"
 
 webhook:
   # -- If true, webhook ssl verification will be skipped. Default: false
@@ -33,6 +35,9 @@ kaniko:
   image:
     repository: gcr.io/kaniko-project/executor
     tag: v1.12.1
+  # -- Set up true if external docker registry use custom certificate
+  # -- Save cert in secret "custom-ca-certificates" with key ca.crt
+  customCert: false
 
 github:
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com

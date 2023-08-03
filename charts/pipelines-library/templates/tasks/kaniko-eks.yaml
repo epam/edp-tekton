@@ -46,6 +46,14 @@ spec:
           - key: .dockerconfigjson
             path: config.json
         optional: true
+{{- if .Values.kaniko.customCert }}
+    - name: ca
+      secret:
+        items:
+          - key: ca.crt
+            path: ca.crt
+        secretName: custom-ca-certificates
+{{- end }}
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
@@ -63,13 +71,19 @@ spec:
           --digest-file=$(results.IMAGE_DIGEST.path) \
           --cache=true \
           --cache-repo=$(params.KANIKO_CACHE_REPO) \
-          --tar-path=$(params.IMAGE_TAR).tar
-
+          --tar-path=$(params.IMAGE_TAR).tar \
+          {{- if .Values.kaniko.customCert }}
+          --registry-certificate={{ .Values.global.dockerRegistry.url }}=/kaniko/.custom-certs/ca.crt
+          {{- end }}
       securityContext:
         runAsUser: 0
       volumeMounts:
         - name: dockerconfig
           mountPath: /kaniko/.docker
+      {{- if .Values.kaniko.customCert }}
+        - name: ca
+          mountPath: /kaniko/.custom-certs
+      {{- end }}
 {{- include "resources" . | nindent 6 }}
     - image: alpine:3.18.2
       name: write-url

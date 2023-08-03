@@ -26,21 +26,23 @@ spec:
       description: The path where package.json of the project is defined.
     - name: PIP_TRUSTED_HOST
       type: string
-      default: "nexus"
-      description: Nexus Repository host PIP connects to via HTTP.
+      default: ""
+      description: Nexus Repository host PIP connects to via HTTP. e.g. 'nexus'
     - name: PIP_INDEX
       type: string
-      default: "http://nexus:8081/repository/edp-python-group/pypi"
+      default: ""
       description: >-
         Private repo index PIP searches through. It is used by 'pip search' command.
+        e.g. 'http://nexus:8081/repository/edp-python-group/pypi'
     - name: PIP_INDEX_URL
       type: string
-      default: "http://nexus:8081/repository/edp-python-group/simple"
+      default: ""
       description: >-
         Repo index from wich PIP downloads private packages and public packages via proxy.
         PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL can hold
         multiple URLs if passed with spaces. It is used by 'pip install' command.
         To access index via web, add slash at the end of 'simple/'.
+        e.g. 'http://nexus:8081/repository/edp-python-group/simple'
     - name: TWINE_REPOSITORY_URL
       type: string
       default: ""
@@ -59,6 +61,10 @@ spec:
       type: string
       description: name of the secret holding the CI npm secret
       default: nexus-ci.user
+    - name: NEXUS_URL
+      type: string
+      description: Nexus URL
+      default: ""
   steps:
     - name: python
       image: $(params.BASE_IMAGE)
@@ -86,10 +92,28 @@ spec:
             secretKeyRef:
               name: $(params.ci-secret)
               key: password
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
       script: |
         #!/usr/bin/env sh
         set -ex
         export PATH=$PATH:$HOME/.local/bin
+
+        if [ -z "${PIP_TRUSTED_HOST}" ]; then
+            export PIP_TRUSTED_HOST=$(echo "${NEXUS_URL}" | cut -d '/' -f 3 | cut -d ':' -f 1)
+        fi
+
+        if [ -z "${PIP_INDEX}" ]; then
+            export PIP_INDEX="${NEXUS_URL}/repository/edp-python-group/pypi"
+        fi
+
+        if [ -z "${PIP_INDEX_URL}" ]; then
+            export PIP_INDEX_URL="${NEXUS_URL}/repository/edp-python-group/simple"
+        fi
+
+        echo "[TEKTON][INFO] PIP_INDEX contain ${PIP_INDEX}"
+        echo "[TEKTON][INFO] PIP_INDEX_URL contain ${PIP_INDEX_URL}"
+        echo "[TEKTON][INFO] PIP_TRUSTED_HOST contain ${PIP_TRUSTED_HOST}"
 
         netcr_file="$HOME/.netrc"
         if [ ! -f "${netcr_file}" ]; then

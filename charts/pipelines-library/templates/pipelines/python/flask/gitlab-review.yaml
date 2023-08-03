@@ -60,6 +60,8 @@ spec:
           value: |
             pip3 install -r test-requirements.txt
             pytest -sv --color=yes
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -76,6 +78,8 @@ spec:
             pip3 install -r test-requirements.txt
             pylint --output-format=colorized *.py
             flake8 --exclude .local --filename=*.py
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace

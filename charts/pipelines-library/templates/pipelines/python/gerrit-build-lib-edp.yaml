@@ -103,6 +103,8 @@ spec:
           value: |
             set -ex
             python setup.py clean build install --user
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace

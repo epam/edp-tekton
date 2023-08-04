@@ -29,6 +29,10 @@ spec:
       default: '{{- include "edp-tekton.sonarUrl" $ }}'
       description: SonarQube url for static code analysis
       type: string
+    - name: NEXUS_URL
+      default: '{{- include "edp-tekton.nexusUrl" $ }}'
+      description: Nexus url
+      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"

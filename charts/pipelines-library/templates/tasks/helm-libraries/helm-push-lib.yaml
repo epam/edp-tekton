@@ -1,0 +1,70 @@
+{{ if eq .Values.global.dockerRegistry.type "harbor"}}
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: helm-push-lib
+spec:
+  description: |
+    This Task allows Uset to push a new version of the Helm Chart
+    to the repository with Snapshot versions.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  volumes:
+    - name: dockerconfig
+      secret:
+        secretName: kaniko-docker-config
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+        optional: true
+  params:
+    - name: TENANT_NAME
+      type: string
+      description: "Tenant namespace"
+    - name: IS_TAG
+      type: string
+      description: "Chart version"
+    - name: CHART_DIR
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: registry-url
+      description: Helm registry url
+      default: "{{ .Values.global.dockerRegistry.url }}"
+  steps:
+    - name: push-helm-chart
+      image: alpine/k8s:1.23.17
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: TENANT_NAME
+          value: $(params.TENANT_NAME)
+        - name: IS_TAG
+          value: $(params.IS_TAG)
+        - name: REGISTRY_URL
+          value: $(params.registry-url)
+      script: |
+        #!/bin/bash
+        set -ex
+
+        chart_directory=(${CHART_DIR}/*)
+        for i in "${chart_directory[@]}"
+        do
+            if ! git diff --quiet HEAD^ HEAD -- $i; then
+                helm package ${i}
+                helm push *-*.tgz oci://${REGISTRY_URL}/${TENANT_NAME} --registry-config /.config/helm/registry/config.json
+                rm *-*.tgz
+            fi
+        done
+
+      # Adding this securityContext makes it explicit that it needs to run as root.
+      # Required for Openshift.
+      securityContext:
+        runAsUser: 0
+      # This secret mount is necessary for helm push to internal openshift registry
+      volumeMounts:
+        - mountPath: /.config/helm/registry
+          name: dockerconfig
+{{- include "resources" . | nindent 6 }}
+{{ end }}

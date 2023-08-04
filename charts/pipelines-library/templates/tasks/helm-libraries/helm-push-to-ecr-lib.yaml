@@ -1,7 +1,8 @@
+{{ if eq .Values.global.dockerRegistry.type "ecr" }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: helm-library-push-to-ecr
+  name: helm-push-lib
 spec:
   description: |
     This Task allows Uset to push a new version of the Helm Chart
@@ -29,6 +30,9 @@ spec:
       type: string
       description: "This configmap holds aws_region and docker registry url parameters"
       default: edp-config
+    - name: registry-url
+      description: Helm registry url
+      default: "{{ .Values.global.dockerRegistry.url }}"
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
@@ -76,15 +80,15 @@ spec:
             configMapKeyRef:
               name: "$(params.edp-config)"
               key: 'aws_region'
+        - name: REGISTRY_URL
+          value: $(params.registry-url)
       script: |
         #!/bin/bash
         set -ex
 
-        dockerRegistryHost=$(kubectl get edpcomponent docker-registry -o jsonpath='{.spec.url}')
-
         {{ if ne .Values.global.platform "openshift" }}
         aws ecr get-login-password --region ${AWS_DEFAULT_REGION} \
-          | helm registry login --username AWS --password-stdin ${dockerRegistryHost}
+          | helm registry login --username AWS --password-stdin ${REGISTRY_URL}
         {{ else }}
         update-ca-certificates
         {{ end }}
@@ -94,7 +98,7 @@ spec:
         do
             if ! git diff --quiet HEAD^ HEAD -- $i; then
                 helm package ${i}
-                helm push *-*.tgz oci://${dockerRegistryHost}/${TENANT_NAME}
+                helm push *-*.tgz oci://${REGISTRY_URL}/${TENANT_NAME}
                 rm *-*.tgz
             fi
         done
@@ -110,3 +114,4 @@ spec:
           mountPath: /usr/local/share/ca-certificates/
       {{ end }}
 {{- include "resources" . | nindent 6 }}
+{{ end }}

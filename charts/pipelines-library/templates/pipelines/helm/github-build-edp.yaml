@@ -120,10 +120,10 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: helm-push-to-ecr
+    - name: helm-push
       taskRef:
         kind: Task
-        name: helm-push-to-ecr
+        name: helm-push
       runAfter:
         - helm-template
       params:
@@ -142,7 +142,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - helm-push-to-ecr
+        - helm-push
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

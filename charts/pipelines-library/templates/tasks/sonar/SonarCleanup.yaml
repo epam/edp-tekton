@@ -48,8 +48,6 @@ spec:
           value: "$(params.SONAR_HOST_URL)"
         - name: BRANCH_NAME
           value: "$(params.BRANCH)"
-        - name: SONAR_HOST_URL
-          value: "$(params.SONAR_HOST_URL)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
         - name: SONAR_TOKEN
@@ -63,6 +61,7 @@ spec:
         import os
         import http.client
         import base64
+        import re
 
         def clean_sonar_project_range(patchset_number, change_number):
             sonar_host_url = os.getenv("SONAR_HOST_URL")
@@ -77,7 +76,10 @@ spec:
             print(sonar_project_key)
 
             for index in range(1,int(patchset_number)+1):
-                conn = http.client.HTTPConnection(sonar_host_url.replace("http://", ""))
+                if sonar_host_url.startswith("https://"):
+                    conn = http.client.HTTPSConnection(re.sub(r'^https?://', '', sonar_host_url))
+                else:
+                    conn = http.client.HTTPConnection(re.sub(r'^https?://', '', sonar_host_url))
                 api_show_url = "/api/components/show?component={0}-{1}".format(sonar_project_key,index)
                 headers={
                     "Authorization":"Basic {}".format(base64.b64encode(bytes(f"{sonar_token}:","utf-8")).decode("ascii")),

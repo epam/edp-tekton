@@ -87,7 +87,7 @@ spec:
         kind: Task
         name: dotnet
       runAfter:
-        - get-version
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

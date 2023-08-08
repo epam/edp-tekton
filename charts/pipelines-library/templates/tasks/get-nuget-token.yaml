@@ -57,6 +57,7 @@ spec:
         import http.client
         import base64
         import json
+        import re
 
         nuget_token_file = os.getenv("NUGET_TOKEN_FILE")
         nexus_script_name = os.getenv("NEXUS_SCRIPT_NAME")
@@ -81,7 +82,10 @@ spec:
         }
 
         status_url = f"/service/rest/v1/script/{nexus_script_name}/run"
-        conn = http.client.HTTPConnection(nexus_url.replace("http://", ""))
+        if nexus_url.startswith("https://"):
+            conn = http.client.HTTPSConnection(re.sub(r'^https?://', '', nexus_url))
+        else:
+            conn = http.client.HTTPConnection(re.sub(r'^https?://', '', nexus_url))
 
         conn.request(
             "POST",

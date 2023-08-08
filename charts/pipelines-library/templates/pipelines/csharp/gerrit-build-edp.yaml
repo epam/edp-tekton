@@ -90,14 +90,14 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast" . | nindent 4 }}
+{{ include "sast-dotnet-edp" . | nindent 4 }}
 
     - name: dotnet-build
       taskRef:
         kind: Task
         name: dotnet
       runAfter:
-        - update-build-number
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

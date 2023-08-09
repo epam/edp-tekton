@@ -67,7 +67,8 @@ spec:
         set -e
 
         if [ -n "${NEXUS_URL}" ]; then
-            export NEXUS_REPOSITORY_URL="$(echo "${NEXUS_URL}" | cut -d '/' -f3-)/repository/edp-npm-group"
+            NEXUS_REPOSITORY_URL="${NEXUS_URL#http*://}/repository/edp-npm-group"
+            export NEXUS_REPOSITORY_URL
         fi
 
         echo "[TEKTON][INFO] NEXUS_REPOSITORY_URL contain ${NEXUS_REPOSITORY_URL}"

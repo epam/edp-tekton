@@ -76,7 +76,11 @@ spec:
         - name: EXTRA_COMMANDS
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-            npm set registry http://${NEXUS_REPOSITORY_URL}/
+            if [[ "${NEXUS_URL}" == https* ]]; then
+                npm config set registry "https://${NEXUS_REPOSITORY_URL}/"
+            else
+                npm config set registry "http://${NEXUS_REPOSITORY_URL}/"
+            fi
             npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
             npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64
             npm ci

@@ -76,11 +76,14 @@
       value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)"
     - name: EXTRA_COMMANDS
       value: |
-        NPM_REPO=$(echo ${NEXUS_REPOSITORY_URL} | cut -d ':' -f2-)
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        npm set registry ${NEXUS_REPOSITORY_URL}/
-        npm set ${NPM_REPO}/:email=edp-ci@edp.local
-        npm set ${NPM_REPO}/:_auth=${upBase64}
+        if [[ "${NEXUS_URL}" == https* ]]; then
+            npm config set registry "https://${NEXUS_REPOSITORY_URL}/"
+        else
+            npm config set registry "http://${NEXUS_REPOSITORY_URL}/"
+        fi
+        npm set ${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
+        npm set ${NEXUS_REPOSITORY_URL}/:_auth=${upBase64}
         npm publish
   workspaces:
     - name: source
@@ -100,7 +103,11 @@
     - name: EXTRA_COMMANDS
       value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        npm set registry http://${NEXUS_REPOSITORY_URL}/ --location project
+        if [[ "${NEXUS_URL}" == https* ]]; then
+            npm config set registry "https://${NEXUS_REPOSITORY_URL}/"
+        else
+            npm config set registry "http://${NEXUS_REPOSITORY_URL}/"
+        fi
         npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local --location project
         npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64 --location project
         npm ci

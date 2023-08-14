@@ -43,7 +43,6 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
-        npm install
         npm run build:prod
   workspaces:
     - name: source
@@ -72,19 +71,58 @@
   params:
     - name: BASE_IMAGE
       value: $(params.image)
+    - name: NEXUS_URL
+      value: $(params.NEXUS_URL)
     - name: NEXUS_REPOSITORY_URL
       value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)"
     - name: EXTRA_COMMANDS
       value: |
+        npm publish --registry ${NEXUS_REPOSITORY_URL}
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "js-npm-init-compile" -}}
+
+- name: npm-init
+  taskRef:
+    kind: Task
+    name: npm
+  runAfter:
+    - sast
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        if [[ "${NEXUS_URL}" == https* ]]; then
-            npm config set registry "https://${NEXUS_REPOSITORY_URL}/"
-        else
-            npm config set registry "http://${NEXUS_REPOSITORY_URL}/"
-        fi
-        npm set ${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
-        npm set ${NEXUS_REPOSITORY_URL}/:_auth=${upBase64}
-        npm publish
+
+        npm config set registry ${NEXUS_URL}
+        npm config set always-auth=true
+        echo "_auth=$upBase64" >> .npmrc
+
+        npm ci --registry ${NEXUS_URL}/repository/edp-npm-group
+    - name: NEXUS_URL
+      value: "$(params.NEXUS_URL)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: compile
+  taskRef:
+    kind: Task
+    name: npm
+  runAfter:
+    - npm-init
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
+        npm run build:clean
+    - name: NEXUS_URL
+      value: "$(params.NEXUS_URL)"
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -103,14 +141,12 @@
     - name: EXTRA_COMMANDS
       value: |
         upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-        if [[ "${NEXUS_URL}" == https* ]]; then
-            npm config set registry "https://${NEXUS_REPOSITORY_URL}/"
-        else
-            npm config set registry "http://${NEXUS_REPOSITORY_URL}/"
-        fi
-        npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local --location project
-        npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64 --location project
-        npm ci
+
+        npm config set registry ${NEXUS_URL}
+        npm config set always-auth=true
+        echo "_auth=$upBase64" >> .npmrc
+
+        npm ci --registry ${NEXUS_URL}/repository/edp-npm-group
     - name: NEXUS_URL
       value: "$(params.NEXUS_URL)"
   workspaces:

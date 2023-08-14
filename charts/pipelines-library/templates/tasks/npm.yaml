@@ -66,12 +66,5 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        if [ -n "${NEXUS_URL}" ]; then
-            NEXUS_REPOSITORY_URL="${NEXUS_URL#http*://}/repository/edp-npm-group"
-            export NEXUS_REPOSITORY_URL
-        fi
-
-        echo "[TEKTON][INFO] NEXUS_REPOSITORY_URL contain ${NEXUS_REPOSITORY_URL}"
-
         $(params.EXTRA_COMMANDS)
 {{- include "resources" . | nindent 6 }}

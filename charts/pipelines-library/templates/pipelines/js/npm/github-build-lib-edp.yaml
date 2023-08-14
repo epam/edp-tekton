@@ -90,32 +90,7 @@ spec:
 
 {{ include "sast" . | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
-        - update-build-number
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-            if [[ "${NEXUS_URL}" == https* ]]; then
-                npm set registry "https://${NEXUS_REPOSITORY_URL}/"
-            else
-                npm set registry "http://${NEXUS_REPOSITORY_URL}/"
-            fi
-            npm set //${NEXUS_REPOSITORY_URL}/:email=edp-ci@edp.local
-            npm set //${NEXUS_REPOSITORY_URL}/:_auth=$upBase64
-            npm install
-            npm run build:clean
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "js-npm-init-compile" . | nindent 4 }}
 
 {{ include "js-npm-build-common" . | nindent 4 }}
 

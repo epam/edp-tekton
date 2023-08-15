@@ -19,7 +19,7 @@ spec:
       default: "."
   steps:
     - name: set-version-to-chart
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       env:
         - name: IS_TAG

@@ -17,7 +17,7 @@ spec:
       default: "."
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "alpine:3.18.2"
+      default: "alpine:3.18.3"
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)

@@ -26,7 +26,7 @@ spec:
       description: Current timestamp
   steps:
     - name: get-timestamp
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"

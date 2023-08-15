@@ -22,7 +22,7 @@ spec:
       description: "Parameter has '<NEXUS_URL>/repository/edp-<Tool>-snapshots' or '<NEXUS_URL>/repository/edp-<Tool>-releases' value"
   steps:
     - name: get-nexus-repository-url
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       env:
         - name: VERSION
           value: "$(params.VERSION)"

@@ -84,7 +84,7 @@ spec:
         vcluster -n ${E2E_HOST_NS} delete ${release_name}
 
     - name: kuttl-test-verify-exitcode
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       workingDir: $(workspaces.source.path)
       script: |
         exitCode=`cat $(steps.step-kuttl-test.exitCode.path)`

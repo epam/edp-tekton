@@ -73,7 +73,7 @@ spec:
               name: $(params.ci-secret)
               key: password
     - name: codenarc-report
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         cat /workspace/source/build/reports/codenarc/main.html

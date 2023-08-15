@@ -24,14 +24,14 @@ spec:
       description: "Current build version"
   steps:
     - name: get-timestamp
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"
         echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
 
     - name: get-version
-      image: alpine:3.18.2
+      image: alpine:3.18.3
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"

@@ -85,7 +85,7 @@ spec:
           mountPath: /kaniko/.custom-certs
       {{- end }}
 {{- include "resources" . | nindent 6 }}
-    - image: alpine:3.18.2
+    - image: alpine:3.18.3
       name: write-url
       resources: {}
       script: |

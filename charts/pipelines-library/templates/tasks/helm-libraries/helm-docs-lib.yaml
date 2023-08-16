@@ -64,6 +64,8 @@ spec:
       script: |
         set -ex
 
+        git config --global --add safe.directory $(pwd)
+
         chart_directory=$(ls -1 ${CHART_DIR}/)
         for i in ${chart_directory}
         do

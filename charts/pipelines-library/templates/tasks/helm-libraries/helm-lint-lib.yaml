@@ -84,6 +84,8 @@ spec:
         echo "[TEKTON][INFO] The config file for YAML linting is located at \"${LINTCONF_FILE_PATH}\""
         echo "[TEKTON][INFO] The schema for chart.yml validation is located at \"${CHART_SCHEMA_FILE_PATH}\""
 
+        git config --global --add safe.directory $(pwd)
+
         ct lint \
         --debug \
         --target-branch $(params.TARGET_BRANCH) \

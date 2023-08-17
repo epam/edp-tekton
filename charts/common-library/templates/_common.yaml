@@ -292,8 +292,6 @@ finally:
   params:
     - name: TICKET_NAME_PATTERN
       value: "$(params.TICKET_NAME_PATTERN)"
-    - name: COMMIT_MESSAGE_PATTERN
-      value: "$(params.COMMIT_MESSAGE_PATTERN)"
     - name: COMMIT_MESSAGE
       value: "$(params.COMMIT_MESSAGE)"
     - name: COMMIT_ID

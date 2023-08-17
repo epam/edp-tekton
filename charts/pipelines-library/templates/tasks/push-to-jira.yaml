@@ -17,8 +17,6 @@ spec:
   params:
     - name: TICKET_NAME_PATTERN
       type: string
-    - name: COMMIT_MESSAGE_PATTERN
-      type: string
     - name: COMMIT_MESSAGE
       type: string
     - name: COMMIT_ID
@@ -40,8 +38,6 @@ spec:
       env:
         - name: TICKET_NAME_PATTERN
           value: "$(params.TICKET_NAME_PATTERN)"
-        - name: COMMIT_MESSAGE_PATTERN
-          value: "$(params.COMMIT_MESSAGE_PATTERN)"
         - name: COMMIT_MESSAGE
           value: "$(params.COMMIT_MESSAGE)"
         - name: COMMIT_ID
@@ -66,7 +62,6 @@ spec:
         from random import randint
 
         ticket_message_pattern = os.getenv("TICKET_NAME_PATTERN")
-        commit_message_pattern = os.getenv("COMMIT_MESSAGE_PATTERN")
         commit_message_with_change_id = os.getenv("COMMIT_MESSAGE")
         commit_id = os.getenv("COMMIT_ID")
         jira_issue_metadata_payload = os.getenv("JIRA_ISSUE_METADATA_PAYLOAD")
@@ -76,7 +71,6 @@ spec:
         version = os.getenv("VERSION")
 
         print(f"[TEKTON][DEBUG] TICKET_NAME_PATTERN: {ticket_message_pattern}")
-        print(f"[TEKTON][DEBUG] COMMIT_MESSAGE_PATTERN: {commit_message_pattern}")
         print(f"[TEKTON][DEBUG] COMMIT_MESSAGE: \n{commit_message_with_change_id}")
         print(f"[TEKTON][DEBUG] COMMIT_ID: {commit_id}")
         print(f"[TEKTON][DEBUG] JIRA_ISSUE_METADATA_PAYLOAD: {jira_issue_metadata_payload}")
@@ -125,7 +119,8 @@ spec:
         print("[TEKTON] Getting Ticket number and Commit message")
         ticket_number = search_pattern(commit_message_with_change_id, ticket_message_pattern)
         print(f"[TEKTON] Ticket number is {ticket_number}")
-        commit_message = search_pattern(commit_message_with_change_id, commit_message_pattern)
+        # Use the first line of commit message as a commit message for JiraIssueMetadata CR
+        commit_message = commit_message_with_change_id.split("\n")[0]
         print(f"[TEKTON] Commit message was parsed: {commit_message}")
 
         print("[TEKTON] Preparing Jira Issue Link")

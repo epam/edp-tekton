@@ -28,7 +28,7 @@ spec:
     # commitMessage is used for 'push-to-jira' Task
     - name: commitMessage
       value: "$(body.object_attributes.title)"
-    # commitMessagePattern is used for 'commit-validate' and 'push-to-jira' Tasks
+    # commitMessagePattern is used for 'commit-validate' Tasks
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     # jiraIssueMetadataPayload is used for 'push-to-jira' Task

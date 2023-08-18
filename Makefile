@@ -43,9 +43,9 @@ validate-docs: helm-docs  ## Validate helm docs
 .PHONY: changelog
 changelog: git-chglog	## generate changelog
 ifneq (${NEXT_RELEASE_TAG},)
-	$(GITCHGLOG) --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md v0.1.0..
+	$(GITCHGLOG) --next-tag v${NEXT_RELEASE_TAG} -o CHANGELOG.md v0.6.0..
 else
-	$(GITCHGLOG) -o CHANGELOG.md v0.1.0..
+	$(GITCHGLOG) -o CHANGELOG.md v0.6.0..
 endif
 
 .PHONY: helm-docs

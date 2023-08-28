@@ -90,7 +90,7 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast-dotnet-edp" . | nindent 4 }}
+{{ include "sast-edp" . | nindent 4 }}
 
     - name: dotnet-build
       taskRef:

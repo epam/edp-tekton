@@ -85,7 +85,7 @@ spec:
         kind: Task
         name: maven
       runAfter:
-        - get-version
+        - sast
       params:
         - name: MAVEN_IMAGE
           value: $(params.image)

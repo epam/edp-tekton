@@ -98,14 +98,14 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast" . | nindent 4 }}
+{{ include "sast-edp" . | nindent 4 }}
 
     - name: compile
       taskRef:
         kind: Task
         name: maven
       runAfter:
-        - update-build-number
+        - sast
       params:
         - name: MAVEN_IMAGE
           value: $(params.image)

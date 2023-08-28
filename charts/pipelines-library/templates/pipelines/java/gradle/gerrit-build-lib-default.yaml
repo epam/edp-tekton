@@ -91,7 +91,7 @@ spec:
         kind: Task
         name: gradle
       runAfter:
-        - get-version
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

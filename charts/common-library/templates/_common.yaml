@@ -145,6 +145,23 @@
       workspace: shared-workspace
 {{- end -}}
 
+{{- define "sast-edp" -}}
+- name: sast
+  taskRef:
+    kind: Task
+    name: sast
+  runAfter:
+    - update-build-number
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
 # The last section for Build Pipeline
 {{- define "build-pipeline-end" -}}
 

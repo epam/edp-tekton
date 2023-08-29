@@ -80,7 +80,7 @@ spec:
         kind: Task
         name: python
       runAfter:
-        - get-version
+        - sast
       params:
         - name: BASE_IMAGE
           value: $(params.image)

@@ -222,7 +222,7 @@ dashboard:
     # -- Define tekton dashboard docker image name
     repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
     # -- Define tekton dashboard docker image tag
-    tag: v0.36.1
+    tag: v0.39.0
 
   ingress:
     # -- Annotations for Ingress resource

@@ -57,6 +57,9 @@ spec:
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "ct-configs"
+    - name: DEPTRACK_URL
+      default: "http://deptrack-apiserver.dependency-track:80"
+      description: "dependency track url"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -221,17 +224,17 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: image-scan
+    - name: dependency-check
       taskRef:
         kind: Task
-        name: image-scan
+        name: cdxgen
+      params:
+        - name: DEPTRACK_URL
+          value: $(params.DEPTRACK_URL)
+        - name: PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
       runAfter:
         - dockerbuild-verify
-      params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
-        - name: IMAGE_TAR
-          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
       workspaces:
         - name: source
           workspace: shared-workspace

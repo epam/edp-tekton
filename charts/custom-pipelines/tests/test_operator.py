@@ -30,7 +30,7 @@ global:
     assert "sonar" in r[11]["name"]
     assert "dockerfile-lint" in r[12]["name"]
     assert "dockerbuild-verify" in r[13]["name"]
-    assert "image-scan" in r[14]["name"]
+    assert "dependency-check" in r[14]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
 

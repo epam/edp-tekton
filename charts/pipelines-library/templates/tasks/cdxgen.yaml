@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cdxgen
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/displayName: Dep-Analysis
+    tekton.dev/platforms: linux/amd64
+spec:
+  params:
+    - default: ''
+      description: Dependency-track URL. e.g. 'https://example.com'
+      name: DEPTRACK_URL
+      type: string
+    - default: ''
+      description: That is the name of the project that will be updated/created on the dependency track side
+      name: PROJECT_NAME
+      type: string
+    - name: ci-dependency-track
+      type: string
+      description: Name of the secret holding the ci-dependency-track api token
+      default: ci-dependency-track
+  steps:
+    - env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: token
+        - name: DEPTRACK_URL
+          value: $(params.DEPTRACK_URL)
+        - name: PROJECT_NAME
+          value: $(params.PROJECT_NAME)
+      image: >-
+        ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
+      name: cdxgen
+      resources: {}
+      script: >
+        #!/usr/bin/env sh
+
+        set -e
+
+        set +x
+
+        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - name: source

@@ -18,7 +18,7 @@ spec:
       default: "golang:1.19.6-bullseye"
     - name: TOOLS_IMAGE
       type: string
-      default: "epamedp/tekton-helm:0.1.4"
+      default: "epamedp/tekton-helm:0.1.5"
     - name: GOCACHE
       description: "Go caching directory path"
       default: "$(workspaces.source.path)"

@@ -1,0 +1,137 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: helm-push-gh-release
+spec:
+  description: |
+    This Task allows Uset to push a new version of the Helm Chart
+    to the repository with Snapshot versions.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+
+  params:
+    - name: CODEBASE_NAME
+      type: string
+
+    - name: SSH_REPO_URL
+      type: string
+      default: "git@github.com:Rolika4/edp-helm-charts.git"
+
+    - name: GH_CHART_URL
+      type: string
+      default: "https://epam.github.io/edp-helm-charts"
+
+    - name: GH_BRANCH
+      type: string
+      default: "gh-pages"
+
+    - name: GH_EMAIL
+      type: string
+      default: "SupportEPMD-EDP@epam.com"
+
+    - name: GH_USER_NAME
+      type: string
+      default: "edp-bot"
+
+    - name: HELM_REPO_NAME
+      type: string
+      default: "epamedp"
+
+    - name: SSH_SECRET_NAME
+      type: string
+      default: "github-pages-helm-chart-sshkey"
+
+    - name: PROJECT_DIR
+      type: string
+      description: "The directory containing project files."
+      default: "."
+
+    - name: USER_HOME
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+        or have overridden the gitInitImage param with an image containing custom user configuration.
+      type: string
+      default: "/tekton/home"
+
+    - name: chart-path
+      type: string
+      description: "Path to helm chart"
+      default: "."
+
+  volumes:
+    - name: ssh-keys
+      secret:
+        secretName: $(params.SSH_SECRET_NAME)
+
+  steps:
+    - name: helm-push-gh-pages
+      image: epamedp/tekton-helm:0.1.4
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      volumeMounts:
+        - name: ssh-keys
+          mountPath: /workspaces/ssh-keys
+      env:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: GIT_SSH_COMMAND
+          value: "ssh -i $(params.USER_HOME)/.ssh/id_rsa -o StrictHostKeyChecking=no "
+        - name: GIT_SSH_VARIANT
+          value: "ssh"
+        - name: SSH_REPO_URL
+          value: $(params.SSH_REPO_URL)
+        - name: GH_EMAIL
+          value: $(params.GH_EMAIL)
+        - name: GH_USER_NAME
+          value: $(params.GH_USER_NAME)
+        - name: HELM_REPO_NAME
+          value: $(params.HELM_REPO_NAME)
+        - name: GH_CHART_URL
+          value: $(params.GH_CHART_URL)
+        - name: GH_BRANCH
+          value: $(params.GH_BRANCH)
+        - name: PARAM_USER_HOME
+          value: $(params.USER_HOME)
+        - name: WORKING_DIR
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: CHART_PATH
+          value: $(params.chart-path)
+      script: |
+        set -ex
+
+        ls -la
+
+        cp -R "/workspaces/ssh-keys" "${PARAM_USER_HOME}"/.ssh
+        chmod 700 "${PARAM_USER_HOME}"/.ssh
+        chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+        export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+        export GIT_SSH_VARIANT=ssh
+
+        # Setting up the config for the git.
+        git config --global user.email ${GH_EMAIL}
+        git config --global user.name ${GH_USER_NAME}
+
+        if [ -f "./${CHART_PATH}/Chart.yaml" ]; then
+            echo "[TEKTON] Chart.yaml exists in ${CHART_PATH} in the repository."
+            rm -rf chart-repo
+
+            eval $(ssh-agent -s)
+            ssh-add "${PARAM_USER_HOME}"/.ssh/id_rsa
+
+            git clone ${SSH_REPO_URL} chart-repo
+            cd chart-repo/stable
+
+            helm repo add ${HELM_REPO_NAME} ${GH_CHART_URL}/stable --force-update
+            helm dep update ${WORKING_DIR}/${CHART_PATH}/
+            helm package ${WORKING_DIR}/${CHART_PATH}/ -d packages
+            helm repo index --url ${GH_CHART_URL}/stable --merge index.yaml .
+
+            git add packages/*.tgz index.yaml
+            git commit -m "Push ${CODEBASE_NAME} helm chart"
+            git push -u origin ${GH_BRANCH}
+
+            cd ${WORKING_DIR}
+        else
+            echo "${CHART_PATH}/Chart.yaml does not exist."
+        fi
+{{- include "resources" . | nindent 6 }}

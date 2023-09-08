@@ -1,0 +1,249 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-go-so-other-app-review
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-beego"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: SONAR_URL
+      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
+      description: SonarQube url for static code analysis
+      type: string
+    - name: NEXUS_URL
+      default: 'http://nexus.{{ .Release.Namespace }}:8081'
+      description: Nexus url
+      type: string
+    - name: CODEBASE_NAME
+      default: "golang-go"
+      description: "Project name"
+      type: string
+    - name: image
+      default: 'golang:1.19.6-bullseye'
+      description: "go image with make installed"
+      type: string
+    - name: GOPROXY
+      default: "http://athens-athens-proxy:80"
+      description: "Go proxy link"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
+    - name: DEPTRACK_URL
+      default: "http://deptrack-apiserver.dependency-track:80"
+      description: "dependency track url"
+  tasks:
+
+{{- include "gerrit-review-start" . | nindent 4 }}
+
+{{ include "gerrit-common" . | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: golang
+      runAfter:
+        - helm-docs
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
+        - name: EXTRA_COMMANDS
+          value: |
+            make build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        kind: Task
+        name: golang
+      runAfter:
+        - build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
+        - name: EXTRA_COMMANDS
+          value: |
+            make test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: lint
+      taskRef:
+        kind: Task
+        name: golang
+      runAfter:
+        - test
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
+        - name: EXTRA_COMMANDS
+          value: |
+            make lint
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - lint
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: sonar-prepare-files
+      taskRef:
+        kind: Task
+        name: sonar-prepare-files-general
+      runAfter:
+        - fetch-target-branch
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-scanner
+      runAfter:
+        - sonar-prepare-files
+      params:
+        - name: SONAR_HOST_URL
+          value: $(params.SONAR_URL)
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_SOURCES
+          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerbuild-verify
+      taskRef:
+        kind: Task
+        name: dockerbuild-verify
+      runAfter:
+        - sonar
+        - dockerfile-lint
+      params:
+        - name: IMAGE
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+        - name: IMAGE_TAR
+          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dependency-check
+      taskRef:
+        kind: Task
+        name: cdxgen
+      params:
+        - name: DEPTRACK_URL
+          value: $(params.DEPTRACK_URL)
+        - name: PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+      runAfter:
+        - dockerbuild-verify
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: e2e
+      taskRef:
+        kind: Task
+        name: e2e
+      runAfter:
+        - dockerbuild-verify
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: E2E_IMAGE_REPOSITORY
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME)"
+        - name: E2E_IMAGE_TAG
+          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

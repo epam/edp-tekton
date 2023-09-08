@@ -1,0 +1,34 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: validate-release-branch
+  labels:
+    app.kubernetes.io/version: "0.3"
+spec:
+  description: >-
+    This Task is Golang task to build Go projects.
+  params:
+    - name: branch
+      description: "For example: release/2.10"
+      type: string
+    - name: base_image
+      description: "The execute image you want to use."
+      default: "golang:1.19.6-bullseye"
+      type: string
+  steps:
+    - name: validate-release-branch
+      image: $(params.base_image)
+      env:
+        - name: BRANCH
+          value: "$(params.branch)"
+      script: |
+        set -ex
+
+        RELEASE_BRANCH_PATTERN='^(master)$|^(release/)([0-9]{1,2}[.][0-9]{1,2})$'
+        BRANCH=${BRANCH}
+
+        if ! echo "${BRANCH}" | egrep -q "${RELEASE_BRANCH_PATTERN}"; then
+            echo "!! Malformed branch name: '${BRANCH}', must match '${RELEASE_BRANCH_PATTERN}'" >&2
+            exit 1
+        fi
+{{- include "resources" . | nindent 6 }}

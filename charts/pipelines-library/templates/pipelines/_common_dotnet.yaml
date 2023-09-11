@@ -85,7 +85,6 @@
         dotnet pack ${slnFilename} --no-build --output ${nugetPackagesPath} "-p:PackageVersion=$(tasks.get-version.results.VERSION)"
         set +x
         nugetApiKey=$(cat $(tasks.get-nuget-token.results.NUGET_TOKEN_FILE))
-        set -x
         dotnet nuget push ${nugetPackagesPath} -k ${nugetApiKey} -s $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/
   workspaces:
     - name: source
@@ -282,7 +281,6 @@
         dotnet pack ${slnFilename} --no-build --output ${nugetPackagesPath} "-p:PackageVersion=$(tasks.get-version.results.VERSION)"
         set +x
         nugetApiKey=$(cat $(tasks.get-nuget-token.results.NUGET_TOKEN_FILE))
-        set -x
         dotnet nuget push ${nugetPackagesPath} -k ${nugetApiKey} -s $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/
   workspaces:
     - name: source

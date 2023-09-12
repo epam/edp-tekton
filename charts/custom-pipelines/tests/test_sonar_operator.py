@@ -29,7 +29,7 @@ global:
     assert "sonar-prepare-files" in r[10]["name"]
     assert "sonar" in r[11]["name"]
     assert "dockerfile-lint" in r[12]["name"]
-    assert "dockerbuild-verify" in r[13]["name"]
+    assert "kaniko-build" in r[13]["name"]
     assert "dependency-check" in r[14]["name"]
     assert "e2e" in r[15]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]

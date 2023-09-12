@@ -187,6 +187,8 @@ spec:
           workspace: shared-workspace
 
     - name: dockerfile-lint
+      runAfter:
+        - fetch-repository
       taskRef:
         kind: Task
         name: hadolint
@@ -196,18 +198,20 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dockerbuild-verify
-      taskRef:
-        kind: Task
-        name: dockerbuild-verify
+    - name: kaniko-build
+      params:
+        - name: IMAGE
+          value: >-
+            $(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)
+        - name: IMAGE_TAR
+          value: >-
+            $(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)
       runAfter:
         - sonar
         - dockerfile-lint
-      params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
-        - name: IMAGE_TAR
-          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+      taskRef:
+        kind: Task
+        name: kaniko
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -222,7 +226,7 @@ spec:
         - name: PROJECT_NAME
           value: $(params.CODEBASE_NAME)
       runAfter:
-        - dockerbuild-verify
+        - kaniko-build
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -232,7 +236,7 @@ spec:
         kind: Task
         name: e2e
       runAfter:
-        - dockerbuild-verify
+        - kaniko-build
       params:
         - name: CODEBASE_NAME
           value: $(params.CODEBASE_NAME)

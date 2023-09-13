@@ -1,0 +1,63 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-build-number-maven-default
+spec:
+  description: >-
+    This Task can be used to update an application version.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: NEXUS_URL
+      type: string
+      description: "Nexus url"
+    - name: VERSION
+      type: string
+    - name: ci-secret
+      type: string
+      description: name of the secret holding the CI maven secret
+      default: nexus-ci.user
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: custom-maven-settings
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: NEXUS_URL
+          value: "$(params.NEXUS_URL)"
+        - name: VERSION
+          value: "$(params.VERSION)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-secret)
+              key: password
+      script: |
+        set -ex
+
+        /usr/bin/mvn \
+        -s \
+        /var/configmap/settings.xml \
+        -B \
+        -Dartifactory.baseUrl=${NEXUS_URL} \
+        -Dartifactory.releasePath=edp-maven-releases \
+        -Dartifactory.snapshotsPath=edp-maven-snapshots \
+        -Dartifactory.groupPath=edp-maven-group \
+        versions:set \
+        versions:commit \
+        -DnewVersion=${VERSION}

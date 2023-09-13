@@ -38,7 +38,7 @@ global:
                 assert "init-values" in btd[2]["name"]
                 assert "get-version" in btd[3]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[3]["taskRef"]["name"]
+                assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "test" in btd[4]["name"]
                 assert buildtool == btd[4]["taskRef"]["name"]
                 assert "git-tag" in btd[5]["name"]
@@ -92,7 +92,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "test" in btd[3]["name"]
                 assert buildtool == btd[3]["taskRef"]["name"]
                 assert "git-tag" in btd[4]["name"]
@@ -145,7 +145,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "test" in btd[3]["name"]
                 assert buildtool == btd[3]["taskRef"]["name"]
                 assert "git-tag" in btd[4]["name"]

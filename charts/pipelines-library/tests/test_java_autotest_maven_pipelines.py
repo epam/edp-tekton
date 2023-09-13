@@ -43,7 +43,8 @@ global:
                 assert "init-values" in btd[2]["name"]
                 assert "sonar-cleanup" in btd[3]["name"]
                 assert "get-version" in btd[4]["name"]
-                assert "git-tag" in btd[5]["name"]
+                assert "update-build-number" in btd[5]["name"]
+                assert "git-tag" in btd[6]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -93,7 +94,8 @@ global:
                 assert "fetch-repository" in btd[0]["name"]
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
-                assert "git-tag" in btd[3]["name"]
+                assert "update-build-number" in btd[3]["name"]
+                assert "git-tag" in btd[4]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -141,7 +143,8 @@ global:
                 assert "fetch-repository" in btd[0]["name"]
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
-                assert "git-tag" in btd[3]["name"]
+                assert "update-build-number" in btd[3]["name"]
+                assert "git-tag" in btd[4]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]

@@ -66,7 +66,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-gradle-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
@@ -76,6 +76,21 @@ spec:
           value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
           value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-gradle-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace

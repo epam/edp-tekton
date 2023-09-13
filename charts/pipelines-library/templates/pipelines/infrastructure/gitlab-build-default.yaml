@@ -47,7 +47,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-terraform-default
+        name: get-version-default
       runAfter:
         - init-values
       params:

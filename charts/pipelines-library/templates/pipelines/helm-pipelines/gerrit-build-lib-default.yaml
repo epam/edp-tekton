@@ -83,7 +83,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-helm-chart-default
+        name: get-version-default
       runAfter:
         - gerrit-notify
       params:

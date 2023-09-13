@@ -47,7 +47,7 @@ global:
             assert "init-values" in btd[2]["name"]
             assert "get-version" in btd[3]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[3]["taskRef"]["name"]
+            assert f"get-version-default" == btd[3]["taskRef"]["name"]
             assert "sonar-cleanup" in btd[4]["name"]
             assert "sast" in btd[5]["name"]
             assert "test" in btd[6]["name"]
@@ -128,7 +128,7 @@ global:
             assert "init-values" in btd[1]["name"]
             assert "get-version" in btd[2]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+            assert f"get-version-default" == btd[2]["taskRef"]["name"]
             assert "sast" in btd[3]["name"]
             assert "test" in btd[4]["name"]
             assert "golang" == btd[4]["taskRef"]["name"]
@@ -206,7 +206,7 @@ global:
             assert "init-values" in btd[1]["name"]
             assert "get-version" in btd[2]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+            assert f"get-version-default" == btd[2]["taskRef"]["name"]
             assert "sast" in btd[3]["name"]
             assert "test" in btd[4]["name"]
             assert "golang" == btd[4]["taskRef"]["name"]
@@ -287,7 +287,7 @@ global:
             assert "init-values" in btd[2]["name"]
             assert "get-version" in btd[3]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[3]["taskRef"]["name"]
+            assert f"get-version-default" == btd[3]["taskRef"]["name"]
             assert "sonar-cleanup" in btd[4]["name"]
             assert "sast" in btd[5]["name"]
             assert "test" in btd[6]["name"]
@@ -366,7 +366,7 @@ global:
             assert "init-values" in btd[1]["name"]
             assert "get-version" in btd[2]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+            assert f"get-version-default" == btd[2]["taskRef"]["name"]
             assert "sast" in btd[3]["name"]
             assert "test" in btd[4]["name"]
             assert "golang" == btd[4]["taskRef"]["name"]
@@ -442,7 +442,7 @@ global:
             assert "init-values" in btd[1]["name"]
             assert "get-version" in btd[2]["name"]
             # ensure we have default versioning
-            assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+            assert f"get-version-default" == btd[2]["taskRef"]["name"]
             assert "sast" in btd[3]["name"]
             assert "test" in btd[4]["name"]
             assert "golang" == btd[4]["taskRef"]["name"]

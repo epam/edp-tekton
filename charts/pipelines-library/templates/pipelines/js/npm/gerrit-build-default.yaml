@@ -68,7 +68,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-npm-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
@@ -80,9 +80,24 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-npm-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast" . | nindent 4 }}
+{{ include "sast-edp" . | nindent 4 }}
 
 {{ include "js-npm-init-compile" . | nindent 4 }}
 

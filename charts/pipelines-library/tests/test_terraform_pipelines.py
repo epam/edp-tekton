@@ -38,7 +38,7 @@ global:
                 assert "init-values" in btd[2]["name"]
                 assert "get-version" in btd[3]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[3]["taskRef"]["name"]
+                assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "terraform-check" in btd[4]["name"]
                 assert "git-tag" in btd[5]["name"]
                 assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
@@ -92,7 +92,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "terraform-check" in btd[3]["name"]
                 assert "git-tag" in btd[4]["name"]
                 assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
@@ -145,7 +145,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "terraform-check" in btd[3]["name"]
                 assert "git-tag" in btd[4]["name"]
                 assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
@@ -198,7 +198,7 @@ global:
                 assert "init-values" in btd[2]["name"]
                 assert "get-version" in btd[3]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[3]["taskRef"]["name"]
+                assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "terraform-check" in btd[4]["name"]
                 assert "git-tag" in btd[5]["name"]
                 assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
@@ -252,7 +252,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "terraform-check" in btd[3]["name"]
                 assert "git-tag" in btd[4]["name"]
                 assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
@@ -305,7 +305,7 @@ global:
                 assert "init-values" in btd[1]["name"]
                 assert "get-version" in btd[2]["name"]
                 # ensure we have default versioning
-                assert f"get-version-{buildtool}-default" == btd[2]["taskRef"]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "terraform-check" in btd[3]["name"]
                 assert "git-tag" in btd[4]["name"]
                 assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]

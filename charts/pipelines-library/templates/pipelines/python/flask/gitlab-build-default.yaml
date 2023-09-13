@@ -58,12 +58,25 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-python-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-python
+      runAfter:
+        - get-version
+      params:
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -103,7 +116,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast" . | nindent 4 }}
+{{ include "sast-edp" . | nindent 4 }}
 
     - name: compile
       taskRef:

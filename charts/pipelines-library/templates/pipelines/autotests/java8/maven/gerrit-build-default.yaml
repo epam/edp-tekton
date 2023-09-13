@@ -50,7 +50,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-maven-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
@@ -64,12 +64,26 @@ spec:
         - name: source
           workspace: shared-workspace
 
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-maven-default
+      runAfter:
+        - get-version
+      params:
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
     - name: git-tag
       taskRef:
         kind: Task
         name: git-cli
       runAfter:
-        - get-version
+        - update-build-number
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

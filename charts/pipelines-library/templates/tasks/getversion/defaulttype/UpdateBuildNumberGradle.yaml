@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-build-number-gradle-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "alpine:3.18.3"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        set -ex
+
+        sed -i "s/version = .*/version = \'${VERSION}\'/" build.gradle

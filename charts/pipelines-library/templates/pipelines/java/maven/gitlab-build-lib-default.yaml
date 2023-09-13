@@ -64,7 +64,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-maven-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
@@ -78,7 +78,21 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast" . | nindent 4 }}
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-maven-default
+      runAfter:
+        - get-version
+      params:
+        - name: NEXUS_URL
+          value: $(params.NEXUS_URL)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+{{ include "sast-edp" . | nindent 4 }}
 
     - name: compile
       taskRef:

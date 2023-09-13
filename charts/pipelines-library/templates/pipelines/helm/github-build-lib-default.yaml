@@ -52,7 +52,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-helm-library-default
+        name: get-version-default
       runAfter:
         - init-values
       params:

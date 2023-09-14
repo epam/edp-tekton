@@ -10,4 +10,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: tekton
-  namespace: {{ .Values.global.edpName }}
+  namespace: {{ .Release.Namespace }}

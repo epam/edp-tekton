@@ -11,23 +11,27 @@ spec:
     - name: VERSION
       type: string
       description: "Application version"
-    - name: NEXUS_URL
+    - name: ci-nexus
       type: string
-      description: "Nexus url"
+      description: name of the secret holding the Nexus CI integration data
+      default: "ci-nexus"
     - name: TOOL
       type: string
       description: "Application language"
   results:
     - name: NEXUS_REPOSITORY_URL
-      description: "Parameter has '<NEXUS_URL>/repository/edp-<Tool>-snapshots' or '<NEXUS_URL>/repository/edp-<Tool>-releases' value"
+      description: "Parameter has '<NEXUS_HOST_URL>/repository/edp-<Tool>-snapshots' or '<NEXUS_HOST_URL>/repository/edp-<Tool>-releases' value"
   steps:
     - name: get-nexus-repository-url
       image: alpine:3.18.3
       env:
         - name: VERSION
           value: "$(params.VERSION)"
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
         - name: TOOL
           value: "$(params.TOOL)"
       script: |
@@ -37,9 +41,9 @@ spec:
         versionLowerCase=$(echo ${VERSION} | tr '[:upper:]' '[:lower:]')
 
         if [[ "$versionLowerCase" == *"snapshot"* ]]; then
-            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-${TOOL}-snapshots"
+            NEXUS_REPOSITORY_URL="${NEXUS_HOST_URL}/repository/edp-${TOOL}-snapshots"
         else
-            NEXUS_REPOSITORY_URL="${NEXUS_URL}/repository/edp-${TOOL}-releases"
+            NEXUS_REPOSITORY_URL="${NEXUS_HOST_URL}/repository/edp-${TOOL}-releases"
         fi
 
         echo "Nexus repository url- ${NEXUS_REPOSITORY_URL}"

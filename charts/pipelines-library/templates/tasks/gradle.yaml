@@ -31,14 +31,14 @@ spec:
       type: array
       default:
         - build
-    - name: ci-secret
+    - name: ci-nexus
       type: string
-      description: name of the secret holding the CI maven secret
-      default: nexus-ci.user
-    - name: ci-sonar-secret
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: ci-sonarqube
       type: string
-      description: name of the secret holding the CI sonar secret
-      default: sonar-ciuser-token
+      description: name of the secret for the Sonarqube integration
+      default: "ci-sonarqube"
     - name: EXTRA_ARGS
       description: Extra arguments to add to the gradle build
       default: |
@@ -75,16 +75,26 @@ spec:
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-sonar-secret)
-              key: secret
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: username
         - name: CI_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
 {{- include "resources" . | nindent 6 }}

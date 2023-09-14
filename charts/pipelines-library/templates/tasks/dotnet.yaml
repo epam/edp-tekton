@@ -26,26 +26,31 @@ spec:
       description: The directory containing build.gradle
       type: string
       default: "."
-    - name: ci-sonar-secret
+    - name: ci-sonarqube
       type: string
-      description: name of the secret holding the CI sonar secret
-      default: sonar-ciuser-token
+      description: name of the secret for the Sonarqube integration
+      default: "ci-sonarqube"
     - name: EXTRA_COMMANDS
       type: string
   steps:
     - name: dotnet
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
-      script: |
-        #!/usr/bin/env sh
-        set -e
-        $(params.EXTRA_COMMANDS)
       env:
         - name: HOME
           value: $(workspaces.source.path)
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-sonar-secret)
-              key: secret
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        $(params.EXTRA_COMMANDS)
 {{- include "resources" . | nindent 6 }}

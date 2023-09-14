@@ -27,14 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: '{{ $k }}-maven'
       description: "Project name"
@@ -65,7 +57,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
@@ -86,7 +78,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
@@ -110,14 +102,14 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'
             - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
             - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
             - '-Dsonar.qualitygate.wait=true'
-            - '-Dsonar.host.url=$(params.SONAR_URL)'
+            - '-Dsonar.host.url=${SONAR_HOST_URL}'
             - verify
             - sonar:sonar
       workspaces:

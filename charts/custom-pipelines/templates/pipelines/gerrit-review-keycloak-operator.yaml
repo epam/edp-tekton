@@ -25,14 +25,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: "golang-go"
       description: "Project name"
@@ -61,9 +53,6 @@ spec:
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "ct-configs"
-    - name: DEPTRACK_URL
-      default: "http://deptrack-apiserver.dependency-track:80"
-      description: "dependency track url"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -173,8 +162,6 @@ spec:
       runAfter:
         - sonar-prepare-files
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
         - name: SONAR_PROJECT_NAME
@@ -216,8 +203,6 @@ spec:
         kind: Task
         name: cdxgen
       params:
-        - name: DEPTRACK_URL
-          value: $(params.DEPTRACK_URL)
         - name: PROJECT_NAME
           value: $(params.CODEBASE_NAME)
       runAfter:

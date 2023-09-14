@@ -27,14 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: '{{ $k }}-npm-edp-version'
       description: "Project name"
@@ -69,13 +61,11 @@ spec:
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
 
-            npm config set registry ${NEXUS_URL}
+            npm config set registry ${NEXUS_HOST_URL}
             npm config set always-auth=true
             echo "_auth=$upBase64" >> .npmrc
 
-            npm ci --registry ${NEXUS_URL}/repository/edp-npm-group
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
+            npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -119,8 +109,6 @@ spec:
       runAfter:
         - test
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME

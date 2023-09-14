@@ -21,9 +21,6 @@ spec:
   workspaces:
     - name: source
   params:
-    - name: SONAR_HOST_URL
-      description: Host URL where the sonarqube server is running
-      default: ""
     - name: SONAR_PROJECT_KEY
       description: Project's unique key
       default: ""
@@ -36,10 +33,10 @@ spec:
     - name: SONAR_SOURCES
       description: Path is relative to the sonar-project.properties file. Defaults to .
       default: "."
-    - name: ci-sonar-secret
+    - name: ci-sonarqube
       type: string
-      description: name of the secret holding the CI sonar secret
-      default: "sonar-ciuser-token"
+      description: name of the secret holding the Sonarqube CI integration data
+      default: "ci-sonarqube"
   steps:
     - image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
       name: sonar-properties-create
@@ -47,7 +44,10 @@ spec:
       workingDir: $(workspaces.source.path)
       env:
         - name: SONAR_HOST_URL
-          value: "$(params.SONAR_HOST_URL)"
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
         - name: SONAR_PROJECT_KEY
           value: "$(params.SONAR_PROJECT_KEY)"
         - name: SONAR_PROJECT_NAME
@@ -102,15 +102,15 @@ spec:
         echo "---------------------------"
         cat $(workspaces.source.path)/sonar-project.properties
 
-    - name: sonar-scanner
-      image: sonarsource/sonar-scanner-cli:4.7
+    - image: sonarsource/sonar-scanner-cli:4.7
+      name: sonar-scanner
       workingDir: $(workspaces.source.path)
       env:
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-sonar-secret)
-              key: secret
+              name: $(params.ci-sonarqube)
+              key: token
       command:
         - sonar-scanner
 {{- include "resources" . | nindent 6 }}

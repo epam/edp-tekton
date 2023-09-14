@@ -18,10 +18,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: 'java8-maven'
       description: "Project name"
@@ -43,8 +39,6 @@ spec:
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
           value: $(params.image)
       workspaces:
@@ -58,8 +52,6 @@ spec:
       runAfter:
         - get-version
       params:
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
         - name: VERSION
           value: $(tasks.get-version.results.VERSION)
         - name: BASE_IMAGE

@@ -33,14 +33,14 @@ spec:
         The context directory within the repository for sources on
         which we want to execute maven goals.
       default: "."
-    - name: ci-secret
+    - name: ci-nexus
       type: string
-      description: name of the secret holding the CI maven secret
-      default: nexus-ci.user
-    - name: ci-sonar-secret
+      description: name of the secret holding the Nexus CI integration data
+      default: ci-nexus
+    - name: ci-sonarqube
       type: string
-      description: name of the secret holding the CI sonar secret
-      default: sonar-ciuser-token
+      description: name of the secret holding the Sonarqube CI integration data
+      default: "ci-sonarqube"
   volumes:
     - name: settings-maven
       configMap:
@@ -63,16 +63,26 @@ spec:
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-sonar-secret)
-              key: secret
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: username
         - name: CI_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
 {{- include "resources" . | nindent 6 }}

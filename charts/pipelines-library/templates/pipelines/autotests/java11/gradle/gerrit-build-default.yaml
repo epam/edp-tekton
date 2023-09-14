@@ -21,14 +21,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: 'java11-gradle'
       description: "Project name"
@@ -56,8 +48,6 @@ spec:
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
         - name: BASE_IMAGE
           value: $(params.image)
       workspaces:

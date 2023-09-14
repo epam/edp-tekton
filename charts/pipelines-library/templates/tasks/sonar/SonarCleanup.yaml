@@ -21,8 +21,6 @@ spec:
     - name: BASE_IMAGE
       description: "The base image for the task."
       default: "python:3.10.1-alpine3.15"
-    - name: SONAR_HOST_URL
-      description: Host URL where the sonarqube server is running
     - name: patchsetNumber
       type: string
     - name: changeNumber
@@ -30,10 +28,10 @@ spec:
     - name: CODEBASE_NAME
       type: string
       description: Codebase name.
-    - name: ci-sonar-secret
+    - name: ci-sonarqube
       type: string
-      description: name of the secret holding the CI sonar secret
-      default: "sonar-ciuser-token"
+      description: name of the secret holding the Sonarqube CI integration data
+      default: ci-sonarqube
     - name: BRANCH
       type: string
   steps:
@@ -44,17 +42,20 @@ spec:
           value: "$(params.patchsetNumber)"
         - name: CHANGE_NUMBER
           value: "$(params.changeNumber)"
-        - name: SONAR_HOST_URL
-          value: "$(params.SONAR_HOST_URL)"
         - name: BRANCH_NAME
           value: "$(params.BRANCH)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
         - name: SONAR_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-sonar-secret)
-              key: secret
+              name: $(params.ci-sonarqube)
+              key: token
       script: |
         #!/usr/bin/env python
 

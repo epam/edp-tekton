@@ -10,7 +10,7 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         test \
         jacocoTestReport
   workspaces:
@@ -28,10 +28,10 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
         -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
-        -Dsonar.host.url=$(params.SONAR_URL) \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
         -Dsonar.qualitygate.wait=true \
         sonarqube
   workspaces:
@@ -49,7 +49,7 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         build -x test
   workspaces:
     - name: source
@@ -64,8 +64,6 @@
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
-    - name: NEXUS_URL
-      value: $(params.NEXUS_URL)
     - name: TOOL
       value: "maven"
 
@@ -100,7 +98,7 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         clean \
         compileJava \
         -x test
@@ -119,7 +117,7 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         test \
         jacocoTestReport
   workspaces:
@@ -180,10 +178,10 @@
       value: $(params.image)
     - name: EXTRA_ARGS
       value: |
-        -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
         -Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
         -Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
-        -Dsonar.host.url=$(params.SONAR_URL) \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
         -Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES) \
         -Dsonar.qualitygate.wait=true \
         sonarqube

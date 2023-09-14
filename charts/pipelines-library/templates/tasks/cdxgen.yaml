@@ -10,10 +10,6 @@ metadata:
 spec:
   params:
     - default: ''
-      description: Dependency-track URL. e.g. 'https://example.com'
-      name: DEPTRACK_URL
-      type: string
-    - default: ''
       description: That is the name of the project that will be updated/created on the dependency track side
       name: PROJECT_NAME
       type: string
@@ -29,7 +25,10 @@ spec:
               name: $(params.ci-dependency-track)
               key: token
         - name: DEPTRACK_URL
-          value: $(params.DEPTRACK_URL)
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: url
         - name: PROJECT_NAME
           value: $(params.PROJECT_NAME)
       image: >-

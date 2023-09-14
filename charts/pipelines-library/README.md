@@ -98,9 +98,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"` | Docker Registry endpoint |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
 | global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
-| global.nexusUrl | string | `nil` | Optional parameter. Link to use custom nexus. Format: http://<service-name>.<nexus-namespace>:8081 or http://<ip-address>:<port> |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
-| global.sonarUrl | string | `nil` | Optional parameter. Link to use custom sonarqube. Format: http://<service-name>.<sonarqube-namespace>:9000 or http://<ip-address>:<port> |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |

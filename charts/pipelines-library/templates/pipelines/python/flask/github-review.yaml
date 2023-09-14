@@ -25,14 +25,7 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
+
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
@@ -73,8 +66,6 @@ spec:
           value: |
             pip3 install -r test-requirements.txt
             pytest -sv --color=yes
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -91,8 +82,6 @@ spec:
             pip3 install -r test-requirements.txt
             pylint --output-format=colorized *.py
             flake8 --exclude .local --filename=*.py
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -104,8 +93,6 @@ spec:
       runAfter:
         - test
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME

@@ -27,14 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: '{{ $k }}-maven'
       description: "Project name"
@@ -67,7 +59,7 @@ spec:
           value: $(params.image)
         - name: EXTRA_ARGS
           value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             clean \
             compileJava \
             -x test
@@ -86,7 +78,7 @@ spec:
           value: $(params.image)
         - name: EXTRA_ARGS
           value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             test \
             jacocoTestReport
       workspaces:
@@ -104,10 +96,10 @@ spec:
           value: $(params.image)
         - name: EXTRA_ARGS
           value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
             -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.host.url=$(params.SONAR_URL) \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.qualitygate.wait=true \
             sonarqube
       workspaces:

@@ -27,14 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: "{{ $k }}-go"
       description: "Project name"
@@ -113,8 +105,6 @@ spec:
       runAfter:
         - sonar-prepare-files
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
         - name: SONAR_PROJECT_NAME

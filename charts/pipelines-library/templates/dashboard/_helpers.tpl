@@ -37,5 +37,5 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Define Tekton Dashboard URL
 */}}
 {{- define "tekton.tektonBaseUrl" -}}
-{{- printf "tekton-%s.%s" .Values.global.edpName .Values.global.dnsWildCard  }}
+{{- printf "tekton-%s.%s" .Release.Namespace .Values.global.dnsWildCard  }}
 {{- end }}

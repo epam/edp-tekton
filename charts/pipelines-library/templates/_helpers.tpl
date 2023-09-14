@@ -40,17 +40,3 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
-
-{{/*
-Link to use custom sonarqube. Format: http://<service-name>.<sonarqube-namespace>:9000 or http://<ip-address>:9000
-*/}}
-{{- define "edp-tekton.sonarUrl" -}}
-{{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
-{{- end }}
-
-{{/*
-Link to use custom nexus. Format: http://<service-name>.<nexus-namespace>:8081 or http://<ip-address>:<port>
-*/}}
-{{- define "edp-tekton.nexusUrl" -}}
-{{ $.Values.global.nexusUrl | default (printf "http://nexus.%s:8081" $.Release.Namespace) }}
-{{- end }}

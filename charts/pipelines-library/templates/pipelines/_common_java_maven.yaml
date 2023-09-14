@@ -11,7 +11,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
@@ -35,14 +35,14 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
         - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.qualitygate.wait=true'
-        - '-Dsonar.host.url=$(params.SONAR_URL)'
+        - '-Dsonar.host.url=${SONAR_HOST_URL}'
         - verify
         - sonar:sonar
   workspaces:
@@ -61,7 +61,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
@@ -81,8 +81,6 @@
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
-    - name: NEXUS_URL
-      value: $(params.NEXUS_URL)
     - name: TOOL
       value: "maven"
 
@@ -98,7 +96,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
@@ -123,7 +121,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
@@ -144,7 +142,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
@@ -211,14 +209,14 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'
         - '-Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.qualitygate.wait=true'
-        - '-Dsonar.host.url=$(params.SONAR_URL)'
+        - '-Dsonar.host.url=${SONAR_HOST_URL}'
         - '-Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)'
         - verify
         - sonar:sonar
@@ -238,7 +236,7 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
         - '-Dartifactory.releasePath=edp-maven-releases'
         - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
         - '-Dartifactory.groupPath=edp-maven-group'

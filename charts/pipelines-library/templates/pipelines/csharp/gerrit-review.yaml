@@ -27,10 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
     - name: CODEBASE_NAME
       default: 'csharp-dotnet-{{ $k }}'
       description: "Project name"

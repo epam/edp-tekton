@@ -27,14 +27,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: 'java8-maven'
       description: "Project name"
@@ -74,7 +66,7 @@ spec:
           value: $(params.image)
         - name: EXTRA_ARGS
           value: |
-            -PnexusMavenRepositoryUrl=$(params.NEXUS_URL)/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             build -x test
       workspaces:
         - name: source

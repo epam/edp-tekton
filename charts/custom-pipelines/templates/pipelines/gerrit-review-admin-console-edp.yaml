@@ -25,10 +25,6 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: SONAR_URL
-      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
-      description: SonarQube url for static code analysis
-      type: string
     - name: CODEBASE_NAME
       default: "golang-go"
       description: "Project name"
@@ -154,8 +150,6 @@ spec:
       runAfter:
         - sonar-prepare-files
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
         - name: SONAR_PROJECT_NAME

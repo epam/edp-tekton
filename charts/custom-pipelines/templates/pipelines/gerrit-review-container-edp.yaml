@@ -39,9 +39,6 @@ spec:
       description: "Commit message"
     - name: COMMIT_MESSAGE_PATTERN
       description: "Pattern to validate a commit message"
-    - name: DEPTRACK_URL
-      default: "https://deptrack.eks-core.aws.main.edp.projects.epam.com/"
-      description: "dependency track url"
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
@@ -89,8 +86,6 @@ spec:
         kind: Task
         name: cdxgen
       params:
-        - name: DEPTRACK_URL
-          value: $(params.DEPTRACK_URL)
         - name: PROJECT_NAME
           value: $(params.CODEBASE_NAME)
       runAfter:

@@ -23,14 +23,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
-    - name: SONAR_URL
-      default: '{{- include "edp-tekton.sonarUrl" $ }}'
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: '{{- include "edp-tekton.nexusUrl" $ }}'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: '{{ $k }}-maven'
       description: "Project name"
@@ -78,8 +70,6 @@ spec:
       runAfter:
         - get-version
       params:
-        - name: NEXUS_URL
-          value: $(params.NEXUS_URL)
         - name: IS_RELEASE_BRANCH
           value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
         - name: BRANCH_VERSION
@@ -108,7 +98,7 @@ spec:
         - name: GOALS
           value:
             - -B
-            - '-Dartifactory.baseUrl=$(params.NEXUS_URL)'
+            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
             - '-Dartifactory.releasePath=edp-maven-releases'
             - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
             - '-Dartifactory.groupPath=edp-maven-group'

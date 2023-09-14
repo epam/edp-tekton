@@ -21,14 +21,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
       type: string
-    - name: SONAR_URL
-      default: {{ $.Values.global.sonarUrl | default (printf "http://sonar.%s:9000" $.Release.Namespace) }}
-      description: SonarQube url for static code analysis
-      type: string
-    - name: NEXUS_URL
-      default: 'http://nexus.{{ .Release.Namespace }}:8081'
-      description: Nexus url
-      type: string
     - name: CODEBASE_NAME
       default: "golang-go"
       description: "Project name"
@@ -119,8 +111,6 @@ spec:
       runAfter:
         - test
       params:
-        - name: SONAR_HOST_URL
-          value: $(params.SONAR_URL)
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
         - name: SONAR_PROJECT_NAME

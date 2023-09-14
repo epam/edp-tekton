@@ -10,15 +10,12 @@ spec:
     - name: source
       description: The workspace consisting of maven project.
   params:
-    - name: NEXUS_URL
-      type: string
-      description: "Nexus url"
     - name: VERSION
       type: string
-    - name: ci-secret
+    - name: ci-nexus
       type: string
-      description: name of the secret holding the CI maven secret
-      default: nexus-ci.user
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
     - name: BASE_IMAGE
       description: "The base image for the task"
   volumes:
@@ -33,20 +30,23 @@ spec:
           mountPath: /var/configmap
       workingDir: $(workspaces.source.path)
       env:
-        - name: NEXUS_URL
-          value: "$(params.NEXUS_URL)"
         - name: VERSION
           value: "$(params.VERSION)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: username
         - name: CI_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: $(params.ci-secret)
+              name: $(params.ci-nexus)
               key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
       script: |
         set -ex
 
@@ -54,7 +54,7 @@ spec:
         -s \
         /var/configmap/settings.xml \
         -B \
-        -Dartifactory.baseUrl=${NEXUS_URL} \
+        -Dartifactory.baseUrl=${NEXUS_HOST_URL} \
         -Dartifactory.releasePath=edp-maven-releases \
         -Dartifactory.snapshotsPath=edp-maven-snapshots \
         -Dartifactory.groupPath=edp-maven-group \

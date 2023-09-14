@@ -116,8 +116,6 @@
   runAfter:
     - init-values
   params:
-    - name: SONAR_HOST_URL
-      value: $(params.SONAR_URL)
     - name: patchsetNumber
       value: $(params.patchsetNumber)
     - name: changeNumber

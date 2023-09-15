@@ -17,7 +17,7 @@ global:
            == glb["secretKey"] \
            == glr["secretKey"]
 
-    assert "github" \
+    assert "ci-github" \
            == glb["secretName"] \
            == glr["secretName"]
 
@@ -25,5 +25,5 @@ global:
     assert "github" == gitserver["gitProvider"]
     assert "git" == gitserver["gitUser"]
     assert 443 == gitserver["httpsPort"]
-    assert "github" == gitserver["nameSshKeySecret"]
+    assert "ci-github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]

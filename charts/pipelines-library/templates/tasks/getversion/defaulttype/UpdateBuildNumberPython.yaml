@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: update-build-number-python
+  name: update-build-number-python-default
 spec:
   description:
   workspaces:
@@ -25,8 +25,5 @@ spec:
         #!/bin/sh
         set -ex
 
-        VERSION_LOWER_CASE=$(echo "${VERSION}" | tr '[:upper:]' '[:lower:]')
-        if [[ ! ${VERSION_LOWER_CASE} == *"snapshot"* ]]; then
-            sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
-        fi
+        sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
         cat version/__init__.py

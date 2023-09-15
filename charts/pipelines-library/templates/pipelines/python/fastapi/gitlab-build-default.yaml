@@ -70,7 +70,7 @@ spec:
     - name: update-build-number
       taskRef:
         kind: Task
-        name: update-build-number-python
+        name: update-build-number-python-default
       runAfter:
         - get-version
       params:

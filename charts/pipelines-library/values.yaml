@@ -40,14 +40,14 @@ github:
   host: github.com
   webhook:
     # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: github
+    existingSecret: ci-github
 
 gitlab:
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: gitlab.com
   webhook:
     # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: gitlab
+    existingSecret: ci-gitlab
 
 tekton:
   # Pruner provides auto clean up feature for the Tekton resources

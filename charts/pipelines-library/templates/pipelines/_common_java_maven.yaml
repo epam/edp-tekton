@@ -42,7 +42,6 @@
         - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.qualitygate.wait=true'
-        - '-Dsonar.host.url=${SONAR_HOST_URL}'
         - verify
         - sonar:sonar
   workspaces:
@@ -216,7 +215,6 @@
         - '-Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.qualitygate.wait=true'
-        - '-Dsonar.host.url=${SONAR_HOST_URL}'
         - '-Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)'
         - verify
         - sonar:sonar

@@ -119,7 +119,6 @@ spec:
             - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
             - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
             - '-Dsonar.qualitygate.wait=true'
-            - '-Dsonar.host.url=${SONAR_HOST_URL}'
             - verify
             - sonar:sonar
       workspaces:

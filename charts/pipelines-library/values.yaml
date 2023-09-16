@@ -197,7 +197,7 @@ dashboard:
   # -- Only for openshift deploy scenario,
   # -- For EKS scenario - uncomment dashboard.ingress.annotations block
   openshift_proxy:
-    # -- Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: flase
+    # -- Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false
     enabled: false
     image:
       # -- oauth-proxy image repository
@@ -211,8 +211,8 @@ dashboard:
   triggersNamespace: "tekton-pipelines"
 
   nameOverride: "edp-tekton-dashboard"
-
-  readOnly: true
+  # -- Define mode for Tekton Dashboard. Enable/disaable capability to create/modify/remove Tekton objects via Tekton Dashboard. Default: false
+  readOnly: false
 
   image:
     # -- Define tekton dashboard docker image name

@@ -50,6 +50,9 @@ data:
                     <sonar.login>
                         ${env.SONAR_TOKEN}
                     </sonar.login>
+                    <sonar.host.url>
+                        ${env.SONAR_HOST_URL}
+                    </sonar.host.url>
                 </properties>
             </profile>
             <profile>

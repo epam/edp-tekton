@@ -14,7 +14,7 @@ global:
     gitserver = r["gitserver"]["gitlab"]["spec"]
     assert "secretString" == glb["secretKey"] == glr["secretKey"]
     assert "gitlab" == glb["secretName"] == glr["secretName"]
-    assert "git.epam.com" == gitserver["gitHost"]
+    assert "gitlab.com" == gitserver["gitHost"]
     assert "gitlab" == gitserver["gitProvider"]
     assert "git" == gitserver["gitUser"]
     assert 443 == gitserver["httpsPort"]

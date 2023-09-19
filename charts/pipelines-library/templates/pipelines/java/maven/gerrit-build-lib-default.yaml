@@ -83,6 +83,9 @@ spec:
           value: $(tasks.get-version.results.VERSION)
         - name: BASE_IMAGE
           value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 

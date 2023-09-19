@@ -95,6 +95,7 @@ spec:
           value: |
             slnFilename=$(ls *.sln)
             # /d:sonar.qualitygate.wait=true \
+            dotnet sonarscanner begin /d:sonar.host.url=$(SONAR_HOST_URL) \
               /d:sonar.login=${SONAR_TOKEN} \
               /k:$(params.CODEBASEBRANCH_NAME) \
               /n:$(params.CODEBASEBRANCH_NAME) \

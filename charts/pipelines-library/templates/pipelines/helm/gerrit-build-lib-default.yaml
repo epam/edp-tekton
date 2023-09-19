@@ -78,7 +78,7 @@ spec:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
         - name: IS_TAG
-          value: $(tasks.get-version.results.BUILD_VERSION)
+          value: $(tasks.get-version.results.VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -1,6 +1,8 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
 {{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- $altResourceMapping := dict "java8" "gradle:7.5.1-jdk11" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
 {{- range $k, $v := $resourceMapping }}
+{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
@@ -34,6 +36,10 @@ spec:
     - name: image
       default: '{{ $v }}'
       description: "gradle image version"
+      type: string
+    - name: sonar_image
+      default: '{{ $valueFromAlt }}'
+      description: "sonar image version"
       type: string
     - name: targetBranch
       description: Target branch of Merge Request

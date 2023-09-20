@@ -31,7 +31,7 @@
     - test
   params:
     - name: MAVEN_IMAGE
-      value: $(params.image)
+      value: $(params.sonar_image)
     - name: GOALS
       value:
         - -B
@@ -204,7 +204,7 @@
     - sonar-prepare-files
   params:
     - name: MAVEN_IMAGE
-      value: $(params.image)
+      value: $(params.sonar_image)
     - name: GOALS
       value:
         - -B

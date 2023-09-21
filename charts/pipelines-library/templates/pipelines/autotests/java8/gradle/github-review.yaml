@@ -36,6 +36,10 @@ spec:
       default: 'gradle:7.5.1-jdk8'
       description: "gradle image version"
       type: string
+    - name: image_sonar
+      default: 'gradle:7.5.1-jdk11'
+      description: "sonar image version"
+      type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
@@ -54,7 +58,7 @@ spec:
         - init-values
       params:
         - name: BASE_IMAGE
-          value: $(params.image)
+          value: $(params.sonar_image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \

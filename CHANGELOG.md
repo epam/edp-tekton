@@ -2,8 +2,13 @@
 ## [Unreleased]
 
 
-<a name="v0.6.0"></a>
-## [v0.6.0] - 2023-08-18
+<a name="v0.7.0"></a>
+## v0.7.0 - 2023-09-21
+### Bug Fixes
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.6.0...HEAD
-[v0.6.0]: https://github.com/epam/edp-tekton/compare/v0.5.0...v0.6.0
+- Align naming for sonar_url parameter for java pipelines ([#31](https://github.com/epam/edp-tekton/issues/31))
+### Routine
+
+- Align release versions ([#33](https://github.com/epam/edp-tekton/issues/33))
+
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.7.0...HEAD

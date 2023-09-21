@@ -6,12 +6,12 @@ nameOverride: ""
 fullnameOverride: ""
 
 global:
-  # -- Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github
-  gitProvider: gerrit
+  # -- Define Git Provider to be used in Pipelines. Can be gerrit, gitlab, github (default)
+  gitProvider: github
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
   # -- Gerrit SSH node port
-  gerritSSHPort: "30003"
+  # gerritSSHPort: "30003"
   # -- platform type that can be "kubernetes" or "openshift"
   platform: "kubernetes"
   dockerRegistry:

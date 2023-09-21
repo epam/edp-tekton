@@ -107,7 +107,7 @@ spec:
         - test
       params:
         - name: BASE_IMAGE
-          value: $(params.image)
+          value: $(params.sonar_image)
         - name: EXTRA_ARGS
           value: |
             -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \

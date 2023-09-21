@@ -36,7 +36,7 @@ spec:
       default: 'maven:3.9.0-eclipse-temurin-8'
       description: "maven image version"
       type: string
-    - name: image_sonar
+    - name: sonar_image
       default: 'maven:3.9.0-eclipse-temurin-11'
       description: "sonar image version"
       type: string
@@ -68,7 +68,7 @@ spec:
         - test
       params:
         - name: MAVEN_IMAGE
-          value: $(params.image_sonar)
+          value: $(params.sonar_image)
         - name: GOALS
           value:
             - -B

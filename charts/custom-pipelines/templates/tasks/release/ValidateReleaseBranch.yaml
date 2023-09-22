@@ -13,7 +13,7 @@ spec:
       type: string
     - name: base_image
       description: "The execute image you want to use."
-      default: "golang:1.19.6-bullseye"
+      default: "golang:1.20-bullseye"
       type: string
   steps:
     - name: validate-release-branch

@@ -25,7 +25,7 @@
       value: |
         GOPROXY=$(params.GOPROXY) make validate-docs
     - name: BASE_IMAGE
-      value: "golang:1.19.6-bullseye"
+      value: "golang:1.20-bullseye"
   workspaces:
     - name: source
       workspace: shared-workspace

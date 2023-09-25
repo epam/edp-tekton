@@ -78,6 +78,8 @@ spec:
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
+        - name: depth
+          value: "0"
       workspaces:
         - name: output
           workspace: shared-workspace

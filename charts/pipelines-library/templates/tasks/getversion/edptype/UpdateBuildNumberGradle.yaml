@@ -34,5 +34,5 @@ spec:
         if [ "${IS_RELEASE_BRANCH}" = "true" ] ; then
             sed -i "s/version = .*/version = \'${BRANCH_VERSION}-${BUILD_ID}\'/" build.gradle
         else
-            sed -i "s/version = .*/version = \'${BRANCH_VERSION}\'/" build.gradle
+            sed -i "s/^version = .*/version = \'${BRANCH_VERSION}\'/" build.gradle
         fi

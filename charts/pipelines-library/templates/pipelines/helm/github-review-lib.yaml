@@ -37,14 +37,18 @@ spec:
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
       default: "charts"
+      type: string
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "."
+      type: string
     - name: targetBranch
       description: "Target branch of Merge Request"
+      type: string
     - name: CHART_VERSION_INCREMENT
       description: "Check Chart version increment"
-      default: true
+      default: 'true'
+      type: string
   tasks:
     - name: github-set-pending-status
       taskRef:

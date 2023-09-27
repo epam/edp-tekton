@@ -30,6 +30,9 @@ spec:
       default: "deploy-templates"
       description: "Path to chart directory"
       type: string
+    - name: dockerhub-account
+      description: "Name of dockerhub account to push images"
+      type: string
   tasks:
     - name: init-values
       taskRef:
@@ -86,25 +89,15 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-    - name: create-ecr-repository
-      taskRef:
-        kind: Task
-        name: create-ecr-repository
-      runAfter:
-        - fetch-repository
-      params:
-        - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.codebase-name)"
-
     - name: kaniko-build
       taskRef:
         kind: Task
         name: kaniko
       runAfter:
-        - create-ecr-repository
+        - fetch-repository
       params:
         - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.codebase-name):$(params.version)"
+          value: "$(params.dockerhub-account)/$(params.codebase-name):$(params.version)"
         - name: IMAGE_TAR
           value: "$(params.codebase-name)_$(params.version)"
         - name: KANIKO_CACHE_REPO
@@ -112,22 +105,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-
-    - name: ecr-to-docker
-      taskRef:
-        kind: Task
-        name: ecr-to-docker
-      runAfter:
-        - kaniko-build
-      params:
-        - name: ECR_HOST
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-        - name: ECR_IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.codebase-name)"
-        - name: IMAGE_TAG
-          value: "$(params.version)"
-        - name: CODEBASE_NAME
-          value: "$(params.codebase-name)"
 
     - name: git-release-push
       taskRef:

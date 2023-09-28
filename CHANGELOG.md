@@ -1,12 +1,23 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.8.0"></a>
+## [v0.8.0] - 2023-09-28
 ### Bug Fixes
 
+- Update pattern for change version edp ([#36](https://github.com/epam/edp-tekton/issues/36))
+- Update git-clone depth ([#20](https://github.com/epam/edp-tekton/issues/20))
+- Update sonar variable definition ([#31](https://github.com/epam/edp-tekton/issues/31))
 - Align naming for sonar_url parameter for java pipelines ([#31](https://github.com/epam/edp-tekton/issues/31))
 
 ### Routine
 
+- Update current development version ([#41](https://github.com/epam/edp-tekton/issues/41))
+- Align Tekton pipelines diff ([#37](https://github.com/epam/edp-tekton/issues/37))
+- Implement signed image functionality during image push to Harbor ([#35](https://github.com/epam/edp-tekton/issues/35))
+- Upgrade Go to 1.20 ([#34](https://github.com/epam/edp-tekton/issues/34))
+- Update CHANGELOG.md ([#33](https://github.com/epam/edp-tekton/issues/33))
 - Update current development version ([#33](https://github.com/epam/edp-tekton/issues/33))
 
 
@@ -63,6 +74,7 @@
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/epam/edp-tekton/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/epam/edp-tekton/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/epam/edp-tekton/compare/v0.5.0...v0.6.0

@@ -1,17 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-### Bug Fixes
 
-- Align naming for sonar_url parameter for java pipelines ([#31](https://github.com/epam/edp-tekton/issues/31))
-
-### Routine
-
-- Update current development version ([#33](https://github.com/epam/edp-tekton/issues/33))
-
-
-<a name="v0.7.0"></a>
-## [v0.7.0] - 2023-09-21
+<a name="v0.8.0"></a>
+## v0.8.0 - 2023-09-28
 ### Features
 
 - Add EDP release pipelines for tekton ([#20](https://github.com/epam/edp-tekton/issues/20))
@@ -19,6 +11,9 @@
 
 ### Bug Fixes
 
+- Update pattern for change version edp ([#36](https://github.com/epam/edp-tekton/issues/36))
+- Update git-clone depth ([#20](https://github.com/epam/edp-tekton/issues/20))
+- Update sonar variable definition ([#31](https://github.com/epam/edp-tekton/issues/31))
 - Align naming for sonar_url parameter for java pipelines ([#31](https://github.com/epam/edp-tekton/issues/31))
 - Run java8 sonar-scanner on runner with java11 autotests ([#31](https://github.com/epam/edp-tekton/issues/31))
 - Run java8 sonar-scanner on runner with java11 maven ([#31](https://github.com/epam/edp-tekton/issues/31))
@@ -44,7 +39,12 @@
 
 ### Routine
 
-- Align release versions ([#33](https://github.com/epam/edp-tekton/issues/33))
+- Update current development version ([#41](https://github.com/epam/edp-tekton/issues/41))
+- Align Tekton pipelines diff ([#37](https://github.com/epam/edp-tekton/issues/37))
+- Implement signed image functionality during image push to Harbor ([#35](https://github.com/epam/edp-tekton/issues/35))
+- Upgrade Go to 1.20 ([#34](https://github.com/epam/edp-tekton/issues/34))
+- Update CHANGELOG.md ([#33](https://github.com/epam/edp-tekton/issues/33))
+- Update current development version ([#33](https://github.com/epam/edp-tekton/issues/33))
 - Use github as a default gitserver ([#32](https://github.com/epam/edp-tekton/issues/32))
 - Deploy Tekton Dashboard with write permissions by default ([#28](https://github.com/epam/edp-tekton/issues/28))
 - Update default gitlab server ([#29](https://github.com/epam/edp-tekton/issues/29))
@@ -60,9 +60,4 @@
 - Bump tekton version ([#59](https://github.com/epam/edp-tekton/issues/59))
 
 
-<a name="v0.6.0"></a>
-## [v0.6.0] - 2023-08-18
-
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.7.0...HEAD
-[v0.7.0]: https://github.com/epam/edp-tekton/compare/v0.6.0...v0.7.0
-[v0.6.0]: https://github.com/epam/edp-tekton/compare/v0.5.0...v0.6.0
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.8.0...HEAD

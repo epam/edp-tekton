@@ -109,6 +109,8 @@ spec:
           value: $(params.version)
         - name: chart-path
           value: $(params.chart-path)
+        - name: codebase-name
+          value: $(params.codebase-name)
       workspaces:
         - name: source
           workspace: shared-workspace

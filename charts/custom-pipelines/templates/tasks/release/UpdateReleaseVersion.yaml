@@ -25,6 +25,9 @@ spec:
       description: "Path to chart directory"
       default: "deploy-templates"
       type: string
+    - name: codebase-name
+      description: "Application name"
+      type: string
   steps:
     - name: update-helm-version
       image: $(params.base_image)
@@ -34,6 +37,8 @@ spec:
           value: "$(params.version)"
         - name: CHART_PATH
           value: "$(params.chart-path)"
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
       script: |
         #!/usr/bin/env sh
         set -e
@@ -46,6 +51,7 @@ spec:
         echo "[TEKTON][DEBUG] Update Version and AppVersion in Chart.yaml"
         sed -i "s/^version:.*\$/version: ${VERSION}/" "${chartPath}"
         sed -i "s/^appVersion:.*\$/appVersion: ${VERSION}/" "${chartPath}"
+        sed -i "s/${CODEBASE_NAME}:.*\$/${CODEBASE_NAME}:${VERSION}/" "${chartPath}"
 
         # Update version in README.md
         echo "[TEKTON][DEBUG] Generate Readme.md"

@@ -94,8 +94,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | gitlab.host | string | `"gitlab.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"ci-gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
-| global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor |
-| global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"` | Docker Registry endpoint |
+| global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
+| global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
 | global.gitProvider | string | `"github"` | Define Git Provider to be used in Pipelines. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |

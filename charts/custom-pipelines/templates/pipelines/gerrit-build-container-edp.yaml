@@ -76,7 +76,7 @@ spec:
         - dockerfile-lint
       params:
         - name: REPO_NAME
-          value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
 
     - name: kaniko-build
       taskRef:
@@ -86,7 +86,7 @@ spec:
         - get-version
       params:
         - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
         - name: KANIKO_CACHE_REPO
           value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
       workspaces:

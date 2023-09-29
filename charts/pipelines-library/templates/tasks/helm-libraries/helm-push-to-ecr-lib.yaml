@@ -17,9 +17,6 @@ spec:
         secretName: edp-tekton-helm-push
   {{ end }}
   params:
-    - name: TENANT_NAME
-      type: string
-      description: "Tenant namespace"
     - name: IS_TAG
       type: string
       description: "Chart version"
@@ -42,8 +39,8 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: TENANT_NAME
-          value: $(params.TENANT_NAME)
+        - name: REGISTRY_URL
+          value: $(params.registry-url)
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
@@ -57,8 +54,9 @@ spec:
         for i in "${chart_directory[@]}"
         do
             REPO_NAME=$(awk '/^name:/ {print $2}' ${i}/Chart.yaml)
-            aws ecr describe-repositories --region ${AWS_DEFAULT_REGION} --repository-names ${TENANT_NAME}/${REPO_NAME} \
-              || aws ecr create-repository --region ${AWS_DEFAULT_REGION} --repository-name ${TENANT_NAME}/${REPO_NAME}
+            ECR_REPO_NAME=$(echo "${REGISTRY_URL}" | cut -d'/' -f2-)
+            aws ecr describe-repositories --region ${AWS_DEFAULT_REGION} --repository-names ${ECR_REPO_NAME}/${REPO_NAME} \
+              || aws ecr create-repository --region ${AWS_DEFAULT_REGION} --repository-name ${ECR_REPO_NAME}/${REPO_NAME}
         done
       {{ else }}
       command: [ "/bin/sh" ]
@@ -71,8 +69,6 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: TENANT_NAME
-          value: $(params.TENANT_NAME)
         - name: IS_TAG
           value: $(params.IS_TAG)
         - name: AWS_DEFAULT_REGION
@@ -98,7 +94,7 @@ spec:
         do
             if ! git diff --quiet HEAD^ HEAD -- $i; then
                 helm package ${i}
-                helm push *-*.tgz oci://${REGISTRY_URL}/${TENANT_NAME}
+                helm push *-*.tgz oci://${REGISTRY_URL}
                 rm *-*.tgz
             fi
         done

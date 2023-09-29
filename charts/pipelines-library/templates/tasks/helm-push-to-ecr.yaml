@@ -17,9 +17,6 @@ spec:
         secretName: edp-tekton-helm-push
   {{ end }}
   params:
-    - name: TENANT_NAME
-      type: string
-      description: "Tenant namespace"
     - name: IS_TAG
       type: string
       description: "Chart version"
@@ -42,8 +39,8 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: TENANT_NAME
-          value: $(params.TENANT_NAME)
+        - name: REGISTRY_URL
+          value: $(params.registry-url)
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
@@ -51,9 +48,10 @@ spec:
               key: 'aws_region'
       script: |
         set -ex
+        ECR_REPO_NAME=$(echo "${REGISTRY_URL}" | cut -d'/' -f2-)
         REPO_NAME=$(awk '/^name:/ {print $2}' ${CHART_DIR}/Chart.yaml)
-        aws ecr describe-repositories --region ${AWS_DEFAULT_REGION} --repository-names ${TENANT_NAME}/${REPO_NAME} \
-          || aws ecr create-repository --region ${AWS_DEFAULT_REGION} --repository-name ${TENANT_NAME}/${REPO_NAME}
+        aws ecr describe-repositories --region ${AWS_DEFAULT_REGION} --repository-names ${ECR_REPO_NAME}/${REPO_NAME} \
+          || aws ecr create-repository --region ${AWS_DEFAULT_REGION} --repository-name ${ECR_REPO_NAME}/${REPO_NAME}
       {{ else }}
       command: [ "/bin/sh" ]
       args: [ "-c", "echo 'Openshift cluster, create-ecr-repository stage skipped'" ]
@@ -65,8 +63,6 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: TENANT_NAME
-          value: $(params.TENANT_NAME)
         - name: IS_TAG
           value: $(params.IS_TAG)
         - name: AWS_DEFAULT_REGION
@@ -78,7 +74,7 @@ spec:
           value: $(params.registry-url)
       script: |
         set -ex
-
+        ECR_REPO_NAME=$(echo "${REGISTRY_URL}" | cut -d'/' -f2-);
         helm package ${CHART_DIR} --version ${IS_TAG}
 
         {{ if ne .Values.global.platform "openshift" }}
@@ -88,7 +84,7 @@ spec:
         update-ca-certificates
         {{ end }}
 
-        helm push *-${IS_TAG}.tgz oci://${REGISTRY_URL}/${TENANT_NAME}
+        helm push *-${IS_TAG}.tgz oci://${REGISTRY_URL}
 
       {{ if eq .Values.global.platform "openshift" }}
       # Adding this securityContext makes it explicit that it needs to run as root.

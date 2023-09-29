@@ -15,10 +15,10 @@ global:
   # -- platform type that can be "kubernetes" or "openshift"
   platform: "kubernetes"
   dockerRegistry:
-    # -- Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor
+    # -- Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub
     type: "ecr"
-    # -- Docker Registry endpoint
-    url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com"
+    # -- Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>)
+    url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"
 
 webhook:
   # -- If true, webhook ssl verification will be skipped. Default: false

@@ -200,7 +200,7 @@
     - push
   params:
     - name: REPO_NAME
-      value: "$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
 
 - name: kaniko-build
   taskRef:
@@ -210,7 +210,7 @@
     - create-ecr-repository
   params:
     - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
     - name: IMAGE_TAR
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
     - name: KANIKO_CACHE_REPO
@@ -220,7 +220,7 @@
       workspace: shared-workspace
 {{- end }}
 
-{{- if eq .Values.global.dockerRegistry.type "harbor" }}
+{{- if or (eq .Values.global.dockerRegistry.type "harbor") (eq .Values.global.dockerRegistry.type "dockerhub") }}
 - name: kaniko-build
   taskRef:
     kind: Task
@@ -229,11 +229,11 @@
     - push
   params:
     - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
     - name: IMAGE_TAR
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
     - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/kaniko-cache"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
   workspaces:
     - name: source
       workspace: shared-workspace

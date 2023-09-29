@@ -34,7 +34,11 @@ spec:
               name: "$(params.edp-config)"
               key: 'aws_region'
       command: ["/bin/sh"]
-      args: ["-c", "aws ecr describe-repositories --repository-names ${REPO_NAME} || aws ecr create-repository --repository-name ${REPO_NAME}"]
+      args:
+        - "-c"
+        - |
+          ECR_REPO_NAME=$(echo "${REPO_NAME}" | cut -d'/' -f2-)
+          aws ecr describe-repositories --repository-names "$ECR_REPO_NAME" || aws ecr create-repository --repository-name "$ECR_REPO_NAME"
       {{ else }}
       command: [ "/bin/sh" ]
       args: [ "-c", "echo 'Openshift cluster, create-ecr-repository stage skipped'" ]

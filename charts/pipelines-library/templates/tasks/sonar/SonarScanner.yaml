@@ -38,7 +38,7 @@ spec:
       description: name of the secret holding the Sonarqube CI integration data
       default: "ci-sonarqube"
   steps:
-    - image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
+    - image: registry.access.redhat.com/ubi8/ubi-minimal:8.8
       name: sonar-properties-create
       resources: {}
       workingDir: $(workspaces.source.path)

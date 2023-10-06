@@ -1,4 +1,5 @@
 {{ if .Values.tekton.pruner.create }}
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -6,46 +7,39 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  schedule: {{ .Values.tekton.pruner.schedule }}
-  concurrencyPolicy: Forbid
+  schedule: {{ default "0 * * * *" .Values.tekton.pruner.schedule | quote }}
+  suspend: {{ default "false" .Values.tekton.pruner.disableJob }}
+  concurrencyPolicy: {{ default "Forbid" .Values.tekton.pruner.concurrencyPolicy }}
   jobTemplate:
     spec:
-      backoffLimit: 3
+      backoffLimit: {{ default (int 3) .Values.tekton.pruner.backoffLimit }}
       template:
         spec:
+          volumes:
+            - name: scripts
+              secret:
+                secretName: tekton-resource-pruner-scripts
           containers:
-            - name: pruner-tkn-tekton-pipelines
-              image: >-
-                gcr.io/tekton-releases/dogfooding/tkn@sha256:025de221fb059ca24a3b2d988889ea34bce48dc76c0cf0d6b4499edb8c21325f
+            - name: kubectl
+              image: "{{ default "bitnami/kubectl:latest" .Values.tekton.pruner.image }}"
+              env:
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: RECENT_MINUTES
+                  value: {{ default 30 .Values.tekton.pruner.recentMinutes | quote }}
               command:
-                - /bin/sh
-                - '-c'
-                - |
-                  function prune() {
-                      n=$1;
-                      a=$2;
-                      r=$3;
-                      #old_ifs=" ";
-                      #IFS=$'\n';
-                      pipeline_list=$(tkn pipeline list -o jsonpath='{range .items[*]}{.metadata.name}{" "}')
-                      for p in $pipeline_list;
-                      do
-                          tkn $r delete --namespace $n --pipeline $p $a -f || true;
-                      done; 
-                      #IFS=$old_ifs;
-                  };
-                  for c in $*; 
-                  do 
-                      ns=$(echo $c | cut -d ";" -f 1);
-                      args=$(echo $c | cut -d ";" -f 2);
-                      resources=$(echo $c | cut -d ";" -f 3);
-                      prune $ns $args $resources; 
-                  done;
-              args:
-                - '-s'
-                - ' {{ .Release.Namespace }};--keep={{ .Values.tekton.pruner.keep }};{{ .Values.tekton.pruner.resources }}'
-              imagePullPolicy: IfNotPresent
-          restartPolicy: OnFailure
+                - bash
+                - /scripts/tekton-prune.sh
+              volumeMounts: [{name: scripts, mountPath: /scripts}]
+              resources:
+                {{- toYaml .Values.tekton.pruner.resources | nindent 16 }}
+          restartPolicy: {{ default "OnFailure" .Values.tekton.pruner.restartPolicy }}
           serviceAccountName: tekton-resource-pruner
-      ttlSecondsAfterFinished: 3600
+          serviceAccount: tekton-resource-pruner
+      ttlSecondsAfterFinished: {{ default (int 10) .Values.tekton.pruner.ttlSecondsAfterFinished }}
+  successfulJobsHistoryLimit: {{ default (int 3) .Values.tekton.pruner.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default (int 1) .Values.tekton.pruner.failedJobsHistoryLimit }}
 {{ end }}

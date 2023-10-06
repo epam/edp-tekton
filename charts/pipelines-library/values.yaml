@@ -55,11 +55,14 @@ tekton:
     # -- Specifies whether a cronjob should be created
     create: true
     # -- How often to clean up resources
-    schedule: "0 18 * * *"
-    # -- Maximum number of resources to keep while deleting removing
-    keep: 1
-    # -- Supported resource for auto prune is 'pipelinerun'
-    resources: "pipelinerun"
+    schedule: "0 * * * *"
+    # -- Resources of PipelineRuns that finished in the last N minutes are not pruned
+    recentMinutes: "30"
+    # -- Docker image to run the pruner, expected to have kubectl and jq
+    image: bitnami/kubectl:1.25
+    # -- Pod resources for Tekton pruner job
+    resources: {}
+
   # -- Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines
   workspaceSize: "3Gi"
   # -- The resource limits and requests for the Tekton Tasks

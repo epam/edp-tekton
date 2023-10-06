@@ -298,7 +298,7 @@
     - build
   params:
     - name: REPO_NAME
-      value: "$(params.CODEBASE_NAME)"
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
 
 - name: kaniko-build
   taskRef:

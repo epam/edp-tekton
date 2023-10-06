@@ -1,4 +1,4 @@
-{{ if eq .Values.global.dockerRegistry.type "harbor"}}
+{{ if eq .Values.global.dockerRegistry.type "harbor" "dockerhub"}}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -38,8 +38,6 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.CHART_DIR)
-        - name: TENANT_NAME
-          value: $(params.TENANT_NAME)
         - name: IS_TAG
           value: $(params.IS_TAG)
         - name: REGISTRY_URL
@@ -49,7 +47,7 @@ spec:
 
         helm package ${CHART_DIR} --version ${IS_TAG}
 
-        helm push *-${IS_TAG}.tgz oci://${REGISTRY_URL}/${TENANT_NAME} --registry-config /.config/helm/registry/config.json
+        helm push *-${IS_TAG}.tgz oci://${REGISTRY_URL} --registry-config /.config/helm/registry/config.json
 
       # Adding this securityContext makes it explicit that it needs to run as root.
       # Required for Openshift.

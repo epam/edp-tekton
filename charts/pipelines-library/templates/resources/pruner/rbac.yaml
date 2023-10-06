@@ -15,12 +15,29 @@ metadata:
 rules:
   - apiGroups:
       - tekton.dev
-    resources:
-      - pipelines
-      - pipelineruns
     verbs:
+      - get
       - list
+    resources:
+      - pipelineruns
+  - apiGroups:
+      - ''
+    verbs:
+      - get
+    resources:
+      - secrets
+    resourceNames:
+      - tekton-resource-pruner-scripts
+  - apiGroups:
+      - ''
+    verbs:
+      - get
+      - list
+      - watch
       - delete
+    resources:
+      - pods
+      - persistentvolumeclaims
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

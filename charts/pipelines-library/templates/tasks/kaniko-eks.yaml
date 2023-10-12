@@ -35,6 +35,8 @@ spec:
     - name: KANIKO_CACHE_REPO
       description: The repo where Kaniko stores cached image layers
       default: ""
+    - name: REPO_NAME
+      description: "The name of the ecr repository where we are going to push the image"
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
@@ -60,6 +62,32 @@ spec:
     - name: IMAGE_URL
       description: URL of the image just built.
   steps:
+    - name: init-repository
+      image: amazon/aws-cli:2.7.35
+      env:
+        - name: REPO_NAME
+          value: "$(params.REPO_NAME)"
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "edp-config"
+              key: 'aws_region'
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_type
+      command: ["/bin/sh"]
+      args:
+        - "-c"
+        - |
+          if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
+            ECR_REPO_NAME=$(echo "${REPO_NAME}" | cut -d'/' -f2-)
+            aws ecr describe-repositories --repository-names "$ECR_REPO_NAME" || aws ecr create-repository --repository-name "$ECR_REPO_NAME";
+          else
+            echo 'Registry not ECR, stage skipped';
+          fi
+
     - name: build-and-push
       workingDir: $(workspaces.source.path)
       image: $(params.BUILDER_IMAGE)

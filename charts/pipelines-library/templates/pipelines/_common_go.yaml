@@ -64,53 +64,24 @@
 {{- end -}}
 
 {{- define "build-pipeline-golang-image-build-push-common" -}}
-{{- if eq .Values.global.dockerRegistry.type "ecr" }}
-- name: create-ecr-repository
+- name: kaniko-build
   taskRef:
     kind: Task
-    name: create-ecr-repository
+    name: kaniko
   runAfter:
     - build
   params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+    - name: IMAGE_TAR
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: KANIKO_CACHE_REPO
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
     - name: REPO_NAME
       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
-
-- name: kaniko-build
-  taskRef:
-    kind: Task
-    name: kaniko
-  runAfter:
-    - create-ecr-repository
-  params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
-      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
   workspaces:
     - name: source
       workspace: shared-workspace
-{{- end }}
-
-{{- if or (eq .Values.global.dockerRegistry.type "harbor") (eq .Values.global.dockerRegistry.type "dockerhub") }}
-- name: kaniko-build
-  taskRef:
-    kind: Task
-    name: kaniko
-  runAfter:
-    - build
-  params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
-      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-{{- end }}
 {{- end -}}
 
 {{- define "golang-review-common" -}}

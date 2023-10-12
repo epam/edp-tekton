@@ -259,57 +259,25 @@
 {{- end -}}
 
 {{- define "build-pipeline-java-maven-image-build-push-common" -}}
-{{- if eq .Values.global.dockerRegistry.type "ecr" }}
-- name: create-ecr-repository
+- name: kaniko-build
   taskRef:
     kind: Task
-    name: create-ecr-repository
+    name: kaniko
   runAfter:
+    - get-maven-module
     - push
   params:
+    - name: IMAGE
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
+    - name: IMAGE_TAR
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: KANIKO_CACHE_REPO
+      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+    - name: CONTEXT
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
     - name: REPO_NAME
       value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
-
-- name: kaniko-build
-  taskRef:
-    kind: Task
-    name: kaniko
-  runAfter:
-    - get-maven-module
-    - create-ecr-repository
-  params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
-      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
-    - name: CONTEXT
-      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
   workspaces:
     - name: source
       workspace: shared-workspace
-{{- end }}
-
-{{- if or (eq .Values.global.dockerRegistry.type "harbor") (eq .Values.global.dockerRegistry.type "dockerhub") }}
-- name: kaniko-build
-  taskRef:
-    kind: Task
-    name: kaniko
-  runAfter:
-    - push
-    - get-maven-module
-  params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
-      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
-    - name: CONTEXT
-      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-{{- end }}
 {{- end -}}

@@ -128,16 +128,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dockerbuild-verify
-      taskRef:
-        kind: Task
-        name: dockerbuild-verify
-      runAfter:
-        - build
-        - dockerfile-lint
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "dockerbuild-verify-antora" $ | nindent 4 }}
 
     - name: helm-lint
       taskRef:

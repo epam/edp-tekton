@@ -258,6 +258,23 @@
       workspace: shared-workspace
 {{- end -}}
 
+{{- define "dockerbuild-verify-maven" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - get-maven-module
+    - build
+    - dockerfile-lint
+  params:
+    - name: context
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
 {{- define "build-pipeline-java-maven-image-build-push-common" -}}
 - name: kaniko-build
   taskRef:
@@ -267,16 +284,14 @@
     - get-maven-module
     - push
   params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
-    - name: CONTEXT
-      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
-    - name: REPO_NAME
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
   workspaces:
     - name: source
       workspace: shared-workspace

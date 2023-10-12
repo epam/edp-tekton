@@ -15,24 +15,26 @@ spec:
   description: >-
     This Task builds a Dockerfile with kaniko.
   params:
-    - name: IMAGE
-      description: Name (reference) of the image to build.
-      default: "placeholder:latest"
-    - name: IMAGE_TAR
+    - name: codebase-name
+      description: Name of codebase
+      default: "placeholder"
+    - name: image-tag
+      description: Image tag
+      default: "lastest"
+    - name: image-tar
       description: Name (reference) of the image tar.
       default: "image_tar"
-    - name: DOCKERFILE
+    - name: dockerfile
       description: Dockerfile name.
       default: "Dockerfile"
-    - name: CONTEXT
+    - name: context
       description: The build context used by Kaniko.
       default: ./
-    - name: EXTRA_ARGS
-      type: array
-      default: []
-    - name: BUILDER_IMAGE
-      description: The image on which builds will run (default is v1.9.1)
-      default: gcr.io/kaniko-project/executor:v1.9.1@sha256:7d1923bcf2a9ed1e33e1918c3e208c7a60dd2def7c6bd302cde0c839c5bf5425
+      description: The build context used by Kaniko.
+      default: ./
+    - name: builder-image
+      description: The image on which builds will run
+      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
@@ -48,15 +50,36 @@ spec:
   steps:
     - name: build-no-push
       workingDir: $(workspaces.source.path)
-      image: $(params.BUILDER_IMAGE)
-      args:
-        - $(params.EXTRA_ARGS)
-        - --dockerfile=$(workspaces.source.path)/$(params.DOCKERFILE)
-        - --context=$(workspaces.source.path)/$(params.CONTEXT) # The user does not need to care of the workspace and the source.
-        - --destination=$(params.IMAGE)
-        - --digest-file=$(results.IMAGE_DIGEST.path)
-        - --tar-path=$(params.IMAGE_TAR).tar
-        - --no-push
+      image: "$(params.builder-image)"
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: IMAGE_TAG
+          value: "$(params.image-tag)"
+        - name: IMAGE_TAR
+          value: "$(params.image-tar)"
+        - name: DOCKERFILE
+          value: "$(params.dockerfile)"
+        - name: CONTEXT
+          value: "$(params.context)"
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
+      script: |
+        /kaniko/executor \
+          --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
+          --context=$(workspaces.source.path)/${CONTEXT} \
+          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
+          --digest-file=$(results.IMAGE_DIGEST.path) \
+          --tar-path=${IMAGE_TAR}.tar \
+          --no-push
       # kaniko assumes it is running as root, which means this example fails on platforms
       # that default to run containers as random uid (like OpenShift). Adding this securityContext
       # makes it explicit that it needs to run as root.

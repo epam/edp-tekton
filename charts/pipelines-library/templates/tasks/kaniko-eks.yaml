@@ -18,25 +18,25 @@ spec:
     This Task stores the image name and digest as results, allowing Tekton Chains to pick up
     that an image was built & sign it.
   params:
-    - name: IMAGE
-      description: Name (reference) of the image to build.
-    - name: IMAGE_TAR
+    - name: codebase-name
+      description: Name of codebase
+    - name: image-tag
+      description: Image tag
+    - name: image-tar
       description: Name (reference) of the image tar.
       default: "image_tar"
-    - name: DOCKERFILE
+    - name: dockerfile
       description: Dockerfile name.
       default: "Dockerfile"
-    - name: CONTEXT
+    - name: context
       description: The build context used by Kaniko.
       default: ./
-    - name: BUILDER_IMAGE
+    - name: builder-image
       description: The image on which builds will run
-      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag}}-debug
-    - name: KANIKO_CACHE_REPO
+      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
+    - name: kaniko-cache-path
       description: The repo where Kaniko stores cached image layers
       default: ""
-    - name: REPO_NAME
-      description: "The name of the ecr repository where we are going to push the image"
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
@@ -65,41 +65,71 @@ spec:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
       env:
-        - name: REPO_NAME
-          value: "$(params.REPO_NAME)"
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
-              name: "edp-config"
-              key: 'aws_region'
+              name: edp-config
+              key: aws_region
+        - name: CONTAINER_REGISTRY_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:
               name: edp-config
               key: container_registry_type
-      command: ["/bin/sh"]
-      args:
-        - "-c"
-        - |
+      script: |
           if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
-            ECR_REPO_NAME=$(echo "${REPO_NAME}" | cut -d'/' -f2-)
-            aws ecr describe-repositories --repository-names "$ECR_REPO_NAME" || aws ecr create-repository --repository-name "$ECR_REPO_NAME";
+            aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}" || aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}";
           else
             echo 'Registry not ECR, stage skipped';
           fi
 
     - name: build-and-push
       workingDir: $(workspaces.source.path)
-      image: $(params.BUILDER_IMAGE)
+      image: "$(params.builder-image)"
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: IMAGE_TAG
+          value: "$(params.image-tag)"
+        - name: IMAGE_TAR
+          value: "$(params.image-tar)"
+        - name: DOCKERFILE
+          value: "$(params.dockerfile)"
+        - name: CONTEXT
+          value: "$(params.context)"
+        - name: KANIKO_CACHE_PATH
+          value: "$(params.kaniko-cache-path)"
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
       script: |
+        if [ -z "$KANIKO_CACHE_PATH" ]; then
+          CACHE=false;
+        else
+          CACHE=true;
+        fi
+
         /kaniko/executor \
-          --dockerfile=$(workspaces.source.path)/$(params.DOCKERFILE) \
-          --context=$(workspaces.source.path)/$(params.CONTEXT) \
-          --destination=$(params.IMAGE) \
+          --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
+          --context=$(workspaces.source.path)/${CONTEXT} \
+          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
           --digest-file=$(results.IMAGE_DIGEST.path) \
-          --cache=true \
-          --cache-repo=$(params.KANIKO_CACHE_REPO) \
-          --tar-path=$(params.IMAGE_TAR).tar \
+          --tar-path=${IMAGE_TAR}.tar \
+          --cache=${CACHE} \
+          --cache-repo=${CONTAINER_REGISTRY_URL}/${KANIKO_CACHE_PATH} \
           {{- if .Values.kaniko.customCert }}
           --registry-certificate={{ .Values.global.dockerRegistry.url }}=/kaniko/.custom-certs/ca.crt
           {{- end }}
@@ -115,9 +145,12 @@ spec:
 {{- include "resources" . | nindent 6 }}
     - image: alpine:3.18.3
       name: write-url
-      resources: {}
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: IMAGE_TAG
+          value: "$(params.image-tag)"
       script: |
         set -e
-        image="$(params.IMAGE)"
-        echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
+        echo -n "${CODEBASE_NAME}/${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"
 {{- end }}

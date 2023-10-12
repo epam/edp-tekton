@@ -83,16 +83,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dockerbuild-verify
-      taskRef:
-        kind: Task
-        name: dockerbuild-verify
-      runAfter:
-        - sonar
-        - dockerfile-lint
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "dockerbuild-verify-go" $ | nindent 4 }}
 
     - name: helm-lint
       taskRef:

@@ -161,6 +161,19 @@
       workspace: shared-workspace
 {{- end -}}
 
+{{- define "dockerbuild-verify-python" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - sonar
+    - dockerfile-lint
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
 {{- define "build-pipeline-python-image-build-push-common" -}}
 - name: kaniko-build
   taskRef:
@@ -169,14 +182,14 @@
   runAfter:
     - push
   params:
-    - name: IMAGE
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME):$(tasks.get-version.results.IS_TAG)"
-    - name: IMAGE_TAR
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: KANIKO_CACHE_REPO
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
-    - name: REPO_NAME
-      value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(params.CODEBASE_NAME)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
   workspaces:
     - name: source
       workspace: shared-workspace

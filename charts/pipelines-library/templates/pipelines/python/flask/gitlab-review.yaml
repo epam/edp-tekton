@@ -92,7 +92,7 @@ spec:
           value: $(params.CODEBASEBRANCH_NAME)
       workspaces:
         - name: source
-          workspace: shared-workspace
+          workspace: shared-workspace 
 
     - name: dockerfile-lint
       taskRef:
@@ -104,15 +104,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dockerbuild-verify
-      taskRef:
-        kind: Task
-        name: dockerbuild-verify
-      runAfter:
-        - dockerfile-lint
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{ include "dockerbuild-verify-python" . | nindent 4 }}
 
     - name: helm-lint
       taskRef:

@@ -21,7 +21,7 @@ global:
     assert "init-values" in b[2]["name"]
     assert "get-version" in b[3]["name"]
     assert "dockerfile-lint" in b[4]["name"]
-    assert "create-ecr-repository" in b[5]["name"]
+    assert "kaniko-build" in b[5]["name"]
     assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
     assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
     assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]

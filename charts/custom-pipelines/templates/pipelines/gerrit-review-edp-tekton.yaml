@@ -62,7 +62,7 @@ spec:
         kind: Task
         name: commit-validate
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: COMMIT_MESSAGE_PATTERN
           value: $(params.COMMIT_MESSAGE_PATTERN)

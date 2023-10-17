@@ -142,12 +142,12 @@ spec:
       runAfter:
         - build
       params:
-        - name: IMAGE
-          value: "$(params.dockerhub-account)/$(params.codebase-name):$(params.version)"
-        - name: IMAGE_TAR
-          value: "$(params.codebase-name)_$(params.version)"
-        - name: KANIKO_CACHE_REPO
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/kaniko-cache"
+        - name: codebase-name
+          value: "$(params.CODEBASE_NAME)"
+        - name: image-tag
+          value: "$(tasks.get-version.results.IS_TAG)"
+        - name: image-tar
+          value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
       workspaces:
         - name: source
           workspace: shared-workspace

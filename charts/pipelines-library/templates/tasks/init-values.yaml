@@ -37,9 +37,6 @@ spec:
         #!/usr/bin/env bash
         set -e
 
-        dockerRegistryHost=$(kubectl get edpcomponent docker-registry -o jsonpath='{.spec.url}')
-        echo "${dockerRegistryHost}" | tr -d '\n' | tee $(results.DOCKER_REGISTRY_HOST.path)
-
         tenantName=$(kubectl get cm edp-config -o jsonpath='{.data.edp_name}')
         echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
 

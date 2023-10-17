@@ -1,4 +1,3 @@
-{{- if or (eq .Values.global.platform "kubernetes") (eq .Values.global.dockerRegistry.type "harbor") (eq .Values.global.dockerRegistry.type "dockerhub") }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -115,24 +114,41 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: container_registry_space
+        - name: PLATFORM
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: platform
       script: |
-        if [ -z "$KANIKO_CACHE_PATH" ]; then
-          CACHE=false;
-        else
-          CACHE=true;
+        base_command="/kaniko/executor \
+          --dockerfile=/workspace/source/${DOCKERFILE} \
+          --context=/workspace/source/${CONTEXT} \
+          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
+          --digest-file=/tekton/results/IMAGE_DIGEST \
+          --tar-path=${IMAGE_TAR}.tar "
+
+        kaniko_cache=" --cache=true \
+                       --cache-repo=${CONTAINER_REGISTRY_URL}/${KANIKO_CACHE_PATH} "
+
+        okd_skip_tls=" --skip-tls-verify "
+
+        custom_certs={{- .Values.kaniko.customCert }}
+
+        command=$base_command
+
+        if [ -n "$KANIKO_CACHE_PATH" ]; then
+          command="$command $kaniko_cache";
         fi
 
-        /kaniko/executor \
-          --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
-          --context=$(workspaces.source.path)/${CONTEXT} \
-          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG} \
-          --digest-file=$(results.IMAGE_DIGEST.path) \
-          --tar-path=${IMAGE_TAR}.tar \
-          --cache=${CACHE} \
-          --cache-repo=${CONTAINER_REGISTRY_URL}/${KANIKO_CACHE_PATH} \
-          {{- if .Values.kaniko.customCert }}
-          --registry-certificate={{ .Values.global.dockerRegistry.url }}=/kaniko/.custom-certs/ca.crt
-          {{- end }}
+        if [ $PLATFORM == "openshift" ]; then
+          command="$command $okd_skip_tls";
+        fi
+
+        if [ "$custom_certs" == "true" ]; then
+          command='$command $CONTAINER_REGISTRY_URL"=/kaniko/.custom-certs/ca.crt "';
+        fi
+
+        $command
       securityContext:
         runAsUser: 0
       volumeMounts:
@@ -163,4 +179,3 @@ spec:
       script: |
         set -e
         echo -n "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"
-{{- end }}

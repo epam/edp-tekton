@@ -110,7 +110,7 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: container_registry_host
-        - name: CONTAINER_REGISTRY_GROUP
+        - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
               name: edp-config
@@ -125,7 +125,7 @@ spec:
         /kaniko/executor \
           --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
           --context=$(workspaces.source.path)/${CONTEXT} \
-          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
+          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG} \
           --digest-file=$(results.IMAGE_DIGEST.path) \
           --tar-path=${IMAGE_TAR}.tar \
           --cache=${CACHE} \
@@ -150,7 +150,17 @@ spec:
           value: "$(params.codebase-name)"
         - name: IMAGE_TAG
           value: "$(params.image-tag)"
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: container_registry_host
+              name: edp-config
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              key: container_registry_space
+              name: edp-config
       script: |
         set -e
-        echo -n "${CODEBASE_NAME}/${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"
+        echo -n "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"
 {{- end }}

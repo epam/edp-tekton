@@ -65,11 +65,11 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-default
+        name: get-version-helm-default
       runAfter:
         - fetch-repository
       params:
-        - name: CHART_DIR
+        - name: chart-dir
           value: $(params.CHART_DIR)
         - name: BRANCH_NAME
           value: $(params.git-source-revision)

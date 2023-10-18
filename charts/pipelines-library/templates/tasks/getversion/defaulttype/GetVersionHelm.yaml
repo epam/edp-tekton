@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-version-helm-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of csharp project.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Codebasebranch name
+    - name: chart-dir
+      type: string
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VCS_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+  steps:
+    - name: get-version
+      image: linuxserver/yq
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+        - name: CHART_DIR
+          value: "$(params.chart-dir)"
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -e
+
+        BUILD_VERSION=$(grep -m 1 -oE 'version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)*' ${CHART_DIR}/Chart.yaml | awk '{print $2}')
+        BUILD_VERSION=$(cat ${CHART_DIR}/Chart.yaml | yq -r ".version")
+
+        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        IS_TAG="${BUILD_VERSION}"
+
+        echo "VCS tag - ${VCS_TAG}"
+        echo "IS tag - ${IS_TAG}"
+        echo "VERSION tag - ${BUILD_VERSION}"
+
+        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
+        printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"

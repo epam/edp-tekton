@@ -71,12 +71,8 @@ spec:
       runAfter:
         - helm-template
       params:
-        - name: TENANT_NAME
-          value: $(tasks.init-values.results.TENANT_NAME)
-        - name: CHART_DIR
+        - name: chart-dir
           value: $(params.CHART_DIR)
-        - name: IS_TAG
-          value: $(tasks.get-version.results.VERSION)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -142,7 +142,6 @@ spec:
         kind: Task
         name: kaniko
       runAfter:
-        - create-ecr-repository
         - get-version
         - build
       params:

@@ -156,7 +156,8 @@ spec:
         kind: Task
         name: kaniko
       runAfter:
-        - create-ecr-repository
+        - sonar
+        - build
       params:
         - name: codebase-name
           value: "$(params.CODEBASE_NAME)"

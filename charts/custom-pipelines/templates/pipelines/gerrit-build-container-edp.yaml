@@ -73,7 +73,6 @@ spec:
       taskRef:
         name: kaniko
       runAfter:
-        - create-ecr-repository
         - get-version
       params:
         - name: codebase-name

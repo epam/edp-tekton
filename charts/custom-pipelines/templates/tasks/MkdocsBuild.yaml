@@ -84,6 +84,7 @@ spec:
             # try to address issue with sitemap.xml from GH-Pages
             touch .nojekyll
             echo "google-site-verification: google8d28c574bd766c92.html" > google8d28c574bd766c92.html
+            echo "18f79d89057c4b108502f91fb24e674b" > 18f79d89057c4b108502f91fb24e674b.txt
             git add .
             git commit -m 'Update documentation'
             git push -u origin gh-pages

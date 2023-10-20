@@ -24,13 +24,16 @@ spec:
   steps:
     - name: init-repository
       image: amazon/aws-cli:2.7.35
+      workingDir: $(workspaces.source.path)
       env:
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
               name: edp-config
               key: aws_region
-        - name: CONTAINER_REGISTRY_GROUP
+        - name: CHART_DIR
+          value: $(params.chart-dir)
+        - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
               name: edp-config
@@ -41,8 +44,18 @@ spec:
               name: edp-config
               key: container_registry_type
       script: |
+          #!/bin/bash
+
+          set -ex
+
           if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
-            aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}" || aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}";
+            chart_directory=(${CHART_DIR}/*)
+            for i in "${chart_directory[@]}"
+            do
+                REPO_NAME=$(awk '/^name:/ {print $2}' ${i}/Chart.yaml)
+            aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}" || aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}";
+            done
+
           else
             echo 'Registry not ECR, stage skipped';
           fi
@@ -63,16 +76,31 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: container_registry_space
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_type
       script: |
         #!/bin/bash
         set -ex
+
+        helm_push_command="helm push *-*.tgz oci://${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}"
+
+        if [ $CONTAINER_REGISTRY_TYPE != "ecr" ]; then
+          helm_push_command+=" --registry-config /.config/helm/registry/config.json"
+        fi
+
+        if [ $CONTAINER_REGISTRY_TYPE == "ecr" ]; then
+          aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | helm registry login --username AWS --password-stdin ${CONTAINER_REGISTRY_URL}
+        fi
 
         chart_directory=(${CHART_DIR}/*)
         for i in "${chart_directory[@]}"
         do
             if ! git diff --quiet HEAD^ HEAD -- $i; then
                 helm package ${i}
-                helm push *-*.tgz oci://${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE} --registry-config /.config/helm/registry/config.json
+                $helm_push_command
                 rm *-*.tgz
             fi
         done

@@ -85,7 +85,8 @@ spec:
             touch .nojekyll
             echo "google-site-verification: google8d28c574bd766c92.html" > google8d28c574bd766c92.html
             echo "18f79d89057c4b108502f91fb24e674b" > 18f79d89057c4b108502f91fb24e674b.txt
-            echo -n "User-agent: *\nAllow: /\nSitemap: https://epam.github.io/edp-install/sitemap.xml" > robots.txt
+            echo -e "User-agent: *\nAllow: /\nSitemap: https://epam.github.io/edp-install/sitemap.xml" > robots.txt
+            echo -e "<?xml version=\"1.0\"?>\n<users>\n\t<user>0A0BD75C41E23DEE0C6F5DB33E1BECBC</user>\n</users>" > BingSiteAuth.xml
             git add .
             git commit -m 'Update documentation'
             git push -u origin gh-pages

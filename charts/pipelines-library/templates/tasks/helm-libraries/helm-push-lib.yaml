@@ -66,6 +66,11 @@ spec:
       env:
         - name: CHART_DIR
           value: $(params.chart-dir)
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: aws_region
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:

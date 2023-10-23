@@ -1,0 +1,135 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gerrit-common-other-app-review
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-beego"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: "golang-go"
+      description: "Project name"
+      type: string
+    - name: image
+      default: 'golang:1.20-bullseye'
+      description: "go image with make installed"
+      type: string
+    - name: GOPROXY
+      default: "http://athens.eks-core.aws.main.edp.projects.epam.com"
+      description: "Go proxy link"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
+  tasks:
+
+{{- include "gerrit-review-start" . | nindent 4 }}
+
+    - name: commit-validate
+      taskRef:
+        kind: Task
+        name: commit-validate
+      runAfter:
+        - fetch-repository
+      params:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: $(params.COMMIT_MESSAGE_PATTERN)
+        - name: COMMIT_MESSAGE
+          value: $(params.COMMIT_MESSAGE)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: crdocs
+      taskRef:
+        kind: Task
+        name: crdocs
+      runAfter:
+        - commit-validate
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: test
+      taskRef:
+        kind: Task
+        name: golang
+      runAfter:
+        - crdocs
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar-prepare-files
+      taskRef:
+        kind: Task
+        name: sonar-prepare-files-general
+      runAfter:
+        - test
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-scanner
+      runAfter:
+        - sonar-prepare-files
+      params:
+        - name: SONAR_PROJECT_KEY
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_PROJECT_NAME
+          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+        - name: SONAR_SOURCES
+          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

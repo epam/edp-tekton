@@ -97,11 +97,11 @@ spec:
         - fetch-repository
       params:
         - name: codebase-name
-          value: "$(params.CODEBASE_NAME)"
+          value: "$(params.codebase-name)"
         - name: image-tag
-          value: "$(tasks.get-version.results.IS_TAG)"
+          value: "$(params.version)"
         - name: image-tar
-          value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+          value: "$(params.codebase-name)_$(params.version)"
       workspaces:
         - name: source
           workspace: shared-workspace

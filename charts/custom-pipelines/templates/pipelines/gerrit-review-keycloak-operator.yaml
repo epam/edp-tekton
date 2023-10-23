@@ -190,9 +190,11 @@ spec:
         - sonar
         - dockerfile-lint
       params:
-        - name: IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME):$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
-        - name: IMAGE_TAR
+        - name: codebase-name
+          value: "review/$(params.CODEBASE_NAME)"
+        - name: image-tag
+          value: "$(params.changeNumber)-$(params.patchsetNumber)"
+        - name: image-tar
           value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
       workspaces:
         - name: source
@@ -221,9 +223,9 @@ spec:
         - name: CODEBASE_NAME
           value: $(params.CODEBASE_NAME)
         - name: E2E_IMAGE_REPOSITORY
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/review/$(tasks.init-values.results.TENANT_NAME)"
+          value: "review/$(params.CODEBASE_NAME)"
         - name: E2E_IMAGE_TAG
-          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+          value: "$(params.changeNumber)-$(params.patchsetNumber)"
       workspaces:
         - name: source
           workspace: shared-workspace

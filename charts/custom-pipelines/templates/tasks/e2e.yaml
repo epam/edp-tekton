@@ -65,6 +65,16 @@ spec:
           value: $(params.E2E_IMAGE_TAG)
         - name: E2E_HOST_NS
           value: $(params.E2E_HOST_NS)
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
       script: |
         set -x
 

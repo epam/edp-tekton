@@ -56,7 +56,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-default
+        name: get-version-dotnet-default
       runAfter:
         - init-values
       params:

@@ -79,15 +79,18 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin='https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url='http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
 | dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
-| dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |
+| dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"},"resources":{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |
 | dashboard.openshift_proxy.enabled | bool | `false` | Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false |
 | dashboard.openshift_proxy.image.repository | string | `"quay.io/openshift/origin-oauth-proxy"` | oauth-proxy image repository |
 | dashboard.openshift_proxy.image.tag | string | `"4.9.0"` | oauth-proxy image tag |
+| dashboard.openshift_proxy.resources | object | `{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Proxy |
 | dashboard.pipelinesNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines |
 | dashboard.readOnly | bool | `false` | Define mode for Tekton Dashboard. Enable/disaable capability to create/modify/remove Tekton objects via Tekton Dashboard. Default: false |
+| dashboard.resources | object | `{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Dashboard |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
 | eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
+| eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | The resource limits and requests for the Tekton eventListener |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"ci-github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
@@ -106,6 +109,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | interceptor.nameOverride | string | `"edp-tekton-interceptor"` |  |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |
+| interceptor.resources | object | `{"limits":{"cpu":"70m","memory":"60Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Interceptor |
 | interceptor.securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | interceptor.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | interceptor.securityContext.readOnlyRootFilesystem | bool | `true` |  |

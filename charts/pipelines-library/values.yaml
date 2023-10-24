@@ -108,6 +108,15 @@ interceptor:
     runAsUser: 65532
     runAsGroup: 65532
 
+  # -- The resource limits and requests for the Tekton Interceptor
+  resources:
+    limits:
+      memory: 60Mi
+      cpu: 70m
+    requests:
+      cpu: 50m
+      memory: 40Mi
+
 ctLint:
   validateMaintainers: ""
   chartSchema: |
@@ -193,6 +202,14 @@ dashboard:
   # -- Deploy EDP Dashboard as a part of pipeline library when true. Default: true
   enabled: true
 
+  # -- The resource limits and requests for the Tekton Dashboard
+  resources:
+    limits:
+      cpu: "60m"
+      memory: "70Mi"
+    requests:
+      cpu: "50m"
+      memory: "40Mi"
   # -- Make it possible to use openshift as OIDC provider to hide tekton-dashboard.
   # -- Only for openshift deploy scenario,
   # -- For EKS scenario - uncomment dashboard.ingress.annotations block
@@ -204,6 +221,15 @@ dashboard:
       repository: quay.io/openshift/origin-oauth-proxy
       # -- oauth-proxy image tag
       tag: 4.9.0
+
+    # -- The resource limits and requests for the Tekton Proxy
+    resources:
+      limits:
+        cpu: "60m"
+        memory: "70Mi"
+      requests:
+        cpu: "50m"
+        memory: "40Mi"
 
   # -- Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines
   pipelinesNamespace: "tekton-pipelines"
@@ -244,3 +270,12 @@ eventListener:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
+
+  # -- The resource limits and requests for the Tekton eventListener
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"

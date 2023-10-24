@@ -44,6 +44,8 @@ spec:
           imagePullPolicy: IfNotPresent
           terminationMessagePolicy: File
           image: {{ .Values.dashboard.openshift_proxy.image.repository }}:{{ .Values.dashboard.openshift_proxy.image.tag }}
+          resources:
+            {{- toYaml .Values.dashboard.openshift_proxy.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /etc/tls/private
               name: proxy-tls
@@ -96,6 +98,8 @@ spec:
             runAsUser: 65532
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            {{- toYaml .Values.dashboard.resources | nindent 12 }}
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccount: {{ include "tekton-dashboard.name" . }}

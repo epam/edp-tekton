@@ -77,12 +77,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "sast" . | nindent 4 }}
+
     - name: test
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - get-version
+        - sast
       params:
         - name: EXTRA_COMMANDS
           value: |
@@ -107,8 +109,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-
-{{ include "sast-edp" . | nindent 4 }}
 
     - name: compile
       taskRef:
@@ -145,7 +145,7 @@ spec:
         kind: Task
         name: get-nexus-repository-url
       runAfter:
-        - sonar
+        - get-version
       params:
         - name: VERSION
           value: $(tasks.get-version.results.VERSION)
@@ -157,6 +157,7 @@ spec:
         kind: Task
         name: python
       runAfter:
+        - sonar
         - get-nexus-repository-url
       params:
         - name: TWINE_REPOSITORY_URL

@@ -28,6 +28,7 @@
     kind: Task
     name: maven
   runAfter:
+    - sonar-cleanup
     - test
   params:
     - name: MAVEN_IMAGE
@@ -76,7 +77,7 @@
     kind: Task
     name: get-nexus-repository-url
   runAfter:
-    - build
+    - get-version
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
@@ -88,6 +89,7 @@
     kind: Task
     name: maven
   runAfter:
+    - build
     - get-nexus-repository-url
   params:
     - name: MAVEN_IMAGE

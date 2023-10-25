@@ -23,6 +23,7 @@
     name: gradle
   runAfter:
     - test
+    - sonar-cleanup
   params:
     - name: BASE_IMAGE
       value: $(params.sonar_image)
@@ -60,7 +61,7 @@
     kind: Task
     name: get-nexus-repository-url
   runAfter:
-    - build
+    - get-version
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
@@ -72,6 +73,7 @@
     kind: Task
     name: gradle
   runAfter:
+    - build
     - get-nexus-repository-url
   params:
     - name: BASE_IMAGE

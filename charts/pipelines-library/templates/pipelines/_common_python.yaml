@@ -22,6 +22,7 @@
     kind: Task
     name: sonarqube-scanner
   runAfter:
+    - sonar-cleanup
     - test
   params:
     - name: SONAR_PROJECT_KEY
@@ -37,7 +38,7 @@
     kind: Task
     name: get-nexus-repository-url
   runAfter:
-    - sonar
+    - get-version
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
@@ -49,6 +50,7 @@
     kind: Task
     name: python
   runAfter:
+    - sonar
     - get-nexus-repository-url
   params:
     - name: BASE_IMAGE

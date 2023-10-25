@@ -23,6 +23,7 @@
     name: dotnet
   runAfter:
     - test
+    - sonar-cleanup
   params:
     - name: BASE_IMAGE
       value: 'epamedp/tekton-dotnet:6.0.1'
@@ -46,7 +47,7 @@
     kind: Task
     name: get-nexus-repository-url
   runAfter:
-    - sonar
+    - init-values
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
@@ -68,6 +69,7 @@
     kind: Task
     name: dotnet
   runAfter:
+    - sonar
     - get-nuget-token
   params:
     - name: BASE_IMAGE

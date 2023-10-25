@@ -21,7 +21,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
       type: string
-
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
@@ -77,12 +76,14 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
+{{ include "sast" . | nindent 4 }}
+
     - name: test
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - update-build-number
+        - sast
       params:
         - name: EXTRA_COMMANDS
           value: |
@@ -108,8 +109,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast" . | nindent 4 }}
-
     - name: compile
       taskRef:
         kind: Task
@@ -130,6 +129,7 @@ spec:
         kind: Task
         name: sonarqube-scanner
       runAfter:
+        - sonar-cleanup
         - compile
       params:
         - name: SONAR_PROJECT_KEY
@@ -145,7 +145,7 @@ spec:
         kind: Task
         name: get-nexus-repository-url
       runAfter:
-        - sonar
+        - get-version
       params:
         - name: VERSION
           value: $(tasks.get-version.results.VERSION)
@@ -157,6 +157,7 @@ spec:
         kind: Task
         name: python
       runAfter:
+        - sonar
         - get-nexus-repository-url
       params:
         - name: TWINE_REPOSITORY_URL

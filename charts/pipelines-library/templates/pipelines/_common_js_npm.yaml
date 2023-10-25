@@ -20,6 +20,7 @@
     kind: Task
     name: sonarqube-scanner
   runAfter:
+    - sonar-cleanup
     - test
   params:
     - name: SONAR_HOST_URL
@@ -53,7 +54,7 @@
     kind: Task
     name: get-nexus-repository-url
   runAfter:
-    - build
+    - get-version
   params:
     - name: VERSION
       value: $(tasks.get-version.results.VERSION)
@@ -66,6 +67,7 @@
     name: npm
   runAfter:
     - get-nexus-repository-url
+    - build
   params:
     - name: BASE_IMAGE
       value: $(params.image)

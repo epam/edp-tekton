@@ -28,7 +28,6 @@
     kind: Task
     name: maven
   runAfter:
-    - sonar-cleanup
     - test
   params:
     - name: MAVEN_IMAGE

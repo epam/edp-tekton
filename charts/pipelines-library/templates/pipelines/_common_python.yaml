@@ -22,7 +22,6 @@
     kind: Task
     name: sonarqube-scanner
   runAfter:
-    - sonar-cleanup
     - test
   params:
     - name: SONAR_PROJECT_KEY

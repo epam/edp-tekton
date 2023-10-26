@@ -23,7 +23,6 @@
     name: dotnet
   runAfter:
     - test
-    - sonar-cleanup
   params:
     - name: BASE_IMAGE
       value: 'epamedp/tekton-dotnet:6.0.1'

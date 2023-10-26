@@ -23,7 +23,6 @@
     name: gradle
   runAfter:
     - test
-    - sonar-cleanup
   params:
     - name: BASE_IMAGE
       value: $(params.sonar_image)

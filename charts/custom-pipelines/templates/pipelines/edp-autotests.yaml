@@ -18,7 +18,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: $(params.git-source-revision)
       type: string
-
     - name: clustername
       description: 'sandbox, okd'
       default: "sandbox"
@@ -44,6 +43,10 @@ spec:
       type: string
     - name: moon
       description: 'Moon URL'
+      type: string
+    - name: browser_type
+      description: 'Browser type for moon'
+      default: "remote"
       type: string
   tasks:
     - name: fetch-repository
@@ -82,6 +85,8 @@ spec:
           value: $(params.git_provider)
         - name: moon
           value: $(params.moon)
+        - name: browser_type
+          value: $(params.browser_type)
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -25,7 +25,7 @@ spec:
       type: string
   steps:
     - name: run-autotests
-      image: gradle:8.0.2-jdk8
+      image: gradle:8-jdk11
       workingDir: $(workspaces.source.path)
       env:
         - name: CLUSTERNAME
@@ -42,6 +42,8 @@ spec:
           value: $(params.git_provider)
         - name: MOON
           value: $(params.moon)
+        - name: BROWSER
+          value: $(params.browser_type)
       script: |
         set -ex
 
@@ -54,4 +56,5 @@ spec:
         -Dtags="${TAG}" \
         -Dci.tool=${CI_TOOL} \
         -Dgit.provider="${GIT_PROVIDER}" \
-        -Dmoon.url="${MOON}"
+        -Dmoon.url="${MOON}" \
+        -Dbrowser.type="${BROWSER}"

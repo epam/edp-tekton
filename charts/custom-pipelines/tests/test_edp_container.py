@@ -22,9 +22,14 @@ global:
     assert "get-version" in b[3]["name"]
     assert "dockerfile-lint" in b[4]["name"]
     assert "kaniko-build" in b[5]["name"]
+    assert "ecr-to-docker" in b[6]["name"]
+    assert "dependency-check" in b[7]["name"]
+    assert "git-tag" in b[8]["name"]
     assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
     assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
     assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]
+
+
 
     r = ht["pipeline"][review]["spec"]["tasks"]
     assert "fetch-repository" in r[0]["name"]
@@ -33,6 +38,5 @@ global:
     assert "commit-validate" in r[3]["name"]
     assert "dockerfile-lint" in r[4]["name"]
     assert "dockerbuild-verify" in r[5]["name"]
-    assert "dependency-check" in r[6]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]

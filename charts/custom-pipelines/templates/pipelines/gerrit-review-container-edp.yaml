@@ -81,19 +81,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dependency-check
-      taskRef:
-        kind: Task
-        name: cdxgen
-      params:
-        - name: PROJECT_NAME
-          value: $(params.CODEBASE_NAME)
-      runAfter:
-        - dockerbuild-verify
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
 {{ include "gerrit-review-vote" . | nindent 2 }}
 
 {{ end }}

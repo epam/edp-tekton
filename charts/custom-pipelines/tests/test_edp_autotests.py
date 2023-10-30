@@ -9,8 +9,8 @@ global:
     ht = helm_template(config)
     vcs = "gerrit"
 
-    review = f"{vcs}-autotest-other-app-review"
-    build = f"{vcs}-autotest-other-app-build-edp"
+    review = f"{vcs}-tst-other-aut-review"
+    build = f"{vcs}-tst-other-aut-build-default"
 
     assert review in ht["pipeline"]
     assert build in ht["pipeline"]
@@ -30,6 +30,5 @@ global:
     assert "init-values" in b[2]["name"]
     assert "get-version" in b[3]["name"]
     assert "git-tag" in b[4]["name"]
-    assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
-    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]
+    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
+    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][1]["name"]

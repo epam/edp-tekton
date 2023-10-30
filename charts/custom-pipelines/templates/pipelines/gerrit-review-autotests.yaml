@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-autotest-other-app-review
+  name: gerrit-tst-other-aut-review
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:

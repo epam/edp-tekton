@@ -23,6 +23,8 @@ spec:
       type: string
     - name: moon
       type: string
+    - name: browser_type
+      type: string
   steps:
     - name: run-autotests
       image: gradle:8-jdk11

@@ -10,7 +10,7 @@ global:
     vcs = "gerrit"
 
     review = f"{vcs}-platform-other-app-review"
-    build = f"{vcs}-platform-other-app-build-edp"
+    build = f"{vcs}-platform-other-app-build-default"
 
     assert review in ht["pipeline"]
     assert build in ht["pipeline"]
@@ -28,6 +28,5 @@ global:
     assert "gerrit-notify" in b[1]["name"]
     assert "init-values" in b[2]["name"]
     assert "get-version" in b[3]["name"]
-    assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
-    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]
+    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
+    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][1]["name"]

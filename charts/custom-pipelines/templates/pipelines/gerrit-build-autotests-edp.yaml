@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gerrit-autotest-other-app-build-edp
+  name: gerrit-tst-other-aut-build-default
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:
@@ -46,12 +46,15 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-edp
+        name: get-version-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     - name: git-tag
       taskRef:
@@ -74,7 +77,7 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ include "send-to-microsoft-teams-build" . | nindent 4 }}
 

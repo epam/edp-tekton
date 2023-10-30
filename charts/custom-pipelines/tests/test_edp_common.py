@@ -10,7 +10,7 @@ global:
     vcs = "gerrit"
 
     review = f"{vcs}-common-other-app-review"
-    build = f"{vcs}-common-other-app-build-edp"
+    build = f"{vcs}-common-other-app-build-default"
 
     assert review in ht["pipeline"]
     assert build in ht["pipeline"]
@@ -34,6 +34,5 @@ global:
     assert "get-version" in b[3]["name"]
     assert "test" in b[4]["name"]
     assert "git-tag" in b[5]["name"]
-    assert "update-cbb" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][1]["name"]
-    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][2]["name"]
+    assert "push-to-jira" in ht["pipeline"][build]["spec"]["finally"][0]["name"]
+    assert "send-to-microsoft-teams-failed" in ht["pipeline"][build]["spec"]["finally"][1]["name"]

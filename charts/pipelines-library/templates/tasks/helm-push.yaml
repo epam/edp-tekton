@@ -54,7 +54,7 @@ spec:
           fi
 
     - name: push-helm-chart
-      image: alpine/k8s:1.23.17
+      image: alpine/k8s:1.25.15
       workingDir: $(workspaces.source.path)
       env:
         - name: IMAGE_TAG
@@ -81,6 +81,11 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: container_registry_space
+        - name: PLATFORM
+          valueFrom:
+            configMapKeyRef:
+              key: platform
+              name: edp-config
       script: |
         #!/bin/bash
 
@@ -93,6 +98,10 @@ spec:
 
         if [ $CONTAINER_REGISTRY_TYPE != "ecr" ]; then
           helm_push_command+=" --registry-config /.config/helm/registry/config.json"
+        fi
+
+        if [ $PLATFORM == "openshift" ]; then
+          helm_push_command+=" --insecure-skip-tls-verify"
         fi
 
         if [ $CONTAINER_REGISTRY_TYPE == "ecr" ]; then

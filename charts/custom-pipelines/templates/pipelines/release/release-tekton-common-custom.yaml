@@ -3,6 +3,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: gerrit-tekton-common-custom-app-release-edp
+  annotations:
+    chains.tekton.dev/transparency-upload: "true"
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:

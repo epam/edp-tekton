@@ -138,6 +138,8 @@
       value: $(tasks.init-values.results.TENANT_NAME)
     - name: reportDataEngagementName
       value: $(params.CODEBASEBRANCH_NAME)
+    - name: PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -155,6 +157,8 @@
       value: $(tasks.init-values.results.TENANT_NAME)
     - name: reportDataEngagementName
       value: $(params.CODEBASEBRANCH_NAME)
+    - name: PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
   workspaces:
     - name: source
       workspace: shared-workspace

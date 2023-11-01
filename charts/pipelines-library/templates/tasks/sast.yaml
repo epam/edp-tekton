@@ -31,6 +31,14 @@ spec:
     - name: reportDataEngagementName
       type: string
       default: ""
+    - name: PROJECT_NAME
+      description: That is the name of the project that will be updated/created on the dependency track side
+      default: ''
+      type: string
+    - name: ci-dependency-track
+      type: string
+      description: Name of the secret holding the ci-dependency-track api token
+      default: ci-dependency-track
   steps:
     - name: semgrep-scan
       image: $(params.BASE_IMAGE)
@@ -93,3 +101,29 @@ spec:
             -F "push_to_jira=${reportDataPushToJira}" \
             -F "environment=${reportDataEnvironment}" \
             -F "test_title=${reportDataTestTitle}"
+    - env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: token
+        - name: DEPTRACK_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: url
+        - name: PROJECT_NAME
+          value: $(params.PROJECT_NAME)
+      image: >-
+        ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
+      name: cdxgen
+      resources: {}
+      script: >
+        #!/usr/bin/env sh
+
+        set -e
+
+        set +x
+
+        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME
+      workingDir: $(workspaces.source.path)

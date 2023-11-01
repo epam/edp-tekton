@@ -187,19 +187,6 @@ spec:
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
 
-    - name: dependency-check
-      taskRef:
-        kind: Task
-        name: cdxgen
-      params:
-        - name: PROJECT_NAME
-          value: $(params.CODEBASE_NAME)
-      runAfter:
-        - ecr-to-docker
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: set-version
       taskRef:
         kind: Task

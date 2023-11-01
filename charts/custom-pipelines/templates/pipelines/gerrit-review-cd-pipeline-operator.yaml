@@ -203,19 +203,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: dependency-check
-      taskRef:
-        kind: Task
-        name: cdxgen
-      params:
-        - name: PROJECT_NAME
-          value: $(params.CODEBASE_NAME)
-      runAfter:
-        - kaniko-build
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: e2e
       taskRef:
         kind: Task

@@ -9,8 +9,8 @@ global:
     ht = helm_template(config)
     vcs = "gerrit"
 
-    review = f"{vcs}-tst-other-aut-review"
-    build = f"{vcs}-tst-other-aut-build-default"
+    review = f"{vcs}-gradle-other-aut-review"
+    build = f"{vcs}-gradle-other-aut-build-default"
 
     assert review in ht["pipeline"]
     assert build in ht["pipeline"]

@@ -55,7 +55,7 @@ spec:
         - name: SEMGREP_VERSION_CACHE_PATH
           value: "$(workspaces.source.path)/.cache"
 {{- include "resources" . | nindent 6 }}
-    - name: push-report
+    - name: semgrep-report
       image: curlimages/curl:7.85.0
       env:
         - name: DD_TOKEN

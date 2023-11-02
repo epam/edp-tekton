@@ -60,7 +60,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast" . | nindent 4 }}
+{{ include "security" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

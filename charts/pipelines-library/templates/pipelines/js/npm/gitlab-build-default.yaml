@@ -83,7 +83,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast-edp" . | nindent 4 }}
+{{ include "security-edp" . | nindent 4 }}
 
 {{ include "js-npm-init-compile" . | nindent 4 }}
 

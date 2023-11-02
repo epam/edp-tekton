@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: sast
+  name: security
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   annotations:
@@ -24,7 +24,7 @@ spec:
       default: ci-defectdojo
     - name: reportDataPath
       type: string
-      default: "sast-semgrep-report.json"
+      default: "security-semgrep-report.json"
     - name: reportDataProductName
       type: string
       default: ""
@@ -73,7 +73,7 @@ spec:
         set -e
         reportDataActive="true"
         reportDataVerified="false"
-        reportDataPath="sast-semgrep-report.json"
+        reportDataPath="security-semgrep-report.json"
         reportDataType="Semgrep JSON Report"
         reportDataProductTypeName="Tenant"
         reportDataProductName=$(params.reportDataProductName)
@@ -82,7 +82,7 @@ spec:
         reportDataCloseOldFindings="true"
         reportDataPushToJira="false"
         reportDataEnvironment="Development"
-        reportDataTestTitle="SAST"
+        reportDataTestTitle="security"
         curl -X POST "${DD_HOST_URL}/api/v2/import-scan/" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \

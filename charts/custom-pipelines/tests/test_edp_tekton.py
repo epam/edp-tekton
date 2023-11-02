@@ -21,7 +21,7 @@ global:
     assert "init-values" in b[2]["name"]
     assert "get-version" in b[3]["name"]
     assert "sonar-cleanup" in b[4]["name"]
-    assert "sast" in b[5]["name"]
+    assert "security" in b[5]["name"]
     assert "test" in b[6]["name"]
     assert "sonar" in b[7]["name"]
     assert "build" in b[8]["name"]

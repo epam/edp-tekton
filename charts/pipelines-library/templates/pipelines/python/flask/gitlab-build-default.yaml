@@ -73,14 +73,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast" . | nindent 4 }}
+{{ include "security" . | nindent 4 }}
 
     - name: test
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - sast
+        - security
       params:
         - name: EXTRA_COMMANDS
           value: |

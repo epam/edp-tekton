@@ -62,7 +62,7 @@ global:
                 assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "update-build-number" in btd[4]["name"]
                 assert "sonar-cleanup" in btd[5]["name"]
-                assert "sast" in btd[6]["name"]
+                assert "security" in btd[6]["name"]
                 assert "compile" in btd[7]["name"]
                 assert buildtool == btd[7]["taskRef"]["name"]
                 assert "test" in btd[8]["name"]
@@ -97,7 +97,7 @@ global:
                     idx = 4
 
                 assert "sonar-cleanup" in btedp[idx+1]["name"]
-                assert "sast" in btedp[idx+2]["name"]
+                assert "security" in btedp[idx+2]["name"]
                 assert "compile" in btedp[idx+3]["name"]
                 assert buildtool == btedp[idx+3]["taskRef"]["name"]
                 assert "test" in btedp[idx+4]["name"]
@@ -172,7 +172,7 @@ global:
                 # ensure we have default versioning
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "update-build-number" in btd[3]["name"]
-                assert "sast" in btd[4]["name"]
+                assert "security" in btd[4]["name"]
                 assert "compile" in btd[5]["name"]
                 assert buildtool == btd[5]["taskRef"]["name"]
                 assert "test" in btd[6]["name"]
@@ -199,7 +199,7 @@ global:
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
                 assert "update-build-number" in btedp[3]["name"]
-                assert "sast" in btedp[4]["name"]
+                assert "security" in btedp[4]["name"]
                 assert "compile" in btedp[5]["name"]
                 assert buildtool == btedp[5]["taskRef"]["name"]
                 assert "test" in btedp[6]["name"]
@@ -268,7 +268,7 @@ global:
                 # ensure we have default versioning
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "update-build-number" in btd[3]["name"]
-                assert "sast" in btd[4]["name"]
+                assert "security" in btd[4]["name"]
                 assert "compile" in btd[5]["name"]
                 assert buildtool == btd[5]["taskRef"]["name"]
                 assert "test" in btd[6]["name"]
@@ -295,7 +295,7 @@ global:
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
                 assert "update-build-number" in btedp[3]["name"]
-                assert "sast" in btedp[4]["name"]
+                assert "security" in btedp[4]["name"]
                 assert "compile" in btedp[5]["name"]
                 assert buildtool == btedp[5]["taskRef"]["name"]
                 assert "test" in btedp[6]["name"]

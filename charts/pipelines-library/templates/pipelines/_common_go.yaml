@@ -1,9 +1,9 @@
 {{- define "golang-build-common" -}}
 
-- name: sast
+- name: security
   taskRef:
     kind: Task
-    name: sast
+    name: security
   runAfter:
     - init-values
   params:
@@ -20,7 +20,7 @@
     kind: Task
     name: golang
   runAfter:
-    - sast
+    - security
   params:
     - name: BASE_IMAGE
       value: $(params.image)

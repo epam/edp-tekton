@@ -126,11 +126,11 @@
       value: $(tasks.init-values.results.NORMALIZED_BRANCH)
 {{- end -}}
 
-{{- define "sast" -}}
-- name: sast
+{{- define "security" -}}
+- name: security
   taskRef:
     kind: Task
-    name: sast
+    name: security
   runAfter:
     - get-version
   params:
@@ -145,11 +145,11 @@
       workspace: shared-workspace
 {{- end -}}
 
-{{- define "sast-edp" -}}
-- name: sast
+{{- define "security-edp" -}}
+- name: security
   taskRef:
     kind: Task
-    name: sast
+    name: security
   runAfter:
     - update-build-number
   params:

@@ -86,14 +86,14 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{ include "sast-edp" . | nindent 4 }}
+{{ include "security-edp" . | nindent 4 }}
 
     - name: compile
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - sast
+        - security
       params:
         - name: BASE_IMAGE
           value: $(params.image)

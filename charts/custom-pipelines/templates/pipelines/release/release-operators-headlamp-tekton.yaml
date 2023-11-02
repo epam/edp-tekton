@@ -140,7 +140,7 @@ spec:
     - name: kaniko-build
       taskRef:
         kind: Task
-        name: kaniko
+        name: kaniko-release
       runAfter:
         - build
       params:

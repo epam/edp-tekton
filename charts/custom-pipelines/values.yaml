@@ -25,6 +25,12 @@ tekton:
       cpu: "0.5"
       memory: "2Gi"
 
+# -- Kaniko configuration section
+kaniko:
+  image:
+    repository: gcr.io/kaniko-project/executor
+    tag: v1.12.1
+
 imageScanReport:
   enable: true
   grypeTemplate: |

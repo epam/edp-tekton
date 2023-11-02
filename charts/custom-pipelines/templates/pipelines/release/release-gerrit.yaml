@@ -92,7 +92,7 @@ spec:
     - name: kaniko-build
       taskRef:
         kind: Task
-        name: kaniko
+        name: kaniko-release
       runAfter:
         - fetch-repository
       params:

@@ -84,14 +84,14 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "sast-edp" . | nindent 4 }}
+{{ include "security-edp" . | nindent 4 }}
 
     - name: build
       taskRef:
         kind: Task
         name: npm
       runAfter:
-        - sast
+        - security
       params:
         - name: BASE_IMAGE
           value: $(params.image)

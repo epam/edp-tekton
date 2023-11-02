@@ -65,7 +65,7 @@ global:
                 if cbtype == "app":
                     assert "get-maven-module" in btd[5]["name"]
                     assert "sonar-cleanup" in btd[6]["name"]
-                    assert "sast" in btd[7]["name"]
+                    assert "security" in btd[7]["name"]
                     assert "compile" in btd[8]["name"]
                     assert buildtool == btd[8]["taskRef"]["name"]
                     assert "test" in btd[9]["name"]
@@ -82,7 +82,7 @@ global:
                     assert "update-cbis" in btd[16]["name"]
                 else:
                     assert "sonar-cleanup" in btd[5]["name"]
-                    assert "sast" in btd[6]["name"]
+                    assert "security" in btd[6]["name"]
                     assert "compile" in btd[7]["name"]
                     assert buildtool == btd[7]["taskRef"]["name"]
                     assert "test" in btd[8]["name"]
@@ -109,7 +109,7 @@ global:
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[5]["name"]
                     assert "sonar-cleanup" in btedp[6]["name"]
-                    assert "sast" in btedp[7]["name"]
+                    assert "security" in btedp[7]["name"]
                     assert "compile" in btedp[8]["name"]
                     assert buildtool == btedp[8]["taskRef"]["name"]
                     assert "test" in btedp[9]["name"]
@@ -126,7 +126,7 @@ global:
                     assert "update-cbis" in btedp[16]["name"]
                 else:
                     assert "sonar-cleanup" in btedp[5]["name"]
-                    assert "sast" in btedp[6]["name"]
+                    assert "security" in btedp[6]["name"]
                     assert "compile" in btedp[7]["name"]
                     assert buildtool == btedp[7]["taskRef"]["name"]
                     assert "test" in btedp[8]["name"]
@@ -198,7 +198,7 @@ global:
                 assert "update-build-number" in btd[3]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btd[4]["name"]
-                    assert "sast" in btd[5]["name"]
+                    assert "security" in btd[5]["name"]
                     assert "compile" in btd[6]["name"]
                     assert buildtool == btd[6]["taskRef"]["name"]
                     assert "test" in btd[7]["name"]
@@ -214,7 +214,7 @@ global:
                     assert "git-tag" in btd[13]["name"]
                     assert "update-cbis" in btd[14]["name"]
                 if cbtype == "lib":
-                    assert "sast" in btd[4]["name"]
+                    assert "security" in btd[4]["name"]
                     assert "compile" in btd[5]["name"]
                     assert buildtool == btd[5]["taskRef"]["name"]
                     assert "test" in btd[6]["name"]
@@ -239,7 +239,7 @@ global:
                 assert f"update-build-number-{buildtool}" == btedp[3]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[4]["name"]
-                    assert "sast" in btedp[5]["name"]
+                    assert "security" in btedp[5]["name"]
                     assert "compile" in btedp[6]["name"]
                     assert buildtool == btedp[6]["taskRef"]["name"]
                     assert "test" in btedp[7]["name"]
@@ -255,7 +255,7 @@ global:
                     assert "git-tag" in btedp[13]["name"]
                     assert "update-cbis" in btedp[14]["name"]
                 if cbtype == "lib":
-                    assert "sast" in btedp[4]["name"]
+                    assert "security" in btedp[4]["name"]
                     assert "compile" in btedp[5]["name"]
                     assert buildtool == btedp[5]["taskRef"]["name"]
                     assert "test" in btedp[6]["name"]
@@ -327,7 +327,7 @@ global:
                 assert "update-build-number" in btd[3]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btd[4]["name"]
-                    assert "sast" in btd[5]["name"]
+                    assert "security" in btd[5]["name"]
                     assert "compile" in btd[6]["name"]
                     assert buildtool == btd[6]["taskRef"]["name"]
                     assert "test" in btd[7]["name"]
@@ -343,7 +343,7 @@ global:
                     assert "git-tag" in btd[13]["name"]
                     assert "update-cbis" in btd[14]["name"]
                 if cbtype == "lib":
-                    assert "sast" in btd[4]["name"]
+                    assert "security" in btd[4]["name"]
                     assert "compile" in btd[5]["name"]
                     assert buildtool == btd[5]["taskRef"]["name"]
                     assert "test" in btd[6]["name"]
@@ -368,7 +368,7 @@ global:
                 assert f"update-build-number-{buildtool}" == btedp[3]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[4]["name"]
-                    assert "sast" in btedp[5]["name"]
+                    assert "security" in btedp[5]["name"]
                     assert "compile" in btedp[6]["name"]
                     assert buildtool == btedp[6]["taskRef"]["name"]
                     assert "test" in btedp[7]["name"]
@@ -384,7 +384,7 @@ global:
                     assert "git-tag" in btedp[13]["name"]
                     assert "update-cbis" in btedp[14]["name"]
                 if cbtype == "lib":
-                    assert "sast" in btedp[4]["name"]
+                    assert "security" in btedp[4]["name"]
                     assert "compile" in btedp[5]["name"]
                     assert buildtool == btedp[5]["taskRef"]["name"]
                     assert "test" in btedp[6]["name"]

@@ -87,7 +87,7 @@
     kind: Task
     name: npm
   runAfter:
-    - sast
+    - security
   params:
     - name: BASE_IMAGE
       value: $(params.image)

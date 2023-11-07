@@ -73,6 +73,7 @@ spec:
         - name: EXTRA_COMMANDS
           value: |
             make build
+            make lint
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -94,24 +95,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: lint
-      taskRef:
-        kind: Task
-        name: golang
-      runAfter:
-        - integration-test
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-        - name: EXTRA_COMMANDS
-          value: |
-            make lint
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
     # because the fetch-repository Task fetches only user changes.
     - name: fetch-target-branch
@@ -119,7 +102,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - lint
+        - integration-test
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

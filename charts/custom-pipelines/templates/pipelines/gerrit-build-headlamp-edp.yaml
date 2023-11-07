@@ -84,7 +84,7 @@ spec:
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-    - name: npm-init
+    - name: build
       taskRef:
         kind: Task
         name: npm
@@ -100,37 +100,7 @@ spec:
             npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
             npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
             npm ci
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: build
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
-        - npm-init
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
             npm run build
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
             npm run test
       workspaces:
         - name: source
@@ -141,7 +111,7 @@ spec:
         kind: Task
         name: sonarqube-scanner
       runAfter:
-        - test
+        - build
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
@@ -157,7 +127,6 @@ spec:
         name: kaniko
       runAfter:
         - sonar
-        - build
       params:
         - name: codebase-name
           value: "$(params.CODEBASE_NAME)"

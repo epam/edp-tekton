@@ -73,41 +73,7 @@ spec:
         - name: EXTRA_COMMANDS
           value: |
             make build
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        kind: Task
-        name: golang
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-        - name: EXTRA_COMMANDS
-          value: |
             make test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: lint
-      taskRef:
-        kind: Task
-        name: golang
-      runAfter:
-        - test
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: GOPROXY
-          value: $(params.GOPROXY)
-        - name: EXTRA_COMMANDS
-          value: |
             make lint
       workspaces:
         - name: source
@@ -120,7 +86,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - lint
+        - build
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

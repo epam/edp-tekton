@@ -70,6 +70,10 @@ spec:
             python -m venv /home/tekton/mkdocs
             source /home/tekton/mkdocs/bin/activate
             pip install -r hack/mkdocs/requirements.txt
+
+            # Inject Google Analytics key on build time
+            export GOOGLE_ANALYTICS_KEY=G-7ZV6PJ2LSP
+
             mkdocs build -d ./site
 
             git config --global user.email SupportEPMD-EDP@epam.com

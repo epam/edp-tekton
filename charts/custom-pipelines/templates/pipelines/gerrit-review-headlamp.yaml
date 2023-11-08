@@ -64,7 +64,7 @@ spec:
         kind: Task
         name: npm
       runAfter:
-        - update-build-number
+        - init-values
       params:
         - name: BASE_IMAGE
           value: $(params.image)

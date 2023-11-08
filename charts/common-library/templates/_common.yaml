@@ -143,7 +143,7 @@ finally:
       - name: GERRIT_PORT
         value: '{{ .Values.global.gerritSSHPort }}'
       - name: SSH_GERRIT_COMMAND
-        value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+        value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)"
     workspaces:
       - name: ssh-directory
         workspace: ssh-creds
@@ -160,7 +160,7 @@ finally:
       - name: GERRIT_PORT
         value: '{{ .Values.global.gerritSSHPort }}'
       - name: SSH_GERRIT_COMMAND
-        value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)"
+        value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)"
     workspaces:
       - name: ssh-directory
         workspace: ssh-creds

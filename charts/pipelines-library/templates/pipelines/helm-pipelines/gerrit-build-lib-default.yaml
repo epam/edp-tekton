@@ -21,6 +21,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
@@ -66,13 +70,11 @@ spec:
       taskRef:
         kind: Task
         name: gerrit-ssh-cmd
-      runAfter:
-        - fetch-repository
       params:
         - name: GERRIT_PORT
           value: '{{ .Values.global.gerritSSHPort }}'
         - name: SSH_GERRIT_COMMAND
-          value: review --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+          value: review --message 'Build Started $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)
         # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
         - name: ERR_EXIT_CODE
           value: '0'

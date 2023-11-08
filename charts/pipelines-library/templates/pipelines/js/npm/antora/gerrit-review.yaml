@@ -75,7 +75,7 @@ spec:
         - name: GERRIT_PORT
           value: '{{ $gerritSSHPort }}'
         - name: SSH_GERRIT_COMMAND
-          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)
       workspaces:
         - name: ssh-directory
           workspace: ssh-creds

@@ -25,6 +25,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: targetBranch
       description: Target branch of Merge Request
     - name: CODEBASE_NAME

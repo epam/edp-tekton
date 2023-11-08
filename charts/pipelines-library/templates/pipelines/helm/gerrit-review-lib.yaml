@@ -25,6 +25,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
@@ -70,7 +74,7 @@ spec:
         - name: GERRIT_PORT
           value: '{{ .Values.global.gerritSSHPort }}'
         - name: SSH_GERRIT_COMMAND
-          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(tasks.fetch-repository.results.commit)
+          value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)
       workspaces:
         - name: ssh-directory
           workspace: ssh-creds

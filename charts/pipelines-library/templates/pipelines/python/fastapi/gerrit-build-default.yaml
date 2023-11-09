@@ -81,48 +81,12 @@ spec:
 
 {{ include "security" . | nindent 4 }}
 
-    - name: test
+    - name: python
       taskRef:
         kind: Task
-        name: python
+        name: edp-fastapi
       runAfter:
         - security
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            pip3 install -r test-requirements.txt
-            pytest -sv --color=yes
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: lint
-      taskRef:
-        kind: Task
-        name: python
-      runAfter:
-        - test
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            pip3 install -r test-requirements.txt
-            pylint --output-format=colorized *.py
-            flake8 --exclude .local --filename=*.py
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: compile
-      taskRef:
-        kind: Task
-        name: python
-      runAfter:
-        - lint
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            set -ex
-            python setup.py clean build install --user
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -133,7 +97,7 @@ spec:
         name: sonarqube-scanner
       runAfter:
         - sonar-cleanup
-        - compile
+        - python
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)

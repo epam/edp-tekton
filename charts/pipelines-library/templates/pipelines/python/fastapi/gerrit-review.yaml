@@ -48,33 +48,12 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
-    - name: test
+    - name: python
       taskRef:
         kind: Task
-        name: python
+        name: edp-fastapi
       runAfter:
         - init-values
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            pip3 install -r test-requirements.txt
-            pytest -sv --color=yes
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: lint
-      taskRef:
-        kind: Task
-        name: python
-      runAfter:
-        - test
-      params:
-        - name: EXTRA_COMMANDS
-          value: |
-            pip3 install -r test-requirements.txt
-            pylint --output-format=colorized *.py
-            flake8 --exclude .local --filename=*.py
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -86,7 +65,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - lint
+        - python
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

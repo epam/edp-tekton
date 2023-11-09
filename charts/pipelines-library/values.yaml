@@ -69,7 +69,7 @@ tekton:
       memory: "3Gi"
     requests:
       cpu: "500m"
-      memory: "2Gi"
+      memory: "1Gi"
 
 # Deploy EDP Tekton Interceptor along with pipelines library
 interceptor:

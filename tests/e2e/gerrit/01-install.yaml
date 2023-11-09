@@ -1,6 +1,8 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
+  - command: helm dependency build ../../../charts/pipelines-library
+    namespaced: true
   - command: |
       helm install tekton-e2e ../../../charts/pipelines-library --set interceptor.image.repository=${E2E_IMAGE_REPOSITORY} --set interceptor.image.tag=${E2E_IMAGE_TAG}
         --set global.dnsWildCard=example.com

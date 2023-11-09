@@ -7,8 +7,17 @@ BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_TAG=$(shell if [ -z "`git status --porcelain`" ]; then git describe --exact-match --tags HEAD 2>/dev/null; fi)
 KUBECTL_VERSION=$(shell go list -m all | grep k8s.io/client-go| cut -d' ' -f2)
-HOST_OS:=$(shell go env GOOS)
-HOST_ARCH:=$(shell go env GOARCH)
+HOST_OS?=$(shell go env GOOS)
+HOST_ARCH?=$(shell go env GOARCH)
+
+# Use kind cluster for testing
+START_KIND_CLUSTER?=true
+KIND_CLUSTER_NAME?="tekton"
+KUBE_VERSION?=1.27
+KIND_CONFIG?=./hack/kind-$(KUBE_VERSION).yaml
+
+E2E_IMAGE_REPOSITORY?="tekton-image"
+E2E_IMAGE_TAG?="latest"
 
 override LDFLAGS += \
   -X ${PACKAGE}.version=${VERSION} \
@@ -91,6 +100,12 @@ test-chart: ${CURRENT_DIR}/.venv/bin/activate
 ${CURRENT_DIR}/.venv/bin/activate:
 	python3 -m venv ${CURRENT_DIR}/.venv
 
+## Run e2e tests. Requires kind with running cluster and kuttl tool.
+e2e: build
+	docker build --no-cache -t ${E2E_IMAGE_REPOSITORY}:${E2E_IMAGE_TAG} .
+	kind load --name $(KIND_CLUSTER_NAME) docker-image ${E2E_IMAGE_REPOSITORY}:${E2E_IMAGE_TAG}
+	E2E_IMAGE_REPOSITORY=${E2E_IMAGE_REPOSITORY} E2E_IMAGE_TAG=${E2E_IMAGE_TAG} kubectl-kuttl test
+
 GOLANGCILINT = ${CURRENT_DIR}/bin/golangci-lint
 .PHONY: golangci-lint
 golangci-lint: ## Download golangci-lint locally if necessary.
@@ -110,3 +125,9 @@ GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+.PHONY: start-kind
+start-kind:     ## Start kind cluster
+ifeq (true,$(START_KIND_CLUSTER))
+	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
+endif

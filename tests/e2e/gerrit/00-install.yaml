@@ -1,0 +1,23 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # install EDPComponent CRD first
+  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-component-operator/master/deploy-templates/crds/v1.edp.epam.com_edpcomponents.yaml
+    namespaced: false
+  # install GitServer CRD
+  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_gitservers.yaml
+    namespaced: false
+  # Install Cert manager which is used by Interceptor
+  - command: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+    namespaced: false
+  # install Tekton
+  - command: kubectl create ns tekton-pipelines
+    namespaced: false
+  - command: kubectl create ns tekton-pipelines-resolvers
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    namespaced: false

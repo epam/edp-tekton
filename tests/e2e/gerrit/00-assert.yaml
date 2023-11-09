@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+status:
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-pipelines-controller
+  namespace: tekton-pipelines
+status:
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-pipelines-webhook
+  namespace: tekton-pipelines
+status:
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-triggers-controller
+  namespace: tekton-pipelines
+status:
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-triggers-webhook
+  namespace: tekton-pipelines
+status:
+  readyReplicas: 1

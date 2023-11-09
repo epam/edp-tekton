@@ -6,3 +6,5 @@ coverage.out
 ### Python test
 .venv
 __pycache__/
+
+kubeconfig

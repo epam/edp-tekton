@@ -79,18 +79,12 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       script: |
-        #!/usr/bin/env sh
-        set -e
-
-        npm run build
+        npm run build:prod
 
     - name: test
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       script: |
-        #!/usr/bin/env sh
-        set -e
-
         npm run test:coverage
 
 {{- include "resources" . | nindent 6 }}

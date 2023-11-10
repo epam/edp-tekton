@@ -5,7 +5,7 @@ metadata:
 spec:
   pipelineSpec:
     tasks:
-      - name: echo-good-morning
+      - name: check
         taskSpec:
           metadata:
             labels:

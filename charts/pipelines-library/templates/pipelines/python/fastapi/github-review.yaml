@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "github" }}
+{{- $frameworks := list "fastapi" "flask" -}}
+{{- range $framework := $frameworks }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: github-python-fastapi-app-review
+  name: github-python-{{ $framework }}-app-review
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/epmd-edp/python-python-python-3.8"
@@ -51,7 +53,7 @@ spec:
       default: "."
   tasks:
 
-{{- include "github-review-start" . | nindent 4 }}
+{{- include "github-review-start" $ | nindent 4 }}
 
 {{- include "helm-docs" $ | nindent 4 }}
 
@@ -90,7 +92,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "dockerbuild-verify-python" . | nindent 4 }}
+{{ include "dockerbuild-verify-python" $ | nindent 4 }}
 
     - name: helm-lint
       taskRef:
@@ -107,6 +109,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "github-review-vote" . | nindent 2 }}
+{{ include "github-review-vote" $ | nindent 2 }}
 
+---
+{{- end }}
 {{ end }}

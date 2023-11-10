@@ -1,17 +1,19 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
+{{- $frameworks := list "fastapi" "flask" -}}
+{{- range $framework := $frameworks }}
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: gitlab-python-fastapi-app-build-edp
+  name: gitlab-python-{{ $framework }}-app-build-edp
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "python-python-python-3.8"
@@ -45,7 +47,7 @@ spec:
       default: ""
   tasks:
 
-{{- include "gitlab-build-start" . | nindent 4 }}
+{{- include "gitlab-build-start" $ | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -70,7 +72,7 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "security" . | nindent 4 }}
+{{ include "security" $ | nindent 4 }}
 
     - name: python
       taskRef:
@@ -128,10 +130,12 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{- include "build-pipeline-python-image-build-push-common" . | nindent 4 }}
+{{- include "build-pipeline-python-image-build-push-common" $ | nindent 4 }}
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-end" $ | nindent 4 }}
 
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-edp" $ | nindent 2 }}
 
+---
+{{- end }}
 {{ end }}

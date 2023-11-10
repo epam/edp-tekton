@@ -140,6 +140,5 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       script: |
-        pip3 install -r test-requirements.txt
         pytest -sv --color=yes
 {{- include "resources" . | nindent 6 }}

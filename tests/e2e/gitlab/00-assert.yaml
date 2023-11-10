@@ -42,3 +42,29 @@ metadata:
   namespace: tekton-pipelines
 status:
   readyReplicas: 1
+
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: check-readiness
+status:
+  conditions:
+    - message: 'Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 0'
+      reason: Succeeded
+      status: 'True'
+      type: Succeeded
+  pipelineSpec:
+    tasks:
+      - name: echo-good-morning
+        taskSpec:
+          metadata:
+            labels:
+              app: example
+          steps:
+            - computeResources: {}
+              image: alpine:3.18.4
+              name: echo
+              script: |
+                #!/usr/bin/env sh
+                echo "I'm ok!"

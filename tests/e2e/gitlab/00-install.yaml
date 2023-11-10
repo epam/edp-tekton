@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: check-readiness
+spec:
+  pipelineSpec:
+    tasks:
+      - name: echo-good-morning
+        taskSpec:
+          metadata:
+            labels:
+              app: "example"
+          steps:
+            - name: echo
+              image: alpine:3.18.4
+              script: |
+                #!/usr/bin/env sh
+                echo "I'm ok!"

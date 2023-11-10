@@ -2,7 +2,7 @@
 - name: python
   taskRef:
     kind: Task
-    name: python-edp
+    name: edp-python
   runAfter:
     - update-build-number
   params:
@@ -65,7 +65,7 @@
 - name: python
   taskRef:
     kind: Task
-    name: python-edp
+    name: edp-python
   runAfter:
     - init-values
   params:

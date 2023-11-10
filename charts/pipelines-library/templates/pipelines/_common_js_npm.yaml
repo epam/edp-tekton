@@ -1,16 +1,13 @@
 {{- define "js-npm-build-common" -}}
-- name: test
+- name: npm
   taskRef:
     kind: Task
-    name: npm
+    name: edp-npm
   runAfter:
-    - compile
+    - update-build-number
   params:
     - name: BASE_IMAGE
       value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        npm run test:coverage
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -20,7 +17,7 @@
     kind: Task
     name: sonarqube-scanner
   runAfter:
-    - test
+    - npm
   params:
     - name: SONAR_HOST_URL
       value: ${SONAR_HOST_URL}
@@ -28,22 +25,6 @@
       value: $(params.CODEBASEBRANCH_NAME)
     - name: SONAR_PROJECT_NAME
       value: $(params.CODEBASEBRANCH_NAME)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-
-- name: build
-  taskRef:
-    kind: Task
-    name: npm
-  runAfter:
-    - sonar
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        npm run build:prod
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -66,7 +47,7 @@
     name: npm
   runAfter:
     - get-nexus-repository-url
-    - build
+    - sonar
   params:
     - name: BASE_IMAGE
       value: $(params.image)
@@ -80,98 +61,16 @@
       workspace: shared-workspace
 {{- end -}}
 
-{{- define "js-npm-init-compile" -}}
-
-- name: npm-init
-  taskRef:
-    kind: Task
-    name: npm
-  runAfter:
-    - security
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-
-        npm config set registry ${NEXUS_HOST_URL}
-        npm config set always-auth=true
-        echo "_auth=$upBase64" >> .npmrc
-
-        npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-
-- name: compile
-  taskRef:
-    kind: Task
-    name: npm
-  runAfter:
-    - npm-init
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        npm run build:clean
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-{{- end -}}
-
 {{- define "js-npm-review-common" -}}
-- name: npm-init
+- name: npm
   taskRef:
     kind: Task
-    name: npm
+    name: edp-npm
   runAfter:
     - init-values
   params:
     - name: BASE_IMAGE
       value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-
-        npm config set registry ${NEXUS_HOST_URL}
-        npm config set always-auth=true
-        echo "_auth=$upBase64" >> .npmrc
-
-        npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-
-- name: build
-  taskRef:
-    kind: Task
-    name: npm
-  runAfter:
-    - npm-init
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        npm run build:prod
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-
-- name: test
-  taskRef:
-    kind: Task
-    name: npm
-  runAfter:
-    - build
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: |
-        npm run test:coverage
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -183,7 +82,7 @@
     kind: Task
     name: git-cli
   runAfter:
-    - test
+    - npm
   params:
     - name: GIT_USER_EMAIL
       value: edp-ci@edp.ci-user

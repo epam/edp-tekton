@@ -53,56 +53,15 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
-    - name: npm-init
+    - name: npm
       taskRef:
         kind: Task
-        name: npm
+        name: edp-npm
       runAfter:
         - init-values
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-
-            npm config set registry ${NEXUS_HOST_URL}
-            npm config set always-auth=true
-            echo "_auth=$upBase64" >> .npmrc
-
-            npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: build
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
-        - npm-init
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            npm run build:prod
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        kind: Task
-        name: npm
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            npm run test:coverage
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -112,7 +71,7 @@ spec:
         kind: Task
         name: sonarqube-scanner
       runAfter:
-        - test
+        - npm
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)

@@ -50,13 +50,12 @@ metadata:
   name: check-readiness
 status:
   conditions:
-    - message: 'Tasks Completed: 1 (Failed: 0, Cancelled 0), Skipped: 0'
-      reason: Succeeded
+    - reason: Succeeded
       status: 'True'
       type: Succeeded
   pipelineSpec:
     tasks:
-      - name: echo-good-morning
+      - name: check
         taskSpec:
           metadata:
             labels:

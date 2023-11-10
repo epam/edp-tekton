@@ -46,7 +46,7 @@ spec:
     - name: python
       taskRef:
         kind: Task
-        name: python-edp
+        name: edp-python
       runAfter:
         - init-values
       params:

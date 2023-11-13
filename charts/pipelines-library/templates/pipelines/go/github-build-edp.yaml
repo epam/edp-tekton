@@ -63,6 +63,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{ include "security" . | nindent 4 }}
+
 {{- include "golang-build-common" . | nindent 4 }}
 
 {{- include "build-pipeline-golang-image-build-push-common" $ | nindent 4 }}

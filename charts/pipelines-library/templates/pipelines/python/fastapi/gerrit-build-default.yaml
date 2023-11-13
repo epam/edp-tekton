@@ -86,9 +86,20 @@ spec:
     - name: python
       taskRef:
         kind: Task
-        name: edp-fastapi
+        name: python
       runAfter:
         - security
+      params:
+        - name: EXTRA_COMMANDS
+          value: |
+            # build
+            python setup.py clean build install --user
+            # lint
+            pip3 install -r test-requirements.txt
+            pylint --output-format=colorized *.py
+            flake8 --exclude .local --filename=*.py
+            # test
+            pytest -sv --color=yes
       workspaces:
         - name: source
           workspace: shared-workspace

@@ -54,12 +54,18 @@ spec:
     - name: python
       taskRef:
         kind: Task
-        name: edp-python
+        name: python
       runAfter:
         - init-values
       params:
         - name: BASE_IMAGE
           value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            python setup.py clean build install --user
+            pip3 install .
+            [ -f run_service.py ] && python run_service.py &
+            python setup.py pytest
       workspaces:
         - name: source
           workspace: shared-workspace

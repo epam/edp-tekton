@@ -70,6 +70,8 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{ include "security" . | nindent 4 }}
+
 {{ include "sonar-cleanup" . | nindent 4 }}
 
 {{- include "golang-build-common" . | nindent 4 }}

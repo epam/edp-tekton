@@ -1,26 +1,10 @@
 {{- define "golang-build-common" -}}
-
-- name: security
-  taskRef:
-    kind: Task
-    name: security
-  runAfter:
-    - init-values
-  params:
-    - name: reportDataProductName
-      value: $(tasks.init-values.results.TENANT_NAME)
-    - name: reportDataEngagementName
-      value: $(params.CODEBASEBRANCH_NAME)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-
 - name: test
   taskRef:
     kind: Task
     name: golang
   runAfter:
-    - security
+    - init-values
   params:
     - name: BASE_IMAGE
       value: $(params.image)

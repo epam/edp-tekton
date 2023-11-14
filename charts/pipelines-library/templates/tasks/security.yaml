@@ -35,6 +35,10 @@ spec:
       description: That is the name of the project that will be updated/created on the dependency track side
       default: ''
       type: string
+    - name: PROJECT_BRANCH
+      description: That is the branch of the project that will be updated/created on the dependency track side
+      default: ''
+      type: string
     - name: ci-dependency-track
       type: string
       description: Name of the secret holding the ci-dependency-track api token
@@ -114,6 +118,8 @@ spec:
               key: url
         - name: PROJECT_NAME
           value: $(params.PROJECT_NAME)
+        - name: PROJECT_BRANCH
+          value: $(params.PROJECT_BRANCH)
       image: >-
         ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
       name: cdxgen
@@ -125,5 +131,5 @@ spec:
 
         set +x
 
-        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME
+        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME --project-version=$PROJECT_BRANCH
       workingDir: $(workspaces.source.path)

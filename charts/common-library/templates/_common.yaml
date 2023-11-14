@@ -45,6 +45,8 @@
       value: $(params.CODEBASEBRANCH_NAME)
     - name: PROJECT_NAME
       value: $(params.CODEBASE_NAME)
+    - name: PROJECT_BRANCH
+      value: $(params.git-source-revision)
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -64,6 +66,8 @@
       value: $(params.CODEBASEBRANCH_NAME)
     - name: PROJECT_NAME
       value: $(params.CODEBASE_NAME)
+    - name: PROJECT_BRANCH
+      value: $(params.git-source-revision)
   workspaces:
     - name: source
       workspace: shared-workspace

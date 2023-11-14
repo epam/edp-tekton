@@ -82,6 +82,8 @@ spec:
           value: $(tasks.init-values.results.TENANT_NAME)
         - name: reportDataEngagementName
           value: $(params.CODEBASEBRANCH_NAME)
+        - name: PROJECT_BRANCH
+          value: $(params.git-source-revision)
       workspaces:
         - name: source
           workspace: shared-workspace

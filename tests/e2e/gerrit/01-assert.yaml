@@ -1,22 +1,23 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: tekton.dev/v1
+kind: PipelineRun
 metadata:
-  name: edp-tekton-dashboard
+  name: check-readiness
 status:
-  readyReplicas: 1
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: edp-tekton-interceptor
-status:
-  readyReplicas: 1
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: el-gerrit-listener
-status:
-  readyReplicas: 1
+  conditions:
+    - reason: Succeeded
+      status: 'True'
+      type: Succeeded
+  pipelineSpec:
+    tasks:
+      - name: check
+        taskSpec:
+          metadata:
+            labels:
+              app: example
+          steps:
+            - computeResources: {}
+              image: alpine:3.18.4
+              name: echo
+              script: |
+                #!/usr/bin/env sh
+                echo "I'm ok!"

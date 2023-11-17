@@ -2,7 +2,7 @@
 {{- $resourceMapping := dict "antora" "antora/antora:3.1.4" -}}
 {{- range $k, $v := $resourceMapping }}
 {{- $gerritSSHPort  := $.Values.global.gerritSSHPort  -}}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gerrit-npm-{{ $k }}-app-review

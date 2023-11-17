@@ -1,5 +1,5 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gitlab-python-python-3.8-app-build-default

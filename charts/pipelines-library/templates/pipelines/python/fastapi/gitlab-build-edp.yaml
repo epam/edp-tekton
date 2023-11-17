@@ -1,7 +1,7 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
 {{- $frameworks := list "fastapi" "flask" -}}
 {{- range $framework := $frameworks }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gitlab-python-{{ $framework }}-app-build-edp

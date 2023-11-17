@@ -1,7 +1,7 @@
 {{ if eq .Values.global.gitProvider "github" }}
 {{- $resourceMapping := dict "antora" "antora/antora:3.1.4" -}}
 {{- range $k, $v := $resourceMapping }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: github-npm-{{ $k }}-app-build-edp

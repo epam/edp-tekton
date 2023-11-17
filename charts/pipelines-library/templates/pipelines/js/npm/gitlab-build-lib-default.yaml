@@ -1,7 +1,7 @@
 {{ if eq .Values.global.gitProvider "gitlab" }}
 {{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
 {{- range $k := $resourceMapping }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gitlab-npm-{{ $k }}-lib-build-default

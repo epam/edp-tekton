@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: sonarqube-scanner
@@ -40,7 +40,7 @@ spec:
   steps:
     - image: registry.access.redhat.com/ubi8/ubi-minimal:8.8
       name: sonar-properties-create
-      resources: {}
+      computeResources: {}
       workingDir: $(workspaces.source.path)
       env:
         - name: SONAR_HOST_URL

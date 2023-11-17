@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: security
@@ -46,7 +46,7 @@ spec:
   steps:
     - name: semgrep-scan
       image: $(params.BASE_IMAGE)
-      resources: {}
+      computeResources: {}
       workingDir: $(workspaces.source.path)
       script: |
         set -e
@@ -123,7 +123,7 @@ spec:
       image: >-
         ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
       name: cdxgen
-      resources: {}
+      computeResources: {}
       script: >
         #!/usr/bin/env sh
 

@@ -38,7 +38,7 @@ This Pipeline and PipelineRun runs a Maven build on a particular module in a mul
 ### With Defaults
 
 ```yaml
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: maven-test-pipeline
@@ -78,7 +78,7 @@ spec:
         - name: source
           workspace: shared-workspace
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: maven-test-pipeline-run
@@ -96,7 +96,7 @@ spec:
 ### With Custom Maven Params
 
 ```yaml
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: maven-test-pipeline
@@ -178,7 +178,7 @@ oc create configmap custom-maven-settings --from-file=settings.xml
 2. create `Pipeline` and `PipelineRun`
 
 ```yaml
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: maven-test-pipeline
@@ -218,7 +218,7 @@ spec:
         - name: source
           workspace: shared-workspace
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: maven-test-pipeline-run
@@ -233,7 +233,7 @@ spec:
 3. create `Task`
 
 ```yaml
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: maven

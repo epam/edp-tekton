@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: ecr-to-docker
@@ -46,7 +46,7 @@ spec:
   steps:
     - image: amazon/aws-cli:2.7.35
       name: get-ecr-pass
-      resources: {}
+      computeResources: {}
       env:
         - name: ECR_LOGIN
           value: "$(params.ECR_LOGIN)"

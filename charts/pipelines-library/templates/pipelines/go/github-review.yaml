@@ -1,7 +1,7 @@
 {{ if eq .Values.global.gitProvider "github" }}
 {{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
 {{- range $k := $resourceMapping }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: github-go-{{ $k }}-app-review

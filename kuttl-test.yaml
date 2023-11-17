@@ -3,7 +3,7 @@ kind: TestSuite
 testDirs:
   - ./tests/e2e/
 skipClusterDelete: false
-timeout: 100
+timeout: 120
 parallel: 3
 commands:
   # Install Cert manager which is used by Interceptor

@@ -1,5 +1,5 @@
 # GitLab, Create WebHooks for Build and Code-Review Pipelines
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: gitlab-create-webhooks

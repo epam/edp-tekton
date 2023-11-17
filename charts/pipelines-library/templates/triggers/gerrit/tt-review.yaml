@@ -33,7 +33,7 @@ spec:
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
   resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
+    - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
         generateName: $(tt.params.codebasebranch)-review-

@@ -39,7 +39,8 @@ spec:
           app.edp.epam.com/codebase: $(tt.params.codebase)
           app.edp.epam.com/pipelinetype: review
       spec:
-        serviceAccountName: tekton
+        taskRunTemplate:
+          serviceAccountName: tekton
         pipelineRef:
           name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:

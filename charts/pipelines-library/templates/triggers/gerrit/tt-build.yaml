@@ -47,7 +47,8 @@ spec:
           app.edp.epam.com/codebase: $(tt.params.codebase)
           app.edp.epam.com/pipelinetype: build
       spec:
-        serviceAccountName: tekton
+        taskRunTemplate:
+          serviceAccountName: tekton
         pipelineRef:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
         params:

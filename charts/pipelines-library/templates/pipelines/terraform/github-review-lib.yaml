@@ -35,6 +35,11 @@ spec:
     - name: gitsha
       description: "commit sha"
       type: string
+    - name: terraform_default_version
+      type: string
+      default: "1.4.5"
+      description: The default terraform version used if the `.terraform-version` file does not exist in the repository.
+
   tasks:
 
 {{- include "github-review-start" . | nindent 4 }}

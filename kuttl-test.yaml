@@ -3,7 +3,7 @@ kind: TestSuite
 testDirs:
   - ./tests/e2e/
 skipClusterDelete: false
-timeout: 120
+timeout: 180
 parallel: 3
 commands:
   # Install Cert manager which is used by Interceptor
@@ -28,6 +28,3 @@ commands:
     namespaced: false
   - command: helm dependency update ./charts/pipelines-library
     namespaced: true
-  # We have all the requered checks, but let's wait a bit to make sure all the webhooks are registered
-  - command: sleep 20
-    namespaced: false

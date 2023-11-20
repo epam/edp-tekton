@@ -244,9 +244,11 @@ dashboard:
     # -- Define tekton dashboard docker image name
     repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
     # -- Define tekton dashboard docker image tag
-    tag: v0.39.0
+    tag: v0.41.0
 
   ingress:
+    # -- Deploy EDP Dashboard ingress as a part of pipeline library when true. Default: true
+    enabled: true
     # -- Annotations for Ingress resource
     annotations: {}
       # -- Uncomment it to enable tekton-dashboard OIDC on EKS cluster

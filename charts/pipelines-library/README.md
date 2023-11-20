@@ -90,6 +90,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.resources | object | `{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Dashboard |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
 | eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
+| eventListener.ingress.enabled | bool | `true` | Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true |
 | eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
 | eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | The resource limits and requests for the Tekton eventListener |
 | fullnameOverride | string | `""` |  |

@@ -262,6 +262,8 @@ dashboard:
 # Event listener to listen git webhooks
 eventListener:
   ingress:
+    # -- Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true
+    enabled: true
     # -- Annotations for Ingress resource
     annotations: {}
       # kubernetes.io/ingress.class: nginx

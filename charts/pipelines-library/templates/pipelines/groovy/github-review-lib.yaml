@@ -67,6 +67,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: build
       taskRef:
@@ -84,6 +85,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "github-review-vote" . | nindent 2 }}
 

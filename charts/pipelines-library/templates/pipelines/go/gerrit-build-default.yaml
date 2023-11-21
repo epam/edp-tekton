@@ -70,13 +70,17 @@ spec:
         - name: source
           workspace: shared-workspace
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "security" . | nindent 4 }}
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
-{{- include "golang-build-common" . | nindent 4 }}
+{{- include "golang-common" . | nindent 4 }}
 
 {{- include "build-pipeline-golang-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

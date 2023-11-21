@@ -16,6 +16,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -40,6 +41,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: get-nexus-repository-url
   taskRef:
@@ -62,6 +64,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: push
   taskRef:
@@ -85,6 +88,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dotnet-6-0-review-common" -}}
@@ -103,6 +107,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: test
   taskRef:
@@ -121,6 +126,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -141,6 +147,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 
@@ -164,6 +171,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -188,6 +196,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dotnet-build-common" -}}
@@ -208,6 +217,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -232,6 +242,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: get-nexus-repository-url
   taskRef:
@@ -254,6 +265,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: push
   taskRef:
@@ -276,6 +288,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dotnet-review-common" -}}
@@ -295,6 +308,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: test
   taskRef:
@@ -313,6 +327,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -333,6 +348,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 
@@ -356,6 +372,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -380,6 +397,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dockerbuild-verify-dotnet" -}}
@@ -393,6 +411,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "build-pipeline-dotnet-image-build-push-common" -}}
@@ -414,4 +433,5 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}

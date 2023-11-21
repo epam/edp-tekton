@@ -59,6 +59,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

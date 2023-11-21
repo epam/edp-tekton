@@ -90,6 +90,7 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -117,6 +118,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -127,6 +129,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-antora" $ | nindent 4 }}
 
@@ -144,6 +147,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "github-review-vote" $ | nindent 2 }}
 

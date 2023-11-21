@@ -9,6 +9,8 @@
       value: $(params.git-source-url)
     - name: revision
       value: $(params.git-source-revision)
+    - name: subdirectory
+      value: source
   workspaces:
     - name: output
       workspace: shared-workspace
@@ -67,6 +69,8 @@
       value: $(params.git-source-revision)
     - name: refspec
       value: $(params.git-refspec)
+    - name: subdirectory
+      value: source
   workspaces:
     - name: output
       workspace: shared-workspace
@@ -117,6 +121,7 @@ finally:
         value: "ci-pipeline"
       - name: "DESCRIPTION"
         value: "Managed by EDP. Run with Tekton"
+
   - name: gitlab-set-failure-status
     when:
       - input: "$(tasks.status)"

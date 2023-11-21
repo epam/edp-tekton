@@ -61,6 +61,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "terraform-check-build-common" . | nindent 4 }}
 

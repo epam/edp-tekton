@@ -63,6 +63,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gitlab-review-vote" . | nindent 2 }}
 

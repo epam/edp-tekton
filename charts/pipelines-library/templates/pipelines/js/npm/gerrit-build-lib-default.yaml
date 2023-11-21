@@ -71,6 +71,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: update-build-number
       taskRef:
@@ -86,6 +87,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 

@@ -14,6 +14,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: git-tag
   taskRef:
@@ -33,6 +34,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 {{- end -}}

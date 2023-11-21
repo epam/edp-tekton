@@ -51,9 +51,29 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "helm-docs" $ | nindent 4 }}
 
-{{- include "golang-review-common" . | nindent 4 }}
+    - name: build
+      taskRef:
+        kind: Task
+        name: golang
+      runAfter:
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            # we checkout the source code in the /source directory
+            # and hold cache in the /cache directory
+            cd source
+            make build
+            make test
+      workspaces:
+        - name: source
+          workspace: shared-workspace
 
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
     # because the fetch-repository Task fetches only user changes.
@@ -62,7 +82,7 @@ spec:
         kind: Task
         name: git-cli
       runAfter:
-        - test
+        - build
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user
@@ -74,6 +94,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -97,6 +118,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -114,6 +136,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -124,6 +147,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-go" $ | nindent 4 }}
 
@@ -141,6 +165,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 

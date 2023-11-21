@@ -1,3 +1,35 @@
+{{- define "get-cache" -}}
+- name: get-cache
+  taskRef:
+    kind: Task
+    name: get-cache
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}
+
+{{- define "save-cache" -}}
+- name: save-cache
+  taskRef:
+    kind: Task
+    name: save-cache
+  runAfter:
+    - build
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}
+
 {{- define "helm-docs" -}}
 - name: helm-docs
   taskRef:
@@ -11,6 +43,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "sonar-cleanup" -}}
@@ -50,6 +83,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "security-edp" -}}
@@ -71,6 +105,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 # The last section for Build Pipeline
@@ -93,6 +128,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 
@@ -128,6 +164,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 {{- end -}}
@@ -236,6 +273,7 @@ finally:
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "send-to-microsoft-teams-build" -}}

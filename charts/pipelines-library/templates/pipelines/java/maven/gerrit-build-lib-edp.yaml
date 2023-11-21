@@ -91,6 +91,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
@@ -116,6 +117,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 

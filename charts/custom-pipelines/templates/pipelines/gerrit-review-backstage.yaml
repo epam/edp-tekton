@@ -1,0 +1,101 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-backstage-app-review
+  labels:
+    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-react"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: 'react-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: image
+      default: 'node:20.9.0'
+      description: "npm image version"
+      type: string
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "ct-configs"
+  tasks:
+
+{{- include "gerrit-review-start" . | nindent 4 }}
+
+    - name: commit-validate
+      taskRef:
+        kind: Task
+        name: commit-validate
+      runAfter:
+        - fetch-repository
+      params:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: $(params.COMMIT_MESSAGE_PATTERN)
+        - name: COMMIT_MESSAGE
+          value: $(params.COMMIT_MESSAGE)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: npm
+      runAfter:
+        - commit-validate
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            set -x
+            export NODE_OPTIONS="--max-old-space-size=4144"
+            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            npm config set registry ${NEXUS_HOST_URL}
+            echo "always-auth=true" >> .npmrc
+            echo "_auth=$upBase64" >> .npmrc
+            yarn set version 1.22.19
+            yarn config set registry ${NEXUS_HOST_URL}
+            yarn install --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
+            yarn tsc
+            yarn build:backend --config ../../app-config.yaml
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

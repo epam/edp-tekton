@@ -65,6 +65,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: update-build-number
       taskRef:
@@ -78,6 +79,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "security-edp" . | nindent 4 }}
 

@@ -65,6 +65,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: update-build-number
       taskRef:
@@ -78,6 +79,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "security" $ | nindent 4 }}
 
@@ -101,6 +103,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -116,6 +119,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: get-nexus-repository-url
       taskRef:
@@ -147,6 +151,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "build-pipeline-python-image-build-push-common" $ | nindent 4 }}
 

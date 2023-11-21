@@ -14,6 +14,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -29,6 +30,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: get-nexus-repository-url
   taskRef:
@@ -62,6 +64,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "python-review-common" -}}
@@ -83,6 +86,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -103,6 +107,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 
@@ -126,6 +131,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: sonar
   taskRef:
@@ -143,6 +149,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dockerbuild-verify-python" -}}
@@ -156,6 +163,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "build-pipeline-python-image-build-push-common" -}}
@@ -177,4 +185,5 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}

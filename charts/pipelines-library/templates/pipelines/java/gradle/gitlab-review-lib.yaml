@@ -69,6 +69,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: test
       taskRef:
@@ -87,6 +88,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -108,6 +110,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gitlab-review-vote" $ | nindent 2 }}
 

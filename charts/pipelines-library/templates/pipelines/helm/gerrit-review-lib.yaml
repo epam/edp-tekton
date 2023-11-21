@@ -91,6 +91,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "helm-library-review-common" . | nindent 4 }}
 

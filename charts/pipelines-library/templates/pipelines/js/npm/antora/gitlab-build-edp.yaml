@@ -79,6 +79,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "security-edp" . | nindent 4 }}
 
@@ -104,6 +105,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "build-pipeline-antora-image-build-push-common" $ | nindent 4 }}
 

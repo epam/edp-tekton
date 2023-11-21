@@ -72,6 +72,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-maven" $ | nindent 4 }}
 
@@ -89,6 +90,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 

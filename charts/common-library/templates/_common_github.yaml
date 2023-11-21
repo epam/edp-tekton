@@ -9,11 +9,14 @@
       value: $(params.git-source-url)
     - name: revision
       value: $(params.git-source-revision)
+    - name: subdirectory
+      value: source
   workspaces:
     - name: output
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
+
 - name: init-values
   taskRef:
     kind: Task
@@ -50,6 +53,7 @@
       value: $(params.gitsha)
     - name: TARGET_URL
       value: $(params.pipelineUrl)
+
 - name: fetch-repository
   taskRef:
     kind: Task
@@ -63,11 +67,14 @@
       value: $(params.git-source-revision)
     - name: refspec
       value: $(params.git-refspec)
+    - name: subdirectory
+      value: source
   workspaces:
     - name: output
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
+
 - name: init-values
   taskRef:
     kind: Task
@@ -109,6 +116,7 @@ finally:
         value: $(params.gitsha)
       - name: TARGET_URL
         value: $(params.pipelineUrl)
+
   - name: github-set-failure-status
     when:
       - input: "$(tasks.status)"

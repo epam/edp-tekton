@@ -15,6 +15,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: helm-dependency-update
   taskRef:
@@ -28,6 +29,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: helm-template
   taskRef:
@@ -43,6 +45,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "helm-library-review-common" -}}
@@ -64,6 +67,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
     - name: ssh-directory
       workspace: ssh-creds
 
@@ -85,6 +89,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: helm-dependency-update
   taskRef:
@@ -98,6 +103,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 
 - name: helm-template
   taskRef:
@@ -113,4 +119,5 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}

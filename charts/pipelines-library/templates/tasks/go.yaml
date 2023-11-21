@@ -28,11 +28,11 @@ spec:
       type: string
     - name: GOCACHE
       description: "Go caching directory path"
-      default: "$(workspaces.source.path)"
+      default: "$(workspaces.source.path)/cache"
       type: string
     - name: GOMODCACHE
       description: "Go mod caching directory path"
-      default: ""
+      default: "$(workspaces.source.path)/cache"
       type: string
     - name: CGO_ENABLED
       description: "Toggle cgo tool during Go build. Use value '0' to disable cgo (for static builds)."
@@ -46,7 +46,6 @@ spec:
       type: string
       description: Extra commands
       default: ""
-      type: string
     - name: BASE_IMAGE
       description: "Base image"
       default: "golang:1.20-bullseye"

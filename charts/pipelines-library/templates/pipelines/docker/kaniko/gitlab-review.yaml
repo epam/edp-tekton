@@ -68,6 +68,7 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -80,6 +81,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-docker" . | nindent 4 }}
 

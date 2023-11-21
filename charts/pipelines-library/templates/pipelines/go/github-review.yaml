@@ -54,24 +54,11 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "helm-docs" $ | nindent 4 }}
 
-{{- include "golang-review-common" . | nindent 4 }}
-
-    - name: sonar
-      taskRef:
-        kind: Task
-        name: sonarqube-scanner
-      runAfter:
-        - test
-      params:
-        - name: SONAR_PROJECT_KEY
-          value: $(params.CODEBASEBRANCH_NAME)
-        - name: SONAR_PROJECT_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "golang-common" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:
@@ -82,6 +69,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-go" $ | nindent 4 }}
 
@@ -99,6 +87,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "github-review-vote" $ | nindent 2 }}
 

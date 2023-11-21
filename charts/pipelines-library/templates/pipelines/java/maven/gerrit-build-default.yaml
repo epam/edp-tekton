@@ -77,6 +77,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: update-build-number
       taskRef:
@@ -92,6 +93,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "java-maven-get-module" . | nindent 4 }}
 
@@ -119,6 +121,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 

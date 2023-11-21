@@ -70,6 +70,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
     # because the fetch-repository Task fetches only user changes.
@@ -90,6 +91,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -113,6 +115,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -130,6 +133,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -140,6 +144,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "dockerbuild-verify-python" $ | nindent 4 }}
 
@@ -157,6 +162,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 

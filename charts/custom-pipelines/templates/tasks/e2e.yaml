@@ -23,7 +23,7 @@ spec:
       default: "e2e-vcluster"
     - name: TOOLS_IMAGE
       type: string
-      default: "epamedp/tekton-helm:0.1.5"
+      default: "epamedp/tekton-helm:0.1.6"
 
   results:
     - name: release_name

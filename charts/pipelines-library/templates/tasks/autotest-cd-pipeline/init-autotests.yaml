@@ -28,7 +28,7 @@ spec:
       type: string
   steps:
     - name: init-autotest
-      image: epamedp/tekton-autotest:0.1.1
+      image: epamedp/tekton-autotest:0.1.2
       workingDir: $(workspaces.source.path)
       volumeMounts:
         - name: autotests-workspace-template

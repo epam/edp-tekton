@@ -26,7 +26,7 @@
     - test
   params:
     - name: BASE_IMAGE
-      value: 'epamedp/tekton-dotnet:6.0.1'
+      value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
@@ -181,7 +181,7 @@
     - sonar-prepare-files
   params:
     - name: BASE_IMAGE
-      value: 'epamedp/tekton-dotnet:6.0.1'
+      value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
@@ -227,7 +227,7 @@
     - test
   params:
     - name: BASE_IMAGE
-      value: 'epamedp/tekton-dotnet:0.1.5'
+      value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
@@ -382,7 +382,7 @@
     - sonar-prepare-files
   params:
     - name: BASE_IMAGE
-      value: 'epamedp/tekton-dotnet:0.1.5'
+      value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)

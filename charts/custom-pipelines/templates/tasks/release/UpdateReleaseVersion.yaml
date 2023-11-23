@@ -15,7 +15,7 @@ spec:
       type: string
     - name: base_image
       description: "The execute image you want to use."
-      default: "epamedp/tekton-python-make:0.1.3"
+      default: "epamedp/tekton-python-make:0.1.4"
       type: string
     - name: node_image
       description: "The execute image you want to use."

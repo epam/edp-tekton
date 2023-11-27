@@ -126,9 +126,10 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
-| tekton.pruner.keep | int | `1` | Maximum number of resources to keep while deleting removing |
-| tekton.pruner.resources | string | `"pipelinerun"` | Supported resource for auto prune is 'pipelinerun' |
-| tekton.pruner.schedule | string | `"0 18 * * *"` | How often to clean up resources |
+| tekton.pruner.image | string | `"bitnami/kubectl:1.25"` | Docker image to run the pruner, expected to have kubectl and jq |
+| tekton.pruner.recentMinutes | string | `"30"` | Resources of PipelineRuns that finished in the last N minutes are not pruned |
+| tekton.pruner.resources | object | `{}` | Pod resources for Tekton pruner job |
+| tekton.pruner.schedule | string | `"0 * * * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |
 | tekton.workspaceSize | string | `"3Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |
 | webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |

@@ -72,12 +72,11 @@ def test_pruner_enabled():
 tekton:
   pruner:
     create: true
-    schedule: "0 5 * * *"
-    keep: 5
-    resources: pipelinerun
+    schedule: "0 * * * *"
+    recentMinutes: "30"
     """
 
     r = helm_template(config)
 
-    assert "0 5 * * *" in r["cronjob"]["tekton-resource-pruner"]["spec"]["schedule"]
-    assert " ns;--keep=5;pipelinerun" in r["cronjob"]["tekton-resource-pruner"]["spec"]["jobTemplate"]["spec"]["template"]["spec"]["containers"][0]["args"][1]
+    assert "0 * * * *" in r["cronjob"]["tekton-resource-pruner"]["spec"]["schedule"]
+    assert "/scripts/tekton-prune.sh" in r["cronjob"]["tekton-resource-pruner"]["spec"]["jobTemplate"]["spec"]["template"]["spec"]["containers"][0]["command"][1]

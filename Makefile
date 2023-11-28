@@ -129,5 +129,5 @@ endef
 .PHONY: start-kind
 start-kind:     ## Start kind cluster
 ifeq (true,$(START_KIND_CLUSTER))
-	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG)
+	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG) --wait 1m
 endif

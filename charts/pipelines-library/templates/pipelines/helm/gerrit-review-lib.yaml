@@ -60,6 +60,8 @@ spec:
           value: $(params.git-source-revision)
         - name: refspec
           value: $(params.git-refspec)
+        - name: subdirectory
+          value: source
       workspaces:
         - name: output
           workspace: shared-workspace

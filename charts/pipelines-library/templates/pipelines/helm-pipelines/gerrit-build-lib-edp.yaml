@@ -63,6 +63,8 @@ spec:
           value: $(params.git-source-url)
         - name: revision
           value: $(params.git-source-revision)
+        - name: subdirectory
+          value: source
       workspaces:
         - name: output
           workspace: shared-workspace

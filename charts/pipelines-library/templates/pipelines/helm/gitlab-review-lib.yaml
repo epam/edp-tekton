@@ -90,7 +90,6 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
-          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 

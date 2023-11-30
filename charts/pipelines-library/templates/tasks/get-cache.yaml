@@ -16,7 +16,7 @@ spec:
   params:
     - name: CACHE_SERVER_URL
       description: "Cache server URL"
-      default: http://uploader:8080
+      default: http://tekton-cache:8080
       type: string
     - name: CACHE_NAME
       description: "Cache name (filename) to be downloaded from the cache server."
@@ -51,7 +51,6 @@ spec:
           value: "$(params.CACHE_SERVER_URL)"
         - name: CACHE_NAME
           value: "$(params.CACHE_NAME)"
-
       # TODO: We need to run this task as root because the workspace is owned by root.
       securityContext:
         runAsUser: 0

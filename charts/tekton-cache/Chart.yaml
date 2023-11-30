@@ -1,0 +1,24 @@
+apiVersion: v2
+name: tekton-cache
+home: https://epam.github.io/edp-install/
+description: A Helm chart for EDP Tekton Cache
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+icon: https://epam.github.io/edp-install/assets/logo.png
+maintainers:
+  - name: epmd-edp
+    email: SupportEPMD-EDP@epam.com
+    url: https://solutionshub.epam.com/solution/epam-delivery-platform
+  - name: sergk
+    url: https://github.com/SergK
+sources:
+  - https://github.com/epam/edp-tekton
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/operatorCapabilities: Basic Install
+  artifacthub.io/links: |
+    - name: EDP Documentation
+      url: https://epam.github.io/edp-install/
+    - name: EPAM SolutionHub
+      url: https://solutionshub.epam.com/solution/epam-delivery-platform

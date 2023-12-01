@@ -18,7 +18,7 @@ data:
     See the License for the specific language governing permissions and
     limitations under the License. -->
     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-        <localRepository>/workspace</localRepository>
+        <localRepository>/workspace/source/cache</localRepository>
 
         <pluginGroups>
             <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>

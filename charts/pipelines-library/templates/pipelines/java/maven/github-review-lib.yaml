@@ -54,12 +54,14 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: compile
       taskRef:
         kind: Task
         name: maven
       runAfter:
-        - init-values
+        - get-cache
       params:
         - name: MAVEN_IMAGE
           value: $(params.image)
@@ -74,7 +76,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: test
       taskRef:
@@ -99,7 +100,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
@@ -125,7 +125,31 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: maven
+      runAfter:
+        - sonar
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.image)
+        - name: GOALS
+          value:
+            - -B
+            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
+            - '-Dartifactory.releasePath=edp-maven-releases'
+            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+            - '-Dartifactory.groupPath=edp-maven-group'
+            - clean
+            - package
+            - '-DskipTests=true'
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "github-review-vote" $ | nindent 2 }}
 

@@ -73,12 +73,15 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
         name: update-build-number-maven
       runAfter:
         - get-version
+        - get-cache
       params:
         - name: IS_RELEASE_BRANCH
           value: $(tasks.get-version.results.IS_RELEASE_BRANCH)
@@ -97,29 +100,9 @@ spec:
 
 {{ include "security-edp" . | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        kind: Task
-        name: maven
-      runAfter:
-        - security
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.image)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - compile
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
 {{- include "java-maven-build-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

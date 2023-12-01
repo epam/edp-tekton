@@ -59,9 +59,13 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "java-maven-get-module" . | nindent 4 }}
 
 {{- include "java-maven-review-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

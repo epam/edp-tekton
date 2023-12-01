@@ -67,6 +67,8 @@ spec:
           workspace: shared-workspace
           subPath: source
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -85,16 +87,21 @@ spec:
 
 {{ include "security" $ | nindent 4 }}
 
-    - name: python
+    - name: build
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - security
+        - get-cache
       params:
         - name: EXTRA_COMMANDS
           value: |
+            # we checkout the source code in the /source directory
+            # and hold cache in the /cache directory
+            cd source
+
             # build
+
             python setup.py clean build install --user
             # lint
             pip3 install -r test-requirements.txt
@@ -105,7 +112,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
@@ -113,7 +119,7 @@ spec:
         name: sonarqube-scanner
       runAfter:
         - sonar-cleanup
-        - python
+        - build
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
@@ -157,6 +163,8 @@ spec:
           subPath: source
 
 {{- include "build-pipeline-python-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" $ | nindent 4 }}
 

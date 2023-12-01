@@ -51,6 +51,8 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "python-review-common" . | nindent 4 }}
 
     - name: dockerfile-lint
@@ -81,6 +83,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

@@ -1,4 +1,26 @@
 {{- define "java-maven-build-common" -}}
+- name: compile
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - get-cache
+    - security
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
+        - '-Dartifactory.releasePath=edp-maven-releases'
+        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
+        - '-Dartifactory.groupPath=edp-maven-group'
+        - compile
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
 - name: test
   taskRef:
     kind: Task
@@ -22,7 +44,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: sonar
   taskRef:
@@ -48,7 +69,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: build
   taskRef:
@@ -72,7 +92,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: get-nexus-repository-url
   taskRef:
@@ -109,7 +128,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 {{- end -}}
 
 {{- define "java-maven-review-common" -}}
@@ -118,7 +136,7 @@
     kind: Task
     name: maven
   runAfter:
-    - init-values
+    - get-cache
   params:
     - name: MAVEN_IMAGE
       value: $(params.image)
@@ -133,7 +151,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: test
   taskRef:
@@ -158,7 +175,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -230,7 +246,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: build
   taskRef:
@@ -254,7 +269,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 {{- end -}}
 
 {{- define "java-maven-get-module" -}}
@@ -296,6 +310,7 @@
   runAfter:
     - get-maven-module
     - push
+    - build
   params:
     - name: codebase-name
       value: "$(params.CODEBASE_NAME)"

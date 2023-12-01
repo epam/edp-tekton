@@ -59,6 +59,8 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "java-maven-get-module" . | nindent 4 }}
 
     - name: compile
@@ -66,7 +68,7 @@ spec:
         kind: Task
         name: maven
       runAfter:
-        - init-values
+        - get-cache
       params:
         - name: MAVEN_IMAGE
           value: $(params.image)
@@ -81,7 +83,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: test
       taskRef:
@@ -106,7 +107,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
@@ -132,7 +132,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: build
       taskRef:
@@ -156,7 +155,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

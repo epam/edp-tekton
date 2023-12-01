@@ -32,7 +32,7 @@ spec:
       description: >-
         The context directory within the repository for sources on
         which we want to execute maven goals.
-      default: "."
+      default: "source"
     - name: ci-nexus
       type: string
       description: name of the secret holding the Nexus CI integration data

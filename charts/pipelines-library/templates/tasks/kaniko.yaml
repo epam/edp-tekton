@@ -71,6 +71,7 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: aws_region
+              optional: true
         - name: CONTAINER_REGISTRY_GROUP
           valueFrom:
             configMapKeyRef:

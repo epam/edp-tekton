@@ -43,17 +43,23 @@ spec:
 
 {{- include "gitlab-review-start" . | nindent 4 }}
 
-    - name: python
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: build
       taskRef:
         kind: Task
         name: python
       runAfter:
-        - init-values
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
+            # we checkout the source code in the /source directory
+            # and hold cache in the /cache directory
+            cd source
+
             python setup.py clean build install --user
             pip3 install .
             [ -f run_service.py ] && python run_service.py &
@@ -61,14 +67,13 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
         kind: Task
         name: sonarqube-scanner
       runAfter:
-        - python
+        - build
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASEBRANCH_NAME)
@@ -78,6 +83,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gitlab-review-vote" . | nindent 2 }}
 

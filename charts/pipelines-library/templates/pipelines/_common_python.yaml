@@ -1,27 +1,30 @@
 {{- define "python-build-common" -}}
-- name: python
+- name: build
   taskRef:
     kind: Task
     name: python
   runAfter:
-    - update-build-number
+    - get-cache
   params:
     - name: BASE_IMAGE
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
+        # we checkout the source code in the /source directory
+        # and hold cache in the /cache directory
+        cd source
+
         python setup.py clean build install --user
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: sonar
   taskRef:
     kind: Task
     name: sonarqube-scanner
   runAfter:
-    - python
+    - build
   params:
     - name: SONAR_PROJECT_KEY
       value: $(params.CODEBASEBRANCH_NAME)
@@ -68,7 +71,7 @@
 {{- end -}}
 
 {{- define "python-review-common" -}}
-- name: python
+- name: build
   taskRef:
     kind: Task
     name: python
@@ -79,6 +82,10 @@
       value: $(params.image)
     - name: EXTRA_COMMANDS
       value: |
+        # we checkout the source code in the /source directory
+        # and hold cache in the /cache directory
+        cd source
+
         python setup.py clean build install --user
         pip3 install .
         [ -f run_service.py ] && python run_service.py &
@@ -86,7 +93,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -95,7 +101,7 @@
     kind: Task
     name: git-cli
   runAfter:
-    - python
+    - build
   params:
     - name: GIT_USER_EMAIL
       value: edp-ci@edp.ci-user

@@ -67,6 +67,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -92,6 +94,8 @@ spec:
 {{ include "js-npm-build-common" . | nindent 4 }}
 
 {{- include "build-pipeline-js-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

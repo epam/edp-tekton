@@ -45,7 +45,11 @@ spec:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "js-npm-review-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 

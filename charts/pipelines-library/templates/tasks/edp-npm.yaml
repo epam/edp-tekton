@@ -17,7 +17,7 @@ spec:
   params:
     - name: PATH_CONTEXT
       type: string
-      default: "."
+      default: "source"
       description: The path where package.json of the project is defined.
     - name: BASE_IMAGE
       type: string
@@ -34,6 +34,9 @@ spec:
     - name: NEXUS_REPOSITORY_URL
       default: ""
       description: Nexus repository URL. e.g. 'nexus:8081/repository/edp-npm-group'
+    - name: CACHE_DIR
+      default: "/workspace/source/cache"
+      description: The path to the cache directory.
 
   workspaces:
     - name: source
@@ -45,7 +48,7 @@ spec:
 
       env:
         - name: HOME
-          value: "$(workspaces.source.path)"
+          value: "$(workspaces.source.path)/"
         - name: NEXUS_REPOSITORY_URL
           value: "$(params.NEXUS_REPOSITORY_URL)"
         - name: CI_USERNAME
@@ -63,6 +66,8 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: url
+        - name: NPM_CACHE_DIR
+          value: $(params.CACHE_DIR)
       script: |
         #!/usr/bin/env sh
         set -e
@@ -71,6 +76,7 @@ spec:
 
         npm config set registry ${NEXUS_HOST_URL}
         npm config set always-auth=true
+        npm config set cache ${NPM_CACHE_DIR}
         echo "_auth=$upBase64" >> .npmrc
 
         npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group

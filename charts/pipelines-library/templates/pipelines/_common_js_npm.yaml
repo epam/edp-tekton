@@ -1,24 +1,24 @@
 {{- define "js-npm-build-common" -}}
-- name: npm
+- name: build
   taskRef:
     kind: Task
     name: edp-npm
   runAfter:
     - update-build-number
+    - get-cache
   params:
     - name: BASE_IMAGE
       value: $(params.image)
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: sonar
   taskRef:
     kind: Task
     name: sonarqube-scanner
   runAfter:
-    - npm
+    - build
   params:
     - name: SONAR_HOST_URL
       value: ${SONAR_HOST_URL}
@@ -65,19 +65,18 @@
 {{- end -}}
 
 {{- define "js-npm-review-common" -}}
-- name: npm
+- name: build
   taskRef:
     kind: Task
     name: edp-npm
   runAfter:
-    - init-values
+    - get-cache
   params:
     - name: BASE_IMAGE
       value: $(params.image)
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -86,7 +85,7 @@
     kind: Task
     name: git-cli
   runAfter:
-    - npm
+    - build
   params:
     - name: GIT_USER_EMAIL
       value: edp-ci@edp.ci-user

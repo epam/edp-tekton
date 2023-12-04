@@ -73,6 +73,8 @@ spec:
           workspace: shared-workspace
           subPath: source
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -94,6 +96,8 @@ spec:
 {{ include "security-edp" . | nindent 4 }}
 
 {{ include "js-npm-build-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

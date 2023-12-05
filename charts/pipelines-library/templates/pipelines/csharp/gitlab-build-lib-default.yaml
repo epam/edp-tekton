@@ -67,26 +67,26 @@ spec:
           workspace: shared-workspace
           subPath: source
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "security" . | nindent 4 }}
 
-    - name: dotnet-build
+    - name: build
       taskRef:
         kind: Task
-        name: dotnet
+        name: edp-dotnet
       runAfter:
-        - security
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            dotnet build
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
 {{- include "dotnet-6-0-build-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

@@ -53,48 +53,27 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
-    - name: dotnet-build
-      taskRef:
-        kind: Task
-        name: dotnet
-      runAfter:
-        - fetch-repository
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            dotnet build
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
+{{- include "get-cache" $ | nindent 4 }}
 
-    - name: test
+    - name: build
       taskRef:
         kind: Task
-        name: dotnet
+        name: edp-dotnet
       runAfter:
-        - dotnet-build
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            ls *Tests*/*.csproj | while read -r file;
-                do dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover "${file}";
-            done
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
         kind: Task
         name: dotnet
       runAfter:
-        - test
+        - build
       params:
         - name: BASE_IMAGE
           value: 'epamedp/tekton-dotnet:6.0.2'
@@ -130,7 +109,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -160,6 +138,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gitlab-review-vote" $ | nindent 2 }}
 ---

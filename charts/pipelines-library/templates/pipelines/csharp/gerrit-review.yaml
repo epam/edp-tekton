@@ -53,6 +53,8 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{- include "dotnet-6-0-review-common" . | nindent 4 }}
 
     - name: dotnet-publish
@@ -71,7 +73,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -101,6 +102,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 ---

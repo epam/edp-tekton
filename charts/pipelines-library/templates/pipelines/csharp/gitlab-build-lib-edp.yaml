@@ -63,6 +63,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -79,25 +81,23 @@ spec:
 
 {{ include "security-edp" . | nindent 4 }}
 
-    - name: dotnet-build
+    - name: build
       taskRef:
         kind: Task
-        name: dotnet
+        name: edp-dotnet
       runAfter:
-        - security
+        - get-cache
+        - update-build-number
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            slnFilename=$(ls *.sln)
-            dotnet publish $slnFilename
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
 {{- include "dotnet-6-0-build-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

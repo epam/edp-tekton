@@ -121,7 +121,7 @@ interceptor:
       memory: 40Mi
 
 ctLint:
-  validateMaintainers: ""
+  validateMaintainers: false
   chartSchema: |
     name: str()
     home: str()

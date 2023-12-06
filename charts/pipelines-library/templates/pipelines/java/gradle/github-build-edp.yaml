@@ -69,6 +69,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -91,29 +93,11 @@ spec:
 
 {{ include "security-edp" . | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        kind: Task
-        name: gradle
-      runAfter:
-        - security
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            clean \
-            compileJava \
-            -x test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
 {{ include "java-gradle-build-common" . | nindent 4 }}
 
 {{- include "build-pipeline-java-gradle-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

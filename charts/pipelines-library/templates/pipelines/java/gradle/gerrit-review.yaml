@@ -59,25 +59,9 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
-{{ include "java-gradle-review-common" . | nindent 4 }}
+{{- include "get-cache" $ | nindent 4 }}
 
-    - name: build
-      taskRef:
-        kind: Task
-        name: gradle
-      runAfter:
-        - sonar
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            build -x test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
+{{ include "java-gradle-review-common" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:
@@ -107,6 +91,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" $ | nindent 2 }}
 

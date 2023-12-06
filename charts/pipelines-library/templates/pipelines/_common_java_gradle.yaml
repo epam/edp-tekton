@@ -1,29 +1,24 @@
 {{- define "java-gradle-build-common" -}}
-- name: test
+- name: build
   taskRef:
     kind: Task
-    name: gradle
+    name: edp-gradle
   runAfter:
-    - compile
+    - get-cache
+    - update-build-number
   params:
     - name: BASE_IMAGE
       value: $(params.image)
-    - name: EXTRA_ARGS
-      value: |
-        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-        test \
-        jacocoTestReport
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 
 - name: sonar
   taskRef:
     kind: Task
     name: gradle
   runAfter:
-    - test
+    - build
   params:
     - name: BASE_IMAGE
       value: $(params.sonar_image)
@@ -35,24 +30,6 @@
         -Dsonar.host.url=${SONAR_HOST_URL} \
         -Dsonar.qualitygate.wait=true \
         sonarqube
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
-
-- name: build
-  taskRef:
-    kind: Task
-    name: gradle
-  runAfter:
-    - sonar
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_ARGS
-      value: |
-        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-        build -x test
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -75,7 +52,7 @@
     kind: Task
     name: gradle
   runAfter:
-    - build
+    - sonar
     - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
@@ -92,44 +69,18 @@
 {{- end -}}
 
 {{- define "java-gradle-review-common" -}}
-- name: compile
+- name: build
   taskRef:
     kind: Task
-    name: gradle
+    name: edp-gradle
   runAfter:
-    - init-values
+    - get-cache
   params:
     - name: BASE_IMAGE
       value: $(params.image)
-    - name: EXTRA_ARGS
-      value: |
-        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-        clean \
-        compileJava \
-        -x test
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
-
-- name: test
-  taskRef:
-    kind: Task
-    name: gradle
-  runAfter:
-    - compile
-  params:
-    - name: BASE_IMAGE
-      value: $(params.image)
-    - name: EXTRA_ARGS
-      value: |
-        -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-        test \
-        jacocoTestReport
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
 
 # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
 # because the fetch-repository Task fetches only user changes.
@@ -138,7 +89,7 @@
     kind: Task
     name: git-cli
   runAfter:
-    - test
+    - build
   params:
     - name: GIT_USER_EMAIL
       value: edp-ci@edp.ci-user

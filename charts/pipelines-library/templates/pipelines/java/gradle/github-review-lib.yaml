@@ -54,51 +54,27 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        kind: Task
-        name: gradle
-      runAfter:
-        - init-values
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            clean \
-            compileJava \
-            -x test
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
+{{- include "get-cache" $ | nindent 4 }}
 
-    - name: test
+    - name: build
       taskRef:
         kind: Task
-        name: gradle
+        name: edp-gradle
       runAfter:
-        - compile
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            test \
-            jacocoTestReport
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: sonar
       taskRef:
         kind: Task
         name: gradle
       runAfter:
-        - test
+        - build
       params:
         - name: BASE_IMAGE
           value: $(params.sonar_image)
@@ -114,6 +90,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "github-review-vote" $ | nindent 2 }}
 

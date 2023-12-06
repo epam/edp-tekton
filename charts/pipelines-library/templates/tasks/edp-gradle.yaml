@@ -1,0 +1,169 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: edp-gradle
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/displayName: Gradle
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a Gradle build.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the gradle project.
+  params:
+    - name: BASE_IMAGE
+      description: Gradle base image.
+      type: string
+      default: gradle:7.5.1-jdk11
+    - name: PROJECT_DIR
+      description: The directory containing build.gradle
+      type: string
+      default: "source"
+    - name: TASKS
+      description: 'The gradle tasks to run (default: build)'
+      type: array
+      default:
+        - build
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: ci-sonarqube
+      type: string
+      description: name of the secret for the Sonarqube integration
+      default: "ci-sonarqube"
+    - name: EXTRA_ARGS
+      description: Extra arguments to add to the gradle build
+      default: |
+        -Dorg.gradle.internal.publish.checksums.insecure=true \
+        publish
+    - name: GRADLE_USER_CACHE
+      description: Gradle user cache directory
+      default: /workspace/source/cache
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: custom-gradle-settings
+  steps:
+    - name: compile
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/bin/bash
+        set -e
+
+        gradle \
+          -I \
+          /var/configmap/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            clean \
+            compileJava \
+            -x test
+      env:
+        - name: XDG_CONFIG_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: GRADLE_USER_HOME
+          value: $(params.GRADLE_USER_CACHE)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+    - name: test
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/bin/bash
+        set -e
+
+        gradle \
+          -I \
+          /var/configmap/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            test \
+            jacocoTestReport
+      env:
+        - name: XDG_CONFIG_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: GRADLE_USER_HOME
+          value: $(params.GRADLE_USER_CACHE)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+    - name: build
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/bin/bash
+        set -e
+
+        gradle \
+          -I \
+          /var/configmap/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            build -x test
+      env:
+        - name: XDG_CONFIG_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: GRADLE_USER_HOME
+          value: $(params.GRADLE_USER_CACHE)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+{{- include "resources" . | nindent 6 }}

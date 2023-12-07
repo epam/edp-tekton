@@ -102,6 +102,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{- include "build-pipeline-dotnet-image-build-push-common" $ | nindent 4 }}
 

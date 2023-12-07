@@ -69,6 +69,7 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+      subPath: source
 {{- end -}}
 
 {{- define "dotnet-6-0-review-common" -}}

@@ -109,6 +109,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:

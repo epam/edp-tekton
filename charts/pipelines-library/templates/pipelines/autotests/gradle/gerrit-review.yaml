@@ -1,0 +1,125 @@
+{{ if eq .Values.global.gitProvider "gerrit" }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- $altResourceMapping := dict "java8" "gradle:7.5.1-jdk11" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
+{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-gradle-{{ $k }}-aut-review
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-gradle'
+      description: "Project name"
+      type: string
+    - name: image
+      default: '{{ $k }}'
+      description: "gradle image version"
+      type: string
+    - name: sonar_image
+      default: '{{ $v }}'
+      description: "sonar image version"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  tasks:
+
+{{- include "gerrit-review-start" $ | nindent 4 }}
+
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - init-values
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: sonar-prepare-files
+      taskRef:
+        kind: Task
+        name: sonar-prepare-files-gradle
+      runAfter:
+        - fetch-target-branch
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.targetBranch)
+        - name: NORMALIZED_BRANCH
+          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: PATCHSET_NUMBER
+          value: $(params.patchsetNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: gradle
+      runAfter:
+        - sonar-prepare-files
+      params:
+        - name: BASE_IMAGE
+          value: $(params.sonar_image)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+            -Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES) \
+            -Dsonar.qualitygate.wait=true \
+            sonarqube
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "gerrit-review-vote" $ | nindent 2 }}
+---
+{{ end }}
+{{ end }}

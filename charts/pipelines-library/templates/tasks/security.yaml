@@ -67,13 +67,20 @@ spec:
             secretKeyRef:
               name: $(params.ci-defectdojo)
               key: token
+              optional: true
         - name: DD_HOST_URL
           valueFrom:
             secretKeyRef:
               name: $(params.ci-defectdojo)
               key: url
+              optional: true
       workingDir: $(workspaces.source.path)
       script: |
+        if [ -z "$DD_HOST_URL" ]
+        then
+          exit 0
+        fi
+
         set -e
         reportDataActive="true"
         reportDataVerified="false"
@@ -111,11 +118,13 @@ spec:
             secretKeyRef:
               name: $(params.ci-dependency-track)
               key: token
+              optional: true
         - name: DEPTRACK_URL
           valueFrom:
             secretKeyRef:
               name: $(params.ci-dependency-track)
               key: url
+              optional: true
         - name: PROJECT_NAME
           value: $(params.PROJECT_NAME)
         - name: PROJECT_BRANCH

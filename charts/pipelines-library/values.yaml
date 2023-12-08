@@ -20,6 +20,10 @@ global:
     # -- Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>)
     url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"
 
+tekton-cache:
+  enabled: true
+  url: http://edp-tekton-tekton-cache:8080
+
 webhook:
   # -- If true, webhook ssl verification will be skipped. Default: false
   skipWebhookSSLVerification: false

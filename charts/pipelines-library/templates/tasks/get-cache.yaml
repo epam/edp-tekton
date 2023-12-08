@@ -14,10 +14,6 @@ spec:
   description: >-
     This Task is used to get the cache from the distribution server. It stores cache in the root of the workspace.
   params:
-    - name: CACHE_SERVER_URL
-      description: "Cache server URL"
-      default: http://tekton-cache:8080
-      type: string
     - name: CACHE_NAME
       description: "Cache name (filename) to be downloaded from the cache server."
       type: string
@@ -48,7 +44,11 @@ spec:
         curl ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz|tar -xz -f-
       env:
         - name: CACHE_SERVER_URL
-          value: "$(params.CACHE_SERVER_URL)"
+          valueFrom:
+            configMapKeyRef:
+              name: tekton-cache
+              key: url
+              optional: true
         - name: CACHE_NAME
           value: "$(params.CACHE_NAME)"
       # TODO: We need to run this task as root because the workspace is owned by root.

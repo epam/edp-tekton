@@ -26,5 +26,7 @@ commands:
     namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     namespaced: false
+  - command: helm repo add epamedp https://epam.github.io/edp-helm-charts/stable
+    namespaced: true
   - command: helm dependency update ./charts/pipelines-library
     namespaced: true

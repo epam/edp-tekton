@@ -34,11 +34,11 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: '{{ $k }}'
+      default: '{{ $v }}'
       description: "gradle image version"
       type: string
     - name: sonar_image
-      default: '{{ $v }}'
+      default: '{{ $valueFromAlt }}'
       description: "sonar image version"
       type: string
     - name: targetBranch

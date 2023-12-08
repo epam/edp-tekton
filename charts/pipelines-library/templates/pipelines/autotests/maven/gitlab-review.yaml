@@ -37,7 +37,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: '{{ $k }}'
+      default: '{{ $v }}'
       description: "maven image version"
       type: string
     - name: sonar_image

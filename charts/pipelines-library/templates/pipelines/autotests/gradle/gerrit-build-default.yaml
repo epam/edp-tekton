@@ -28,7 +28,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: '{{ $k }}'
+      default: '{{ $v }}'
       description: "gradle image version"
       type: string
     - name: changeNumber

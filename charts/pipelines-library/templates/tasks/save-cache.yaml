@@ -14,16 +14,12 @@ spec:
   description: >-
     This Task is used to save the cache to the distribution server. It packs and uploads the root of workspace to the distribution server
   params:
-    - name: CACHE_SERVER_URL
-      description: "Cache server URL"
-      default: http://tekton-cache:8080
-      type: string
     - name: CACHE_NAME
       description: "Cache name (filename) to be downloaded from the cache server."
       type: string
     - name: BASE_IMAGE
       description: "Base image"
-      default: "sergk/python-slim:linux-1"
+      default: "epamedp/tekton-autotest:0.1.2"
       type: string
 
   workspaces:
@@ -55,7 +51,11 @@ spec:
         tar czf - . |curl -# -L -f -F path=${CACHE_NAME}.tar.gz -X POST -F "file=@-" ${CACHE_SERVER_URL}/upload
       env:
         - name: CACHE_SERVER_URL
-          value: "$(params.CACHE_SERVER_URL)"
+          valueFrom:
+            configMapKeyRef:
+              name: tekton-cache
+              key: url
+              optional: true
         - name: CACHE_NAME
           value: "$(params.CACHE_NAME)"
 

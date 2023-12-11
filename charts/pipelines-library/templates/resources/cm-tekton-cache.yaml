@@ -1,4 +1,4 @@
-{{ if index .Values "tekton-cache" "enabled" }}
+{{ if index .Values "tekton-cache" "url" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

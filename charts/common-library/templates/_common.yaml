@@ -270,10 +270,6 @@ finally:
       value: "$(tasks.get-version.results.VCS_TAG)"
     - name: VERSION
       value: "$(tasks.get-version.results.VERSION)"
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
 {{- end -}}
 
 {{- define "send-to-microsoft-teams-build" -}}

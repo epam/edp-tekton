@@ -11,9 +11,6 @@ spec:
   description: >-
     The push-to-jira Task will create JiraIssueMetadata Custom Resource
 
-  workspaces:
-    - name: source
-      description: The workspace consisting of the cr file and project files.
   params:
     - name: TICKET_NAME_PATTERN
       type: string
@@ -33,8 +30,7 @@ spec:
       type: string
   steps:
     - name: push-to-jira
-      image: python:3.10.1-alpine3.15
-      workingDir: $(workspaces.source.path)
+      image: epamedp/tekton-autotest:0.1.3
       env:
         - name: TICKET_NAME_PATTERN
           value: "$(params.TICKET_NAME_PATTERN)"
@@ -53,7 +49,7 @@ spec:
         - name: VERSION
           value: "$(params.VERSION)"
       script: |
-        #!/usr/bin/env python
+        #!/usr/bin/python
 
         import os
         import sys
@@ -159,12 +155,6 @@ spec:
         with open("cr.json", "w") as outfile:
             outfile.write(template_json)
 
-    - name: kubectl
-      image: bitnami/kubectl:1.25.2
-      workingDir: $(workspaces.source.path)
-      script: |
-        #!/usr/bin/env bash
-        set -e
-        echo "[TEKTON][DEBUG] Trying to create JiraIssueMetadata CR"
-        kubectl apply -f cr.json
-        echo "[TEKTON][DEBUG] JiraIssueMetadata CR has been created"
+        print("[TEKTON][DEBUG] Trying to create JiraIssueMetadata CR")
+        os.system('kubectl apply -f cr.json')
+        print("[TEKTON][DEBUG] JiraIssueMetadata CR has been created")

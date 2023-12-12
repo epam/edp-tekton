@@ -16,6 +16,9 @@ spec:
     - name: BASE_IMAGE
       description: "The base image for the task."
       default: "python:3.10.1-alpine3.15"
+    - name: MAX_LINE_LENGTH
+      description: "Maximum length of each line in the commit message."
+      default: "80"
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source
@@ -28,6 +31,8 @@ spec:
           value: $(params.COMMIT_MESSAGE_PATTERN)
         - name: COMMIT_MESSAGE
           value: $(params.COMMIT_MESSAGE)
+        - name: MAX_LINE_LENGTH
+          value: $(params.MAX_LINE_LENGTH)
       script: |
         #!/usr/bin/env python
 
@@ -51,3 +56,10 @@ spec:
         if result == None:
             print("[TEKTON] Commit message is invalid. The required pattern is " + commit_message_pattern)
             sys.exit(1)
+
+        max_line_length = int(os.getenv("MAX_LINE_LENGTH"))
+        lines = commit_message.split('\n')
+        for line in lines:
+            if len(line) > max_line_length:
+                print(f"[TEKTON] A line in the commit message is too long. Each line should be no longer than {max_line_length} characters.")
+                sys.exit(1)

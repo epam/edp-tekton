@@ -44,7 +44,7 @@ spec:
       description: Name of the secret holding the ci-dependency-track api token
       default: ci-dependency-track
   steps:
-    - name: semgrep-scan
+    - name: semgrep-scan-and-report
       image: $(params.BASE_IMAGE)
       computeResources: {}
       workingDir: $(workspaces.source.path)
@@ -52,36 +52,13 @@ spec:
         set -e
         # The .docker/config.json file contained sensitive information, so it was added to the ignorelist.
         echo ".docker/config.json" >> .semgrepignore
-        semgrep --jobs 1 --config=auto . --json --output $(params.reportDataPath) --disable-version-check
-      env:
-        - name: HOME
-          value: "$(workspaces.source.path)"
-        - name: SEMGREP_VERSION_CACHE_PATH
-          value: "$(workspaces.source.path)/.cache"
-{{- include "resources" . | nindent 6 }}
-    - name: semgrep-report
-      image: curlimages/curl:7.85.0
-      env:
-        - name: DD_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-defectdojo)
-              key: token
-              optional: true
-        - name: DD_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-defectdojo)
-              key: url
-              optional: true
-      workingDir: $(workspaces.source.path)
-      script: |
+        semgrep --jobs 1 --config=p/r2c-ci . --json --output $(params.reportDataPath) --disable-version-check
+
         if [ -z "$DD_HOST_URL" ]
         then
           exit 0
         fi
 
-        set -e
         reportDataActive="true"
         reportDataVerified="false"
         reportDataPath="security-semgrep-report.json"
@@ -112,6 +89,24 @@ spec:
             -F "push_to_jira=${reportDataPushToJira}" \
             -F "environment=${reportDataEnvironment}" \
             -F "test_title=${reportDataTestTitle}"
+
+      env:
+        - name: HOME
+          value: "$(workspaces.source.path)"
+        - name: SEMGREP_VERSION_CACHE_PATH
+          value: "$(workspaces.source.path)/.cache"
+        - name: DD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo)
+              key: token
+              optional: true
+        - name: DD_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo)
+              key: url
+              optional: true
     - env:
         - name: API_TOKEN
           valueFrom:

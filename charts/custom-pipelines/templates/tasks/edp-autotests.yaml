@@ -9,54 +9,79 @@ spec:
     - name: source
       description: A workspace that contains the repository.
   params:
-    - name: clustername
+    - name: cluster
       type: string
     - name: threads_num
       type: string
     - name: namespace
       type: string
-    - name: tag
+    - name: tags
       type: string
     - name: ci_tool
       type: string
     - name: git_provider
       type: string
-    - name: moon
+    - name: moon_url
       type: string
     - name: browser_type
+      type: string
+    - name: browser_name
+      type: string
+    - name: browser_version
+      type: string
+    - name: secret_name
+      type: string
+    - name: secret_namespace
+      type: string
+    - name: registry_type
       type: string
   steps:
     - name: run-autotests
       image: gradle:8-jdk11
       workingDir: $(workspaces.source.path)
       env:
-        - name: CLUSTERNAME
-          value: $(params.clustername)
+        - name: CLUSTER
+          value: $(params.cluster)
         - name: THREADS_NUM
           value: $(params.threads_num)
         - name: NAMESPACE
           value: $(params.namespace)
-        - name: TAG
-          value: $(params.tag)
+        - name: TAGS
+          value: $(params.tags)
         - name: CI_TOOL
           value: $(params.ci_tool)
         - name: GIT_PROVIDER
           value: $(params.git_provider)
-        - name: MOON
-          value: $(params.moon)
-        - name: BROWSER
+        - name: MOON_URL
+          value: $(params.moon_url)
+        - name: BROWSER_TYPE
           value: $(params.browser_type)
+        - name: BROWSER_NAME
+          value: $(params.browser_name)
+        - name: BROWSER_VERSION
+          value: $(params.browser_version)
+        - name: SECRET_NAME
+          value: $(params.secret_name)
+        - name: SECRET_NAMESPACE
+          value: $(params.secret_namespace)
+        - name: REGISTRY_TYPE
+          value: $(params.registry_type)
       script: |
         set -ex
 
         chmod +x ./gradlew
 
         ./gradlew bootRun \
-        -Dcluster="${CLUSTERNAME}" \
+        -Dcluster="${CLUSTER}" \
         -Dthreads.number="${THREADS_NUM}" \
         -Dnamespace="${NAMESPACE}" \
-        -Dtags="${TAG}" \
+        -Dtags="${TAGS}" \
         -Dci.tool=${CI_TOOL} \
         -Dgit.provider="${GIT_PROVIDER}" \
-        -Dmoon.url="${MOON}" \
-        -Dbrowser.type="${BROWSER}"
+        -Dmoon.url="${MOON_URL}" \
+        -Dbrowser.type="${BROWSER_TYPE}" \
+        -Dbrowser.name="${BROWSER_NAME}" \
+        -Dbrowser.version="${BROWSER_VERSION}" \
+        -Dsecret.name="${SECRET_NAME}" \
+        -Dsecret.namespace="${SECRET_NAMESPACE}" \
+        -Dregistry.type="${REGISTRY_TYPE}"

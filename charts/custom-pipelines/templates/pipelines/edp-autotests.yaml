@@ -18,35 +18,55 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: $(params.git-source-revision)
       type: string
-    - name: clustername
+    - name: cluster
       description: 'sandbox, okd'
       default: "sandbox"
       type: string
     - name: threads_num
-      description: '1, 10, 15'
+      description: '1, 4, 10, 15'
       default: "1"
       type: string
     - name: namespace
       description: 'Namespace name'
       type: string
-    - name: tag
-      description: '@Clean, @TektonGerrit, @TektonGithub, @TektonGitlab, @IntegrationJenkins, @Regression'
+    - name: tags
+      description: '@Clean, @TektonSmoke, @TektonGerrit, @TektonGithub, @TektonGitlab, @TektonGerritShortRegression, @TektonGithubShortRegression, @TektonGitlabShortRegression, @TektonGerritIU, @TektonGithubUI, @TektonGitlabUI'
       default: "@Clean"
       type: string
     - name: ci_tool
-      description: 'tekton, jenkins'
+      description: 'tekton'
       default: "tekton"
       type: string
     - name: git_provider
       description: 'gerrit, github, gitlab'
       default: "gerrit"
       type: string
-    - name: moon
+    - name: moon_url
       description: 'Moon URL'
       type: string
     - name: browser_type
       description: 'Browser type for moon'
       default: "remote"
+      type: string
+    - name: browser_name
+      description: 'chrome, edge'
+      default: "chrome"
+      type: string
+    - name: browser_version
+      description: 'Remout browser version available in the moon'
+      default: "114.0.5735.133-5"
+      type: string
+    - name: secret_name
+      description: 'Secret from prerequisites name'
+      default: "autotests"
+      type: string
+    - name: secret_namespace
+      description: 'Namespace with secret from prerequisites name'
+      default: "security"
+      type: string
+    - name: registry_type
+      description: 'harbor, ecr, dockerhub, openshift'
+      default: "harbor"
       type: string
   tasks:
     - name: fetch-repository
@@ -71,22 +91,32 @@ spec:
       runAfter:
         - fetch-repository
       params:
-        - name: clustername
-          value: $(params.clustername)
+        - name: cluster
+          value: $(params.cluster)
         - name: threads_num
           value: $(params.threads_num)
         - name: namespace
           value: $(params.namespace)
-        - name: tag
-          value: $(params.tag)
+        - name: tags
+          value: $(params.tags)
         - name: ci_tool
           value: $(params.ci_tool)
         - name: git_provider
           value: $(params.git_provider)
-        - name: moon
-          value: $(params.moon)
+        - name: moon_url
+          value: $(params.moon_url)
         - name: browser_type
           value: $(params.browser_type)
+        - name: browser_name
+          value: $(params.browser_name)
+        - name: browser_version
+          value: $(params.browser_version)
+        - name: secret_name
+          value: $(params.secret_name)
+        - name: secret_namespace
+          value: $(params.secret_namespace)
+        - name: registry_type
+          value: $(params.registry_type)
       workspaces:
         - name: source
           workspace: shared-workspace

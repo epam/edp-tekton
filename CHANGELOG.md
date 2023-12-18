@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="v0.10.0"></a>
-## v0.10.0 - 2023-12-18
+<a name="v0.10.1"></a>
+## v0.10.1 - 2023-12-18
 ### Features
 
 - Ensure commit-validate checks the lenght of the commit msg ([#87](https://github.com/epam/edp-tekton/issues/87))
@@ -34,6 +34,7 @@
 
 ### Bug Fixes
 
+- Align cache endpoint with service name ([#89](https://github.com/epam/edp-tekton/issues/89))
 - Update images for autotest sonar scan ([#74](https://github.com/epam/edp-tekton/issues/74))
 - Update images for autotest sonar scan ([#74](https://github.com/epam/edp-tekton/issues/74))
 - Update autotest tasks ([#74](https://github.com/epam/edp-tekton/issues/74))
@@ -173,4 +174,4 @@
 - Bump tekton version ([#59](https://github.com/epam/edp-tekton/issues/59))
 
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.10.1...HEAD

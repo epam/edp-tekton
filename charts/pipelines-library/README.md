@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| @epamedp | tekton-cache | 0.2.0 |
+| @epamedp | tekton-cache | 0.3.0 |
 | file://../common-library | edp-tekton-common-library | 0.2.17 |
 
 ## Values
@@ -127,7 +127,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
 | tekton-cache.enabled | bool | `true` |  |
-| tekton-cache.url | string | `"http://edp-tekton-tekton-cache:8080"` |  |
+| tekton-cache.url | string | `"http://tekton-cache:8080"` |  |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
 | tekton.pruner.image | string | `"bitnami/kubectl:1.25"` | Docker image to run the pruner, expected to have kubectl and jq |
 | tekton.pruner.recentMinutes | string | `"30"` | Resources of PipelineRuns that finished in the last N minutes are not pruned |

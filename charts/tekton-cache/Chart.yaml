@@ -3,8 +3,8 @@ name: tekton-cache
 home: https://epam.github.io/edp-install/
 description: A Helm chart for EDP Tekton Cache
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.3.0
+appVersion: 0.3.0
 icon: https://epam.github.io/edp-install/assets/logo.png
 maintainers:
   - name: epmd-edp

@@ -12,8 +12,7 @@ image:
 
 initContainers:
   repository: busybox
-  tag: latest
-
+  tag: 1.36.1
 
 imagePullSecrets: []
 nameOverride: ""
@@ -33,7 +32,6 @@ securityContext: {}
   # runAsUser: 1000
 
 cacheSize: "5Gi"
-
 
 service:
   type: ClusterIP

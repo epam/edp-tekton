@@ -1,6 +1,6 @@
 # tekton-cache
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.0](https://img.shields.io/badge/AppVersion-0.3.0-informational?style=flat-square)
 
 A Helm chart for EDP Tekton Cache
 
@@ -29,7 +29,7 @@ A Helm chart for EDP Tekton Cache
 | image.tag | string | `"master"` |  |
 | imagePullSecrets | list | `[]` |  |
 | initContainers.repository | string | `"busybox"` |  |
-| initContainers.tag | string | `"latest"` |  |
+| initContainers.tag | string | `"1.36.1"` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |

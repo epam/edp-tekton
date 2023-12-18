@@ -159,7 +159,7 @@ spec:
         kind: Task
         name: wait-for
       runAfter:
-        - update-release-version
+        - kaniko-build
 
     - name: helm-push-gh-pages
       taskRef:

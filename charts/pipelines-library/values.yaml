@@ -22,7 +22,7 @@ global:
 
 tekton-cache:
   enabled: true
-  url: http://edp-tekton-tekton-cache:8080
+  url: http://tekton-cache:8080
 
 webhook:
   # -- If true, webhook ssl verification will be skipped. Default: false

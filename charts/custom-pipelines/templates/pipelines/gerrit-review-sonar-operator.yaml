@@ -57,6 +57,8 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "gerrit-common" . | nindent 4 }}
 
     - name: build
@@ -72,6 +74,7 @@ spec:
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
+            cd source
             make build
             make test
             make lint
@@ -98,6 +101,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -121,6 +125,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -138,6 +143,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       runAfter:
@@ -150,6 +156,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: kaniko-build
       params:
@@ -168,6 +175,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: e2e
       taskRef:
@@ -185,6 +193,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

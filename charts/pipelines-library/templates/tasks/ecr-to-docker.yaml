@@ -18,16 +18,12 @@ spec:
     It is necessary to add a Service Account in a Pipeline for this task to run
     since it uses AWS ECR authentication.
   params:
-    - name: ECR_HOST
-      type: string
     - name: ECR_LOGIN
       type: string
       default: '/workspace/ecr_login_pass'
     - name: ECR_USER
       type: string
       default: 'AWS'
-    - name: ECR_IMAGE
-      type: string
     - name: CODEBASE_NAME
       type: string
     - name: IMAGE_TAG
@@ -60,14 +56,10 @@ spec:
         ls -l "${ECR_LOGIN}"
     - name: copy-image
       env:
-        - name: ECR_HOST
-          value: "$(params.ECR_HOST)"
         - name: ECR_LOGIN
           value: "$(params.ECR_LOGIN)"
         - name: ECR_USER
           value: "$(params.ECR_USER)"
-        - name: ECR_IMAGE
-          value: "$(params.ECR_IMAGE)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
         - name: IMAGE_TAG
@@ -89,6 +81,16 @@ spec:
             secretKeyRef:
               name: "$(params.dockerhub-credentials)"
               key: 'account'
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
       image: gcr.io/go-containerregistry/crane/debug:v0.11.0
       script: |
         #!/busybox/sh
@@ -98,7 +100,7 @@ spec:
             echo " [INFO] Image "${DOCKERHUB_IMAGE_TAGGED}" already exists in Docker Hub"
             exit 1
         else
-            cat "${ECR_LOGIN}" | crane auth login "${ECR_HOST}" -u "${ECR_USER}" --password-stdin
-            crane cp "${ECR_IMAGE}:${IMAGE_TAG}" "${DOCKERHUB_IMAGE_TAGGED}"
+            cat "${ECR_LOGIN}" | crane auth login "${CONTAINER_REGISTRY_URL}" -u "${ECR_USER}" --password-stdin
+            crane cp "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" "${DOCKERHUB_IMAGE_TAGGED}"
         fi
 {{- include "resources" . | nindent 6 }}

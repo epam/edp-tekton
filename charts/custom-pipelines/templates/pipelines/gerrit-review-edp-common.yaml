@@ -34,7 +34,7 @@ spec:
       description: "go image with make installed"
       type: string
     - name: GOPROXY
-      default: "http://athens.eks-core.aws.main.edp.projects.epam.com"
+      default: "http://athens-athens-proxy:80"
       description: "Go proxy link"
       type: string
     - name: targetBranch

@@ -69,6 +69,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "sonar-cleanup" . | nindent 4 }}
 
     - name: security
@@ -87,6 +89,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: test
       taskRef:
@@ -94,6 +97,7 @@ spec:
         name: golang
       runAfter:
         - security
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
@@ -101,6 +105,7 @@ spec:
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
+            cd source
             make test
       workspaces:
         - name: source
@@ -120,6 +125,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: build
       taskRef:
@@ -134,6 +140,7 @@ spec:
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
+            cd source
             VERSION=$(tasks.get-version.results.VERSION) make build
       workspaces:
         - name: source
@@ -157,6 +164,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
     - name: ecr-to-docker
       taskRef:
@@ -165,10 +175,6 @@ spec:
       runAfter:
         - kaniko-build
       params:
-        - name: ECR_HOST
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-        - name: ECR_IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
         - name: IMAGE_TAG
           value: "$(tasks.get-version.results.VERSION)"
         - name: CODEBASE_NAME
@@ -186,6 +192,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: wait-for
       taskRef:
@@ -206,6 +213,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: git-tag
       taskRef:
@@ -225,6 +233,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 

@@ -57,6 +57,8 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: commit-validate
       taskRef:
         kind: Task
@@ -68,6 +70,10 @@ spec:
           value: $(params.COMMIT_MESSAGE_PATTERN)
         - name: COMMIT_MESSAGE
           value: $(params.COMMIT_MESSAGE)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
 
     - name: helm-docs
       taskRef:
@@ -84,6 +90,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: helm-lint
       taskRef:
@@ -99,6 +106,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: build
       taskRef:
@@ -113,6 +121,7 @@ spec:
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
+            cd source
             make build
       workspaces:
         - name: source
@@ -131,6 +140,7 @@ spec:
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS
           value: |
+            cd source
             make test
       workspaces:
         - name: source
@@ -155,6 +165,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -178,6 +189,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -195,6 +207,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -205,6 +218,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerbuild-verify
       taskRef:
@@ -221,6 +235,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

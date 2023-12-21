@@ -57,6 +57,8 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
 {{ include "gerrit-common" . | nindent 4 }}
 
     - name: build
@@ -74,11 +76,11 @@ spec:
             npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
             npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
             npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm config set cache /workspace/source/cache
             npm ci
             npm run lint
             npm run test:coverage
             npm run build
-
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -102,6 +104,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 
@@ -125,6 +128,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:
@@ -142,6 +146,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -152,6 +157,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: dockerbuild-verify
       taskRef:
@@ -169,6 +175,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

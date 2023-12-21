@@ -65,6 +65,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -81,6 +83,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "sonar-cleanup" . | nindent 4 }}
 
@@ -90,15 +93,19 @@ spec:
         name: npm
       runAfter:
         - update-build-number
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
         - name: EXTRA_COMMANDS
           value: |
             upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
             npm set registry http://nexus:8081/repository/edp-npm-group/ --location project
             npm set //nexus:8081/repository/edp-npm-group/:email edp-ci@edp.local --location project
             npm set //nexus:8081/repository/edp-npm-group/:_auth $upBase64 --location project
+            npm config set cache /workspace/source/cache
             npm ci
             npm run build
             npm run test
@@ -120,6 +127,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: kaniko-build
       taskRef:
@@ -139,6 +147,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
     - name: ecr-to-docker
       taskRef:
@@ -147,10 +158,6 @@ spec:
       runAfter:
         - kaniko-build
       params:
-        - name: ECR_HOST
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)"
-        - name: ECR_IMAGE
-          value: "$(tasks.init-values.results.DOCKER_REGISTRY_HOST)/$(tasks.init-values.results.TENANT_NAME)/$(params.CODEBASE_NAME)"
         - name: IMAGE_TAG
           value: "$(tasks.get-version.results.VERSION)"
         - name: CODEBASE_NAME
@@ -168,6 +175,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: wait-for
       taskRef:
@@ -188,6 +196,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
     - name: git-tag
       taskRef:
@@ -207,6 +216,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
         - name: ssh-directory
           workspace: ssh-creds
 

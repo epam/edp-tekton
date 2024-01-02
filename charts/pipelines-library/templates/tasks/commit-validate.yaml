@@ -8,6 +8,8 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
+  description: |
+    This task validates a commit message.
   params:
     - name: COMMIT_MESSAGE
       description: "Commit message"
@@ -19,9 +21,6 @@ spec:
     - name: MAX_LINE_LENGTH
       description: "Maximum length of each line in the commit message."
       default: "80"
-  workspaces:
-    - description: A workspace that contains fetched git repo.
-      name: source
   steps:
     - image: $(params.BASE_IMAGE)
       name: commit-validate

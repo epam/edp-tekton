@@ -74,10 +74,6 @@ spec:
           value: $(params.git-source-revision)
         - name: BASE_IMAGE
           value: $(params.image)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
 
 {{- include "get-cache" $ | nindent 4 }}
 

@@ -57,10 +57,6 @@ spec:
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
 
 {{- include "opa-build-common" . | nindent 4 }}
 

@@ -66,9 +66,6 @@ spec:
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
 
 {{- include "get-cache" $ | nindent 4 }}
 

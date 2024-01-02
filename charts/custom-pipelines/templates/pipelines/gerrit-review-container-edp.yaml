@@ -53,9 +53,6 @@ spec:
           value: $(params.COMMIT_MESSAGE)
         - name: COMMIT_MESSAGE_PATTERN
           value: $(params.COMMIT_MESSAGE_PATTERN)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
 
     - name: dockerfile-lint
       taskRef:

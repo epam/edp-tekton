@@ -10,9 +10,6 @@
       value: $(params.COMMIT_MESSAGE_PATTERN)
     - name: COMMIT_MESSAGE
       value: $(params.COMMIT_MESSAGE)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
 
 - name: helm-docs
   taskRef:

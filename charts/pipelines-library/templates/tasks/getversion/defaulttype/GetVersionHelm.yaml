@@ -4,6 +4,7 @@ metadata:
   name: get-version-helm-default
 spec:
   description:
+    The task is used to get the version of the application from the helm chart.
   workspaces:
     - name: source
       description: The workspace consisting of csharp project.

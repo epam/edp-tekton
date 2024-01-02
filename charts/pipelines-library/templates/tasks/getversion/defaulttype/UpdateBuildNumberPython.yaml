@@ -6,7 +6,7 @@ spec:
   description:
   workspaces:
     - name: source
-      description: The workspace consisting of maven project.
+      description: The workspace consisting of python project.
   params:
     - name: VERSION
       type: string

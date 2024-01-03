@@ -17,6 +17,6 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: el-github-listener
+  name: el-edp
 status:
   readyReplicas: 1

@@ -29,12 +29,12 @@ global:
   gitProvider: gitlab
     """
 
-    el_Name = "el-gitlab-listener"
+    el_Name = "event-listener"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-gitlab-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert el_Name in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_github_el():
@@ -44,12 +44,12 @@ global:
   gitProvider: github
     """
 
-    el_Name = "el-github-listener"
+    el_Name = "event-listener"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-github-listener-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert el_Name in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_pruner_disabled():

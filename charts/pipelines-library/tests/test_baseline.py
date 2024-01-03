@@ -34,7 +34,7 @@ global:
 
     assert el_Name in r["ingress"]
     assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_github_el():
@@ -49,7 +49,7 @@ global:
 
     assert el_Name in r["ingress"]
     assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_pruner_disabled():

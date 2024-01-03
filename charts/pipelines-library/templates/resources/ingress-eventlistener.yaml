@@ -1,11 +1,10 @@
 {{- if ne .Values.global.gitProvider "gerrit" -}}
 {{ if eq .Values.global.platform "kubernetes" }}
 {{- if .Values.eventListener.ingress.enabled }}
-{{- $elName := printf "el-%s-listener" .Values.global.gitProvider -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $elName }}
+  name: event-listener
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   {{- with .Values.eventListener.ingress.annotations }}
@@ -24,14 +23,15 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    - host: {{ $elName }}-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    - host: el-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ $elName }}
+                # The service name will come from EventListener CR
+                name: edp
                 port:
                   number: 8080
 {{- end }}

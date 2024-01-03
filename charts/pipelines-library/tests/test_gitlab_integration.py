@@ -9,8 +9,8 @@ global:
 
     r = helm_template(config)
 
-    glb = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    glr = r["eventlistener"]["gitlab-listener"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
+    glb = r["eventlistener"]["edp"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
+    glr = r["eventlistener"]["edp"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
     gitserver = r["gitserver"]["gitlab"]["spec"]
     assert "secretString" == glb["secretKey"] == glr["secretKey"]
     assert "ci-gitlab" == glb["secretName"] == glr["secretName"]

@@ -151,10 +151,7 @@ spec:
 
         template_json = set_params_jira_issue_metadata(metadata_name, [commit_id], [ticket_number], codebase, json.dumps(payload, indent = 4))
 
-        print("[TEKTON] Writing JiraIssueMetadata template to cr.json file")
-        with open("cr.json", "w") as outfile:
-            outfile.write(template_json)
+        print("[TEKTON][DEBUG] Applying JiraIssueMetadata CR")
+        os.system(f"kubectl apply -f - << EOF\n{template_json}\nEOF")
 
-        print("[TEKTON][DEBUG] Trying to create JiraIssueMetadata CR")
-        os.system('kubectl apply -f cr.json')
         print("[TEKTON][DEBUG] JiraIssueMetadata CR has been created")

@@ -7,19 +7,17 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: bitnami/kubectl:1.25.4
-    - name: CODEBASE_TAG
-      description: "Codebases with a tag, separated by tabs. Example: foo=1.23 bar=master-1 baz=0.0.1-SNAPSHOT"
+      default: sergk/edp-argocd-cli:0.2.0-dev
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
       type: string
-      default: ""
     - name: CDPIPELINE_CR
       description: CDPipeline custom resource name
       type: string
-      default: ""
     - name: CDPIPELINE_STAGE
       description: Stage name in CD Pipeline
       type: string
-      default: ""
     - name: CBIS_CRD
       description: CodebaseImageStream custom resource definition.
       type: string
@@ -32,12 +30,13 @@ spec:
       description: CDPipeline custom resource definition.
       type: string
       default: "cdpipelines.v2.edp.epam.com"
+
   steps:
     - name: annotate
       image: $(params.BASE_IMAGE)
       env:
-        - name: CODEBASE_TAG
-          value: "$(params.CODEBASE_TAG)"
+        - name: APPLICATIONS_PAYLOAD
+          value: "$(params.APPLICATIONS_PAYLOAD)"
         - name: CDPIPELINE_CR
           value: "$(params.CDPIPELINE_CR)"
         - name: CDPIPELINE_STAGE
@@ -47,7 +46,7 @@ spec:
       script: |
         set -ex
         STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
-        for i in ${CODEBASE_TAG}; do
+        echo ${APPLICATIONS_PAYLOAD} | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read i; do
           kubectl annotate --overwrite "${STAGE_CRD}" "${STAGE_CR}" "app.edp.epam.com/${i}"
         done
     - name: promote-images

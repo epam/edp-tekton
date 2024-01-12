@@ -57,3 +57,15 @@ rules:
       - tekton.dev
     resources:
       - taskruns
+
+  # we need to manage Argo ApplicationSet (except create, delete)
+  - verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+    apiGroups:
+      - argoproj.io
+    resources:
+      - applicationsets

@@ -1,0 +1,65 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-applicationset-cli
+spec:
+  description: |
+    This task is used to deploy Codebases across specific Stage using ApplicationSet object.
+
+  params:
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+      type: string
+    - name: PIPELINE
+      type: string
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: STAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+
+  steps:
+    - name: wait-for-deploy
+      image: sergk/edp-argocd-cli:0.2.0-dev
+      env:
+        - name: ARGOCD_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: url
+        - name: ARGOCD_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: token
+      script: |
+        set -ex
+
+        export ARGOCD_OPTS="--core=false --grpc-web"
+
+        pipeline=$(params.PIPELINE)
+        stage=$(params.STAGE)
+        # quotes are important here
+        new_tags='$(params.APPLICATIONS_PAYLOAD)'
+
+        selector="app.edp.epam.com/stage=$(params.STAGE)"
+
+        patch=$(kubectl get applicationset $pipeline -o json | jq --argjson updates "$new_tags" --arg stage $stage '
+          .spec.generators[0].list.elements |= map(
+            if (.stage == $stage) and (.codebase | IN($updates | keys[])) then
+              .imageTag = $updates[.codebase]
+            else
+              .
+            end
+          )
+        ')
+
+        kubectl patch applicationset $pipeline --type=merge -p "$patch"
+
+        argocd app list -l $selector
+
+        argocd app sync -l $selector --prune --replace --timeout 300
+        # TODO: uncomment when argocd will merge fix https://github.com/argoproj/argo-cd/pull/16816
+        # argocd app wait -l $selector --health --sync

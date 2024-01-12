@@ -68,3 +68,17 @@ spec:
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"
+
+    - name: promote-images
+      taskRef:
+        kind: Task
+        name: promote-images
+      runAfter:
+        - post-deploy
+      params:
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+        - name: CDPIPELINE_STAGE
+          value: $(params.CDSTAGE)
+        - name: CDPIPELINE_CR
+          value: $(params.CDPIPELINE)

@@ -1,0 +1,70 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: cd-stage-deploy
+  labels:
+    app.edp.epam.com/pipeline: general-deployment
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  description: |
+    This Pipeline is used to deploy applications to the target Stage (Environment).
+  params:
+    - name: pipelineUrl
+      description: |
+        URL of the pipeline run in Tekton Dashboard.
+      type: string
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+      type: string
+      default: demo
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+      default: dev
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+      type: string
+      default: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+
+  tasks:
+    - name: pre-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      params:
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
+    - name: deploy-app
+      taskRef:
+        kind: Task
+        name: deploy-applicationset-cli
+      runAfter:
+        - pre-deploy
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+
+    - name: post-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      runAfter:
+        - deploy-app
+      params:
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"

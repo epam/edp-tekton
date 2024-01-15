@@ -26,24 +26,10 @@ spec:
       description: The directory containing build.gradle
       type: string
       default: "source"
-    - name: TASKS
-      description: 'The gradle tasks to run (default: build)'
-      type: array
-      default:
-        - build
     - name: ci-nexus
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
-    - name: ci-sonarqube
-      type: string
-      description: name of the secret for the Sonarqube integration
-      default: "ci-sonarqube"
-    - name: EXTRA_ARGS
-      description: Extra arguments to add to the gradle build
-      default: |
-        -Dorg.gradle.internal.publish.checksums.insecure=true \
-        publish
     - name: GRADLE_USER_CACHE
       description: Gradle user cache directory
       default: /workspace/source/cache

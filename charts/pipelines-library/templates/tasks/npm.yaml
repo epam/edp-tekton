@@ -29,10 +29,6 @@ spec:
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
-    - name: ci-sonarqube
-      type: string
-      description: name of the secret for the Sonarqube integration
-      default: "ci-sonarqube"
     - name: NEXUS_REPOSITORY_URL
       default: ""
       description: Nexus repository URL. e.g. 'nexus:8081/repository/edp-npm-group'

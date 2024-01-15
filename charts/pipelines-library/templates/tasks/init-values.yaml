@@ -17,8 +17,6 @@ spec:
       type: string
       default: bitnami/kubectl:1.25.2
   results:
-    - name: DOCKER_REGISTRY_HOST
-      description: "docker host url"
     - name: TENANT_NAME
       description: "edp name"
     - name: NORMALIZED_BRANCH

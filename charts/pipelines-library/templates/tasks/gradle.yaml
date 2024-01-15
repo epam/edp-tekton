@@ -26,11 +26,6 @@ spec:
       description: The directory containing build.gradle
       type: string
       default: "."
-    - name: TASKS
-      description: 'The gradle tasks to run (default: build)'
-      type: array
-      default:
-        - build
     - name: ci-nexus
       type: string
       description: name of the secret for the Nexus integration

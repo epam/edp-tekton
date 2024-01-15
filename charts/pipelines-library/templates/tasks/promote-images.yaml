@@ -7,7 +7,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: sergk/edp-argocd-cli:0.2.0-dev
+      default: epamedp/tekton-cd-pipeline:0.1.1
     - name: APPLICATIONS_PAYLOAD
       description: |
         Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'

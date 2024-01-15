@@ -22,7 +22,7 @@ spec:
 
   steps:
     - name: wait-for-deploy
-      image: sergk/edp-argocd-cli:0.2.0-dev
+      image: epamedp/tekton-cd-pipeline:0.1.1
       env:
         - name: ARGOCD_SERVER
           valueFrom:

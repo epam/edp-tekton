@@ -102,7 +102,7 @@ spec:
         echo "---------------------------"
         cat $(workspaces.source.path)/sonar-project.properties
 
-    - image: sonarsource/sonar-scanner-cli:4.7
+    - image: sonarsource/sonar-scanner-cli:5.0.1
       name: sonar-scanner
       workingDir: $(workspaces.source.path)
       env:

@@ -56,6 +56,8 @@ spec:
       runAfter:
         - init-values
       params:
+        - name: chart-dir
+          value: $(params.CHART_DIR)
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
       workspaces:

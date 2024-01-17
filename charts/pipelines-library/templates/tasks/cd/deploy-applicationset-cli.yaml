@@ -24,7 +24,7 @@ spec:
     - name: wait-for-deploy
       image: epamedp/tekton-cd-pipeline:0.1.1
       env:
-        - name: ARGOCD_SERVER
+        - name: ARGOCD_URL
           valueFrom:
             secretKeyRef:
               name: ci-argocd
@@ -38,6 +38,8 @@ spec:
         set -ex
 
         export ARGOCD_OPTS="--core=false --grpc-web"
+        # the address of the Argo CD server without https:// prefix
+        export ARGOCD_SERVER=${ARGOCD_URL#*//}
 
         pipeline=$(params.PIPELINE)
         stage=$(params.STAGE)

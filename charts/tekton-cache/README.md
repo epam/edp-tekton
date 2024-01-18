@@ -25,8 +25,8 @@ A Helm chart for EDP Tekton Cache
 | cacheSize | string | `"5Gi"` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"ghcr.io/chmouel/go-simple-uploader"` |  |
-| image.tag | string | `"master"` |  |
+| image.repository | string | `"epamedp/tekton-cache"` |  |
+| image.tag | string | `"0.1.2"` |  |
 | imagePullSecrets | list | `[]` |  |
 | initContainers.repository | string | `"busybox"` |  |
 | initContainers.tag | string | `"1.36.1"` |  |

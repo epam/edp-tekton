@@ -56,18 +56,12 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-helm-default
+        name: get-version-default
       runAfter:
         - init-values
       params:
-        - name: chart-dir
-          value: $(params.CHART_DIR)
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
 
 {{- include "helm-library-build-common" . | nindent 4 }}
 

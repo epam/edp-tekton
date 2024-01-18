@@ -18,6 +18,7 @@
     kind: Task
     name: kaniko
   runAfter:
+    - sonar
     - get-version
     - build
   params:

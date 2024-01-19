@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="v0.10.1"></a>
-## v0.10.1 - 2023-12-18
+<a name="v0.10.2"></a>
+## v0.10.2 - 2024-01-19
 ### Features
 
 - Ensure commit-validate checks the lenght of the commit msg ([#87](https://github.com/epam/edp-tekton/issues/87))
@@ -34,6 +34,8 @@
 
 ### Bug Fixes
 
+- Add extraline in private ssh key ([#100](https://github.com/epam/edp-tekton/issues/100))
+- Add extraline in private ssh key ([#100](https://github.com/epam/edp-tekton/issues/100))
 - Align cache endpoint with service name ([#89](https://github.com/epam/edp-tekton/issues/89))
 - Update images for autotest sonar scan ([#74](https://github.com/epam/edp-tekton/issues/74))
 - Update images for autotest sonar scan ([#74](https://github.com/epam/edp-tekton/issues/74))
@@ -174,4 +176,4 @@
 - Bump tekton version ([#59](https://github.com/epam/edp-tekton/issues/59))
 
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.10.2...HEAD

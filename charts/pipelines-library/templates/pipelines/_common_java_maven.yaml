@@ -12,10 +12,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - compile
   workspaces:
     - name: source
@@ -33,10 +29,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - org.jacoco:jacoco-maven-plugin:prepare-agent
         - '-Dmaven.test.failure.ignore=true'
         - verify
@@ -57,10 +49,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
         - '-Dsonar.qualitygate.wait=true'
@@ -82,10 +70,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - clean
         - package
         - '-DskipTests=true'
@@ -105,10 +89,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - deploy
         - '-DskipTests=true'
   workspaces:
@@ -129,10 +109,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - compile
   workspaces:
     - name: source
@@ -150,10 +126,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - org.jacoco:jacoco-maven-plugin:prepare-agent
         - '-Dmaven.test.failure.ignore=true'
         - verify
@@ -219,10 +191,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - '-Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
         - '-Dsonar.qualitygate.wait=true'
@@ -245,10 +213,6 @@
     - name: GOALS
       value:
         - -B
-        - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-        - '-Dartifactory.releasePath=edp-maven-releases'
-        - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-        - '-Dartifactory.groupPath=edp-maven-group'
         - clean
         - package
         - '-DskipTests=true'

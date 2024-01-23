@@ -34,6 +34,11 @@ spec:
       volumeMounts:
         - name: settings-maven
           mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+      - secretRef:
+          name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
       workingDir: $(workspaces.source.path)
       env:
         - name: IS_RELEASE_BRANCH

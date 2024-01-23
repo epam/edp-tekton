@@ -53,7 +53,31 @@ gitlab:
     # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
     existingSecret: ci-gitlab
 
+# Tekton configuration section
 tekton:
+  # Settings for the 'package-registries-auth-secret' secret that contains package registries authentication information.
+  #
+  # This secret is used for authenticating to package registries when pulling or pushing artifacts in Tekton Pipelines.
+  #
+  # By default, the Maven settings.xml file supports the following environment variables:
+  # environment variables    | description
+  # ==============================================================================
+  # CI_GITLAB_TOKEN_TYPE     | The type of the token used for GitLab authentication, usually "Private-Token"
+  # CI_GITLAB_TOKEN          | GitLab token used for authentication to push to the GitLab registry
+  # CI_GITHUB_USERNAME       | GitHub username used for authentication to push to the GitHub registry
+  # CI_GITHUB_PASSWORD       | GitHub password or personal access token used for authentication
+  # CI_AZURE_DEVOPS_USERNAME | Azure DevOps username used for authentication to push to the Azure DevOps registry
+  # CI_AZURE_DEVOPS_PASSWORD | Azure DevOps password or personal access token used for authentication
+  #
+  # To use additional environment variables in files such as Maven settings.xml,
+  # include them in this secret. They will be accessible in the configuration files.
+  #
+  packageRegistriesSecret:
+    # -- Set this as `true` if the secret should be available in Pipelines
+    enabled: false
+    # -- Secret name that will be used in Pipelines. Default: package-registries-auth-secret
+    name: "package-registries-auth-secret"
+
   # Pruner provides auto clean up feature for the Tekton resources
   pruner:
     # -- Specifies whether a cronjob should be created

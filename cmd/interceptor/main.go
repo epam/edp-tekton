@@ -129,7 +129,7 @@ func main() {
 	}
 
 	go func() {
-		if err := srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatalf("Server failed: %v", err)
 		}
 	}()

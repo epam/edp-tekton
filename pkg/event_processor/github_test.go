@@ -65,7 +65,8 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				apiHandler := http.NewServeMux()
 				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
 					resp, err := json.Marshal(map[string]interface{}{
-						"title": "feature 1",
+						"title":  "feature 1",
+						"number": 1,
 						"base": map[string]interface{}{
 							"ref": "master",
 						},
@@ -133,9 +134,10 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadRef: "feature",
-					HeadSha: "6dcb09b5b57875f334f61aebed695e2e4193db5e",
-					Title:   "feature 1",
+					HeadRef:      "feature",
+					HeadSha:      "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+					Title:        "feature 1",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -163,7 +165,8 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				apiHandler := http.NewServeMux()
 				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
 					resp, err := json.Marshal(map[string]interface{}{
-						"title": "feature 1",
+						"title":  "feature 1",
+						"number": 1,
 						"base": map[string]interface{}{
 							"ref": "master",
 						},
@@ -231,9 +234,10 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadRef: "feature",
-					HeadSha: "6dcb09b5b57875f334f61aebed695e2e4193db5e",
-					Title:   "feature 1",
+					HeadRef:      "feature",
+					HeadSha:      "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+					Title:        "feature 1",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -656,6 +660,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			name: "merge event - success",
 			args: args{
 				body: github.PullRequestEvent{
+					Number: pointer.Int(1),
 					Repo: &github.Repository{
 						FullName: pointer.String("o/r"),
 					},
@@ -699,9 +704,10 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadRef: "branch",
-					HeadSha: "sha",
-					Title:   "title",
+					HeadRef:      "branch",
+					HeadSha:      "sha",
+					Title:        "title",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -840,6 +846,7 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 			name: "merge event",
 			args: args{
 				body: github.PullRequestEvent{
+					Number: pointer.Int(1),
 					Repo: &github.Repository{
 						FullName: pointer.String("o/r"),
 					},
@@ -883,9 +890,10 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadRef: "branch",
-					HeadSha: "sha",
-					Title:   "title",
+					HeadRef:      "branch",
+					HeadSha:      "sha",
+					Title:        "title",
+					ChangeNumber: 1,
 				},
 			},
 		},

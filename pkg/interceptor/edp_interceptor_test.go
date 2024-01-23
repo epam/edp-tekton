@@ -180,9 +180,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 							},
 						},
 						PullRequest: &event_processor.PullRequest{
-							HeadRef: "feature",
-							HeadSha: "sha",
-							Title:   "fix",
+							HeadRef:      "feature",
+							HeadSha:      "sha",
+							Title:        "fix",
+							ChangeNumber: 1,
 						},
 					}, nil)
 
@@ -236,9 +237,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest": &event_processor.PullRequest{
-						HeadRef: "feature",
-						HeadSha: "sha",
-						Title:   "fix",
+						HeadRef:      "feature",
+						HeadSha:      "sha",
+						Title:        "fix",
+						ChangeNumber: 1,
 					},
 				},
 				Continue: true,
@@ -272,9 +274,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 							},
 						},
 						PullRequest: &event_processor.PullRequest{
-							HeadRef: "feature",
-							HeadSha: "sha",
-							Title:   "fix",
+							HeadRef:      "feature",
+							HeadSha:      "sha",
+							Title:        "fix",
+							ChangeNumber: 1,
 						},
 					}, nil)
 
@@ -327,9 +330,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest": &event_processor.PullRequest{
-						HeadRef: "feature",
-						HeadSha: "sha",
-						Title:   "fix",
+						HeadRef:      "feature",
+						HeadSha:      "sha",
+						Title:        "fix",
+						ChangeNumber: 1,
 					},
 				},
 				Continue: true,

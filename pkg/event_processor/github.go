@@ -108,9 +108,10 @@ func (p *GitHubEventProcessor) processMergeEvent(ctx context.Context, body []byt
 		Codebase:     codebase,
 		Type:         EventTypeMerge,
 		PullRequest: &PullRequest{
-			HeadRef: gitHubEvent.GetPullRequest().GetHead().GetRef(),
-			HeadSha: gitHubEvent.GetPullRequest().GetHead().GetSHA(),
-			Title:   gitHubEvent.GetPullRequest().GetTitle(),
+			HeadRef:      gitHubEvent.GetPullRequest().GetHead().GetRef(),
+			HeadSha:      gitHubEvent.GetPullRequest().GetHead().GetSHA(),
+			Title:        gitHubEvent.GetPullRequest().GetTitle(),
+			ChangeNumber: gitHubEvent.GetNumber(),
 		},
 	}, nil
 }
@@ -184,9 +185,10 @@ func (p *GitHubEventProcessor) processCommentEvent(ctx context.Context, body []b
 		HasPipelineRecheck: containsPipelineRecheck(event.GetComment().GetBody()),
 		Codebase:           codebase,
 		PullRequest: &PullRequest{
-			HeadRef: pullReq.GetHead().GetRef(),
-			HeadSha: pullReq.GetHead().GetSHA(),
-			Title:   pullReq.GetTitle(),
+			HeadRef:      pullReq.GetHead().GetRef(),
+			HeadSha:      pullReq.GetHead().GetSHA(),
+			Title:        pullReq.GetTitle(),
+			ChangeNumber: pullReq.GetNumber(),
 		},
 	}, nil
 }

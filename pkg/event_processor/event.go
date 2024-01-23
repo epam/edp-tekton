@@ -32,6 +32,8 @@ type GitLabMergeRequest struct {
 	TargetBranch string       `json:"target_branch"`
 	Title        string       `json:"title"`
 	LastCommit   GitLabCommit `json:"last_commit"`
+	SourceBranch string       `json:"source_branch"`
+	ChangeNumber int          `json:"iid"`
 }
 
 type GitLabCommit struct {
@@ -76,9 +78,10 @@ type EventInfo struct {
 }
 
 type PullRequest struct {
-	HeadRef string `json:"headRef"`
-	HeadSha string `json:"headSha"`
-	Title   string `json:"title"`
+	HeadRef      string `json:"headRef"`
+	HeadSha      string `json:"headSha"`
+	Title        string `json:"title"`
+	ChangeNumber int    `json:"changeNumber"`
 }
 
 // IsReviewCommentEvent returns true if the event is a review comment event.

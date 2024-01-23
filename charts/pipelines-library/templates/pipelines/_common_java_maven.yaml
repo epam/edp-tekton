@@ -93,25 +93,12 @@
     - name: source
       workspace: shared-workspace
 
-- name: get-nexus-repository-url
-  taskRef:
-    kind: Task
-    name: get-nexus-repository-url
-  runAfter:
-    - get-version
-  params:
-    - name: VERSION
-      value: $(tasks.get-version.results.VERSION)
-    - name: TOOL
-      value: "maven"
-
 - name: push
   taskRef:
     kind: Task
     name: maven
   runAfter:
     - build
-    - get-nexus-repository-url
   params:
     - name: MAVEN_IMAGE
       value: $(params.image)
@@ -124,7 +111,6 @@
         - '-Dartifactory.groupPath=edp-maven-group'
         - deploy
         - '-DskipTests=true'
-        - '-DaltDeploymentRepository=nexus::default::$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)'
   workspaces:
     - name: source
       workspace: shared-workspace

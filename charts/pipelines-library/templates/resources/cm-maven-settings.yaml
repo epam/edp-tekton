@@ -7,7 +7,7 @@ metadata:
 data:
   settings.xml: |
     <?xml version="1.0" encoding="UTF-8"?>
-    <!--Copyright 2018 EPAM Systems.
+    <!--Copyright 2024 EPAM Systems.
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -24,10 +24,41 @@ data:
             <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
         </pluginGroups>
         <servers>
+            <!-- The "nexus" server is defined to provide credentials required by the mirror. -->
             <server>
                 <id>nexus</id>
                 <username>${env.CI_USERNAME}</username>
                 <password>${env.CI_PASSWORD}</password>
+            </server>
+            <!-- The "gitlab-registry" server is defined to provide credentials required by the GitLab registry.
+            A token is used for authentication which is passed in HTTP headers.
+            More documentation: https://docs.gitlab.com/ee/user/packages/maven_repository/ -->
+            <server>
+                <id>gitlab-registry</id>
+                <configuration>
+                    <httpHeaders>
+                        <property>
+                            <name>${env.CI_GITLAB_TOKEN_TYPE}</name>
+                            <value>${env.CI_GITLAB_TOKEN}</value>
+                        </property>
+                    </httpHeaders>
+                </configuration>
+            </server>
+            <!-- The "github-registry" server is defined to provide credentials required by the GitHub registry.
+            Username and password are used for authentication.
+            More documentation: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry -->
+            <server>
+                <id>github-registry</id>
+                <username>${env.CI_GITHUB_USERNAME}</username>
+                <password>${env.CI_GITHUB_PASSWORD}</password>
+            </server>
+            <!-- The "azure-devops-registry" server is defined to provide credentials required by the Azure DevOps registry.
+            Username and password are used for authentication.
+            More documentation: https://learn.microsoft.com/en-us/azure/devops/artifacts/get-started-maven?view=azure-devops -->
+            <server>
+                <id>azure-devops-registry</id>
+                <username>${env.CI_AZURE_DEVOPS_USERNAME}</username>
+                <password>${env.CI_AZURE_DEVOPS_PASSWORD}</password>
             </server>
         </servers>
 
@@ -36,7 +67,7 @@ data:
                 <!--This sends everything else to /public -->
                 <id>nexus</id>
                 <mirrorOf>*</mirrorOf>
-                <url>${artifactory.baseUrl}/repository/${artifactory.groupPath}</url>
+                <url>http://nexus.nexus:8081/repository/edp-maven-group</url>
             </mirror>
         </mirrors>
 
@@ -55,53 +86,41 @@ data:
                     </sonar.host.url>
                 </properties>
             </profile>
+            <!-- Nexus profile for managing artifacts within Nexus repository. -->
             <profile>
                 <id>nexus</id>
-                <activation>
-                    <activeByDefault>true</activeByDefault>
-                </activation>
-                <repositories>
-                    <repository>
-                        <id>maven-releases</id>
-                        <url>${artifactory.baseUrl}/repository/${artifactory.releasesPath}</url>
-                        <name>Maven repository for release artefacts</name>
-                        <releases>
-                            <enabled>true</enabled>
-                            <updatePolicy>always</updatePolicy>
-                        </releases>
-                        <snapshots>
-                            <enabled>true</enabled>
-                            <updatePolicy>always</updatePolicy>
-                        </snapshots>
-                    </repository>
-                    <!-- -->
-                    <repository>
-                        <id>maven-snapshots</id>
-                        <url>${artifactory.baseUrl}/repository/${artifactory.snapshotsPath}</url>
-                        <name>Maven repository for snapshot artefacts</name>
-                        <snapshots>
-                            <enabled>true</enabled>
-                            <updatePolicy>always</updatePolicy>
-                        </snapshots>
-                    </repository>
-                    <!-- -->
-                </repositories>
-                <pluginRepositories>
-                    <pluginRepository>
-                        <id>microservices</id>
-                        <url>${artifactory.baseUrl}/repository/${artifactory.groupPath}</url>
-                        <releases>
-                            <enabled>true</enabled>
-                            <updatePolicy>always</updatePolicy>
-                        </releases>
-                        <snapshots>
-                            <enabled>true</enabled>
-                            <updatePolicy>always</updatePolicy>
-                        </snapshots>
-                    </pluginRepository>
-                </pluginRepositories>
+                <properties>
+                    <altSnapshotDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-snapshots</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-releases</altReleaseDeploymentRepository>
+                </properties>
+            </profile>
+            <!-- GitLab registry profile for managing artifacts within GitLab. -->
+            <profile>
+                <id>gitlab-registry</id>
+                <properties>
+                    <altSnapshotDeploymentRepository>gitlab-registry::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>gitlab-registry::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altReleaseDeploymentRepository>
+                </properties>
+            </profile>
+            <!-- GitHub registry profile for managing artifacts within GitHub. -->
+            <profile>
+                <id>github-registry</id>
+                <properties>
+                    <altSnapshotDeploymentRepository>github-registry::https://maven.pkg.github.com/OWNER/REPOSITORY</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>github-registry::https://maven.pkg.github.com/OWNER/REPOSITORY</altReleaseDeploymentRepository>
+                </properties>
+            </profile>
+            <!-- Azure DevOps registry profile for managing artifacts within Azure DevOps. -->
+            <profile>
+                <id>azure-devops-registry</id>
+                <properties>
+                    <altSnapshotDeploymentRepository>azure-devops-registry::https://pkgs.dev.azure.com</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>azure-devops-registry::https://pkgs.dev.azure.com</altReleaseDeploymentRepository>
+                </properties>
             </profile>
         </profiles>
+        <!-- Specify the active profile here. If you want to push packages to nexus (default), gitlab registry, github registry,
+        or Azure DevOps registry, change the activeProfile id to the required profile id. -->
         <activeProfiles>
             <activeProfile>nexus</activeProfile>
         </activeProfiles>

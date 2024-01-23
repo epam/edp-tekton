@@ -128,6 +128,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | nameOverride | string | `""` |  |
 | tekton-cache.enabled | bool | `true` |  |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` |  |
+| tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
+| tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
 | tekton.pruner.image | string | `"bitnami/kubectl:1.25"` | Docker image to run the pruner, expected to have kubectl and jq |
 | tekton.pruner.recentMinutes | string | `"30"` | Resources of PipelineRuns that finished in the last N minutes are not pruned |

@@ -80,9 +80,4 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: password
-        - name: NEXUS_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-nexus)
-              key: url
 {{- include "resources" . | nindent 6 }}

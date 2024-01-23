@@ -59,8 +59,10 @@ func (p *GitLabEventProcessor) processMergeEvent(ctx context.Context, body []byt
 		Type:         EventTypeMerge,
 		Codebase:     codebase,
 		PullRequest: &PullRequest{
-			HeadSha: gitLabEvent.ObjectAttributes.LastCommit.ID,
-			Title:   gitLabEvent.ObjectAttributes.Title,
+			HeadSha:      gitLabEvent.ObjectAttributes.LastCommit.ID,
+			Title:        gitLabEvent.ObjectAttributes.Title,
+			HeadRef:      gitLabEvent.ObjectAttributes.SourceBranch,
+			ChangeNumber: gitLabEvent.ObjectAttributes.ChangeNumber,
 		},
 	}, nil
 }
@@ -82,7 +84,8 @@ func (p *GitLabEventProcessor) processCommentEvent(ctx context.Context, body []b
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}
 
-	// The comment was not added to the merge request if the target branch was empty.
+	// The comment was added not to the merge request if TargetBranch is empty.
+	// Skip processing such events.
 	if gitLabEvent.MergeRequest.TargetBranch == "" {
 		return &EventInfo{
 			GitProvider:        GitProviderGitLab,
@@ -100,8 +103,10 @@ func (p *GitLabEventProcessor) processCommentEvent(ctx context.Context, body []b
 		Codebase:           codebase,
 		HasPipelineRecheck: containsPipelineRecheck(gitLabEvent.ObjectAttributes.Note),
 		PullRequest: &PullRequest{
-			HeadSha: gitLabEvent.MergeRequest.LastCommit.ID,
-			Title:   gitLabEvent.MergeRequest.Title,
+			HeadSha:      gitLabEvent.MergeRequest.LastCommit.ID,
+			Title:        gitLabEvent.MergeRequest.Title,
+			HeadRef:      gitLabEvent.MergeRequest.SourceBranch,
+			ChangeNumber: gitLabEvent.MergeRequest.ChangeNumber,
 		},
 	}, nil
 }

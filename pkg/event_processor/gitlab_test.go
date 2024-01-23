@@ -47,6 +47,8 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						LastCommit: GitLabCommit{
 							ID: "123",
 						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
 					},
 				},
 			},
@@ -78,8 +80,10 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadSha: "123",
-					Title:   "fix",
+					HeadSha:      "123",
+					Title:        "fix",
+					HeadRef:      "feature1",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -177,6 +181,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						LastCommit: GitLabCommit{
 							ID: "123",
 						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
 					},
 					ObjectAttributes: GitLabComment{
 						Note: "/recheck",
@@ -212,8 +218,10 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadSha: "123",
-					Title:   "fix",
+					HeadRef:      "feature1",
+					HeadSha:      "123",
+					Title:        "fix",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -230,6 +238,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						LastCommit: GitLabCommit{
 							ID: "123",
 						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
 					},
 					ObjectAttributes: GitLabComment{
 						Note: "no recheck",
@@ -264,8 +274,10 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadSha: "123",
-					Title:   "fix",
+					HeadRef:      "feature1",
+					HeadSha:      "123",
+					Title:        "fix",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -383,6 +395,8 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						LastCommit: GitLabCommit{
 							ID: "123",
 						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
 					},
 				},
 			},
@@ -414,8 +428,10 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadSha: "123",
-					Title:   "fix",
+					HeadRef:      "feature1",
+					HeadSha:      "123",
+					Title:        "fix",
+					ChangeNumber: 1,
 				},
 			},
 		},
@@ -433,6 +449,8 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						LastCommit: GitLabCommit{
 							ID: "123",
 						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
 					},
 					ObjectAttributes: GitLabComment{
 						Note: "/recheck",
@@ -468,8 +486,10 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 					},
 				},
 				PullRequest: &PullRequest{
-					HeadSha: "123",
-					Title:   "fix",
+					HeadRef:      "feature1",
+					HeadSha:      "123",
+					Title:        "fix",
+					ChangeNumber: 1,
 				},
 			},
 		},

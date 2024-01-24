@@ -79,8 +79,6 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-{{ include "sonar-cleanup"  $ | nindent 4 }}
-
 {{ include "security"  $ | nindent 4 }}
 
     - name: build
@@ -112,15 +110,16 @@ spec:
     - name: sonar
       taskRef:
         kind: Task
-        name: sonarqube-scanner
+        name: sonarqube-general
       runAfter:
-        - sonar-cleanup
         - build
       params:
         - name: SONAR_PROJECT_KEY
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASE_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASE_NAME)
+        - name: branch
+          value: $(params.git-source-revision)
       workspaces:
         - name: source
           workspace: shared-workspace

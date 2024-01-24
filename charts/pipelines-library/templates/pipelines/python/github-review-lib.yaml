@@ -25,6 +25,14 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+      default: ""
+      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
@@ -48,44 +56,7 @@ spec:
 
 {{- include "get-cache" $ | nindent 4 }}
 
-    - name: build
-      taskRef:
-        kind: Task
-        name: python
-      runAfter:
-        - get-cache
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_COMMANDS
-          value: |
-            # we checkout the source code in the /source directory
-            # and hold cache in the /cache directory
-            cd source
-
-            python setup.py clean build install --user
-            pip3 install .
-            [ -f run_service.py ] && python run_service.py &
-            python setup.py pytest
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: sonar
-      taskRef:
-        kind: Task
-        name: sonarqube-scanner
-      runAfter:
-        - build
-      params:
-        - name: SONAR_PROJECT_KEY
-          value: $(params.CODEBASEBRANCH_NAME)
-        - name: SONAR_PROJECT_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
+{{ include "python-review-common" . | nindent 4 }}
 
 {{- include "save-cache" $ | nindent 4 }}
 

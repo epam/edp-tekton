@@ -27,7 +27,14 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+      default: ""
+      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
@@ -81,14 +88,20 @@ spec:
     - name: sonar
       taskRef:
         kind: Task
-        name: sonarqube-scanner
+        name: sonarqube-general
       runAfter:
         - build
       params:
         - name: SONAR_PROJECT_KEY
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASE_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
       workspaces:
         - name: source
           workspace: shared-workspace

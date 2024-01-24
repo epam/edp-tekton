@@ -1,0 +1,176 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: sonarqube-general
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Security
+    tekton.dev/tags: security
+    tekton.dev/displayName: "sonarqube scanner"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The sonarqube-scanner Task will update parameters in the
+    sonar-project.properties file or create a new sonar-project.properties
+    file and put parameters of a sonar project into it.
+
+    Task will run sonar-scanner for scanning after preparing the sonar-project.properties file.
+
+  workspaces:
+    - name: source
+  params:
+    - name: SONAR_PROJECT_KEY
+      description: Project's unique key
+      default: ""
+    - name: SONAR_PROJECT_NAME
+      description: Project's unique name
+      default: ""
+    - name: SONAR_QUALITYGATE_WAIT
+      description: Forces the analysis step to poll the SonarQube instance and wait for the Quality Gate status.
+      default: "true"
+    - name: ci-sonarqube
+      type: string
+      description: name of the secret holding the Sonarqube CI integration data
+      default: "ci-sonarqube"
+    - name: branch
+      type: string
+      description: Branch of scanning (for build pipeline)
+      default: ""
+    - name: target-branch
+      type: string
+      description: Target branch of Merge Request
+      default: ""
+    - name: source-branch
+      type: string
+      description: Source branch of Merge Request
+      default: ""
+    - name: key-id
+      type: string
+      description: Change number from Merge Request
+      default: ""
+  steps:
+    - image: epamedp/tekton-autotest:0.1.3
+      name: prepare-project
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
+        - name: SONAR_PROJECT_NAME
+          value: "$(params.SONAR_PROJECT_NAME)"
+      script: |
+        set -e
+
+        PROJECT_EXISTS=$(curl -s -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}" | jq -r ".component.key")
+
+        if [ "$PROJECT_EXISTS" == "null" ]; then
+          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
+        else
+          echo "Project ${SONAR_PROJECT_KEY} already exists"
+        fi
+    - image: registry.access.redhat.com/ubi8/ubi-minimal:8.8
+      name: prepare-sonar-project-properties
+      computeResources: {}
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
+        - name: SONAR_PROJECT_NAME
+          value: "$(params.SONAR_PROJECT_NAME)"
+        - name: SONAR_QUALITYGATE_WAIT
+          value: "$(params.SONAR_QUALITYGATE_WAIT)"
+        - name: TARGET_BRANCH
+          value: "$(params.target-branch)"
+        - name: SOURCE_BRANCH
+          value: "$(params.source-branch)"
+        - name: KEY_ID
+          value: "$(params.key-id)"
+        - name: BRANCH
+          value: "$(params.branch)"
+      script: |
+        #!/usr/bin/env bash
+
+        replaceValues() {
+          filename=$1
+          thekey=$2
+          newvalue=$3
+
+          if ! grep -R "^[#]*\s*${thekey}=.*" $filename >/dev/null; then
+            echo "APPENDING because '${thekey}' not found"
+            echo "" >>$filename
+            echo "$thekey=$newvalue" >>$filename
+          else
+            echo "SETTING because '${thekey}' found already"
+            sed -ir "s|^[#]*\s*${thekey}=.*|$thekey=$newvalue|" $filename
+          fi
+        }
+
+        if [[ -f $(workspaces.source.path)/sonar-project.properties ]]; then
+          if [[ -n "${SONAR_HOST_URL}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.host.url ${SONAR_HOST_URL}
+          fi
+          if [[ -n "${SONAR_PROJECT_KEY}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectKey ${SONAR_PROJECT_KEY}
+          fi
+          if [[ -n "${SONAR_PROJECT_NAME}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectName ${SONAR_PROJECT_NAME}
+          fi
+          if [[ -n "${SONAR_QUALITYGATE_WAIT}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.qualitygate.wait ${SONAR_QUALITYGATE_WAIT}
+          fi
+          if [[ -n "${BRANCH}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.branch.name ${BRANCH}
+          fi
+          if [[ -n "${KEY_ID}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.pullrequest.key ${KEY_ID}
+          fi
+          if [[ -n "${SOURCE_BRANCH}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.pullrequest.branch ${SOURCE_BRANCH}
+          fi
+          if [[ -n "${TARGET_BRANCH}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.pullrequest.base ${TARGET_BRANCH}
+          fi
+
+        else
+          touch sonar-project.properties
+          test -z "${SONAR_HOST_URL}" || echo "sonar.host.url=${SONAR_HOST_URL}" >> sonar-project.properties
+          test -z "${SONAR_PROJECT_KEY}" || echo "sonar.projectKey=${SONAR_PROJECT_KEY}" >> sonar-project.properties
+          test -z "${SONAR_PROJECT_NAME}" || echo "sonar.projectName=${SONAR_PROJECT_NAME}" >> sonar-project.properties
+          test -z "${SONAR_QUALITYGATE_WAIT}" || echo "sonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT}" >> sonar-project.properties
+          test -z "${BRANCH}" || echo "sonar.branch.name=${BRANCH}" >> sonar-project.properties
+          test -z "${KEY_ID}" || echo "sonar.pullrequest.key=${KEY_ID}" >> sonar-project.properties
+          test -z "${SOURCE_BRANCH}" || echo "sonar.pullrequest.branch=${SOURCE_BRANCH}" >> sonar-project.properties
+          test -z "${TARGET_BRANCH}" || echo "sonar.pullrequest.base=${TARGET_BRANCH}" >> sonar-project.properties
+        fi
+
+        echo "---------------------------"
+        cat $(workspaces.source.path)/sonar-project.properties
+
+    - image: sonarsource/sonar-scanner-cli:5.0.1
+      name: sonar-scanner
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+      command:
+        - sonar-scanner
+{{- include "resources" . | nindent 6 }}

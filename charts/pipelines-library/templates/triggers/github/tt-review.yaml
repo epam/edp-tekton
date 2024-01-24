@@ -20,6 +20,8 @@ spec:
       description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: targetBranch
       description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
@@ -54,6 +56,8 @@ spec:
             value: $(tt.params.codebasebranch)
           - name: targetBranch
             value: $(tt.params.targetBranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: gitsha

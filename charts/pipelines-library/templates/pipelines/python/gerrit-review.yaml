@@ -53,7 +53,7 @@ spec:
 
 {{- include "get-cache" $ | nindent 4 }}
 
-{{ include "python-review-common" . | nindent 4 }}
+{{ include "python-review-gerrit-common" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

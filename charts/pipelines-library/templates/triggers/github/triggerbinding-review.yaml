@@ -19,6 +19,8 @@ spec:
       value: $(extensions.pullRequest.headSha)
     - name: targetBranch
       value: "$(extensions.targetBranch)"
+    - name: changeNumber
+      value: "$(extensions.pullRequest.changeNumber)"
     - name: buildtool
       value: "$(extensions.spec.buildTool)"
     - name: framework

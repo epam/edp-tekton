@@ -17,6 +17,8 @@ spec:
       value: $(body.project.path_with_namespace)
     - name: targetBranch
       value: "$(extensions.targetBranch)"
+    - name: changeNumber
+      value: "$(extensions.pullRequest.changeNumber)"
     - name: buildtool
       value: "$(extensions.spec.buildTool)"
     - name: framework

@@ -4,10 +4,10 @@ metadata:
   name: cd-stage-deploy
 spec:
   params:
-    - name: CDPIPELINE
+    - name: CDPIPELINE_CR
       description: |
         EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
-    - name: CDSTAGE
+    - name: CDPIPELINE_STAGE
       description: |
         EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
     - name: APPLICATIONS_PAYLOAD
@@ -17,10 +17,10 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: deploy-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-
+        generateName: deploy-$(tt.params.CDPIPELINE_CR)-$(tt.params.CDPIPELINE_STAGE)-
         labels:
-          app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE)
-          app.edp.epam.com/cdstage: $(tt.params.CDSTAGE)
+          app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE_CR)
+          app.edp.epam.com/cdstage: $(tt.params.CDPIPELINE_STAGE)
           app.edp.epam.com/pipelinetype: deploy
       spec:
         taskRunTemplate:
@@ -31,8 +31,8 @@ spec:
           - name: APPLICATIONS_PAYLOAD
             value: $(tt.params.APPLICATIONS_PAYLOAD)
           - name: CDPIPELINE_STAGE
-            value: $(tt.params.CDSTAGE)
+            value: $(tt.params.CDPIPELINE_STAGE)
           - name: CDPIPELINE_CR
-            value: $(tt.params.CDPIPELINE)
+            value: $(tt.params.CDPIPELINE_CR)
         timeouts:
           pipeline: 1h00m0s

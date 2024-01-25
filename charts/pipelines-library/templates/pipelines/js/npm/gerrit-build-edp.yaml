@@ -87,8 +87,6 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-{{ include "sonar-cleanup" . | nindent 4 }}
-
 {{ include "security-edp" . | nindent 4 }}
 
 {{ include "js-npm-build-common" . | nindent 4 }}

@@ -36,7 +36,7 @@
       subPath: source
 {{- end -}}
 
-{{- define "golang-common" -}}
+{{- define "golang-build-common" -}}
 
 # we don't need subPath for the source workspace, since we need to have access to both folders
 # /source and /cache
@@ -63,14 +63,64 @@
 - name: sonar
   taskRef:
     kind: Task
-    name: sonarqube-scanner
+    name: sonarqube-general
   runAfter:
     - build
   params:
     - name: SONAR_PROJECT_KEY
-      value: $(params.CODEBASEBRANCH_NAME)
+      value: $(params.CODEBASE_NAME)
     - name: SONAR_PROJECT_NAME
-      value: $(params.CODEBASEBRANCH_NAME)
+      value: $(params.CODEBASE_NAME)
+    - name: branch
+      value: $(params.git-source-revision)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+{{- end -}}
+
+{{- define "golang-review-common" -}}
+
+# we don't need subPath for the source workspace, since we need to have access to both folders
+# /source and /cache
+- name: build
+  taskRef:
+    kind: Task
+    name: golang
+  runAfter:
+    - get-cache
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
+        # we checkout the source code in the /source directory
+        # and hold cache in the /cache directory
+        cd source
+        make build
+        make test
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-general
+  runAfter:
+    - build
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: target-branch
+      value: $(params.targetBranch)
+    - name: source-branch
+      value: $(params.git-source-revision)
+    - name: key-id
+      value: $(params.changeNumber)
   workspaces:
     - name: source
       workspace: shared-workspace

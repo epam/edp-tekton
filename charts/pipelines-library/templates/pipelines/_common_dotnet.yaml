@@ -2,21 +2,28 @@
 - name: sonar
   taskRef:
     kind: Task
-    name: dotnet
+    name: sonarqube-dotnet
   runAfter:
     - build
   params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: branch
+      value: $(params.git-source-revision)
     - name: BASE_IMAGE
       value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
-        dotnet sonarscanner begin /d:sonar.host.url=${SONAR_HOST_URL} \
-          /d:sonar.login=${SONAR_TOKEN} \
+        dotnet sonarscanner begin \
+          /d:sonar.host.url=${SONAR_HOST_URL} \
           /d:sonar.qualitygate.wait=true \
-          /k:$(params.CODEBASEBRANCH_NAME) \
-          /n:$(params.CODEBASEBRANCH_NAME) \
-          /d:sonar.cs.opencover.reportsPaths=./*Tests*/*.xml
+          /d:sonar.login=${SONAR_TOKEN} \
+          /k:${SONAR_PROJECT_KEY} \
+          /n:${SONAR_PROJECT_NAME} \
+          /d:sonar.branch.name=${BRANCH}
         dotnet build ${sln_filename}
         dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
   workspaces:
@@ -86,69 +93,37 @@
     - name: source
       workspace: shared-workspace
 
-# The fetch-target-branch Task will fetch the target branch during the code-review pipeline
-# because the fetch-repository Task fetches only user changes.
-- name: fetch-target-branch
-  taskRef:
-    kind: Task
-    name: git-cli
-  runAfter:
-    - build
-  params:
-    - name: GIT_USER_EMAIL
-      value: edp-ci@edp.ci-user
-    - name: GIT_USER_NAME
-      value: edp-ci
-    - name: GIT_SCRIPT
-      value: |
-        git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
-    - name: ssh-directory
-      workspace: ssh-creds
-
-- name: sonar-prepare-files
-  taskRef:
-    kind: Task
-    name: sonar-prepare-files-dotnet
-  runAfter:
-    - fetch-target-branch
-  params:
-    - name: CODEBASE_NAME
-      value: $(params.CODEBASE_NAME)
-    - name: BRANCH_NAME
-      value: $(params.targetBranch)
-    - name: NORMALIZED_BRANCH
-      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
-    - name: CHANGE_NUMBER
-      value: $(params.changeNumber)
-    - name: PATCHSET_NUMBER
-      value: $(params.patchsetNumber)
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
-
 - name: sonar
   taskRef:
     kind: Task
-    name: dotnet
+    name: sonarqube-dotnet
   runAfter:
-    - sonar-prepare-files
+    - build
   params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: target-branch
+      value: $(params.targetBranch)
+    - name: source-branch
+      value: $(params.git-refspec)
+    - name: key-id
+      value: $(params.changeNumber)
     - name: BASE_IMAGE
       value: 'epamedp/tekton-dotnet:6.0.2'
     - name: EXTRA_COMMANDS
       value: |
         slnFilename=$(ls *.sln)
-        # /d:sonar.qualitygate.wait=true \
-        dotnet sonarscanner begin /d:sonar.host.url=${SONAR_HOST_URL} \
+        dotnet sonarscanner begin \
+          /d:sonar.host.url=${SONAR_HOST_URL} \
+          /d:sonar.qualitygate.wait=true \
           /d:sonar.login=${SONAR_TOKEN} \
-          /k:$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
-          /n:$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
-          /d:sonar.cs.opencover.reportsPaths=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)/*Tests*/*.xml
+          /k:${SONAR_PROJECT_KEY} \
+          /n:${SONAR_PROJECT_NAME} \
+          /d:sonar.pullrequest.key=${KEY_ID} \
+          /d:sonar.pullrequest.branch=${SOURCE_BRANCH} \
+          /d:sonar.pullrequest.base=${TARGET_BRANCH}
         dotnet build ${sln_filename}
         dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
   workspaces:

@@ -27,6 +27,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
     - name: CODEBASE_NAME
       default: 'csharp-dotnet-{{ $k }}'
       description: "Project name"
@@ -63,21 +67,34 @@ spec:
     - name: sonar
       taskRef:
         kind: Task
-        name: dotnet
+        name: sonarqube-dotnet
       runAfter:
         - build
       params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
         - name: BASE_IMAGE
           value: 'epamedp/tekton-dotnet:6.0.2'
         - name: EXTRA_COMMANDS
           value: |
             slnFilename=$(ls *.sln)
-            # /d:sonar.qualitygate.wait=true \
-            dotnet sonarscanner begin /d:sonar.host.url=${SONAR_HOST_URL} \
+            dotnet sonarscanner begin \
+              /d:sonar.host.url=${SONAR_HOST_URL} \
+              /d:sonar.qualitygate.wait=true \
               /d:sonar.login=${SONAR_TOKEN} \
-              /k:$(params.CODEBASEBRANCH_NAME) \
-              /n:$(params.CODEBASEBRANCH_NAME) \
-              /d:sonar.cs.opencover.reportsPaths=./*Tests*/*.xml
+              /k:${SONAR_PROJECT_KEY} \
+              /n:${SONAR_PROJECT_NAME} \
+              /d:sonar.pullrequest.key=${KEY_ID} \
+              /d:sonar.pullrequest.branch=${SOURCE_BRANCH} \
+              /d:sonar.pullrequest.base=${TARGET_BRANCH}
             dotnet build ${sln_filename}
             dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
       workspaces:

@@ -89,43 +89,27 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    - name: sonar-prepare-files
-      taskRef:
-        kind: Task
-        name: sonar-prepare-files-general
-      runAfter:
-        - test
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.targetBranch)
-        - name: NORMALIZED_BRANCH
-          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
-        - name: CHANGE_NUMBER
-          value: $(params.changeNumber)
-        - name: PATCHSET_NUMBER
-          value: $(params.patchsetNumber)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: sonar
       taskRef:
         kind: Task
-        name: sonarqube-scanner
+        name: sonarqube-general
       runAfter:
-        - sonar-prepare-files
+        - test
       params:
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+          value: $(params.CODEBASE_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
-        - name: SONAR_SOURCES
-          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
       workspaces:
         - name: source
           workspace: shared-workspace
+          subPath: source
 
 {{ include "gerrit-review-vote" . | nindent 2 }}
 

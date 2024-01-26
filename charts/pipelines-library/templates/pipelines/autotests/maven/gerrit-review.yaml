@@ -1,8 +1,6 @@
 {{ if eq .Values.global.gitProvider "gerrit" }}
 {{- $resourceMapping := dict "java8" "maven:3.9.0-eclipse-temurin-8" "java11" "maven:3.9.0-eclipse-temurin-11" "java17" "maven:3.9.0-eclipse-temurin-17" -}}
-{{- $altResourceMapping := dict "java8" "maven:3.9.0-eclipse-temurin-11" "java11" "maven:3.9.0-eclipse-temurin-11" "java17" "maven:3.9.0-eclipse-temurin-17" -}}
 {{- range $k, $v := $resourceMapping }}
-{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -38,7 +36,7 @@ spec:
       description: "maven image version"
       type: string
     - name: sonar_image
-      default: '{{ $valueFromAlt }}'
+      default: "maven:3.9.0-eclipse-temurin-17"
       description: "sonar image version"
       type: string
     - name: targetBranch
@@ -65,71 +63,29 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
-    # because the fetch-repository Task fetches only user changes.
-    - name: fetch-target-branch
-      taskRef:
-        kind: Task
-        name: git-cli
-      runAfter:
-        - test
-      params:
-        - name: GIT_USER_EMAIL
-          value: edp-ci@edp.ci-user
-        - name: GIT_USER_NAME
-          value: edp-ci
-        - name: GIT_SCRIPT
-          value: |
-            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: sonar-prepare-files
-      taskRef:
-        kind: Task
-        name: sonar-prepare-files-maven
-      runAfter:
-        - fetch-target-branch
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.targetBranch)
-        - name: NORMALIZED_BRANCH
-          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
-        - name: CHANGE_NUMBER
-          value: $(params.changeNumber)
-        - name: PATCHSET_NUMBER
-          value: $(params.patchsetNumber)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
     - name: sonar
       taskRef:
         kind: Task
-        name: maven
+        name: sonarqube-maven
       runAfter:
-        - sonar-prepare-files
+        - test
       params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
         - name: MAVEN_IMAGE
           value: $(params.sonar_image)
-        - name: GOALS
+        - name: EXTRA_COMMANDS
           value:
             - -B
-            - '-Dartifactory.baseUrl=${NEXUS_HOST_URL}'
-            - '-Dartifactory.releasePath=edp-maven-releases'
-            - '-Dartifactory.snapshotsPath=edp-maven-snapshots'
-            - '-Dartifactory.groupPath=edp-maven-group'
-            - '-Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
-            - '-Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)'
+            - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+            - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+            - '-Dsonar.pullrequest.key=$(params.changeNumber)'
+            - '-Dsonar.pullrequest.branch=$(params.git-refspec)'
+            - '-Dsonar.pullrequest.base=$(params.targetBranch)'
             - '-Dsonar.qualitygate.wait=true'
-            - '-Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES)'
+            - verify
             - sonar:sonar
       workspaces:
         - name: source

@@ -28,6 +28,10 @@ spec:
       default: '{{ $v }}'
       description: "maven image version"
       type: string
+    - name: sonar_image
+      default: "maven:3.9.0-eclipse-temurin-17"
+      description: "sonar image version"
+      type: string
   tasks:
 
 {{- include "github-build-start" $ | nindent 4 }}
@@ -44,12 +48,38 @@ spec:
         - name: BASE_IMAGE
           value: $(params.image)
 
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-maven
+      runAfter:
+        - get-version
+      params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: MAVEN_IMAGE
+          value: $(params.sonar_image)
+        - name: EXTRA_COMMANDS
+          value:
+            - -B
+            - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+            - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+            - '-Dsonar.branch.name=$(params.git-source-revision)'
+            - '-Dsonar.qualitygate.wait=true'
+            - verify
+            - sonar:sonar
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
     - name: update-build-number
       taskRef:
         kind: Task
         name: update-build-number-maven-default
       runAfter:
-        - get-version
+        - sonar
       params:
         - name: VERSION
           value: $(tasks.get-version.results.VERSION)

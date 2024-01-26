@@ -146,64 +146,23 @@ spec:
         - name: source
           workspace: shared-workspace
 
-    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
-    # because the fetch-repository Task fetches only user changes.
-    - name: fetch-target-branch
-      taskRef:
-        kind: Task
-        name: git-cli
-      runAfter:
-        - test
-      params:
-        - name: GIT_USER_EMAIL
-          value: edp-ci@edp.ci-user
-        - name: GIT_USER_NAME
-          value: edp-ci
-        - name: GIT_SCRIPT
-          value: |
-            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: sonar-prepare-files
-      taskRef:
-        kind: Task
-        name: sonar-prepare-files-general
-      runAfter:
-        - fetch-target-branch
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.targetBranch)
-        - name: NORMALIZED_BRANCH
-          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
-        - name: CHANGE_NUMBER
-          value: $(params.changeNumber)
-        - name: PATCHSET_NUMBER
-          value: $(params.patchsetNumber)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
     - name: sonar
       taskRef:
         kind: Task
-        name: sonarqube-scanner
+        name: sonarqube-general
       runAfter:
-        - sonar-prepare-files
+        - build
       params:
         - name: SONAR_PROJECT_KEY
-          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
+          value: $(params.CODEBASE_NAME)
         - name: SONAR_PROJECT_NAME
-          value: $(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY)
-        - name: SONAR_SOURCES
-          value: $(tasks.sonar-prepare-files.results.SONAR_SOURCES)
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
       workspaces:
         - name: source
           workspace: shared-workspace

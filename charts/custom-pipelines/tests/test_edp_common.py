@@ -22,8 +22,7 @@ global:
     assert "commit-validate" in r[3]["name"]
     assert "crdocs" in r[4]["name"]
     assert "test" in r[5]["name"]
-    assert "sonar-prepare-files" in r[6]["name"]
-    assert "sonar" in r[7]["name"]
+    assert "sonar" in r[6]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
 

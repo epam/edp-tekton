@@ -43,46 +43,19 @@ spec:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
-    # because the fetch-repository Task fetches only user changes.
-    - name: fetch-target-branch
+    - name: build
       taskRef:
         kind: Task
-        name: git-cli
+        name: codenarc
       runAfter:
         - init-values
       params:
-        - name: GIT_USER_EMAIL
-          value: edp-ci@edp.ci-user
-        - name: GIT_USER_NAME
-          value: edp-ci
-        - name: GIT_SCRIPT
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_ARGS
           value: |
-            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-        - name: ssh-directory
-          workspace: ssh-creds
-
-    - name: sonar-prepare-files
-      taskRef:
-        kind: Task
-        name: sonar-prepare-files-gradle
-      runAfter:
-        - fetch-target-branch
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.targetBranch)
-        - name: NORMALIZED_BRANCH
-          value: $(tasks.init-values.results.NORMALIZED_BRANCH)
-        - name: CHANGE_NUMBER
-          value: $(params.changeNumber)
-        - name: PATCHSET_NUMBER
-          value: $(params.patchsetNumber)
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            build -x test -x compileGroovy
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -91,40 +64,28 @@ spec:
     - name: sonar
       taskRef:
         kind: Task
-        name: gradle
+        name: sonarqube-gradle
       runAfter:
-        - sonar-prepare-files
+        - build
       params:
         - name: BASE_IMAGE
           value: $(params.image)
-        - name: EXTRA_ARGS
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: EXTRA_COMMANDS
           value: |
             -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            -Dsonar.projectKey=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
-            -Dsonar.projectName=$(tasks.sonar-prepare-files.results.SONAR_PROJECT_KEY) \
+            -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME) \
             -Dsonar.host.url=${SONAR_HOST_URL} \
-            -Dsonar.sources=$(tasks.sonar-prepare-files.results.SONAR_SOURCES) \
+            -Dsonar.pullrequest.key=$(params.changeNumber) \
+            -Dsonar.pullrequest.branch=$(params.git-refspec) \
+            -Dsonar.pullrequest.base=$(params.targetBranch) \
             -Dsonar.qualitygate.wait=true \
             -x compileGroovy \
             sonarqube
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
-    - name: build
-      taskRef:
-        kind: Task
-        name: codenarc
-      runAfter:
-        - sonar
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            build -x test -x compileGroovy
       workspaces:
         - name: source
           workspace: shared-workspace

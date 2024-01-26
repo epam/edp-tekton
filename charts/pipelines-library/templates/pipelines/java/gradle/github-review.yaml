@@ -29,6 +29,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
     - name: CODEBASE_NAME
       default: '{{ $k }}-maven'
       description: "Project name"
@@ -64,40 +68,7 @@ spec:
 
 {{- include "get-cache" $ | nindent 4 }}
 
-    - name: build
-      taskRef:
-        kind: Task
-        name: edp-gradle
-      runAfter:
-        - get-cache
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: sonar
-      taskRef:
-        kind: Task
-        name: gradle
-      runAfter:
-        - build
-      params:
-        - name: BASE_IMAGE
-          value: $(params.sonar_image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.host.url=${SONAR_HOST_URL} \
-            -Dsonar.qualitygate.wait=true \
-            sonarqube
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
+{{ include "java-gradle-review-common" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

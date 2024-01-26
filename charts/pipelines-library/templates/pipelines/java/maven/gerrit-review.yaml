@@ -63,7 +63,7 @@ spec:
 
 {{- include "java-maven-get-module" . | nindent 4 }}
 
-{{- include "java-maven-review-common" . | nindent 4 }}
+{{- include "java-maven-review-common-gerrit" . | nindent 4 }}
 
 {{- include "save-cache" $ | nindent 4 }}
 

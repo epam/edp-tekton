@@ -29,6 +29,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
     - name: CODEBASE_NAME
       default: '{{ $k }}-maven'
       description: "Project name"
@@ -53,82 +57,7 @@ spec:
 
 {{- include "get-cache" $ | nindent 4 }}
 
-    - name: compile
-      taskRef:
-        kind: Task
-        name: maven
-      runAfter:
-        - get-cache
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.image)
-        - name: GOALS
-          value:
-            - -B
-            - compile
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: test
-      taskRef:
-        kind: Task
-        name: maven
-      runAfter:
-        - compile
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.image)
-        - name: GOALS
-          value:
-            - -B
-            - org.jacoco:jacoco-maven-plugin:prepare-agent
-            - '-Dmaven.test.failure.ignore=true'
-            - verify
-            - org.jacoco:jacoco-maven-plugin:report
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: sonar
-      taskRef:
-        kind: Task
-        name: maven
-      runAfter:
-        - test
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.sonar_image)
-        - name: GOALS
-          value:
-            - -B
-            - '-Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME)'
-            - '-Dsonar.projectName=$(params.CODEBASEBRANCH_NAME)'
-            - '-Dsonar.qualitygate.wait=true'
-            - verify
-            - sonar:sonar
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-    - name: build
-      taskRef:
-        kind: Task
-        name: maven
-      runAfter:
-        - sonar
-      params:
-        - name: MAVEN_IMAGE
-          value: $(params.image)
-        - name: GOALS
-          value:
-            - -B
-            - clean
-            - package
-            - '-DskipTests=true'
-      workspaces:
-        - name: source
-          workspace: shared-workspace
+{{- include "java-maven-review-common" . | nindent 4 }}
 
 {{- include "save-cache" $ | nindent 4 }}
 

@@ -29,6 +29,10 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
     - name: CODEBASE_NAME
       default: '{{ $k }}-gradle'
       description: "Project name"
@@ -54,19 +58,26 @@ spec:
     - name: sonar
       taskRef:
         kind: Task
-        name: gradle
+        name: sonarqube-gradle
       runAfter:
         - init-values
       params:
         - name: BASE_IMAGE
           value: $(params.sonar_image)
-        - name: EXTRA_ARGS
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: EXTRA_COMMANDS
           value: |
             -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
+            -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME) \
             -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.qualitygate.wait=true \
+            -Dsonar.pullrequest.key=$(params.changeNumber) \
+            -Dsonar.pullrequest.branch=$(params.git-source-revision) \
+            -Dsonar.pullrequest.base=$(params.targetBranch) \
             sonarqube
       workspaces:
         - name: source

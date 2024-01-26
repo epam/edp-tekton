@@ -26,10 +26,7 @@ global:
                 assert "fetch-repository" in rt[0]["name"]
                 assert "gerrit-notify" in rt[1]["name"]
                 assert "init-values" in rt[2]["name"]
-                assert "fetch-target-branch" in rt[3]["name"]
-                assert "sonar-prepare-files" in rt[4]["name"]
-                assert f"sonar-prepare-files-{buildtool}" == rt[4]["taskRef"]["name"]
-                assert "sonar" in rt[5]["name"]
+                assert "sonar" in rt[3]["name"]
                 assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -41,7 +38,8 @@ global:
                 assert "get-version" in btd[3]["name"]
                 assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "update-build-number" in btd[4]["name"]
-                assert "git-tag" in btd[5]["name"]
+                assert "sonar" in btd[5]["name"]
+                assert "git-tag" in btd[6]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -50,7 +48,8 @@ global:
                 assert "init-values" in btedp[2]["name"]
                 assert "get-version" in btedp[3]["name"]
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
-                assert "git-tag" in btedp[4]["name"]
+                assert "sonar" in btedp[4]["name"]
+                assert "git-tag" in btedp[5]["name"]
 
 def test_java_pipelines_github():
     config = """
@@ -89,7 +88,8 @@ global:
                 assert "get-version" in btd[2]["name"]
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "update-build-number" in btd[3]["name"]
-                assert "git-tag" in btd[4]["name"]
+                assert "sonar" in btd[4]["name"]
+                assert "git-tag" in btd[5]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -97,7 +97,8 @@ global:
                 assert "init-values" in btedp[1]["name"]
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
-                assert "git-tag" in btedp[3]["name"]
+                assert "sonar" in btedp[3]["name"]
+                assert "git-tag" in btedp[4]["name"]
 
 def test_java_pipelines_gitlab():
     config = """
@@ -136,7 +137,8 @@ global:
                 assert "get-version" in btd[2]["name"]
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "update-build-number" in btd[3]["name"]
-                assert "git-tag" in btd[4]["name"]
+                assert "sonar" in btd[4]["name"]
+                assert "git-tag" in btd[5]["name"]
 
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -144,4 +146,5 @@ global:
                 assert "init-values" in btedp[1]["name"]
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
-                assert "git-tag" in btedp[3]["name"]
+                assert "sonar" in btedp[3]["name"]
+                assert "git-tag" in btedp[4]["name"]

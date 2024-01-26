@@ -83,37 +83,12 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-{{ include "sonar-cleanup" . | nindent 4 }}
-
-    - name: sonar
-      taskRef:
-        kind: Task
-        name: gradle
-      runAfter:
-        - get-version
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-        - name: EXTRA_ARGS
-          value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
-            -Dsonar.projectKey=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.projectName=$(params.CODEBASEBRANCH_NAME) \
-            -Dsonar.host.url=${SONAR_HOST_URL} \
-            -Dsonar.qualitygate.wait=true \
-            -x compileGroovy \
-            sonarqube
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
     - name: build
       taskRef:
         kind: Task
         name: codenarc
       runAfter:
-        - sonar
+        - update-build-number
       params:
         - name: BASE_IMAGE
           value: $(params.image)
@@ -121,6 +96,33 @@ spec:
           value: |
             -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             build -x test -x compileGroovy
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-gradle
+      runAfter:
+        - build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: EXTRA_COMMANDS
+          value: |
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME) \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.branch.name=$(params.git-source-revision) \
+            -Dsonar.qualitygate.wait=true \
+            sonarqube
       workspaces:
         - name: source
           workspace: shared-workspace

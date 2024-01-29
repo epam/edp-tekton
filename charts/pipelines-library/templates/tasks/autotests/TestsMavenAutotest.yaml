@@ -25,7 +25,7 @@ spec:
   volumes:
     - name: settings-maven
       configMap:
-        name: custom-maven-settings
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
   steps:
     - name: check-run-json-file
       image: "python:3.9.14-alpine3.16"

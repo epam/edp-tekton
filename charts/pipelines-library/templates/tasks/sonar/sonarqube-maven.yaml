@@ -72,7 +72,7 @@ spec:
   volumes:
     - name: settings-maven
       configMap:
-        name: custom-maven-settings
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
   steps:
     - image: epamedp/tekton-autotest:0.1.3
       name: prepare-project

@@ -128,6 +128,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | nameOverride | string | `""` |  |
 | tekton-cache.enabled | bool | `true` |  |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` |  |
+| tekton.configs | object | `{"mavenConfigMap":"custom-maven-settings"}` | Reference to configuration map containing settings.xml file to overwrite the default configuration. |
+| tekton.configs.mavenConfigMap | string | `"custom-maven-settings"` | Default configuration map for provisioning Maven settings.xml file. To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml |
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |

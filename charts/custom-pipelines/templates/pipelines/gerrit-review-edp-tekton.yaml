@@ -196,6 +196,43 @@ spec:
           workspace: shared-workspace
           subPath: source
 
+    - name: kaniko-build
+      params:
+        - name: codebase-name
+          value: "review/$(params.CODEBASE_NAME)"
+        - name: image-tag
+          value: "$(params.changeNumber)-$(params.patchsetNumber)"
+        - name: image-tar
+          value: "$(params.CODEBASE_NAME)-$(params.changeNumber)-$(params.patchsetNumber)"
+      runAfter:
+        - sonar
+        - dockerbuild-verify
+      taskRef:
+        kind: Task
+        name: kaniko
+      workspaces:
+      - name: source
+        workspace: shared-workspace
+        subPath: source
+
+    - name: e2e
+      taskRef:
+        kind: Task
+        name: e2e
+      runAfter:
+        - kaniko-build
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: E2E_IMAGE_REPOSITORY
+          value: "review/$(params.CODEBASE_NAME)"
+        - name: E2E_IMAGE_TAG
+          value: "$(params.changeNumber)-$(params.patchsetNumber)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
 {{- include "save-cache" $ | nindent 4 }}
 
 {{ include "gerrit-review-vote" . | nindent 2 }}

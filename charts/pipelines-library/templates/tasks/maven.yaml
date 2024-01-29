@@ -44,7 +44,7 @@ spec:
   volumes:
     - name: settings-maven
       configMap:
-        name: custom-maven-settings
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
   steps:
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)

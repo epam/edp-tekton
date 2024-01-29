@@ -1,3 +1,8 @@
+{{- $configs := (.Values.tekton.configs | default dict) }}
+{{- $settingsConfigMap := $configs.mavenConfigMap | default "" }}
+{{- if eq $settingsConfigMap "custom-maven-settings" }}
+# Default configuration map for provisioning Maven settings.xml file.
+# To change it, prepare another configuration map and update "tekton.configs.mavenConfigMap"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -125,3 +130,4 @@ data:
             <activeProfile>nexus</activeProfile>
         </activeProfiles>
     </settings>
+{{- end }}

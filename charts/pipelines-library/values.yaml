@@ -78,6 +78,13 @@ tekton:
     # -- Secret name that will be used in Pipelines. Default: package-registries-auth-secret
     name: "package-registries-auth-secret"
 
+  # -- Reference to configuration map containing settings.xml file to overwrite the default configuration.
+  configs:
+    # -- Default configuration map for provisioning Maven settings.xml file.
+    # To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml
+    mavenConfigMap: "custom-maven-settings"
+
   # Pruner provides auto clean up feature for the Tekton resources
   pruner:
     # -- Specifies whether a cronjob should be created

@@ -2,27 +2,34 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
+# Tekton-cache container image configurations.
 image:
+  # -- Tekton-cache container image.
   repository: epamedp/tekton-cache
+  # -- Defines the policy with which pod will request its image.
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- Overrides the image tag whose default is the chart appVersion.
   tag: "0.1.2"
 
+# InitContainer configurations.
 initContainers:
+  # -- Defines the repository.
   repository: busybox
+  # -- InitContainer image.
   tag: 1.36.1
 
+# -- Specifies secrets for pulling Docker images.
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# -- Annotations to be added to Tekton-cache pods.
 podAnnotations: {}
-
+# -- Specifies privilege and access control configurations for Tekton-cache pods.
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- Security context to be added to Tekton-cache pods.
 securityContext: {}
   # capabilities:
   #   drop:
@@ -31,12 +38,16 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Defines size of the Persistent Volume that is used for cache.
 cacheSize: "5Gi"
 
+# -- Tekton-cache service configurations.
 service:
+  name: "tekton-cache"
   type: ClusterIP
   port: 8080
 
+# -- Tekton-cache pod resource requests and limits.
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -49,8 +60,9 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Node labels for Tekton-cache pod assignment.
 nodeSelector: {}
-
+# -- Node tolerations for pod scheduling to nodes with taints.
 tolerations: []
-
+# -- Pod affinity.
 affinity: {}

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: tekton-cache
+  name: {{ .Values.service.name }}
   labels:
     {{- include "tekton-cache.labels" . | nindent 4 }}
 spec:

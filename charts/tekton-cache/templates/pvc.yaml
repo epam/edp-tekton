@@ -2,6 +2,8 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: cache
+  labels:
+    {{- include "tekton-cache.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

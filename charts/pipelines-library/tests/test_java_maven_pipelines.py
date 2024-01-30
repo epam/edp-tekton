@@ -62,6 +62,7 @@ global:
                 assert f"get-version-default" == btd[3]["taskRef"]["name"]
                 assert "get-cache" == btd[4]["name"]
                 assert "update-build-number" == btd[5]["name"]
+                assert f"{buildtool}" == btd[5]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btd[6]["name"]
                     assert "security" in btd[7]["name"]
@@ -101,8 +102,8 @@ global:
                 assert "get-version" in btedp[3]["name"]
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
                 assert "get-cache" in btedp[4]["taskRef"]["name"]
-                assert "update-build-number" in btedp[5]["taskRef"]["name"]
-                assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
+                assert "update-build-number" in btedp[5]["name"]
+                assert f"{buildtool}" == btedp[5]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[6]["name"]
                     assert "security" in btedp[7]["name"]
@@ -195,6 +196,7 @@ global:
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "get-cache" in btd[3]["name"]
                 assert "update-build-number" in btd[4]["name"]
+                assert f"{buildtool}" == btd[4]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btd[5]["name"]
                     assert "security" in btd[6]["name"]
@@ -233,8 +235,8 @@ global:
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
                 assert "get-cache" in btedp[3]["taskRef"]["name"]
-                assert "update-build-number" in btedp[4]["taskRef"]["name"]
-                assert f"update-build-number-{buildtool}" == btedp[4]["taskRef"]["name"]
+                assert "update-build-number" in btedp[4]["name"]
+                assert f"{buildtool}" == btedp[4]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[5]["name"]
                     assert "security" in btedp[6]["name"]
@@ -327,6 +329,7 @@ global:
                 assert f"get-version-default" == btd[2]["taskRef"]["name"]
                 assert "get-cache" in btd[3]["name"]
                 assert "update-build-number" in btd[4]["name"]
+                assert f"{buildtool}" == btd[4]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btd[5]["name"]
                     assert "security" in btd[6]["name"]
@@ -365,8 +368,8 @@ global:
                 assert "get-version" in btedp[2]["name"]
                 assert "get-version-edp" == btedp[2]["taskRef"]["name"]
                 assert "get-cache" in btedp[3]["taskRef"]["name"]
-                assert "update-build-number" in btedp[4]["taskRef"]["name"]
-                assert f"update-build-number-{buildtool}" == btedp[4]["taskRef"]["name"]
+                assert "update-build-number" in btedp[4]["name"]
+                assert f"{buildtool}" == btedp[4]["taskRef"]["name"]
                 if cbtype == "app":
                     assert "get-maven-module" in btedp[5]["name"]
                     assert "security" in btedp[6]["name"]

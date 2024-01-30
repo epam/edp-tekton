@@ -77,18 +77,21 @@ spec:
     - name: update-build-number
       taskRef:
         kind: Task
-        name: update-build-number-maven-default
+        name: maven
       runAfter:
         - sonar
       params:
-        - name: VERSION
-          value: $(tasks.get-version.results.VERSION)
         - name: BASE_IMAGE
           value: $(params.image)
+        - name: GOALS
+          value:
+            - -B
+            - versions:set
+            - versions:commit
+            - '-DnewVersion=$(tasks.get-version.results.VERSION)'
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: git-tag
       taskRef:

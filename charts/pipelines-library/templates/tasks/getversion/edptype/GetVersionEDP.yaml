@@ -60,6 +60,12 @@ spec:
         echo "Build id - ${BUILD_ID}"
         echo "Branch version - ${BRANCH_VERSION}"
 
+        if [ "${IS_RELEASE_BRANCH}" = "true" ] ; then
+            VERSION="${BRANCH_VERSION}.${BUILD_ID}"
+        else
+            VERSION="${BRANCH_VERSION}"
+        fi
+
         printf "%s" "${VERSION}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"

@@ -20,9 +20,21 @@ global:
     # -- Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>)
     url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"
 
+## The tekton-cache related configurations.
+# Ref: https://github.com/epam/edp-tekton/blob/master/charts/tekton-cache/values.yaml
 tekton-cache:
+  # -- Enables the Tekton-cache subchart.
   enabled: true
-  url: http://tekton-cache:8080
+  #
+  # If 'tekton-cache.enabled' is set to 'false' the tekton-cache won't be deployed as part of the EDP installation,
+  # but it can be deployed separately to share among different instances.
+  # For this case, use the following pattern for the url: "http://<service_name>.<namespace>:8080".
+  # Where,
+  # <service_name> is the Kubernetes service name of the tekton-cache Helm chart, by default: tekton-cache;
+  # <namespace> is the Kubernetes namespace where the Kubernetes service of the tekton-cache Helm chart is deployed.
+  #
+  # -- Defines the URL to the tekton-cache. Default: http://tekton-cache:8080
+  url: "http://tekton-cache:8080"
 
 webhook:
   # -- If true, webhook ssl verification will be skipped. Default: false

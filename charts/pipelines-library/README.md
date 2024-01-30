@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| @epamedp | tekton-cache | 0.3.1 |
+| @epamedp | tekton-cache | 0.3.2 |
 | file://../common-library | edp-tekton-common-library | 0.2.17 |
 
 ## Values
@@ -126,8 +126,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
-| tekton-cache.enabled | bool | `true` |  |
-| tekton-cache.url | string | `"http://tekton-cache:8080"` |  |
+| tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
+| tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
 | tekton.configs | object | `{"mavenConfigMap":"custom-maven-settings"}` | Reference to configuration map containing settings.xml file to overwrite the default configuration. |
 | tekton.configs.mavenConfigMap | string | `"custom-maven-settings"` | Default configuration map for provisioning Maven settings.xml file. To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml |
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |

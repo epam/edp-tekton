@@ -79,7 +79,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.image.tag | string | `"v0.41.0"` | Define tekton dashboard docker image tag |
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.enabled | bool | `true` | Deploy EDP Dashboard ingress as a part of pipeline library when true. Default: true |
-| dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin='https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url='http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
+| dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
 | dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
 | dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"},"resources":{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |
 | dashboard.openshift_proxy.enabled | bool | `false` | Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false |

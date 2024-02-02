@@ -1,0 +1,55 @@
+{{- $configs := (.Values.tekton.configs | default dict) }}
+{{- $settingsConfigMap := $configs.npmConfigMap | default "" }}
+{{- if eq $settingsConfigMap "custom-npm-settings" }}
+# Default configuration maps for provisioning NPM .npmrc files.
+# To change it, prepare another configuration map and update "tekton.configs.npmConfigMap"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-npm-settings
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  .npmrc-ci: |
+    registry=${NEXUS_HOST_URL}/repository/edp-npm-group
+    _auth=${upBase64}
+    cache=${NPM_CACHE_DIR}
+
+  .npmrc-publish-snapshots: |
+    registry=${NEXUS_HOST_URL}/repository/edp-npm-snapshots
+    _auth=${upBase64}
+    cache=${NPM_CACHE_DIR}
+
+  .npmrc-publish-releases: |
+    registry=${NEXUS_HOST_URL}/repository/edp-npm-releases
+    _auth=${upBase64}
+    cache=${NPM_CACHE_DIR}
+
+  # Example for pushing a snapshot package to GitLab
+  # Ref: https://docs.gitlab.com/ee/user/packages/npm_registry/
+  #.npmrc-publish-snapshots: |
+  #  registry=https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/npm
+  #  _authToken=${CI_GITLAB_TOKEN}
+  #  cache=${NPM_CACHE_DIR}
+
+  # Example for pushing a release package to GitLab
+  # Ref: https://docs.gitlab.com/ee/user/packages/npm_registry/
+  #.npmrc-publish-releases: |
+  #  registry=https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/npm
+  #  _authToken=${CI_GITLAB_TOKEN}
+  #  cache=${NPM_CACHE_DIR}
+
+  # Example for pushing a snapshot package to GitHub
+  # Ref: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry
+  #.npmrc-publish-snapshots: |
+  #  registry=https://npm.pkg.github.com
+  #  _authToken=${CI_GITHUB_PASSWORD}
+  #  cache=${NPM_CACHE_DIR}
+
+  # Example for pushing a release package to GitHub
+  # Ref: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry
+  #.npmrc-publish-releases: |
+  #  registry=https://npm.pkg.github.com
+  #  _authToken=${CI_GITHUB_PASSWORD}
+  #  cache=${NPM_CACHE_DIR}
+{{- end }}

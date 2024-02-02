@@ -9,6 +9,9 @@ commands:
   # Install Cert manager which is used by Interceptor
   - command: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
     namespaced: false
+  # install QuickLink CRD first
+  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_quicklinks.yaml
+    namespaced: false
   # install EDPComponent CRD first
   - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-component-operator/master/deploy-templates/crds/v1.edp.epam.com_edpcomponents.yaml
     namespaced: false

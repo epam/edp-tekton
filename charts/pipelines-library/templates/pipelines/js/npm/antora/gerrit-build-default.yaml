@@ -98,13 +98,9 @@ spec:
           value: $(params.image)
         - name: EXTRA_COMMANDS
           value: |
-            upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-
-            npm config set registry ${NEXUS_HOST_URL}
-            npm config set always-auth=true
-            echo "_auth=$upBase64" >> .npmrc
-
-            npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
+            export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            export npm_config_userconfig=/var/configmap/.npmrc-ci
+            npm ci
             npm run build:prod
       workspaces:
         - name: source

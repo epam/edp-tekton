@@ -36,10 +36,24 @@ spec:
   workspaces:
     - name: source
 
+  volumes:
+    - name: settings-npm
+      configMap:
+        name: {{ .Values.tekton.configs.npmConfigMap }}
+
   steps:
     - name: npm
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+
+      volumeMounts:
+        - name: settings-npm
+          mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+      - secretRef:
+          name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
 
       env:
         - name: HOME

@@ -29,9 +29,6 @@ spec:
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
-    - name: NEXUS_REPOSITORY_URL
-      default: ""
-      description: Nexus repository URL. e.g. 'nexus:8081/repository/edp-npm-group'
 
   workspaces:
     - name: source
@@ -58,8 +55,6 @@ spec:
       env:
         - name: HOME
           value: "$(workspaces.source.path)"
-        - name: NEXUS_REPOSITORY_URL
-          value: "$(params.NEXUS_REPOSITORY_URL)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

@@ -62,18 +62,16 @@ global:
                 assert "edp-npm" == btd[7]["taskRef"]["name"]
                 assert "sonar" in btd[8]["name"]
                 assert "sonarqube-general" == btd[8]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btd[9]["name"]
-                assert "get-nexus-repository-url" == btd[9]["taskRef"]["name"]
-                assert "push" in btd[10]["name"]
-                assert "npm" == btd[10]["taskRef"]["name"]
+                assert "push" in btd[9]["name"]
+                assert "npm" == btd[9]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[11]["name"]
-                    assert "save-cache" in btd[12]["name"]
-                    assert "git-tag" in btd[13]["name"]
-                    assert "update-cbis" in btd[14]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btd[10]["name"]
                     assert "save-cache" in btd[11]["name"]
                     assert "git-tag" in btd[12]["name"]
+                    assert "update-cbis" in btd[13]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btd[10]["name"]
+                    assert "git-tag" in btd[11]["name"]
                 assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
@@ -91,18 +89,16 @@ global:
                 assert "edp-npm" == btedp[7]["taskRef"]["name"]
                 assert "sonar" in btedp[8]["name"]
                 assert "sonarqube-general" == btedp[8]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btedp[9]["name"]
-                assert "get-nexus-repository-url" == btedp[9]["taskRef"]["name"]
-                assert "push" in btedp[10]["name"]
-                assert "npm" == btedp[10]["taskRef"]["name"]
+                assert "push" in btedp[9]["name"]
+                assert "npm" == btedp[9]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[11]["name"]
-                    assert "save-cache" in btedp[12]["name"]
-                    assert "git-tag" in btedp[13]["name"]
-                    assert "update-cbis" in btedp[14]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btedp[10]["name"]
                     assert "save-cache" in btedp[11]["name"]
                     assert "git-tag" in btedp[12]["name"]
+                    assert "update-cbis" in btedp[13]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btedp[10]["name"]
+                    assert "git-tag" in btedp[11]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
                 assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
@@ -170,18 +166,16 @@ global:
                 assert "edp-npm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btd[8]["name"]
-                assert "get-nexus-repository-url" == btd[8]["taskRef"]["name"]
-                assert "push" in btd[9]["name"]
-                assert "npm" == btd[9]["taskRef"]["name"]
+                assert "push" in btd[8]["name"]
+                assert "npm" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[10]["name"]
-                    assert "save-cache" in btd[11]["name"]
-                    assert "git-tag" in btd[12]["name"]
-                    assert "update-cbis" in btd[13]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
+                    assert "update-cbis" in btd[12]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btd[9]["name"]
+                    assert "git-tag" in btd[10]["name"]
                 assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
@@ -198,18 +192,16 @@ global:
                 assert "edp-npm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btedp[8]["name"]
-                assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
-                assert "push" in btedp[9]["name"]
-                assert "npm" == btedp[9]["taskRef"]["name"]
+                assert "push" in btedp[8]["name"]
+                assert "npm" == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[10]["name"]
-                    assert "save-cache" in btedp[11]["name"]
-                    assert "git-tag" in btedp[12]["name"]
-                    assert "update-cbis" in btedp[13]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
+                    assert "update-cbis" in btedp[12]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btedp[9]["name"]
+                    assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
                 assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
@@ -275,18 +267,16 @@ global:
                 assert "edp-npm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btd[8]["name"]
-                assert "get-nexus-repository-url" == btd[8]["taskRef"]["name"]
-                assert "push" in btd[9]["name"]
-                assert "npm" == btd[9]["taskRef"]["name"]
+                assert "push" in btd[8]["name"]
+                assert "npm" == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[10]["name"]
-                    assert "save-cache" in btd[11]["name"]
-                    assert "git-tag" in btd[12]["name"]
-                    assert "update-cbis" in btd[13]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
+                    assert "update-cbis" in btd[12]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btd[9]["name"]
+                    assert "git-tag" in btd[10]["name"]
                 assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with edp versioning
@@ -303,17 +293,15 @@ global:
                 assert "edp-npm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
-                assert "get-nexus-repository-url" in btedp[8]["name"]
-                assert "get-nexus-repository-url" == btedp[8]["taskRef"]["name"]
-                assert "push" in btedp[9]["name"]
-                assert "npm" == btedp[9]["taskRef"]["name"]
+                assert "push" in btedp[8]["name"]
+                assert "npm" == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[10]["name"]
-                    assert "save-cache" in btedp[11]["name"]
-                    assert "git-tag" in btedp[12]["name"]
-                    assert "update-cbis" in btedp[13]["name"]
-                if cbtype == "lib":
+                    assert "kaniko-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
+                    assert "update-cbis" in btedp[12]["name"]
+                if cbtype == "lib":
+                    assert "save-cache" in btedp[9]["name"]
+                    assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
                 assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]

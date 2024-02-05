@@ -31,9 +31,6 @@ spec:
       type: string
       description: name of the secret for the Sonarqube integration
       default: "ci-sonarqube"
-    - name: NEXUS_REPOSITORY_URL
-      default: ""
-      description: Nexus repository URL. e.g. 'nexus:8081/repository/edp-npm-group'
     - name: CACHE_DIR
       default: "/workspace/source/cache"
       description: The path to the cache directory.
@@ -41,16 +38,28 @@ spec:
   workspaces:
     - name: source
 
+  volumes:
+    - name: settings-npm
+      configMap:
+        name: {{ .Values.tekton.configs.npmConfigMap }}
+
   steps:
     - name: init
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
 
+      volumeMounts:
+        - name: settings-npm
+          mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+      - secretRef:
+          name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
+
       env:
         - name: HOME
           value: "$(workspaces.source.path)/"
-        - name: NEXUS_REPOSITORY_URL
-          value: "$(params.NEXUS_REPOSITORY_URL)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:
@@ -71,15 +80,10 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
-
-        upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
-
-        npm config set registry ${NEXUS_HOST_URL}
-        npm config set always-auth=true
-        npm config set cache ${NPM_CACHE_DIR}
-        echo "_auth=$upBase64" >> .npmrc
-
-        npm ci --registry ${NEXUS_HOST_URL}/repository/edp-npm-group
+        
+        export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+        export npm_config_userconfig=/var/configmap/.npmrc-ci
+        npm ci
 
     - name: build
       image: $(params.BASE_IMAGE)

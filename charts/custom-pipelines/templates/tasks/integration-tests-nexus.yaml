@@ -31,10 +31,6 @@ spec:
       description: "Go proxy server"
       default: ""
       type: string
-    - name: ci-nexus
-      type: string
-      description: name of the secret holding the Nexus CI integration data
-      default: ci-nexus
     - name: nexus-login
       type: string
       description: Login for Nexus

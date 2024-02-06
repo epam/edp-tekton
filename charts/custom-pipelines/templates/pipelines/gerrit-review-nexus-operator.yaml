@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-go-other-app-review
+  name: gerrit-go-no-other-app-review
   labels:
     {{- include "edp-custom-pipelines.labels" . | nindent 4 }}
 spec:
@@ -81,6 +81,24 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+
+    - name: integration-test
+      taskRef:
+        kind: Task
+        name: nexus-integration-tests
+      runAfter:
+        - build
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: GOLANG_IMAGE
+          value: $(params.image)
+        - name: GOPROXY
+          value: $(params.GOPROXY)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
 
     - name: sonar
       taskRef:

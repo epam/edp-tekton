@@ -9,8 +9,8 @@ global:
     ht = helm_template(config)
     vcs = "gerrit"
 
-    review = f"{vcs}-go-other-app-review"
-    build = f"{vcs}-go-other-app-build-edp"
+    review = f"{vcs}-go-no-other-app-review"
+    build = f"{vcs}-go-no-other-app-build-edp"
 
     assert review in ht["pipeline"]
     assert build in ht["pipeline"]
@@ -24,10 +24,11 @@ global:
     assert "helm-docs" in r[5]["name"]
     assert "helm-lint" in r[6]["name"]
     assert "build" in r[7]["name"]
-    assert "sonar" in r[8]["name"]
-    assert "dockerfile-lint" in r[9]["name"]
-    assert "dockerbuild-verify" in r[10]["name"]
-    assert "save-cache" in r[11]["name"]
+    assert "integration-test" in r[8]["name"]
+    assert "sonar" in r[9]["name"]
+    assert "dockerfile-lint" in r[10]["name"]
+    assert "dockerbuild-verify" in r[11]["name"]
+    assert "save-cache" in r[12]["name"]
     assert "gerrit-vote-success" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
     assert "gerrit-vote-failure" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
 

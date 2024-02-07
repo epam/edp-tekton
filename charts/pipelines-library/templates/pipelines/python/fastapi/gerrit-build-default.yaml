@@ -92,10 +92,8 @@ spec:
           value: |
             # we checkout the source code in the /source directory
             # and hold cache in the /cache directory
-            cd source
 
             # build
-
             python setup.py clean build install --user
             # lint
             pip3 install -r test-requirements.txt
@@ -155,7 +153,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
 {{- include "build-pipeline-python-image-build-push-common" $ | nindent 4 }}
 

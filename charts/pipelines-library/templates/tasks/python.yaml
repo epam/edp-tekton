@@ -22,7 +22,7 @@ spec:
   params:
     - name: PATH_CONTEXT
       type: string
-      default: "."
+      default: "source"
       description: The path where package.json of the project is defined.
     - name: PIP_TRUSTED_HOST
       type: string
@@ -61,6 +61,10 @@ spec:
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
+    - name: PIP_CACHE_DIR
+      type: string
+      description: Cache directory of the pip
+      default: "$(workspaces.source.path)/cache/.cache/pip"
   steps:
     - name: python
       image: $(params.BASE_IMAGE)
@@ -74,6 +78,8 @@ spec:
           value: $(params.PIP_INDEX)
         - name: PIP_INDEX_URL
           value: $(params.PIP_INDEX_URL)
+        - name: PIP_CACHE_DIR
+          value: $(params.PIP_CACHE_DIR)
         - name: TWINE_REPOSITORY_URL
           value: $(params.TWINE_REPOSITORY_URL)
         - name: TWINE_NON_INTERACTIVE

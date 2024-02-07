@@ -12,7 +12,6 @@
       value: |
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
-        cd source
 
         python setup.py clean build install --user
   workspaces:
@@ -69,7 +68,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 {{- end -}}
 
 {{- define "python-review-gerrit-common" -}}
@@ -86,7 +84,6 @@
       value: |
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
-        cd source
 
         python setup.py clean build install --user
         pip3 install .
@@ -133,7 +130,6 @@
       value: |
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
-        cd source
 
         python setup.py clean build install --user
         pip3 install .

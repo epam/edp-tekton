@@ -22,7 +22,7 @@ spec:
 
   steps:
     - name: wait-for-deploy
-      image: epamedp/tekton-cd-pipeline:0.1.1
+      image: epamedp/tekton-cd-pipeline:0.1.2
       env:
         - name: ARGOCD_URL
           valueFrom:
@@ -63,5 +63,5 @@ spec:
         argocd app list -l $selector
 
         argocd app sync -l $selector --prune --replace --timeout 300
-        # TODO: uncomment when argocd will merge fix https://github.com/argoproj/argo-cd/pull/16816
-        # argocd app wait -l $selector --health --sync
+        # TODO: we build our custom argocd-cli that has fixed issue with argocd app wait
+        argocd app wait -l $selector --health --sync

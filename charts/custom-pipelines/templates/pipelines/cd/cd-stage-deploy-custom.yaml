@@ -1,0 +1,75 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: cd-stage-deploy-custom
+  labels:
+    app.edp.epam.com/pipeline: general-deployment
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  description: |
+    This Pipeline is used to deploy applications to the target Stage (Environment).
+  params:
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+      type: string
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+      type: string
+  tasks:
+    - name: clean-edp
+      taskRef:
+        kind: Task
+        name: clean-edp
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+
+    - name: deploy-app
+      taskRef:
+        kind: Task
+        name: deploy-applicationset-cli
+      runAfter:
+        - clean-edp
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+
+    - name: argo-cd-integration
+      taskRef:
+        kind: Task
+        name: argo-cd-integration
+      runAfter:
+        - deploy-app
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+
+    - name: promote-images
+      taskRef:
+        kind: Task
+        name: promote-images
+      runAfter:
+        - argo-cd-integration
+      params:
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+        - name: CDPIPELINE_STAGE
+          value: $(params.CDSTAGE)
+        - name: CDPIPELINE_CR
+          value: $(params.CDPIPELINE)

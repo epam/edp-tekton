@@ -1,0 +1,182 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: clean-edp
+spec:
+  params:
+    - name: PIPELINE
+      description: EDP kind:CDPipeline name used for deployment.
+      type: string
+      default: ""
+    - name: STAGE
+      description: EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values.
+      type: string
+      default: ""
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+      type: string
+    - name: KUBECONFIG_SECRET_NAME
+      type: string
+      default: "kubeconfig"
+  volumes:
+    - name: kubeconfig
+      secret:
+        secretName: $(params.KUBECONFIG_SECRET_NAME)
+        optional: true
+  steps:
+    - name: clean-edp
+      image: epamedp/tekton-autotest:0.1.3
+      volumeMounts:
+        - name: kubeconfig
+          mountPath: /workspace/source/kube
+      env:
+        - name: PIPELINE
+          value: "$(params.PIPELINE)"
+        - name: STAGE
+          value: "$(params.STAGE)"
+        - name: APPLICATIONS_PAYLOAD
+          value: "$(params.APPLICATIONS_PAYLOAD)"
+      script: |
+        #!/usr/bin/env python
+
+        import subprocess
+        import json
+        import os
+        import re
+
+        kubeconfig = "workspace/source/kube/config"
+
+        if os.path.isfile(kubeconfig):
+            print(f"Kubeconfig exists: {kubeconfig} , use it")
+            os.environ['KUBECONFIG'] = kubeconfig
+        else:
+            print("Kubeconfig does not exist, working on current cluster")
+
+        pipeline = os.getenv('PIPELINE')
+        stage = os.getenv('STAGE')
+
+        stages = subprocess.Popen(['kubectl', 'get', 'stages', pipeline + '-' + stage, '-o', "jsonpath='{.spec.namespace}'"], stdout=subprocess.PIPE)
+        output, error = stages.communicate()
+        target_namespace=output.decode('utf-8').strip("'")
+
+        print("Pipeline - " + pipeline)
+        print("Stage - " + stage)
+        print("Deployble namespace " + target_namespace)
+
+        get_crd = subprocess.Popen(['kubectl', 'get', 'crd', '-o', 'json'], stdout=subprocess.PIPE)
+
+        crd = json.load(get_crd.stdout)
+
+        edp_cr = [item['metadata']['name'] for item in crd['items'] if '.v2.edp.epam.com' in item['metadata']['name']]
+
+        keycloak_cr=["keycloakclients.v1.edp.epam.com",
+                    "keycloakclientscopes.v1.edp.epam.com",
+                    "keycloakrealmgroups.v1.edp.epam.com",
+                    "keycloakrealmroles.v1.edp.epam.com",
+                    "keycloakrealmrolebatches.v1.edp.epam.com",
+                    "keycloakauthflows.v1.edp.epam.com",
+                    "keycloakrealmcomponents.v1.edp.epam.com",
+                    "keycloakrealmidentityproviders.v1.edp.epam.com",
+                    "keycloakrealmusers.v1.edp.epam.com",
+                    "keycloakrealms.v1.edp.epam.com",
+                    "keycloaks.v1.edp.epam.com"]
+
+        list_validating_webhook_configuration = subprocess.run(
+            ['kubectl', 'get', 'ValidatingWebhookConfigurations',
+            '--no-headers', '--output=custom-columns=NAME:.metadata.name'],
+            capture_output=True, text=True
+        ).stdout.split('\n')
+
+        filtered_list = [vc for vc in list_validating_webhook_configuration if f"{target_namespace}" in vc]
+
+        for vc in filtered_list:
+            try:
+                subprocess.run(['kubectl', 'delete', 'ValidatingWebhookConfigurations', vc, '--timeout=12s'], check=True)
+                print(f"EDP Validating Webhook Configuration has been deleted: {vc}")
+            except subprocess.CalledProcessError:
+                print(f"Unable to find ValidatingWebhookConfigurations {vc}")
+
+
+
+
+        # Delete EDP cr
+
+        for cr in edp_cr:
+            resources_command = subprocess.run(
+                ['kubectl', 'get', cr, '-o', 'json', '-n', target_namespace],
+                capture_output=True, text=True
+            )
+            resources = json.loads(resources_command.stdout)
+
+            resource_names = [item['metadata']['name'] for item in resources['items']]
+
+            for element in resource_names:
+                print(f"Start deleting process, now deleting {element} in {cr}")
+                replace_finalizers_command = f"kubectl get {cr} {element} -o json -n {target_namespace} | jq 'del(.metadata.finalizers)' | kubectl replace -f -"
+                command = f"kubectl delete {cr} {element} --timeout='12s' --ignore-not-found -n {target_namespace}"
+                subprocess.run([replace_finalizers_command], shell=True, capture_output=True, text=True)
+                result = subprocess.run([command], shell=True, capture_output=True, text=True)
+                print(result.stdout)
+
+
+        # Delete Keycloak cr
+
+        for cr in keycloak_cr:
+            resources_command = subprocess.run(
+                ['kubectl', 'get', cr,'-o', 'json', '-n', target_namespace],
+                capture_output=True, text=True
+            )
+            # print(resources_command)
+            resources = json.loads(resources_command.stdout)
+            resource_names = [item['metadata']['name'] for item in resources['items']]
+
+            for element in resource_names:
+                print(f"Start deleting process, now deleting {element} in {cr}")
+                replace_finalizers_command = f"kubectl get {cr} {element} -o json -n {target_namespace} | jq 'del(.metadata.finalizers)' | kubectl replace -f -"
+                command = f"kubectl delete {cr} {element} --timeout='12s' --ignore-not-found -n {target_namespace}"
+                subprocess.run([replace_finalizers_command], shell=True, capture_output=True, text=True)
+                result = subprocess.run([command], shell=True, capture_output=True, text=True)
+                print(result.stdout)
+
+        # Delete EDP components
+
+        resources_command = subprocess.run(
+                ['kubectl', 'get', 'edpcomponents.v1.edp.epam.com','-o', 'json', '-n', target_namespace],
+                capture_output=True, text=True
+            )
+
+        resources = json.loads(resources_command.stdout)
+        resource_names = [item['metadata']['name'] for item in resources['items']]
+
+        for element in resource_names:
+            print(f"Start deleting process, now deleting {element} in edpcomponents.v1.edp.epam.com")
+            command = f"kubectl delete edpcomponents.v1.edp.epam.com {element} --timeout='12s' --ignore-not-found -n {target_namespace}"
+            result = subprocess.run([command], shell=True, capture_output=True, text=True)
+            print(result.stdout)
+
+    - name: delete-argo-app
+      image: epamedp/tekton-cd-pipeline:0.1.2
+      env:
+        - name: ARGOCD_URL
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: url
+        - name: ARGOCD_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: token
+        - name: PIPELINE
+          value: "$(params.PIPELINE)"
+        - name: STAGE
+          value: "$(params.STAGE)"
+      script: |
+        set -ex
+
+        export ARGOCD_OPTS="--core=false --grpc-web"
+        # the address of the Argo CD server without https:// prefix
+        export ARGOCD_SERVER=${ARGOCD_URL#*//}
+
+        argocd app delete -l "app.edp.epam.com/stage=$STAGE" -l "app.edp.epam.com/pipeline=$PIPELINE" --core=false --grpc-web -y

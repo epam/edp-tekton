@@ -62,6 +62,6 @@ spec:
 
         argocd app list -l $selector
 
-        argocd app sync -l $selector --prune --replace --timeout 300
+        argocd app sync -l $selector --prune --timeout 300
         # TODO: we build our custom argocd-cli that has fixed issue with argocd app wait
         argocd app wait -l $selector --health --sync

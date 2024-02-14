@@ -157,7 +157,7 @@ spec:
 
 {{- include "build-pipeline-python-image-build-push-common" $ | nindent 4 }}
 
-{{- include "save-cache" $ | nindent 4 }}
+{{- include "save-cache-pyhton" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" $ | nindent 4 }}
 

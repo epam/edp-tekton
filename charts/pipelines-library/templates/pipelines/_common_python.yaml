@@ -197,3 +197,19 @@
       workspace: shared-workspace
       subPath: source
 {{- end -}}
+
+{{- define "save-cache-pyhton" -}}
+- name: save-cache
+  taskRef:
+    kind: Task
+    name: save-cache
+  runAfter:
+    - push
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}

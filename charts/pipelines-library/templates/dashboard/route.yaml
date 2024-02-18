@@ -7,7 +7,7 @@ metadata:
     {{- include "tekton-dashboard.labels" . | nindent 4 }}
   name: {{ include "tekton-dashboard.name" . }}
 spec:
-  host: {{ include "tekton.tektonBaseUrl" . }}
+  host: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
   path: /
   port:
     targetPort: http

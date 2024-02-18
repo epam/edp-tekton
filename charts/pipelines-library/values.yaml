@@ -307,7 +307,7 @@ dashboard:
     tag: v0.43.1
 
   ingress:
-    # -- Deploy EDP Dashboard ingress as a part of pipeline library when true. Default: true
+    # -- Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
     enabled: true
     # -- Annotations for Ingress resource
     annotations: {}
@@ -317,7 +317,7 @@ dashboard:
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
-    #      - chart-example.local
+    #      - tekton-edp.example.com
 
 # Event listener to listen git webhooks
 eventListener:

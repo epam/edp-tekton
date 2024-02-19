@@ -80,7 +80,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.enabled | bool | `true` | Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }} |
 | dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
-| dashboard.nameOverride | string | `"edp-tekton-dashboard"` |  |
+| dashboard.nameOverride | string | `"tekton-dashboard"` |  |
 | dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"},"resources":{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |
 | dashboard.openshift_proxy.enabled | bool | `false` | Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false |
 | dashboard.openshift_proxy.image.repository | string | `"quay.io/openshift/origin-oauth-proxy"` | oauth-proxy image repository |
@@ -109,7 +109,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
 | interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
-| interceptor.nameOverride | string | `"edp-tekton-interceptor"` |  |
+| interceptor.nameOverride | string | `"tekton-interceptor"` |  |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |
 | interceptor.resources | object | `{"limits":{"cpu":"70m","memory":"60Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Interceptor |

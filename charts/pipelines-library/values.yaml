@@ -136,7 +136,7 @@ interceptor:
   # -- Deploy EDP interceptor as a part of pipeline library when true. Default: true
   enabled: true
 
-  nameOverride: "edp-tekton-interceptor"
+  nameOverride: "tekton-interceptor"
 
   image:
     repository: epamedp/edp-tekton
@@ -296,7 +296,7 @@ dashboard:
   # -- Namespace where cluster tekton triggers deployed. Default: tekton-pipelines
   triggersNamespace: "tekton-pipelines"
 
-  nameOverride: "edp-tekton-dashboard"
+  nameOverride: "tekton-dashboard"
   # -- Define mode for Tekton Dashboard. Enable/disaable capability to create/modify/remove Tekton objects via Tekton Dashboard. Default: false
   readOnly: false
 

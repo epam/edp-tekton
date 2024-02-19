@@ -24,25 +24,6 @@ spec:
       type: string
       default: "source"
       description: The path where package.json of the project is defined.
-    - name: PIP_TRUSTED_HOST
-      type: string
-      default: ""
-      description: Nexus Repository host PIP connects to via HTTP. e.g. 'nexus'
-    - name: PIP_INDEX
-      type: string
-      default: ""
-      description: >-
-        Private repo index PIP searches through. It is used by 'pip search' command.
-        e.g. 'http://nexus:8081/repository/edp-python-group/pypi'
-    - name: PIP_INDEX_URL
-      type: string
-      default: ""
-      description: >-
-        Repo index from wich PIP downloads private packages and public packages via proxy.
-        PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL can hold
-        multiple URLs if passed with spaces. It is used by 'pip install' command.
-        To access index via web, add slash at the end of 'simple/'.
-        e.g. 'http://nexus:8081/repository/edp-python-group/simple'
     - name: TWINE_REPOSITORY_URL
       type: string
       default: ""
@@ -72,12 +53,6 @@ spec:
       env:
         - name: HOME
           value: $(workspaces.source.path)
-        - name: PIP_TRUSTED_HOST
-          value: $(params.PIP_TRUSTED_HOST)
-        - name: PIP_INDEX
-          value: $(params.PIP_INDEX)
-        - name: PIP_INDEX_URL
-          value: $(params.PIP_INDEX_URL)
         - name: PIP_CACHE_DIR
           value: $(params.PIP_CACHE_DIR)
         - name: TWINE_REPOSITORY_URL
@@ -99,26 +74,47 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: url
+        - name: PIP_INDEX_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: PIP_INDEX_PATH
+              optional: true
+        - name: PIP_INDEX_URL_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: PIP_INDEX_URL_PATH
+        - name: REPOSITORY_SNAPSHOTS_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: REPOSITORY_SNAPSHOTS_PATH
+        - name: REPOSITORY_RELEASES_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: REPOSITORY_RELEASES_PATH
       script: |
         #!/usr/bin/env sh
         set -ex
         export PATH=$PATH:$HOME/.local/bin
 
-        if [ -z "${PIP_TRUSTED_HOST}" ]; then
-            export PIP_TRUSTED_HOST=$(echo "${NEXUS_HOST_URL}" | cut -d '/' -f 3 | cut -d ':' -f 1)
-        fi
+        # Artifact Storage Repository host PIP connects to via HTTP. e.g. 'nexus'
+        export PIP_TRUSTED_HOST=$(echo "${NEXUS_HOST_URL}" | cut -d '/' -f 3 | cut -d ':' -f 1)
 
-        if [ -z "${PIP_INDEX}" ]; then
-            export PIP_INDEX="${NEXUS_HOST_URL}/repository/edp-python-group/pypi"
-        fi
+        # Concatenate the base URL with the specific paths from the ConfigMap
+        export PIP_INDEX="${NEXUS_HOST_URL}${PIP_INDEX_PATH}"
+        export PIP_INDEX_URL="${NEXUS_HOST_URL}${PIP_INDEX_URL_PATH}"
+        export REPOSITORY_URL_SNAPSHOTS="${NEXUS_HOST_URL}${REPOSITORY_SNAPSHOTS_PATH}"
+        export REPOSITORY_URL_RELEASES="${NEXUS_HOST_URL}${REPOSITORY_RELEASES_PATH}"
 
-        if [ -z "${PIP_INDEX_URL}" ]; then
-            export PIP_INDEX_URL="${NEXUS_HOST_URL}/repository/edp-python-group/simple"
-        fi
-
-        echo "[TEKTON][INFO] PIP_INDEX contain ${PIP_INDEX}"
-        echo "[TEKTON][INFO] PIP_INDEX_URL contain ${PIP_INDEX_URL}"
-        echo "[TEKTON][INFO] PIP_TRUSTED_HOST contain ${PIP_TRUSTED_HOST}"
+        echo "[TEKTON][INFO] NEXUS_HOST_URL contains ${NEXUS_HOST_URL}"
+        echo "[TEKTON][INFO] PIP_INDEX contains ${PIP_INDEX}"
+        echo "[TEKTON][INFO] PIP_INDEX_URL contains ${PIP_INDEX_URL}"
+        echo "[TEKTON][INFO] PIP_TRUSTED_HOST contains ${PIP_TRUSTED_HOST}"
+        echo "[TEKTON][INFO] REPOSITORY_URL_SNAPSHOTS contains ${REPOSITORY_URL_SNAPSHOTS}"
+        echo "[TEKTON][INFO] REPOSITORY_URL_RELEASES contains ${REPOSITORY_URL_RELEASES}"
 
         netcr_file="$HOME/.netrc"
         if [ ! -f "${netcr_file}" ]; then

@@ -100,6 +100,11 @@ tekton:
     # To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap".
     # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml
     npmConfigMap: "custom-npm-settings"
+    # To use custom Python settings, the user should prepare another configuration map and update "pythonConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-python-settings.yaml
+    # -- Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX_PATH, PIP_INDEX_URL_PATH,
+    # REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables for Python tasks.
+    pythonConfigMap: "custom-python-settings"
 
   # Pruner provides auto clean up feature for the Tekton resources
   pruner:

@@ -142,14 +142,24 @@ spec:
         name: python
       runAfter:
         - sonar
-        - get-nexus-repository-url
       params:
-        - name: TWINE_REPOSITORY_URL
-          value: "$(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/"
         - name: EXTRA_COMMANDS
           value: |
             pip3 install -r test-requirements.txt
             python setup.py sdist
+
+            # Get package version from the get-version task
+            versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')
+
+            # # Define a repository for publishing the package
+            if echo "$versionLowerCase" | grep -q "snapshot"; then
+                TWINE_REPOSITORY_URL="${REPOSITORY_URL_SNAPSHOTS}"
+            else
+                TWINE_REPOSITORY_URL="${REPOSITORY_URL_RELEASES}"
+            fi
+
+            echo "[TEKTON][INFO] TWINE_REPOSITORY_URL contains ${TWINE_REPOSITORY_URL}"
+
             twine upload dist/*
       workspaces:
         - name: source

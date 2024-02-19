@@ -1,0 +1,42 @@
+{{- $configs := (.Values.tekton.configs | default dict) }}
+{{- $settingsConfigMap := $configs.pythonConfigMap | default "" }}
+{{- if eq $settingsConfigMap "custom-python-settings" }}
+# Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX, PIP_INDEX_URL,
+# REPOSITORY_URL_SNAPSHOTS and REPOSITORY_URL_RELEASES environment variables for Python tasks.
+# To change it, prepare another configuration map and update "tekton.configs.pythonConfigMap"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-python-settings
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  # Private repo index path PIP searches through. It is used by 'pip search' command.
+  # e.g. '/repository/edp-python-group/pypi'
+  PIP_INDEX_PATH: "/repository/edp-python-group/pypi"
+
+  # Repo index path from wich PIP downloads private packages and public packages via proxy.
+  # PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL can hold
+  # multiple URLs if passed with spaces. It is used by 'pip install' command.
+  # To access index via web, add slash at the end of 'simple/'.
+  # e.g. '/repository/edp-python-group/simple'
+  PIP_INDEX_URL_PATH: "/repository/edp-python-group/simple"
+
+  # Path for the snapshots repository in artifact storage.
+  REPOSITORY_SNAPSHOTS_PATH: "/repository/edp-python-snapshots/"
+
+  # Path for the releases repository in artifact storage
+  REPOSITORY_RELEASES_PATH: "/repository/edp-python-releases/"
+
+  # Example for pushing a snapshot and a release packages package to GitLab
+  # Ref: https://docs.gitlab.com/ee/user/packages/pypi_repository/
+  #PIP_INDEX_URL_PATH: "/api/v4/projects/PROJECT_ID/packages/pypi/simple"
+  #REPOSITORY_SNAPSHOTS_PATH: "/api/v4/projects/PROJECT_ID/packages/pypi/"
+  #REPOSITORY_RELEASES_PATH: "/api/v4/projects/PROJECT_ID/packages/pypi/"
+
+  # Example for pushing a snapshot and a release packages to Azure Devops Artifacts
+  # Ref: https://learn.microsoft.com/en-us/azure/devops/artifacts/quickstarts/python-packages?view=azure-devops
+  #PIP_INDEX_URL_PATH: "/<ORGANIZATION_NAME>/<PROJECT_NAME>/_packaging/<FEED_NAME>/pypi/simple"
+  #REPOSITORY_SNAPSHOTS_PATH: "/<ORGANIZATION_NAME>/<PROJECT_NAME>/_packaging/<FEED_NAME>/pypi/upload"
+  #REPOSITORY_RELEASES_PATH: "/<ORGANIZATION_NAME>/<PROJECT_NAME>/_packaging/<FEED_NAME>/pypi/upload"
+{{- end }}

@@ -182,6 +182,13 @@ interceptor:
       cpu: 50m
       memory: 40Mi
 
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+  # -- Toleration labels for pod assignment
+  tolerations: []
+  # -- Affinity settings for pod assignment
+  affinity: {}
+
 ctLint:
   validateMaintainers: false
   chartSchema: |
@@ -324,6 +331,13 @@ dashboard:
     #    hosts:
     #      - tekton-edp.example.com
 
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+  # -- Toleration labels for pod assignment
+  tolerations: []
+  # -- Affinity settings for pod assignment
+  affinity: {}
+
 # Event listener to listen git webhooks
 eventListener:
   ingress:
@@ -348,3 +362,10 @@ eventListener:
     limits:
       memory: "128Mi"
       cpu: "500m"
+
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+  # -- Toleration labels for pod assignment
+  tolerations: []
+  # -- Affinity settings for pod assignment
+  affinity: {}

@@ -100,8 +100,18 @@ spec:
               type: RuntimeDefault
           resources:
             {{- toYaml .Values.dashboard.resources | nindent 12 }}
+      {{- with .Values.dashboard.nodeSelector }}
       nodeSelector:
-        kubernetes.io/os: linux
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dashboard.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dashboard.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccount: {{ include "tekton-dashboard.name" . }}
       serviceAccountName: {{ include "tekton-dashboard.name" . }}
       {{ if and .Values.dashboard.openshift_proxy.enabled (eq .Values.global.platform "openshift") }}

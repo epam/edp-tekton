@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "tekton-cache.fullname" . }}
+  name: {{ include "tekton-cache.name" . }}
   labels:
     {{- include "tekton-cache.labels" . | nindent 4 }}
 spec:

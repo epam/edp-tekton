@@ -61,4 +61,16 @@ spec:
               - name: ''
                 resources:
                   {{- toYaml .Values.eventListener.resources | nindent 18 }}
+            {{- with .Values.eventListener.nodeSelector }}
+            nodeSelector:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.eventListener.affinity }}
+            affinity:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.eventListener.tolerations }}
+            tolerations:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
 {{ end }}

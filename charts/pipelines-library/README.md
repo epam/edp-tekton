@@ -74,6 +74,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | ctLint.chartSchema | string | `"name: str()\nhome: str()\nversion: str()\ntype: str()\napiVersion: str()\nappVersion: any(str(), num())\ndescription: str()\nkeywords: list(str(), required=False)\nsources: list(str(), required=True)\nmaintainers: list(include('maintainer'), required=True)\ndependencies: list(include('dependency'), required=False)\nicon: str(required=False)\nengine: str(required=False)\ncondition: str(required=False)\ntags: str(required=False)\ndeprecated: bool(required=False)\nkubeVersion: str(required=False)\nannotations: map(str(), str(), required=False)\n---\nmaintainer:\n  name: str(required=True)\n  email: str(required=False)\n  url: str(required=False)\n---\ndependency:\n  name: str()\n  version: str()\n  repository: str()\n  condition: str(required=False)\n  tags: list(str(), required=False)\n  enabled: bool(required=False)\n  import-values: any(list(str()), list(include('import-value')), required=False)\n  alias: str(required=False)\n"` |  |
 | ctLint.lintconf | string | `"---\nrules:\n  braces:\n    min-spaces-inside: 0\n    max-spaces-inside: 0\n    min-spaces-inside-empty: -1\n    max-spaces-inside-empty: -1\n  brackets:\n    min-spaces-inside: 0\n    max-spaces-inside: 0\n    min-spaces-inside-empty: -1\n    max-spaces-inside-empty: -1\n  colons:\n    max-spaces-before: 0\n    max-spaces-after: 1\n  commas:\n    max-spaces-before: 0\n    min-spaces-after: 1\n    max-spaces-after: 1\n  comments:\n    require-starting-space: true\n    min-spaces-from-content: 2\n  document-end: disable\n  document-start: disable           # No --- to start a file\n  empty-lines:\n    max: 2\n    max-start: 0\n    max-end: 0\n  hyphens:\n    max-spaces-after: 1\n  indentation:\n    spaces: consistent\n    indent-sequences: whatever      # - list indentation will handle both indentation and without\n    check-multi-line-strings: false\n  key-duplicates: enable\n  line-length: disable              # Lines can be any length\n  new-line-at-end-of-file: enable\n  new-lines:\n    type: unix\n  trailing-spaces: enable\n  truthy:\n    level: warning\n"` |  |
 | ctLint.validateMaintainers | bool | `false` |  |
+| dashboard.affinity | object | `{}` | Affinity settings for pod assignment |
 | dashboard.enabled | bool | `true` | Deploy EDP Dashboard as a part of pipeline library when true. Default: true |
 | dashboard.image.repository | string | `"gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"` | Define tekton dashboard docker image name |
 | dashboard.image.tag | string | `"v0.43.1"` | Define tekton dashboard docker image tag |
@@ -81,6 +82,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.ingress.enabled | bool | `true` | Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }} |
 | dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
 | dashboard.nameOverride | string | `"tekton-dashboard"` |  |
+| dashboard.nodeSelector | object | `{}` | Node labels for pod assignment |
 | dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"},"resources":{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |
 | dashboard.openshift_proxy.enabled | bool | `false` | Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false |
 | dashboard.openshift_proxy.image.repository | string | `"quay.io/openshift/origin-oauth-proxy"` | oauth-proxy image repository |
@@ -89,11 +91,15 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.pipelinesNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines |
 | dashboard.readOnly | bool | `false` | Define mode for Tekton Dashboard. Enable/disaable capability to create/modify/remove Tekton objects via Tekton Dashboard. Default: false |
 | dashboard.resources | object | `{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Dashboard |
+| dashboard.tolerations | list | `[]` | Toleration labels for pod assignment |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
+| eventListener.affinity | object | `{}` | Affinity settings for pod assignment |
 | eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | eventListener.ingress.enabled | bool | `true` | Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true |
 | eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
+| eventListener.nodeSelector | object | `{}` | Node labels for pod assignment |
 | eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | The resource limits and requests for the Tekton eventListener |
+| eventListener.tolerations | list | `[]` | Toleration labels for pod assignment |
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"ci-github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
@@ -104,12 +110,14 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
 | global.gitProvider | string | `"github"` | Define Git Provider to be used in Pipelines. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
+| interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
 | interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
 | interceptor.nameOverride | string | `"tekton-interceptor"` |  |
+| interceptor.nodeSelector | object | `{}` | Node labels for pod assignment |
 | interceptor.podAnnotations | object | `{}` |  |
 | interceptor.podSecurityContext | object | `{}` |  |
 | interceptor.resources | object | `{"limits":{"cpu":"70m","memory":"60Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Interceptor |
@@ -121,6 +129,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | interceptor.securityContext.runAsUser | int | `65532` |  |
 | interceptor.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | interceptor.serviceAccount.name | string | `""` | If not set, a name is generated using the fullname template |
+| interceptor.tolerations | list | `[]` | Toleration labels for pod assignment |
 | kaniko.customCert | bool | `false` | Save cert in secret "custom-ca-certificates" with key ca.crt |
 | kaniko.image.repository | string | `"gcr.io/kaniko-project/executor"` |  |
 | kaniko.image.tag | string | `"v1.12.1"` |  |

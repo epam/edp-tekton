@@ -123,18 +123,6 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-    - name: get-nexus-repository-url
-      taskRef:
-        kind: Task
-        name: get-nexus-repository-url
-      runAfter:
-        - get-version
-      params:
-        - name: VERSION
-          value: $(tasks.get-version.results.VERSION)
-        - name: TOOL
-          value: "python"
-
     - name: push
       taskRef:
         kind: Task

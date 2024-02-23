@@ -22,7 +22,7 @@ spec:
             name: "cel"
           params:
             - name: "filter"
-              value: "body.action in ['closed']"
+              value: "body.action in ['closed'] && body.pull_request.merged == true"
         - ref:
             name: "edp"
             kind: NamespacedInterceptor

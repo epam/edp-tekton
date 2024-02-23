@@ -31,36 +31,12 @@
       workspace: shared-workspace
       subPath: source
 
-- name: get-nexus-repository-url
-  taskRef:
-    kind: Task
-    name: get-nexus-repository-url
-  runAfter:
-    - init-values
-  params:
-    - name: VERSION
-      value: $(tasks.get-version.results.VERSION)
-    - name: TOOL
-      value: "dotnet"
-
-- name: get-nuget-token
-  taskRef:
-    kind: Task
-    name: get-nuget-token
-  runAfter:
-    - get-nexus-repository-url
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
-
 - name: push
   taskRef:
     kind: Task
     name: dotnet
   runAfter:
     - sonar
-    - get-nuget-token
   params:
     - name: BASE_IMAGE
       value: $(params.image)

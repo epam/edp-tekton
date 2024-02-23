@@ -1,0 +1,31 @@
+{{- $configs := (.Values.tekton.configs | default dict) }}
+{{- $settingsConfigMap := $configs.nugetConfigMap | default "" }}
+{{- if eq $settingsConfigMap "custom-nuget-settings" }}
+# Default configuration maps for provisioning nuget.config file.
+# To change it, prepare another configuration map and update "tekton.configs.nugetConfigMap"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-nuget-settings
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  nuget.config: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <configuration>
+        <packageSources>
+            <add key="nugetStorageSnapshots" value="%NEXUS_HOST_URL%/repository/edp-dotnet-snapshots" />
+            <add key="nugetStorageReleases" value="%NEXUS_HOST_URL%/repository/edp-dotnet-releases" />
+        </packageSources>
+        <packageSourceCredentials>
+            <nugetStorageSnapshots>
+                <add key="Username" value="%CI_USERNAME%" />
+                <add key="ClearTextPassword" value="%CI_PASSWORD%" />
+            </nugetStorageSnapshots>
+            <nugetStorageReleases>
+                <add key="Username" value="%CI_USERNAME%" />
+                <add key="ClearTextPassword" value="%CI_PASSWORD%" />
+            </nugetStorageReleases>
+        </packageSourceCredentials>
+    </configuration>
+{{- end }}

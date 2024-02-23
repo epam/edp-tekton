@@ -105,6 +105,10 @@ tekton:
     # -- Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX_PATH, PIP_INDEX_URL_PATH,
     # REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables for Python tasks.
     pythonConfigMap: "custom-python-settings"
+    # To use custom NuGet settings, the user should prepare another configuration map and update "nugetConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-nuget-settings.yaml.
+    # -- Default configuration maps for provisioning nuget.config file.
+    nugetConfigMap: "custom-nuget-settings"
 
   # Pruner provides auto clean up feature for the Tekton resources
   pruner:

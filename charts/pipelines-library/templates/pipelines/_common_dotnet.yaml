@@ -70,9 +70,20 @@
         slnFilename=$(ls *.sln)
         nugetPackagesPath="/tmp/project-nupkgs/"
         dotnet pack ${slnFilename} --no-build --output ${nugetPackagesPath} "-p:PackageVersion=$(tasks.get-version.results.VERSION)"
-        set +x
-        nugetApiKey=$(cat $(tasks.get-nuget-token.results.NUGET_TOKEN_FILE))
-        dotnet nuget push ${nugetPackagesPath} -k ${nugetApiKey} -s $(tasks.get-nexus-repository-url.results.NEXUS_REPOSITORY_URL)/
+
+        # Get package version from the get-version task
+        versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')
+
+        # Define a repository for publishing the package
+        if echo "$versionLowerCase" | grep -q "snapshot"; then
+            ARTIFACT_REPOSITORY_SOURCE="nugetStorageSnapshots"
+        else
+            ARTIFACT_REPOSITORY_SOURCE="nugetStorageReleases"
+        fi
+        
+        # Note: The api-key is only used as a placeholder. 
+        # Ref: https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages
+        dotnet nuget push ${nugetPackagesPath} --source ${ARTIFACT_REPOSITORY_SOURCE} --api-key key
   workspaces:
     - name: source
       workspace: shared-workspace

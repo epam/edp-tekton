@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if has "github" .Values.global.gitProviders }}
 {{- $frameworks := list "fastapi" "flask" -}}
 {{- range $framework := $frameworks }}
 apiVersion: tekton.dev/v1

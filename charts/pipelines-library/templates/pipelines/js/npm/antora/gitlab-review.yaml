@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if has "gitlab" .Values.global.gitProviders }}
 {{- $resourceMapping := dict "antora" "antora/antora:3.1.4" -}}
 {{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1

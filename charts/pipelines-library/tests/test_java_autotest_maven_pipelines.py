@@ -4,7 +4,8 @@ from .helpers import helm_template
 def test_java_pipelines_gerrit():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
     """
 
     r = helm_template(config)
@@ -55,7 +56,8 @@ global:
 def test_java_pipelines_github():
     config = """
 global:
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
     r = helm_template(config)
@@ -105,7 +107,8 @@ global:
 def test_java_pipelines_gitlab():
     config = """
 global:
-  gitProvider: gitlab
+  gitProviders:
+    - gitlab
     """
 
     r = helm_template(config)

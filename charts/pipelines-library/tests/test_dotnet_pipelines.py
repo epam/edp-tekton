@@ -4,7 +4,8 @@ from .helpers import helm_template
 def test_dotnet_pipelines_harbor_gerrit():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
     """
 
     ht = helm_template(config)
@@ -103,7 +104,8 @@ global:
 def test_dotnet_pipelines_harbor_gitlab():
     config = """
 global:
-  gitProvider: gitlab
+  gitProviders:
+    - gitlab
     """
 
     ht = helm_template(config)
@@ -200,7 +202,8 @@ global:
 def test_dotnet_pipelines_harbor_github():
     config = """
 global:
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
     ht = helm_template(config)

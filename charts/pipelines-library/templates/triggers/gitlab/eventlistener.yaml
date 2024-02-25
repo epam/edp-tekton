@@ -1,8 +1,8 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{- if and (has "gitlab" .Values.global.gitProviders) .Values.eventListener.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: edp
+  name: edp-gitlab
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

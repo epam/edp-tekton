@@ -1,20 +1,23 @@
-{{- if ne .Values.global.gitProvider "gerrit" -}}
-{{ if eq .Values.global.platform "kubernetes" }}
+{{- if eq .Values.global.platform "kubernetes" }}
 {{- if .Values.eventListener.ingress.enabled }}
+{{- $root := . -}}
+{{- $gitProviders := .Values.global.gitProviders -}}
+{{- range $gitProvider := $gitProviders }}
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: event-listener
+  name: event-listener-{{ $gitProvider }}
   labels:
-    {{- include "edp-tekton.labels" . | nindent 4 }}
-  {{- with .Values.eventListener.ingress.annotations }}
+    {{- include "edp-tekton.labels" $root | nindent 4 }}
+  {{- with $root.Values.eventListener.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-{{- if .Values.eventListener.ingress.tls }}
+{{- if $root.Values.eventListener.ingress.tls }}
   tls:
-    {{- range .Values.eventListener.ingress.tls }}
+    {{- range $root.Values.eventListener.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -23,7 +26,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    - host: el-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    - host: el-{{ $gitProvider }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
       http:
         paths:
           - path: /
@@ -31,7 +34,7 @@ spec:
             backend:
               service:
                 # The service name will come from EventListener CR
-                name: el-edp
+                name: el-edp-{{ $gitProvider }}
                 port:
                   number: 8080
 {{- end }}

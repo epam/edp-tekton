@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if has "gitlab" .Values.global.gitProviders }}
 apiVersion: v2.edp.epam.com/v1
 kind: QuickLink
 metadata:

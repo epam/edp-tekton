@@ -1,8 +1,8 @@
-{{ if eq .Values.global.gitProvider "gerrit" }}
+{{- if and (has "gerrit" .Values.global.gitProviders) .Values.eventListener.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: edp
+  name: edp-gerrit
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:

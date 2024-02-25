@@ -4,7 +4,8 @@ from .helpers import helm_template
 def test_gerrit_is_disabled():
     config = """
 global:
-  gitProvider: unsupported
+  gitProviders:
+    - unsupported
     """
 
     r = helm_template(config)
@@ -18,7 +19,8 @@ global:
 def test_gerrit_is_enabled_with_custom_port():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
   gerritSSHPort: "777"
     """
 

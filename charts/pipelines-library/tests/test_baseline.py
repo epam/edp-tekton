@@ -26,30 +26,48 @@ def test_ingress_for_gitlab_el():
     config = """
 global:
   dnsWildCard: "example.com"
-  gitProvider: gitlab
+  gitProviders:
+    - gitlab
     """
 
-    el_Name = "event-listener"
+    el_Name = "event-listener-gitlab"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-gitlab-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-gitlab" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_github_el():
     config = """
 global:
   dnsWildCard: "example.com"
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
-    el_Name = "event-listener"
+    el_Name = "event-listener-github"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-edp" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-github-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-github" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+
+
+def test_ingress_for_gerrit_el():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - gerrit
+    """
+
+    el_Name = "event-listener-gerrit"
+    r = helm_template(config)
+
+    assert el_Name in r["ingress"]
+    assert "el-gerrit-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_pruner_disabled():

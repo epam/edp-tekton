@@ -94,6 +94,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.tolerations | list | `[]` | Toleration labels for pod assignment |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
 | eventListener.affinity | object | `{}` | Affinity settings for pod assignment |
+| eventListener.enabled | bool | `true` | Deploy eventListener as a part of pipeline library when true. Default: true |
 | eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | eventListener.ingress.enabled | bool | `true` | Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true |
 | eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
@@ -103,12 +104,14 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | fullnameOverride | string | `""` |  |
 | github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
 | github.webhook.existingSecret | string | `"ci-github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
+| github.webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |
 | gitlab.host | string | `"gitlab.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
 | gitlab.webhook.existingSecret | string | `"ci-gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
+| gitlab.webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
-| global.gitProvider | string | `"github"` | Define Git Provider to be used in Pipelines. Can be gerrit, gitlab, github (default) |
+| global.gitProviders | list | `["github","gitlab","gerrit"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
@@ -150,4 +153,3 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.pruner.schedule | string | `"0 * * * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |
 | tekton.workspaceSize | string | `"3Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |
-| webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |

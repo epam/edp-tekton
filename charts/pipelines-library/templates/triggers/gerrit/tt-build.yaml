@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "gerrit" }}
+{{ if has "gerrit" .Values.global.gitProviders }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:

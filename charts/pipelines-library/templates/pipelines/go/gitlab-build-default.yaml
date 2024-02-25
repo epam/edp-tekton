@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "gitlab" }}
+{{ if has "gitlab" .Values.global.gitProviders }}
 {{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
 {{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1

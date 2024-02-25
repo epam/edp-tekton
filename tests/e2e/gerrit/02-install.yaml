@@ -4,7 +4,7 @@ commands:
   - command: |
       helm install tekton-e2e ../../../charts/pipelines-library --set interceptor.image.repository=${E2E_IMAGE_REPOSITORY} --set interceptor.image.tag=${E2E_IMAGE_TAG}
         --set global.dnsWildCard=example.com
-        --set global.gitProvider=gerrit
+        --set global.gitProviders[0]=gerrit
         --set global.dockerRegistry.type=harbor
         --set global.dockerRegistry.url=harbor.example.com
         --replace --wait

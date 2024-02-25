@@ -3,7 +3,8 @@ from .helpers import helm_template
 def test_helm_pipelines_gerrit():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
     """
 
     ht = helm_template(config)
@@ -113,7 +114,8 @@ global:
 def test_helm_pipelines_gitlab():
     config = """
 global:
-  gitProvider: gitlab
+  gitProviders:
+    - gitlab
     """
 
     ht = helm_template(config)
@@ -218,7 +220,8 @@ global:
 def test_helm_pipelines_github():
     config = """
 global:
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
     ht = helm_template(config)

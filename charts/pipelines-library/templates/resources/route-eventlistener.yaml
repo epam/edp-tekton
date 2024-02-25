@@ -1,4 +1,4 @@
-{{- if ne .Values.global.gitProvider "gerrit" -}}
+{{- if not (has "gerrit" .Values.global.gitProviders) -}}
 {{ if eq .Values.global.platform "openshift" }}
 apiVersion: route.openshift.io/v1
 kind: Route

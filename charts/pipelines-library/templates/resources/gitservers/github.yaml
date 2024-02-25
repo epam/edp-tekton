@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if has "github" .Values.global.gitProviders }}
 apiVersion: v2.edp.epam.com/v1
 kind: GitServer
 metadata:
@@ -12,5 +12,5 @@ spec:
   httpsPort: 443
   nameSshKeySecret: {{ .Values.github.webhook.existingSecret }}
   sshPort: 22
-  skipWebhookSSLVerification: {{ .Values.webhook.skipWebhookSSLVerification }}
+  skipWebhookSSLVerification: {{ .Values.github.webhook.skipWebhookSSLVerification }}
 {{ end }}

@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if has "github" .Values.global.gitProviders }}
 {{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
 {{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1

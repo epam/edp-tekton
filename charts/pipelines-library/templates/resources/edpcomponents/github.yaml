@@ -1,4 +1,4 @@
-{{ if eq .Values.global.gitProvider "github" }}
+{{ if has "github" .Values.global.gitProviders }}
 apiVersion: v1.edp.epam.com/v1
 kind: EDPComponent
 metadata:

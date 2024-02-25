@@ -4,13 +4,14 @@ from .helpers import helm_template
 def test_github_is_enabled():
     config = """
 global:
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
     r = helm_template(config)
 
-    glb = r["eventlistener"]["edp"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    glr = r["eventlistener"]["edp"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
+    glb = r["eventlistener"]["edp-github"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
+    glr = r["eventlistener"]["edp-github"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
     gitserver = r["gitserver"]["github"]["spec"]
 
     assert "secretString" \

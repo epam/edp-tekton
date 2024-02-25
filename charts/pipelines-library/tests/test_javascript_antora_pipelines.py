@@ -4,7 +4,8 @@ from .helpers import helm_template
 def test_javascript_antora_pipelines_harbor_gerrit():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
     """
 
     r = helm_template(config)
@@ -69,7 +70,8 @@ global:
 def test_javascript_antora_pipelines_harbor_github():
     config = """
 global:
-  gitProvider: github
+  gitProviders:
+    - github
     """
 
     r = helm_template(config)
@@ -134,7 +136,8 @@ global:
 def test_javascript_antora_pipelines_harbor_gitlab():
     config = """
 global:
-  gitProvider: gitlab
+  gitProviders:
+    - gitlab
     """
 
     r = helm_template(config)

@@ -6,8 +6,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 global:
-  # -- Define Git Provider to be used in Pipelines. Can be gerrit, gitlab, github (default)
-  gitProvider: github
+  # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
+  # Pipelines, EventListener, Tasks, etc.
+  # -- Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default)
+  gitProviders:
+    - github
+    - gitlab
+    - gerrit
+
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
   # -- Gerrit SSH node port
@@ -36,10 +42,6 @@ tekton-cache:
   # -- Defines the URL to the tekton-cache. Default: http://tekton-cache:8080
   url: "http://tekton-cache:8080"
 
-webhook:
-  # -- If true, webhook ssl verification will be skipped. Default: false
-  skipWebhookSSLVerification: false
-
 # Kaniko configuration section
 kaniko:
   # -- AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
@@ -51,19 +53,25 @@ kaniko:
   # -- Save cert in secret "custom-ca-certificates" with key ca.crt
   customCert: false
 
+# If gitProviders contains github, the following configuration should be provided
 github:
   # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com
   host: github.com
   webhook:
     # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
     existingSecret: ci-github
+    # -- If true, webhook ssl verification will be skipped. Default: false
+    skipWebhookSSLVerification: false
 
+# If gitProviders contains gitlab, the following configuration should be provided
 gitlab:
   # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
   host: gitlab.com
   webhook:
     # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
     existingSecret: ci-gitlab
+    # -- If true, webhook ssl verification will be skipped. Default: false
+    skipWebhookSSLVerification: false
 
 # Tekton configuration section
 tekton:
@@ -343,7 +351,15 @@ dashboard:
   affinity: {}
 
 # Event listener to listen git webhooks
+# EventListener is a Kubernetes resource that listens for events from a GitProvider and triggers a PipelineRun to run a Pipeline.
+# We create eventListener for each git provider
 eventListener:
+  # We might have multiple git Servers, so we need to create eventListeners per each git server
+  # Currently, we create two Git Servers: GitHub and GitLab using this chart. But there is a possibility to add more Git Servers
+  # using the EDP Portal UI, so codebase-operator can create a new eventListener for each new Git Server, for such case we need to
+  # set the following value to false and disable the creation of eventListeners from chart.
+  # -- Deploy eventListener as a part of pipeline library when true. Default: true
+  enabled: true
   ingress:
     # -- Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true
     enabled: true

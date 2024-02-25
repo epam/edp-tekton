@@ -3,7 +3,8 @@ from .helpers_custom import helm_template
 def test_operator():
     config = """
 global:
-  gitProvider: gerrit
+  gitProviders:
+    - gerrit
     """
 
     ht = helm_template(config)

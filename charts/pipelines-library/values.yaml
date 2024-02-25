@@ -11,8 +11,8 @@ global:
   # -- Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default)
   gitProviders:
     - github
-    - gitlab
-    - gerrit
+    # - gitlab
+    # - gerrit
 
   # -- a cluster DNS wildcard name
   dnsWildCard: ""

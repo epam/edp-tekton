@@ -111,7 +111,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
-| global.gitProviders | list | `["github","gitlab","gerrit"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
+| global.gitProviders | list | `["github"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |

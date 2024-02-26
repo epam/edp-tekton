@@ -10,17 +10,14 @@ global:
 
     r = helm_template(config)
 
-    glb = r["eventlistener"]["edp-github"]["spec"]["triggers"][0]["interceptors"][0]["params"][0]["value"]
-    glr = r["eventlistener"]["edp-github"]["spec"]["triggers"][1]["interceptors"][0]["params"][0]["value"]
-    gitserver = r["gitserver"]["github"]["spec"]
+    # Access the event listener using the new structure
+    el = r["eventlistener"]["edp-github"]["spec"]
 
-    assert "secretString" \
-           == glb["secretKey"] \
-           == glr["secretKey"]
+    # Check if the triggers are correctly set
+    assert "github-build" == el["triggers"][0]["triggerRef"]
+    assert "github-review" == el["triggers"][1]["triggerRef"]
 
-    assert "ci-github" \
-           == glb["secretName"] \
-           == glr["secretName"]
+    gitserver = r["gitserver"]["my-github"]["spec"]
 
     assert "github.com" == gitserver["gitHost"]
     assert "github" == gitserver["gitProvider"]
@@ -28,3 +25,49 @@ global:
     assert 443 == gitserver["httpsPort"]
     assert "ci-github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
+
+
+def test_github_build_trigger():
+    config = """
+global:
+  gitProviders:
+    - github
+    """
+
+    r = helm_template(config)
+
+    # Access the github-build trigger using the new structure
+    trigger = r["trigger"]["github-build"]["spec"]
+
+    # Check if the interceptors are correctly set
+    assert "github" == trigger["interceptors"][0]["ref"]["name"]
+    assert "ci-github" == trigger["interceptors"][0]["params"][0]["value"]["secretName"]
+    assert ["pull_request"] == trigger["interceptors"][0]["params"][1]["value"]
+
+    # Check if the bindings and template are correctly set
+    assert "github-binding-build" == trigger["bindings"][0]["ref"]
+    assert "github-build-template" == trigger["template"]["ref"]
+
+
+def test_github_review_trigger():
+    config = """
+global:
+  gitProviders:
+    - github
+    """
+
+    r = helm_template(config)
+
+    # Access the github-review trigger using the new structure
+    trigger = r["trigger"]["github-review"]["spec"]
+
+    # Check if the interceptors are correctly set
+    assert "github" == trigger["interceptors"][0]["ref"]["name"]
+    assert "ci-github" == trigger["interceptors"][0]["params"][0]["value"]["secretName"]
+    assert ["pull_request", "issue_comment"] == trigger["interceptors"][0]["params"][1][
+        "value"
+    ]
+
+    # Check if the bindings and template are correctly set
+    assert "github-binding-review" == trigger["bindings"][0]["ref"]
+    assert "github-review-template" == trigger["template"]["ref"]

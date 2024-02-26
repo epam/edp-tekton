@@ -47,11 +47,11 @@ spec:
         - name: "STATE"
           value: "pending"
         - name: "GITLAB_HOST_URL"
-          value: "{{ .Values.gitlab.host }}"
+          value: "$(params.git-source-url)"
         - name: "REPO_FULL_NAME"
           value: "$(params.gitfullrepositoryname)"
         - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: {{ .Values.gitlab.webhook.existingSecret }}
+          value: ci-gitlab
         - name: "GITLAB_TOKEN_SECRET_KEY"
           value: token
         - name: "SHA"

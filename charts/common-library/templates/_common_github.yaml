@@ -46,7 +46,7 @@
     - name: AUTH_TYPE
       value: Token
     - name: GITHUB_TOKEN_SECRET_NAME
-      value: {{ .Values.github.webhook.existingSecret }}
+      value: ci-github
     - name: GITHUB_TOKEN_SECRET_KEY
       value: token
     - name: SHA
@@ -109,7 +109,7 @@ finally:
       - name: AUTH_TYPE
         value: Token
       - name: GITHUB_TOKEN_SECRET_NAME
-        value: {{ .Values.github.webhook.existingSecret }}
+        value: ci-github
       - name: GITHUB_TOKEN_SECRET_KEY
         value: token
       - name: SHA
@@ -135,7 +135,7 @@ finally:
       - name: AUTH_TYPE
         value: Token
       - name: GITHUB_TOKEN_SECRET_NAME
-        value: {{ .Values.github.webhook.existingSecret }}
+        value: ci-github
       - name: GITHUB_TOKEN_SECRET_KEY
         value: token
       - name: SHA

@@ -11,8 +11,8 @@ global:
   # -- Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default)
   gitProviders:
     - github
-    # - gitlab
-    # - gerrit
+    - gitlab
+    - gerrit
 
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
@@ -52,26 +52,6 @@ kaniko:
   # -- Set up true if external docker registry use custom certificate
   # -- Save cert in secret "custom-ca-certificates" with key ca.crt
   customCert: false
-
-# If gitProviders contains github, the following configuration should be provided
-github:
-  # -- The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com
-  host: github.com
-  webhook:
-    # -- Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: ci-github
-    # -- If true, webhook ssl verification will be skipped. Default: false
-    skipWebhookSSLVerification: false
-
-# If gitProviders contains gitlab, the following configuration should be provided
-gitlab:
-  # -- The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com
-  host: gitlab.com
-  webhook:
-    # -- Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key
-    existingSecret: ci-gitlab
-    # -- If true, webhook ssl verification will be skipped. Default: false
-    skipWebhookSSLVerification: false
 
 # Tekton configuration section
 tekton:
@@ -350,42 +330,100 @@ dashboard:
   # -- Affinity settings for pod assignment
   affinity: {}
 
-# Event listener to listen git webhooks
-# EventListener is a Kubernetes resource that listens for events from a GitProvider and triggers a PipelineRun to run a Pipeline.
-# We create eventListener for each git provider
-eventListener:
-  # We might have multiple git Servers, so we need to create eventListeners per each git server
-  # Currently, we create two Git Servers: GitHub and GitLab using this chart. But there is a possibility to add more Git Servers
-  # using the EDP Portal UI, so codebase-operator can create a new eventListener for each new Git Server, for such case we need to
-  # set the following value to false and disable the creation of eventListeners from chart.
-  # -- Deploy eventListener as a part of pipeline library when true. Default: true
-  enabled: true
-  ingress:
-    # -- Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true
-    enabled: true
-    # -- Annotations for Ingress resource
-    annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-    # -- Hostname(s) for the Ingress resource
-    # -- Ingress TLS configuration
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
+# GitServers configuration section
+# GitServer creation depends on the gitProviders configuration, if gitProvider is not enabled,
+# the GitServer will not be created.
+# gitServers: {}
+gitServers:
+  - name: my-github
+    gitProvider: github
+    host: github.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
 
-  # -- The resource limits and requests for the Tekton eventListener
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "50m"
-    limits:
-      memory: "128Mi"
-      cpu: "500m"
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
 
-  # -- Node labels for pod assignment
-  nodeSelector: {}
-  # -- Toleration labels for pod assignment
-  tolerations: []
-  # -- Affinity settings for pod assignment
-  affinity: {}
+  - name: my-gitlab
+    gitProvider: gitlab
+    host: gitlab.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
+
+  - name: my-gerrit
+    gitProvider: gerrit
+    host: gerrit.example.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []

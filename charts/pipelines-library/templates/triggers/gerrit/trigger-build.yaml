@@ -1,0 +1,29 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: gerrit-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  interceptors:
+    - ref:
+        name: "cel"
+      params:
+        - name: "filter"
+          value: "body.change.status in ['MERGED']"
+    - ref:
+        name: "edp"
+        kind: NamespacedInterceptor
+    - ref:
+        name: "cel"
+      params:
+        - name: "overlays"
+          value:
+          - key: cbtype_short
+            expression: "extensions.spec.type.truncate(3)"
+  bindings:
+    - ref: gerrit-binding-build
+  template:
+    ref: gerrit-build-template
+{{ end }}

@@ -1,0 +1,38 @@
+{{ if has "github" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: github-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  interceptors:
+    - ref:
+        name: "github"
+      params:
+        - name: "secretRef"
+          value:
+            secretName: ci-github
+            secretKey: secretString
+        - name: "eventTypes"
+          value: ["pull_request"]
+    - ref:
+        name: "cel"
+      params:
+        - name: "filter"
+          value: "body.action in ['closed'] && body.pull_request.merged == true"
+    - ref:
+        name: "edp"
+        kind: NamespacedInterceptor
+    - ref:
+        name: "cel"
+      params:
+        - name: "overlays"
+          value:
+            - key: cbtype_short
+              expression: "extensions.spec.type.truncate(3)"
+  bindings:
+    - ref: github-binding-build
+  template:
+    ref: github-build-template
+{{ end }}

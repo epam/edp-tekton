@@ -93,25 +93,47 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.resources | object | `{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}` | The resource limits and requests for the Tekton Dashboard |
 | dashboard.tolerations | list | `[]` | Toleration labels for pod assignment |
 | dashboard.triggersNamespace | string | `"tekton-pipelines"` | Namespace where cluster tekton triggers deployed. Default: tekton-pipelines |
-| eventListener.affinity | object | `{}` | Affinity settings for pod assignment |
-| eventListener.enabled | bool | `true` | Deploy eventListener as a part of pipeline library when true. Default: true |
-| eventListener.ingress.annotations | object | `{}` | Annotations for Ingress resource |
-| eventListener.ingress.enabled | bool | `true` | Deploy EDP with eventListener ingress as a part of pipeline library when true. Default: true |
-| eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
-| eventListener.nodeSelector | object | `{}` | Node labels for pod assignment |
-| eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | The resource limits and requests for the Tekton eventListener |
-| eventListener.tolerations | list | `[]` | Toleration labels for pod assignment |
 | fullnameOverride | string | `""` |  |
-| github.host | string | `"github.com"` | The GitHub host, adjust this if you run a GitHub enterprise. Default: github.com |
-| github.webhook.existingSecret | string | `"ci-github"` | Existing secret which holds GitHub integration credentials: Username, Access Token, Secret String and Private SSH Key |
-| github.webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |
-| gitlab.host | string | `"gitlab.com"` | The GitLab host, adjust this if you run a GitLab enterprise. Default: gitlab.com |
-| gitlab.webhook.existingSecret | string | `"ci-gitlab"` | Existing secret which holds GitLab integration credentials: Username, Access Token, Secret String and Private SSH Key |
-| gitlab.webhook.skipWebhookSSLVerification | bool | `false` | If true, webhook ssl verification will be skipped. Default: false |
+| gitServers[0].eventListener.affinity | object | `{}` | Affinity for EventListener pod assignment |
+| gitServers[0].eventListener.enabled | bool | `true` | Enable EventListener |
+| gitServers[0].eventListener.ingress.annotations | object | `{}` | Ingress annotations |
+| gitServers[0].eventListener.ingress.enabled | bool | `true` | Enable ingress controller resource |
+| gitServers[0].eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
+| gitServers[0].eventListener.nodeSelector | object | `{}` | Node labels for EventListener pod assignment |
+| gitServers[0].eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | EventListener resources |
+| gitServers[0].eventListener.tolerations | list | `[]` | Tolerations for EventListener pod assignment |
+| gitServers[0].gitProvider | string | `"github"` |  |
+| gitServers[0].host | string | `"github.com"` |  |
+| gitServers[0].name | string | `"my-github"` |  |
+| gitServers[0].webhook.skipWebhookSSLVerification | bool | `false` |  |
+| gitServers[1].eventListener.affinity | object | `{}` | Affinity for EventListener pod assignment |
+| gitServers[1].eventListener.enabled | bool | `true` | Enable EventListener |
+| gitServers[1].eventListener.ingress.annotations | object | `{}` | Ingress annotations |
+| gitServers[1].eventListener.ingress.enabled | bool | `true` | Enable ingress controller resource |
+| gitServers[1].eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
+| gitServers[1].eventListener.nodeSelector | object | `{}` | Node labels for EventListener pod assignment |
+| gitServers[1].eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | EventListener resources |
+| gitServers[1].eventListener.tolerations | list | `[]` | Tolerations for EventListener pod assignment |
+| gitServers[1].gitProvider | string | `"gitlab"` |  |
+| gitServers[1].host | string | `"gitlab.com"` |  |
+| gitServers[1].name | string | `"my-gitlab"` |  |
+| gitServers[1].webhook.skipWebhookSSLVerification | bool | `false` |  |
+| gitServers[2].eventListener.affinity | object | `{}` | Affinity for EventListener pod assignment |
+| gitServers[2].eventListener.enabled | bool | `true` | Enable EventListener |
+| gitServers[2].eventListener.ingress.annotations | object | `{}` | Ingress annotations |
+| gitServers[2].eventListener.ingress.enabled | bool | `true` | Enable ingress controller resource |
+| gitServers[2].eventListener.ingress.tls | list | `[]` | Ingress TLS configuration |
+| gitServers[2].eventListener.nodeSelector | object | `{}` | Node labels for EventListener pod assignment |
+| gitServers[2].eventListener.resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"50m","memory":"64Mi"}}` | EventListener resources |
+| gitServers[2].eventListener.tolerations | list | `[]` | Tolerations for EventListener pod assignment |
+| gitServers[2].gitProvider | string | `"gerrit"` |  |
+| gitServers[2].host | string | `"gerrit.example.com"` |  |
+| gitServers[2].name | string | `"my-gerrit"` |  |
+| gitServers[2].webhook.skipWebhookSSLVerification | bool | `false` |  |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
-| global.gitProviders | list | `["github"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
+| global.gitProviders | list | `["github","gitlab","gerrit"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |

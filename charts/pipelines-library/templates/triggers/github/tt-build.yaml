@@ -78,5 +78,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: {{ .Values.github.webhook.existingSecret }}
+              secretName: ci-github
 {{ end }}

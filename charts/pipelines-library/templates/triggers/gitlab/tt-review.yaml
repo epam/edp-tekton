@@ -76,5 +76,5 @@ spec:
             subPath: codebase
           - name: ssh-creds
             secret:
-              secretName: {{ .Values.gitlab.webhook.existingSecret }}
+              secretName: ci-gitlab
 {{ end }}

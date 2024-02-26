@@ -14,7 +14,7 @@ spec:
       default: ""
     - name: APPLICATIONS_PAYLOAD
       description: |
-        Applications payload in format: '{"codebase1": "version1", "codebase2": "version2"}. For example: '{"demo": "main-20240103-141431", "myapp": "0.1.0-SNAPSHOT.1"}'
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
       type: string
     - name: KUBECONFIG_SECRET_NAME
       type: string

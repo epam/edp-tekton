@@ -12,9 +12,22 @@ spec:
       type: string
       description: Extra commands
       default: ""
+    - name: KUBECONFIG_SECRET_NAME
+      type: string
+      description: The name of secret with Kubeconfig to connect to the remote cluster
+      default: "in-cluster"
+  volumes:
+    - name: kubeconfig
+      secret:
+        secretName: $(params.KUBECONFIG_SECRET_NAME)
+        optional: true
   steps:
     - name: run
       image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: kubeconfig
+          mountPath: /workspace/source/kube
       script: |
         set -ex
+        export KUBECONFIG="workspace/source/kube/config"
         $(params.EXTRA_COMMANDS)

@@ -28,6 +28,37 @@ global:
   dnsWildCard: "example.com"
   gitProviders:
     - gitlab
+gitServers:
+  my-gitlab:
+    gitProvider: gitlab
+    host: gitlab.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
     """
 
     el_Name = "event-listener-gitlab"
@@ -44,6 +75,37 @@ global:
   dnsWildCard: "example.com"
   gitProviders:
     - github
+gitServers:
+  my-github:
+    gitProvider: github
+    host: github.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
     """
 
     el_Name = "event-listener-github"
@@ -60,6 +122,37 @@ global:
   dnsWildCard: "example.com"
   gitProviders:
     - gerrit
+gitServers:
+  my-github:
+    gitProvider: gerrit
+    host: gerrit.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
     """
 
     el_Name = "event-listener-gerrit"

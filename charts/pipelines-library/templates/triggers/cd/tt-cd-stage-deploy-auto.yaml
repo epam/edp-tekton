@@ -1,7 +1,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
-  name: cd-stage-deploy
+  name: cd-stage-deploy-auto
   labels:
     app.edp.epam.com/pipelinetype: deploy
 spec:
@@ -21,7 +21,7 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: deploy-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-
+        generateName: deploy-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-auto-
         labels:
           app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE)
           app.edp.epam.com/cdstage: $(tt.params.CDSTAGE)
@@ -30,7 +30,7 @@ spec:
         taskRunTemplate:
           serviceAccountName: tekton
         pipelineRef:
-          name: cd-stage-deploy
+          name: cd-stage-deploy-auto
         params:
           - name: APPLICATIONS_PAYLOAD
             value: $(tt.params.APPLICATIONS_PAYLOAD)
@@ -42,3 +42,13 @@ spec:
             value: $(tt.params.KUBECONFIG_SECRET_NAME)
         timeouts:
           pipeline: 1h00m0s
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: "1Gi"
+            subPath: codebase

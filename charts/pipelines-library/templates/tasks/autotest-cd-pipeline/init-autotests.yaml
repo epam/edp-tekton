@@ -42,8 +42,6 @@ spec:
           value: $(params.stage-name)
         - name: CD_PIPELINE_NAME
           value: $(params.cd-pipeline-name)
-        - name: GIT_PROVIDER
-          value: "{{ .Values.global.gitProvider }}"
         - name: PARENT_PIPELINE_NAME
           value: $(params.parent-pipeline-name)
 
@@ -75,14 +73,14 @@ spec:
         }
         cdPipelineName = os.getenv('CD_PIPELINE_NAME')
         stage = os.getenv('STAGE_NAME')
-        gitProvider = os.getenv('GIT_PROVIDER')
         parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
         codebaseFileTags = os.getenv('CODEBASE_TAGS')
 
         autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-        gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", gitProvider , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
 
         for element in autotests["qualityGates"]:
+            autotestGitServer = subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec.gitServer}'"]).decode("utf-8").strip("'")
+            gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", autotestGitServer , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
             autotestsList.append(element["autotestName"])
             autotestsBranch.append(element["branchName"])
             autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))

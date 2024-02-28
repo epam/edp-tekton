@@ -9,10 +9,10 @@ metadata:
 spec:
   gitHost: {{ $server.host }}
   gitProvider: {{ $server.gitProvider }}
-  gitUser: git
-  httpsPort: 443
-  nameSshKeySecret: {{ printf "ci-%s" $server.gitProvider | quote }}
-  sshPort: 22
+  gitUser: {{ dig "gitUser" "git" $server }}
+  httpsPort: {{ dig "httpsPort" "443" $server }}
+  nameSshKeySecret: {{ default (printf "ci-%s" $server.gitProvider | quote) $server.nameSshKeySecret }}
+  sshPort: {{ dig "sshPort" "22" $server }}
   skipWebhookSSLVerification: {{ $server.webhook.skipWebhookSSLVerification }}
 {{- end }}
 ---

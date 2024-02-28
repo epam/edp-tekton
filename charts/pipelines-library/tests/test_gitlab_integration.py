@@ -49,6 +49,9 @@ gitServers:
     assert "ci-gitlab" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
 
+    guicklink = r["quicklink"]["gitlab"]["spec"]
+    assert "system" == guicklink["type"]
+    assert "https://gitlab.com" == guicklink["url"]
 
 def test_gitlab_build_trigger():
     config = """

@@ -1,0 +1,56 @@
+name: "pull_request"
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  GOLANG_VERSION: '1.20'
+
+jobs:
+
+  check-commit-message:
+    runs-on: ubuntu-20.04
+    env:
+      COMMIT_MESSAGE_PATTERN: '^(feat|fix|docs|style|refactor|test|chore){1}(!)?:\s[A-Z][a-z]([\/\.\w\-\s]+)\(\#\d+\)$'
+      MAX_LINE_LENGTH: '80'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Commit Format
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '^(fix|feat|docs|style|refactor|test|chore): .+ \(#\d+\)$'
+          error: 'Your commit message should be in the format "type: Description (#issue)". Example: "fix: Update build (#33)"'
+
+      - name: Check Line Length
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '.{0,50}'
+          error: 'The maximum line length of 50 characters is exceeded.'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+  helm-docs:
+    needs: [check-commit-message]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Make Build
+        run: make validate-docs

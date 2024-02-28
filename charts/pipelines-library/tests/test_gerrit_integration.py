@@ -16,6 +16,64 @@ global:
     assert "gitserver" not in r
 
 
+def test_gerrit_is_enabled():
+    config = """
+global:
+  gitProviders:
+    - gerrit
+gitServers:
+  my-gerrit:
+    gitProvider: gerrit
+    host: gerrit.com
+    gitUser: ci-user
+    nameSshKeySecret: gerrit-ciuser-sshkey
+    sshPort: 30100
+    quickLink:
+      host: gerrit-external.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      # -- Enable EventListener
+      enabled: true
+      # -- EventListener resources
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      # -- Node labels for EventListener pod assignment
+      nodeSelector: {}
+      # -- Tolerations for EventListener pod assignment
+      tolerations: []
+      # -- Affinity for EventListener pod assignment
+      affinity: {}
+
+      ingress:
+        # -- Enable ingress controller resource
+        enabled: true
+        # -- Ingress annotations
+        annotations: {}
+        # -- Ingress TLS configuration
+        tls: []
+    """
+
+    r = helm_template(config)
+
+    gitserver = r["gitserver"]["my-gerrit"]["spec"]
+
+    assert "gerrit.com" == gitserver["gitHost"]
+    assert "gerrit" == gitserver["gitProvider"]
+    assert "ci-user" == gitserver["gitUser"]
+    assert 443 == gitserver["httpsPort"]
+    assert "gerrit-ciuser-sshkey" == gitserver["nameSshKeySecret"]
+    assert 30100 == gitserver["sshPort"]
+
+    guicklink = r["quicklink"]["gerrit"]["spec"]
+    assert "system" == guicklink["type"]
+    assert "https://gerrit-external.com" == guicklink["url"]
+
 def test_gerrit_is_enabled_with_custom_port():
     config = """
 global:

@@ -57,6 +57,9 @@ gitServers:
     assert "ci-github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
 
+    guicklink = r["quicklink"]["github"]["spec"]
+    assert "system" == guicklink["type"]
+    assert "https://github.com" == guicklink["url"]
 
 def test_github_build_trigger():
     config = """

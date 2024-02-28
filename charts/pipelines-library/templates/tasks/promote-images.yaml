@@ -46,7 +46,8 @@ spec:
       script: |
         set -ex
         STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
-        echo ${APPLICATIONS_PAYLOAD} | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while read i; do
+        echo ${APPLICATIONS_PAYLOAD} | jq -r 'to_entries[] |
+        "\(.key)=\(.value.imageTag)"' | while IFS= read -r i; do
           kubectl annotate --overwrite "${STAGE_CRD}" "${STAGE_CR}" "app.edp.epam.com/${i}"
         done
     - name: promote-images

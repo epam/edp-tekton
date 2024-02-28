@@ -40,14 +40,6 @@ rules:
       - create
       - get
 
-  # we need to get url for docker registry from edpcomponent
-  - apiGroups:
-      - 'v1.edp.epam.com'
-    resources:
-      - edpcomponents
-    verbs:
-      - get
-
   # we need to get information about the taskRun running in ns containers
   - verbs:
       - get

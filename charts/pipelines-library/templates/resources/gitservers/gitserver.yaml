@@ -1,19 +1,19 @@
-{{- range .Values.gitServers }}
-{{- if has .gitProvider $.Values.global.gitProviders }}
+{{- range $name, $server := .Values.gitServers }}
+{{- if has $server.gitProvider $.Values.global.gitProviders }}
 apiVersion: v2.edp.epam.com/v1
 kind: GitServer
 metadata:
-  name: {{ .name }}
+  name: {{ $name }}
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  gitHost: {{ .host }}
-  gitProvider: {{ .gitProvider }}
+  gitHost: {{ $server.host }}
+  gitProvider: {{ $server.gitProvider }}
   gitUser: git
   httpsPort: 443
-  nameSshKeySecret: {{ printf "ci-%s" .gitProvider | quote }}
+  nameSshKeySecret: {{ printf "ci-%s" $server.gitProvider | quote }}
   sshPort: 22
-  skipWebhookSSLVerification: {{ .webhook.skipWebhookSSLVerification }}
+  skipWebhookSSLVerification: {{ $server.webhook.skipWebhookSSLVerification }}
 {{- end }}
 ---
 {{- end }}

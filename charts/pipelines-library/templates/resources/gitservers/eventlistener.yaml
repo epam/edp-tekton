@@ -1,15 +1,15 @@
-{{- range .Values.gitServers }}
-{{- if and (has .gitProvider $.Values.global.gitProviders) .eventListener.enabled }}
+{{- range $name, $server := .Values.gitServers }}
+{{- if and (has $server.gitProvider $.Values.global.gitProviders) $server.eventListener.enabled }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: edp-{{ .gitProvider }}
+  name: edp-{{ $server.gitProvider }}
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   triggers:
-    - triggerRef: {{ .gitProvider }}-build
-    - triggerRef: {{ .gitProvider }}-review
+    - triggerRef: {{ $server.gitProvider }}-build
+    - triggerRef: {{ $server.gitProvider }}-review
   resources:
     kubernetesResource:
       spec:
@@ -19,16 +19,16 @@ spec:
             containers:
               - name: ''
                 resources:
-                  {{- toYaml .eventListener.resources | nindent 18 }}
-            {{- with .eventListener.nodeSelector }}
+                  {{- toYaml $server.eventListener.resources | nindent 18 }}
+            {{- with $server.eventListener.nodeSelector }}
             nodeSelector:
               {{- toYaml . | nindent 14 }}
             {{- end }}
-            {{- with .eventListener.affinity }}
+            {{- with $server.eventListener.affinity }}
             affinity:
               {{- toYaml . | nindent 14 }}
             {{- end }}
-            {{- with .eventListener.tolerations }}
+            {{- with $server.eventListener.tolerations }}
             tolerations:
               {{- toYaml . | nindent 14 }}
             {{- end }}

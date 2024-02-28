@@ -1,0 +1,130 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: cd-stage-deploy-auto
+  labels:
+    app.edp.epam.com/pipeline: general-deployment
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  description: |
+    This Pipeline is used to deploy applications to the target Stage (Environment).
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: pipelineUrl
+      description: |
+        URL of the pipeline run in Tekton Dashboard.
+      type: string
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+      type: string
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
+      type: string
+    - name: KUBECONFIG_SECRET_NAME
+      description: The name of secret with Kubeconfig to connect to the remote cluster
+      type: string
+    - name: autotes-pipeline
+      default: "autotes-pipeline"
+    - name: codebase_tags
+      default: "codebase_tags"
+    - name: parent-pipeline-name
+      default: $(context.pipelineRun.name)
+  tasks:
+    - name: pre-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      params:
+        - name: KUBECONFIG_SECRET_NAME
+          value: $(params.KUBECONFIG_SECRET_NAME)
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
+    - name: deploy-app
+      taskRef:
+        kind: Task
+        name: deploy-applicationset-cli
+      runAfter:
+        - pre-deploy
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+
+    - name: post-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      runAfter:
+        - deploy-app
+      params:
+        - name: KUBECONFIG_SECRET_NAME
+          value: $(params.KUBECONFIG_SECRET_NAME)
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
+    - name: init-autotest
+      taskRef:
+          kind: Task
+          name: init-autotest
+      runAfter:
+         - post-deploy
+      params:
+        - name: stage-name
+          value: $(params.CDSTAGE)
+        - name: cd-pipeline-name
+          value: $(params.CDPIPELINE)
+        - name: AUTOTEST_PIPELINES
+          value: $(params.autotes-pipeline)
+        - name: codebase_tags
+          value: $(params.codebase_tags)
+        - name: parent-pipeline-name
+          value: $(params.parent-pipeline-name)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+
+    - name: wait-for-autotests
+      taskRef:
+          kind: Task
+          name: wait-for-autotests
+      runAfter:
+         - init-autotest
+      params:
+        - name: AUTOTEST_PIPELINES
+          value: $(params.autotes-pipeline)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: promote-images
+      taskRef:
+        kind: Task
+        name: promote-images
+      runAfter:
+        - wait-for-autotests
+      params:
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+        - name: CDPIPELINE_STAGE
+          value: $(params.CDSTAGE)
+        - name: CDPIPELINE_CR
+          value: $(params.CDPIPELINE)

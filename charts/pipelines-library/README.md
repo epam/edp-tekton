@@ -135,7 +135,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
 | tekton.pruner.image | string | `"bitnami/kubectl:1.25"` | Docker image to run the pruner, expected to have kubectl and jq |
-| tekton.pruner.recentMinutes | string | `"30"` | Resources of PipelineRuns that finished in the last N minutes are not pruned |
+| tekton.pruner.recentMinutes_pods | string | `"30"` | Pods of PipelineRuns that finished in the last N minutes are not pruned |
+| tekton.pruner.recentMinutes_pvcs | string | `"60"` | Pvcs of PipelineRuns that finished in the last N minutes are not pruned |
 | tekton.pruner.resources | object | `{"limits":{"cpu":"100m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"50Mi"}}` | Pod resources for Tekton pruner job |
 | tekton.pruner.schedule | string | `"0 * * * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |

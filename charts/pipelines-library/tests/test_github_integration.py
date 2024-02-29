@@ -4,6 +4,7 @@ from .helpers import helm_template
 def test_github_is_enabled():
     config = """
 global:
+  dnsWildCard: "example.com"
   gitProviders:
     - github
 gitServers:
@@ -56,6 +57,7 @@ gitServers:
     assert 443 == gitserver["httpsPort"]
     assert "ci-github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
+    assert "el-my-github-ns.example.com" == gitserver["webhookUrl"]
 
     guicklink = r["quicklink"]["my-github"]["spec"]
     assert "system" == guicklink["type"]

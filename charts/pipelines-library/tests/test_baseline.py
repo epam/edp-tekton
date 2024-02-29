@@ -61,12 +61,12 @@ gitServers:
         tls: []
     """
 
-    el_Name = "event-listener-gitlab"
+    el_Name = "event-listener-my-gitlab"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-gitlab-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-edp-gitlab" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-my-gitlab-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-my-gitlab" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_github_el():
@@ -108,12 +108,12 @@ gitServers:
         tls: []
     """
 
-    el_Name = "event-listener-github"
+    el_Name = "event-listener-my-github"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-github-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-edp-github" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-my-github-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-my-github" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_gerrit_el():
@@ -123,7 +123,7 @@ global:
   gitProviders:
     - gerrit
 gitServers:
-  my-github:
+  my-gerrit:
     gitProvider: gerrit
     host: gerrit.com
     webhook:
@@ -155,12 +155,12 @@ gitServers:
         tls: []
     """
 
-    el_Name = "event-listener-gerrit"
+    el_Name = "event-listener-my-gerrit"
     r = helm_template(config)
 
     assert el_Name in r["ingress"]
-    assert "el-gerrit-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-edp-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-my-gerrit-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
+    assert "el-edp-my-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_pruner_disabled():

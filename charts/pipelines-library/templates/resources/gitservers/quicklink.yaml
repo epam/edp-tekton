@@ -3,7 +3,7 @@
 apiVersion: v2.edp.epam.com/v1
 kind: QuickLink
 metadata:
-  name: {{ $server.gitProvider }}
+  name: {{ $name }}
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:

@@ -42,7 +42,7 @@ gitServers:
     r = helm_template(config)
 
     # Access the event listener using the new structure
-    el = r["eventlistener"]["edp-github"]["spec"]
+    el = r["eventlistener"]["edp-my-github"]["spec"]
 
     # Check if the triggers are correctly set
     assert "github-build" == el["triggers"][0]["triggerRef"]
@@ -57,7 +57,7 @@ gitServers:
     assert "ci-github" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
 
-    guicklink = r["quicklink"]["github"]["spec"]
+    guicklink = r["quicklink"]["my-github"]["spec"]
     assert "system" == guicklink["type"]
     assert "https://github.com" == guicklink["url"]
 

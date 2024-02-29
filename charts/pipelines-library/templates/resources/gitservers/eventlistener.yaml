@@ -3,7 +3,7 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: edp-{{ $server.gitProvider }}
+  name: edp-{{ $name }}
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:

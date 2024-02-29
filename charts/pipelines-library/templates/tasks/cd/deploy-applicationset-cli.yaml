@@ -46,7 +46,7 @@ spec:
         # quotes are important here
         new_tags='$(params.APPLICATIONS_PAYLOAD)'
 
-        selector="app.edp.epam.com/stage=$(params.STAGE)"
+        selector="app.edp.epam.com/stage=$(params.STAGE),app.edp.epam.com/pipeline=$(params.PIPELINE)"
 
         patch=$(kubectl get applicationset $pipeline -o json | jq --argjson updates "$new_tags" --arg stage $stage '
           .spec.generators[0].list.elements |= map(

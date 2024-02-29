@@ -3,8 +3,6 @@ name: "Run End-to-end tests"
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -22,6 +20,7 @@ jobs:
        # should be compatible with them.
        kube-version:
        - "1.27"
+       - "1.28"
 
     steps:
 

@@ -7,6 +7,7 @@ kind: Ingress
 metadata:
   name: event-listener-{{ $server.gitProvider }}
   labels:
+    app.edp.epam.com/gitServer: {{ $name }}
     {{- include "edp-tekton.labels" $root | nindent 4 }}
   annotations:
     {{- with $server.eventListener.ingress.annotations }}

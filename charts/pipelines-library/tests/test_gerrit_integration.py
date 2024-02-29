@@ -70,7 +70,7 @@ gitServers:
     assert "gerrit-ciuser-sshkey" == gitserver["nameSshKeySecret"]
     assert 30100 == gitserver["sshPort"]
 
-    guicklink = r["quicklink"]["gerrit"]["spec"]
+    guicklink = r["quicklink"]["my-gerrit"]["spec"]
     assert "system" == guicklink["type"]
     assert "https://gerrit-external.com" == guicklink["url"]
 

@@ -5,7 +5,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: event-listener-{{ $server.gitProvider }}
+  name: event-listener-{{ $name }}
   labels:
     app.edp.epam.com/gitServer: {{ $name }}
     {{- include "edp-tekton.labels" $root | nindent 4 }}
@@ -25,7 +25,7 @@ spec:
     {{- end }}
 {{- end }}
   rules:
-    - host: el-{{ $server.gitProvider }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
+    - host: el-{{ $name }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
       http:
         paths:
           - path: /
@@ -33,7 +33,7 @@ spec:
             backend:
               service:
                 # The service name will come from EventListener CR
-                name: el-edp-{{ $server.gitProvider }}
+                name: el-edp-{{ $name }}
                 port:
                   number: 8080
 {{- end }}

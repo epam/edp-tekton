@@ -49,7 +49,7 @@ gitServers:
     assert "ci-gitlab" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
 
-    guicklink = r["quicklink"]["gitlab"]["spec"]
+    guicklink = r["quicklink"]["my-gitlab"]["spec"]
     assert "system" == guicklink["type"]
     assert "https://gitlab.com" == guicklink["url"]
 

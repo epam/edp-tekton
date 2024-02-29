@@ -15,8 +15,12 @@ verify() {
     echo 'NAMESPACE env variable not defined.'
     exit 1
   fi
-  if test -z "${RECENT_MINUTES}"; then
-    echo 'RECENT_MINUTES env variable not defined.'
+  if test -z "${RECENT_MINUTES_PODS}"; then
+    echo 'RECENT_MINUTES_PODS env variable not defined.'
+    exit 1
+  fi
+  if test -z "${RECENT_MINUTES_PVCS}"; then
+    echo 'RECENT_MINUTES_PVCS env variable not defined.'
     exit 1
   fi
   echo 'Ok'
@@ -84,9 +88,13 @@ main() {
   active_pipelineruns=$(get_active_pipelineruns)
   echo "active pipelineruns: $active_pipelineruns"
 
-  echo "Get pipelineruns completed recently (in the last ${RECENT_MINUTES} minutes)"
-  recent_pipelineruns=$(get_recent_pipelineruns "${RECENT_MINUTES}")
-  echo "recent pipelineruns: $recent_pipelineruns"
+  echo "Get pipelineruns completed recently (in the last ${RECENT_MINUTES_PODS} minutes)"
+  recent_pipelineruns_pods=$(get_recent_pipelineruns "${RECENT_MINUTES_PODS}")
+  echo "recent pipelineruns: $recent_pipelineruns_pods"
+
+  echo "Get pipelineruns completed recently (in the last ${RECENT_MINUTES_FOR_PVCS} minutes)"
+  recent_pipelineruns_pvcs=$(get_recent_pipelineruns "${RECENT_MINUTES_FOR_PVCS}")
+  echo "recent pipelineruns: $recent_pipelineruns_pvcs"
 
   echo 'Get pods that need to be deleted, pods with tekton.dev/memberOf label:'
   get_pipelinerun_pods_to_file "${pods_to_delete_file_path}"
@@ -94,7 +102,7 @@ main() {
 
   echo 'Exclude pods of the active and recent pipelineruns from deletion list':
   delete_lines_from_file "${pods_to_delete_file_path}" "${active_pipelineruns}"
-  delete_lines_from_file "${pods_to_delete_file_path}" "${recent_pipelineruns}"
+  delete_lines_from_file "${pods_to_delete_file_path}" "${recent_pipelineruns_pods}"
   cat "${pods_to_delete_file_path}"
 
   echo 'Get PVCs that were used by pipelineruns and now need to be deleted:'
@@ -103,7 +111,7 @@ main() {
 
   echo 'Exclude PVCs of the active and recent pipelineruns from deletion list:'
   delete_lines_from_file "${pvcs_to_delete_file_path}" "${active_pipelineruns}"
-  delete_lines_from_file "${pvcs_to_delete_file_path}" "${recent_pipelineruns}"
+  delete_lines_from_file "${pvcs_to_delete_file_path}" "${recent_pipelineruns_pvcs}"
   cat "${pvcs_to_delete_file_path}"
 
   echo 'Remove owner info from PVCs list'

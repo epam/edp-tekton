@@ -104,8 +104,10 @@ tekton:
     create: true
     # -- How often to clean up resources
     schedule: "0 * * * *"
-    # -- Resources of PipelineRuns that finished in the last N minutes are not pruned
-    recentMinutes: "30"
+    # -- Pods of PipelineRuns that finished in the last N minutes are not pruned
+    recentMinutes_pods: "30"
+    # -- Pvcs of PipelineRuns that finished in the last N minutes are not pruned
+    recentMinutes_pvcs: "60"
     # -- Docker image to run the pruner, expected to have kubectl and jq
     image: bitnami/kubectl:1.25
     # -- Pod resources for Tekton pruner job

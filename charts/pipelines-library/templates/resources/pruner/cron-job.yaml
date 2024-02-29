@@ -28,8 +28,10 @@ spec:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: metadata.namespace
-                - name: RECENT_MINUTES
-                  value: {{ default 30 .Values.tekton.pruner.recentMinutes | quote }}
+                - name: RECENT_MINUTES_PODS
+                  value: {{ default 30 .Values.tekton.pruner.recentMinutes_pods | quote }}
+                - name: RECENT_MINUTES_PVCS
+                  value: {{ default 60 .Values.tekton.pruner.recentMinutes_pvcs | quote }}
               command:
                 - bash
                 - /scripts/tekton-prune.sh

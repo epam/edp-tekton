@@ -15,7 +15,7 @@ spec:
   sshPort: {{ dig "sshPort" "22" $server }}
   skipWebhookSSLVerification: {{ $server.webhook.skipWebhookSSLVerification }}
   {{- if not (eq "gerrit" $server.gitProvider) }}
-  webhookUrl: {{ printf "el-%s-%s.%s" $name $.Release.Namespace $.Values.global.dnsWildCard | quote }}
+  webhookUrl: {{ printf "https://el-%s-%s.%s" $name $.Release.Namespace $.Values.global.dnsWildCard | quote }}
   {{- end }}
 {{- end }}
 ---

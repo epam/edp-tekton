@@ -49,7 +49,7 @@ gitServers:
     assert 443 == gitserver["httpsPort"]
     assert "ci-gitlab" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
-    assert "el-my-gitlab-ns.example.com" == gitserver["webhookUrl"]
+    assert "https://el-my-gitlab-ns.example.com" == gitserver["webhookUrl"]
 
     guicklink = r["quicklink"]["my-gitlab"]["spec"]
     assert "system" == guicklink["type"]

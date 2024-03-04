@@ -97,6 +97,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -107,6 +118,15 @@ jobs:
 
       - name: Make Lint
         run: make lint
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
   docker-lint:
     needs: [build-and-lint]
@@ -119,48 +139,104 @@ jobs:
         with:
           dockerfile: Dockerfile
 
-  e2e-tests:
-    name: End-to-end tests
+  e2e-tests-127:
+    name: End-to-end tests 1.27
     needs: [docker-lint]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       max-parallel: 1
-      matrix:
-       # The e2e tests are run on the lowest and highest supported k8s version.
-       # All Kubernetes version in between expose the same APIs, hence the operator
-       # should be compatible with them.
-       kube-version:
-       - "1.27"
-       - "1.28"
 
     steps:
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GOLANG_VERSION }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
 
-    - name: "install kuttl"
-      run: ./hack/install-kuttl.sh
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: "run tests"
-      env:
-        KUBE_VERSION: ${{ matrix.kube-version }}
-      run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+      - name: "install kuttl"
+        run: ./hack/install-kuttl.sh
+
+      - name: "run tests"
+        env:
+          KUBE_VERSION: "1.27"
+        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+  e2e-tests-128:
+    name: End-to-end tests 1.28
+    needs: [e2e-tests-127]
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: "install kuttl"
+        run: ./hack/install-kuttl.sh
+
+      - name: "run tests"
+        env:
+          KUBE_VERSION: "1.28"
+        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
   e2e-tests-check:
     runs-on: ubuntu-20.04
     if: always()
-    needs: [e2e-tests]
+    needs: [e2e-tests-127, e2e-tests-128]
     steps:
       - name: Print result
-        run: echo ${{ needs.e2e-tests.result }}
+        run: echo ${{ needs.e2e-tests-127.result }} && echo ${{ needs.e2e-tests-128.result }}
       - name: Interpret result
         run: |
-          if [[ success == ${{ needs.e2e-tests.result }} ]]
+          if [[ success == ${{ needs.e2e-tests-127.result }} && success == ${{ needs.e2e-tests-128.result }} ]]
           then
             echo "All matrix jobs passed!"
           else

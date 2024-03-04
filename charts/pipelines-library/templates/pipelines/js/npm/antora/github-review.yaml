@@ -97,25 +97,29 @@ spec:
 
 {{- include "helm-docs" $ | nindent 4 }}
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: build
       taskRef:
         kind: Task
         name: npm
       runAfter:
-        - fetch-repository
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
         - name: EXTRA_COMMANDS
           value: |
             export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
             export npm_config_userconfig=/var/configmap/.npmrc-ci
+            export NPM_CACHE_DIR=/workspace/source/cache
             npm ci
             npm run build:prod
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
     - name: dockerfile-lint
       taskRef:
@@ -145,6 +149,8 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "github-review-vote" $ | nindent 2 }}
 

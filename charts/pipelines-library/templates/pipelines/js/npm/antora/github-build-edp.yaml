@@ -63,6 +63,8 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+{{- include "get-cache" $ | nindent 4 }}
+
     - name: update-build-number
       taskRef:
         kind: Task
@@ -88,22 +90,27 @@ spec:
         kind: Task
         name: npm
       runAfter:
-        - security
+        - update-build-number
+        - get-cache
       params:
         - name: BASE_IMAGE
           value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
         - name: EXTRA_COMMANDS
           value: |
             export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
             export npm_config_userconfig=/var/configmap/.npmrc-ci
+            export NPM_CACHE_DIR=/workspace/source/cache
             npm ci
             npm run build:prod
       workspaces:
         - name: source
           workspace: shared-workspace
-          subPath: source
 
 {{- include "build-pipeline-antora-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 

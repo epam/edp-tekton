@@ -399,6 +399,10 @@ gitServers: {}
 #   my-gerrit:
 #     gitProvider: gerrit
 #     host: gerrit.example.com
+#     gitUser: ci-user
+#     httpsPort: 443
+#     nameSshKeySecret: gerrit-ciuser-sshkey
+#     sshPort: 30022
 #     webhook:
 #       skipWebhookSSLVerification: false
 #     eventListener:

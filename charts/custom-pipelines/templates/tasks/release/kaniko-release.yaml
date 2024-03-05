@@ -85,6 +85,10 @@ spec:
           --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG} \
           --digest-file=/tekton/results/IMAGE_DIGEST \
           --tar-path=${IMAGE_TAR}.tar "
+
+        command=$base_command
+
+        $command
       securityContext:
         runAsUser: 0
       volumeMounts:

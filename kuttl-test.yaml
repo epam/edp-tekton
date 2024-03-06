@@ -4,7 +4,7 @@ testDirs:
   - ./tests/e2e/
 skipClusterDelete: false
 timeout: 180
-parallel: 3
+parallel: 1
 commands:
   # Install Cert manager which is used by Interceptor
   - command: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml

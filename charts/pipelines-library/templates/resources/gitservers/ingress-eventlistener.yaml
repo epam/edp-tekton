@@ -1,7 +1,7 @@
 {{- if eq .Values.global.platform "kubernetes" }}
 {{- $root := $ -}}
 {{- range $name, $server := .Values.gitServers }}
-{{- if and (has $server.gitProvider $.Values.global.gitProviders) $server.eventListener.ingress.enabled }}
+{{- if and (has $server.gitProvider $.Values.global.gitProviders) (and $server.eventListener.ingress (default false $server.eventListener.ingress.enabled)) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

@@ -322,6 +322,8 @@
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
     - name: kaniko-cache-path
       value: "kaniko-cache"
+    - name: context
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
   workspaces:
     - name: source
       workspace: shared-workspace

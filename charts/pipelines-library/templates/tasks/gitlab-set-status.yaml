@@ -96,7 +96,7 @@ spec:
         import urllib.parse
 
         GITLAB_TOKEN = os.getenv("GITLAB_TOKEN")
-        GITLAB_HOST_URL = "$(params.GITLAB_HOST_URL)"
+        GITLAB_HOST_URL = "ssh://$(params.GITLAB_HOST_URL)"
         API_PATH_PREFIX = "$(params.API_PATH_PREFIX)"
         REPO_FULL_NAME = "$(params.REPO_FULL_NAME)"
         SHA = "$(params.SHA)"

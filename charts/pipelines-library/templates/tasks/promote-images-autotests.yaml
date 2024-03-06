@@ -87,7 +87,7 @@ spec:
         fi
 
         APPS_PROMOTE=$(kubectl get "${CDPIPELINE_CRD}" "${CDPIPELINE_CR}" -o jsonpath='{.spec.applicationsToPromote[*]}')
-        DATE_FORMAT=$(date +"%Y-%m-%dT%T")
+        DATE_FORMAT_RFC3339=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
         STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
 
         for APP in ${APPS_PROMOTE}; do
@@ -96,7 +96,7 @@ spec:
 
           if [ -n "${IMAGE_TAG}" ]; then
             CBIS_TAG=$(kubectl get "${CBIS_CRD}" "${VERIFIED_SBIS}" -o jsonpath='{.spec.tags[*].name}')
-            NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT}\"}"
+            NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT_RFC3339}\"}"
 
             if [ -n "${CBIS_TAG}" ] && [ "${CBIS_TAG}" = "$(printf '%s' "${CBIS_TAG}" | sed 's/'"${IMAGE_TAG}"'//g')" ]; then
               echo "[TEKTON][DEBUG] ImageStream ${VERIFIED_SBIS} doesn't contain ${IMAGE_TAG} tag ... it will be added."

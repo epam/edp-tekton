@@ -369,6 +369,9 @@ gitServers: {}
 #     gitProvider: gitlab
 #     host: gitlab.com
 #     webhook:
+#       # codebase operator will use this URL to create webhooks in GitLab, if it is not defined
+#       # the operator will use the Ingress value
+#       url: "http://gitlab.example.com"
 #       skipWebhookSSLVerification: false
 #     eventListener:
 #       # -- Enable EventListener

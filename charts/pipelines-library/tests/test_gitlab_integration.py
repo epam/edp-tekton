@@ -12,6 +12,7 @@ gitServers:
     gitProvider: gitlab
     host: gitlab.com
     webhook:
+      url: https://my-custom-ingress-name.example.com
       skipWebhookSSLVerification: false
     eventListener:
       # -- Enable EventListener
@@ -49,7 +50,7 @@ gitServers:
     assert 443 == gitserver["httpsPort"]
     assert "ci-gitlab" == gitserver["nameSshKeySecret"]
     assert 22 == gitserver["sshPort"]
-    assert "https://el-my-gitlab-ns.example.com" == gitserver["webhookUrl"]
+    assert "https://my-custom-ingress-name.example.com" == gitserver["webhookUrl"]
 
     guicklink = r["quicklink"]["my-gitlab"]["spec"]
     assert "system" == guicklink["type"]

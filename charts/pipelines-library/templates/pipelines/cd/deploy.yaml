@@ -1,15 +1,12 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: cd-stage-deploy-auto
+  name: deploy
   labels:
-    app.edp.epam.com/pipeline: general-deployment
     app.edp.epam.com/pipelinetype: deploy
 spec:
   description: |
     This Pipeline is used to deploy applications to the target Stage (Environment).
-  workspaces:
-    - name: shared-workspace
   params:
     - name: pipelineUrl
       description: |
@@ -31,12 +28,6 @@ spec:
     - name: KUBECONFIG_SECRET_NAME
       description: The name of secret with Kubeconfig to connect to the remote cluster
       type: string
-    - name: autotes-pipeline
-      default: "autotes-pipeline"
-    - name: codebase_tags
-      default: "codebase_tags"
-    - name: parent-pipeline-name
-      default: $(context.pipelineRun.name)
   tasks:
     - name: pre-deploy
       taskRef:
@@ -80,47 +71,12 @@ spec:
           value:
             echo "Hello World"
 
-    - name: init-autotest
-      taskRef:
-          kind: Task
-          name: init-autotest
-      runAfter:
-         - post-deploy
-      params:
-        - name: stage-name
-          value: $(params.CDSTAGE)
-        - name: cd-pipeline-name
-          value: $(params.CDPIPELINE)
-        - name: AUTOTEST_PIPELINES
-          value: $(params.autotes-pipeline)
-        - name: codebase_tags
-          value: $(params.codebase_tags)
-        - name: parent-pipeline-name
-          value: $(params.parent-pipeline-name)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
-
-    - name: wait-for-autotests
-      taskRef:
-          kind: Task
-          name: wait-for-autotests
-      runAfter:
-         - init-autotest
-      params:
-        - name: AUTOTEST_PIPELINES
-          value: $(params.autotes-pipeline)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-
     - name: promote-images
       taskRef:
         kind: Task
         name: promote-images
       runAfter:
-        - wait-for-autotests
+        - post-deploy
       params:
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)

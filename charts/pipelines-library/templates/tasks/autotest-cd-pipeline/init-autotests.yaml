@@ -62,6 +62,7 @@ spec:
         tags = []
         codebases = ""
         autotestFramework =[]
+        gitSecret = {}
 
         frameworks = {
           "gradle-java8": "gradle:7.5.1-jdk8",
@@ -79,16 +80,17 @@ spec:
         autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
 
         for element in autotests["qualityGates"]:
-            autotestGitServer = subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec.gitServer}'"]).decode("utf-8").strip("'")
-            gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", autotestGitServer , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-            autotestsList.append(element["autotestName"])
-            autotestsBranch.append(element["branchName"])
-            autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-            gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
-            autotestBuildTool.append(autotest["buildTool"])
-            autotestFramework.append(autotest["framework"])
+            if element["qualityGateType"] == "autotests":
+              autotestGitServer = subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec.gitServer}'"]).decode("utf-8").strip("'")
+              gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", autotestGitServer , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+              autotestsList.append(element["autotestName"])
+              autotestsBranch.append(element["branchName"])
+              autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+              gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
+              autotestBuildTool.append(autotest["buildTool"])
+              autotestFramework.append(autotest["framework"])
 
-        gitSecret = gitserver['nameSshKeySecret']
+              gitSecret[element["autotestName"]] = gitserver['nameSshKeySecret']
 
         for count, element in enumerate(autotestsList):
             print("[TEKTON][DEBUG]: Run autotest - autotests-" + autotestBuildTool[count])
@@ -105,7 +107,7 @@ spec:
             --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \
             --labels app.edp.epam.com/branch=" + autotestsBranch[count] + " \
             --labels app.edp.epam.com/parentPipelineRun=" + parentPipelineName + " \
-            --workspace name=ssh-creds,secret=" + gitSecret + " \
+            --workspace name=ssh-creds,secret=" + gitSecret[autotestsList[count]] + " \
             --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
 
             result = subprocess.run(command, shell=True, capture_output=True, text=True)
@@ -121,7 +123,7 @@ spec:
             kindApplications = subprocess.check_output(["kubectl", "get", "applications"])
 
             for element in listApplications:
-                output = re.search(element + "(-[A-Za-z0-9]*)* ", str(kindApplications))
+                output = re.search(cdPipelineName + "-" + stage + "-" + element, str(kindApplications))
                 applications.append(output.group())
 
             print("[TEKTON][DEBUG]: Images to promote:")

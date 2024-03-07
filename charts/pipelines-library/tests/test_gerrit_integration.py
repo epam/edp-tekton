@@ -12,7 +12,8 @@ global:
 
     assert "eventlistener" not in r
     assert "triggerbinding" not in r
-    assert "cdpipeline" in r["pipeline"]
+    assert "deploy" in r["pipeline"]
+    assert "deploy-with-autotests" in r["pipeline"]
     assert "gitserver" not in r
 
 

@@ -1,8 +1,37 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.11.0"></a>
+## [v0.11.0] - 2024-03-12
 ### Features
 
+- Make possible run autotest from deploy pipeline ([#133](https://github.com/epam/edp-tekton/issues/133))
+- Add Github CI workflow for PR ([#136](https://github.com/epam/edp-tekton/issues/136))
+- Make possible run post/pre deploy in remote cluster ([#133](https://github.com/epam/edp-tekton/issues/133))
+- Enable custom values parameter ([#131](https://github.com/epam/edp-tekton/issues/131))
+- Set GitHub as default gitProvider ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Add support for multiple GitProviders ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Integrate DotNet Pipelines with custom registry ([#127](https://github.com/epam/edp-tekton/issues/127))
+- Add nodeSelector, affinity, tolerations ([#126](https://github.com/epam/edp-tekton/issues/126))
+- Enable correct deployment name for tekton cache chart ([#126](https://github.com/epam/edp-tekton/issues/126))
+- Integrate Python Pipelines with custom registry ([#123](https://github.com/epam/edp-tekton/issues/123))
+- Implement custom pipeline for clean edp ([#117](https://github.com/epam/edp-tekton/issues/117))
+- Add support for argocd app wait deployment ([#117](https://github.com/epam/edp-tekton/issues/117))
+- Add QuickLink Custom Resources ([#114](https://github.com/epam/edp-tekton/issues/114))
+- Integrate NPM Pipelines with custom registry ([#115](https://github.com/epam/edp-tekton/issues/115))
+- Integrate Antora Pipelines with custom registry ([#115](https://github.com/epam/edp-tekton/issues/115))
+- Add integration tests step for nexus-operator ([#116](https://github.com/epam/edp-tekton/issues/116))
+- Add ability to use custom Maven settings.xml ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Migrate custom Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate Java-Gradle Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate Java-Maven Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate Dotnet Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate Go Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate NPM Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Migrate Python Tekton pipelines for new Sonar branch approach([#107](https://github.com/epam/edp-tekton/issues/107))
+- Add secret for authentication in package registries ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Add pull request data to interceptor response ([#105](https://github.com/epam/edp-tekton/issues/105))
 - Provision default TriggerTemplate for CD Pipeline ([#96](https://github.com/epam/edp-tekton/issues/96))
 - Align promotion procedure to the new format ([#96](https://github.com/epam/edp-tekton/issues/96))
 - Implement deploy pipeline based on Argo ApplicationSet ([#96](https://github.com/epam/edp-tekton/issues/96))
@@ -10,6 +39,24 @@
 
 ### Bug Fixes
 
+- Update customValues flag operation logic ([#133](https://github.com/epam/edp-tekton/issues/133))
+- Update autotest-runner ([#146](https://github.com/epam/edp-tekton/issues/146))
+- Invalid CodebaseImageStream tag date format ([#143](https://github.com/epam/edp-tekton/issues/143))
+- Fix git server hostname extraction for GitLab ([#144](https://github.com/epam/edp-tekton/issues/144))
+- Update resource creation logic ([#142](https://github.com/epam/edp-tekton/issues/142))
+- Align release pipeline kaniko task([#140](https://github.com/epam/edp-tekton/issues/140))
+- We must pass context with deployable module for kaniko ([#141](https://github.com/epam/edp-tekton/issues/141))
+- Run sonar after integration-test for keycloak-operator ([#139](https://github.com/epam/edp-tekton/issues/139))
+- Update task dependencies ([#136](https://github.com/epam/edp-tekton/issues/136))
+- Enable uniq selector pattern for deploy pipeline ([#137](https://github.com/epam/edp-tekton/issues/137))
+- Add https prefix into webhookUrl ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Align promote images to the new payload pattern([#134](https://github.com/epam/edp-tekton/issues/134))
+- Add kubeconfig parameter to deploy TT ([#133](https://github.com/epam/edp-tekton/issues/133))
+- Ensure build pipeline is triggered only for Merge Events ([#128](https://github.com/epam/edp-tekton/issues/128))
+- Update working directory path for custom pipelines ([#119](https://github.com/epam/edp-tekton/issues/119))
+- Fix ingress annotation in Tekton dashboard ([#111](https://github.com/epam/edp-tekton/issues/111))
+- Align parameters name for CD Pipeline ([#96](https://github.com/epam/edp-tekton/issues/96))
+- Align parameters name for CD Pipeline ([#96](https://github.com/epam/edp-tekton/issues/96))
 - Add extraline in private ssh key ([#100](https://github.com/epam/edp-tekton/issues/100))
 - Change versioning for helm lib default([#101](https://github.com/epam/edp-tekton/issues/101))
 - Add chart-dir parameter to helm pipeline([#101](https://github.com/epam/edp-tekton/issues/101))
@@ -21,10 +68,52 @@
 
 ### Code Refactoring
 
+- Remove deprecated autotests functional ([#145](https://github.com/epam/edp-tekton/issues/145))
+- Align TriggerTemplate stage label name ([#145](https://github.com/epam/edp-tekton/issues/145))
+- Align labels, name convention ([#145](https://github.com/epam/edp-tekton/issues/145))
+- Switch to using gitServer name instead of gitProvider ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Change gitServer structure ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Refactor Tekton Triggers components deployment ([#130](https://github.com/epam/edp-tekton/issues/130))
 - Simplify Git provider EventListeners and Ingress handling ([#93](https://github.com/epam/edp-tekton/issues/93))
+
+### Testing
+
+- Run e2e tests one-by-one ([#130](https://github.com/epam/edp-tekton/issues/130))
 
 ### Routine
 
+- Update current version ([#149](https://github.com/epam/edp-tekton/issues/149))
+- Bump helm-docs image version ([#149](https://github.com/epam/edp-tekton/issues/149))
+- Bump alpine version ([#149](https://github.com/epam/edp-tekton/issues/149))
+- Allow to define webhook URL for Github/Gitlab ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Add parameters for gerrit gitserver ([#136](https://github.com/epam/edp-tekton/issues/136))
+- Implement cache in antora pipeline ([#138](https://github.com/epam/edp-tekton/issues/138))
+- Update github workflow ([#136](https://github.com/epam/edp-tekton/issues/136))
+- Get webhook url of gitlab and github from gitserver resource ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Add label to associate an ingress with a specific GitServer ([#130](https://github.com/epam/edp-tekton/issues/130))
+- Allow overriding fields in gitServer and QuickLink CRs ([#168](https://github.com/epam/edp-tekton/issues/168))
+- Remove Dashboard EDPComponent CR ([#168](https://github.com/epam/edp-tekton/issues/168))
+- Remove unused tasks from DotNet Pipelines ([#127](https://github.com/epam/edp-tekton/issues/127))
+- Remove unused get-nexus-repository-url Task from Python Pipelines ([#123](https://github.com/epam/edp-tekton/issues/123))
+- Remove 'edp' from helm chart name ([#122](https://github.com/epam/edp-tekton/issues/122))
+- Make possible to use cache at python-push step ([#121](https://github.com/epam/edp-tekton/issues/121))
+- Increase RAM request and limit of save-cache task ([#120](https://github.com/epam/edp-tekton/issues/120))
+- Bump tekton dashboard version ([#118](https://github.com/epam/edp-tekton/issues/118))
+- Enable pip package caching ([#150](https://github.com/epam/edp-tekton/issues/150))
+- Separating nexus-operator pipelines from general pipelines ([#116](https://github.com/epam/edp-tekton/issues/116))
+- Migrate from update-build-number to maven task ([#112](https://github.com/epam/edp-tekton/issues/112))
+- Add comments with description for tekton-cache ([#110](https://github.com/epam/edp-tekton/issues/110))
+- Enable service name customization in the tekton-cache Helm chart ([#110](https://github.com/epam/edp-tekton/issues/110))
+- Bump semgrep image version ([#109](https://github.com/epam/edp-tekton/issues/109))
+- Add e2e tests for edp-tekton custom pipeline ([#108](https://github.com/epam/edp-tekton/issues/108))
+- Remove unused sonar tasks ([#107](https://github.com/epam/edp-tekton/issues/107))
+- Update maven-deploy-plugin syntax for Java 8 and 11 compatibility ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Remove unused Nexus-specific properties, GitLab VCS ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Remove unused Nexus-specific properties, GitHub VCS ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Remove unused Nexus-specific properties, Gerrit VCS ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Remove 'get-nexus-repository-url' task ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Add examples for using various artifactory storages in Maven ([#106](https://github.com/epam/edp-tekton/issues/106))
+- Update current development version ([#104](https://github.com/epam/edp-tekton/issues/104))
 - Add dependencies between tasks([#103](https://github.com/epam/edp-tekton/issues/103))
 - Bump tekton-cache version ([#102](https://github.com/epam/edp-tekton/issues/102))
 - Bump tekton-cache helm chart version ([#102](https://github.com/epam/edp-tekton/issues/102))
@@ -45,7 +134,14 @@
 
 ### Documentation
 
+- Define name convention for ingress objects ([#122](https://github.com/epam/edp-tekton/issues/122))
 - Update README md file ([#132](https://github.com/epam/edp-tekton/issues/132))
+
+### BREAKING CHANGE:
+
+
+We need to change format of payload that we pass
+to CD Pipeline
 
 
 <a name="v0.10.2"></a>
@@ -277,7 +373,8 @@
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.11.0...HEAD
+[v0.11.0]: https://github.com/epam/edp-tekton/compare/v0.10.2...v0.11.0
 [v0.10.2]: https://github.com/epam/edp-tekton/compare/v0.10.1...v0.10.2
 [v0.10.1]: https://github.com/epam/edp-tekton/compare/v0.10.0...v0.10.1
 [v0.10.0]: https://github.com/epam/edp-tekton/compare/v0.9.0...v0.10.0

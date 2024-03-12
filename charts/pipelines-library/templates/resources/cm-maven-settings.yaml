@@ -95,32 +95,32 @@ data:
             <profile>
                 <id>nexus</id>
                 <properties>
-                    <altSnapshotDeploymentRepository>nexus::default::http://nexus.nexus:8081/repository/edp-maven-snapshots</altSnapshotDeploymentRepository>
-                    <altReleaseDeploymentRepository>nexus::default::http://nexus.nexus:8081/repository/edp-maven-releases</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-snapshots</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-releases</altReleaseDeploymentRepository>
                 </properties>
             </profile>
             <!-- GitLab registry profile for managing artifacts within GitLab. -->
             <profile>
                 <id>gitlab-registry</id>
                 <properties>
-                    <altSnapshotDeploymentRepository>gitlab-registry::default::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altSnapshotDeploymentRepository>
-                    <altReleaseDeploymentRepository>gitlab-registry::default::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>gitlab-registry::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>gitlab-registry::https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven</altReleaseDeploymentRepository>
                 </properties>
             </profile>
             <!-- GitHub registry profile for managing artifacts within GitHub. -->
             <profile>
                 <id>github-registry</id>
                 <properties>
-                    <altSnapshotDeploymentRepository>github-registry::default::https://maven.pkg.github.com/OWNER/REPOSITORY</altSnapshotDeploymentRepository>
-                    <altReleaseDeploymentRepository>github-registry::default::https://maven.pkg.github.com/OWNER/REPOSITORY</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>github-registry::https://maven.pkg.github.com/OWNER/REPOSITORY</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>github-registry::https://maven.pkg.github.com/OWNER/REPOSITORY</altReleaseDeploymentRepository>
                 </properties>
             </profile>
             <!-- Azure DevOps registry profile for managing artifacts within Azure DevOps. -->
             <profile>
                 <id>azure-devops-registry</id>
                 <properties>
-                    <altSnapshotDeploymentRepository>azure-devops-registry::default::https://pkgs.dev.azure.com</altSnapshotDeploymentRepository>
-                    <altReleaseDeploymentRepository>azure-devops-registry::default::https://pkgs.dev.azure.com</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>azure-devops-registry::https://pkgs.dev.azure.com</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>azure-devops-registry::https://pkgs.dev.azure.com</altReleaseDeploymentRepository>
                 </properties>
             </profile>
         </profiles>

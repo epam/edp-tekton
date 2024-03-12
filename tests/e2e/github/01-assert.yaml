@@ -16,7 +16,7 @@ status:
               app: example
           steps:
             - computeResources: {}
-              image: alpine:3.18.4
+              image: alpine:3.18.6
               name: echo
               script: |
                 #!/usr/bin/env sh

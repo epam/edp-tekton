@@ -35,7 +35,7 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 | fullnameOverride | string | `""` |  |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.gerritSSHPort | string | `"30003"` | Gerrit SSH node port |
-| global.gitProvider | string | `"gerrit"` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
+| global.gitProviders | list | `["gerrit"]` | Define Git Provider to be used in Pipelines. Can be gerrit (default), gitlab, github |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | imageScanReport.enable | bool | `true` |  |
 | imageScanReport.grypeTemplate | string | `"<?xml version=\"1.0\" ?>\n<testsuites name=\"grype\">\n{{- $failures := len $.Matches }}\n    <testsuite tests=\"{{ $failures }}\" failures=\"{{ $failures }}\" name=\"{{ $.Distro.Name }}:{{ $.Distro.Version }}\" errors=\"0\" skipped=\"0\">\n        <properties>\n            <property name=\"type\" value=\"{{ $.Distro.Name }}\"></property>\n        </properties>\n        {{- range .Matches }}\n        <testcase classname=\"{{ .Artifact.Name }}-{{ .Artifact.Version }} ({{ .Artifact.Type }})\" name=\"[{{ .Vulnerability.Severity }}] {{ .Vulnerability.ID }}\">\n            <failure message=\"{{ .Artifact.Name }}: {{ .Vulnerability.ID }}\" type=\"description\">{{ .Vulnerability.Description }} {{ .Artifact.CPEs }} {{ .Vulnerability.DataSource }}</failure>\n        </testcase>\n        {{- end }}\n    </testsuite>\n</testsuites>\n"` |  |

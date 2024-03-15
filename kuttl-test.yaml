@@ -12,9 +12,6 @@ commands:
   # install QuickLink CRD first
   - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_quicklinks.yaml
     namespaced: false
-  # install EDPComponent CRD first
-  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-component-operator/master/deploy-templates/crds/v1.edp.epam.com_edpcomponents.yaml
-    namespaced: false
   # install GitServer CRD
   - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_gitservers.yaml
     namespaced: false

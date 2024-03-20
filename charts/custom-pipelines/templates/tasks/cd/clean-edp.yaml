@@ -18,7 +18,8 @@ spec:
       type: string
     - name: KUBECONFIG_SECRET_NAME
       type: string
-      default: "kubeconfig"
+      description: The name of secret with Kubeconfig to connect to the remote cluster
+      default: "in-cluster"
   volumes:
     - name: kubeconfig
       secret:
@@ -47,12 +48,6 @@ spec:
 
         kubeconfig = "workspace/source/kube/config"
 
-        if os.path.isfile(kubeconfig):
-            print(f"Kubeconfig exists: {kubeconfig} , use it")
-            os.environ['KUBECONFIG'] = kubeconfig
-        else:
-            print("Kubeconfig does not exist, working on current cluster")
-
         pipeline = os.getenv('PIPELINE')
         stage = os.getenv('STAGE')
 
@@ -63,6 +58,12 @@ spec:
         print("Pipeline - " + pipeline)
         print("Stage - " + stage)
         print("Deployble namespace " + target_namespace)
+
+        if os.path.isfile(kubeconfig):
+            print(f"Kubeconfig exists: {kubeconfig} , use it")
+            os.environ['KUBECONFIG'] = kubeconfig
+        else:
+            print("Kubeconfig does not exist, working on current cluster")
 
         get_crd = subprocess.Popen(['kubectl', 'get', 'crd', '-o', 'json'], stdout=subprocess.PIPE)
 
@@ -82,23 +83,19 @@ spec:
                     "keycloakrealms.v1.edp.epam.com",
                     "keycloaks.v1.edp.epam.com"]
 
-        list_validating_webhook_configuration = subprocess.run(
-            ['kubectl', 'get', 'ValidatingWebhookConfigurations',
-            '--no-headers', '--output=custom-columns=NAME:.metadata.name'],
-            capture_output=True, text=True
-        ).stdout.split('\n')
+        # Delete codebase validation webhook
+        webhook = subprocess.run(
+            ['kubectl', 'get', 'ValidatingWebhookConfigurations', 'edp-codebase-operator-validating-webhook-configuration-' + target_namespace,
+        '--no-headers', '--output=custom-columns=NAME:.metadata.name'],
+        capture_output=True, text=True
+        ).stdout.split('\n')[0]
+        print("ValidatingWebhook - " + webhook)
 
-        filtered_list = [vc for vc in list_validating_webhook_configuration if f"{target_namespace}" in vc]
-
-        for vc in filtered_list:
-            try:
-                subprocess.run(['kubectl', 'delete', 'ValidatingWebhookConfigurations', vc, '--timeout=12s'], check=True)
-                print(f"EDP Validating Webhook Configuration has been deleted: {vc}")
-            except subprocess.CalledProcessError:
-                print(f"Unable to find ValidatingWebhookConfigurations {vc}")
-
-
-
+        if webhook:
+            subprocess.run(['kubectl', 'delete', 'ValidatingWebhookConfigurations', webhook, '--timeout=12s'], check=True)
+            print(f"EDP Validating Webhook Configuration has been deleted: {webhook}")
+        else:
+            print(f"Unable to find ValidatingWebhookConfigurations")
 
         # Delete EDP cr
 

@@ -14,7 +14,8 @@ spec:
       default: ""
     - name: KUBECONFIG_SECRET_NAME
       type: string
-      default: "kubeconfig"
+      description: The name of secret with Kubeconfig to connect to the remote cluster
+      default: "in-cluster"
   volumes:
     - name: kubeconfig
       secret:

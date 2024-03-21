@@ -62,7 +62,7 @@ spec:
         gerritUrl=$(echo -n "ssh://edp-ci@gerrit.${TARGET_NAMESPACE}:${gerritPort}" | base64 -w0)
 
         # copy secret to argocd ns
-        SECRET=$(kubectl get secret gerrit-argocd-sshkey -n ${TARGET_NAMESPACE} -o json)
+        SECRET=$(kubectl get secret gerrit-ciuser-sshkey -n ${TARGET_NAMESPACE} -o json)
         SECRET=$(echo ${SECRET} | jq 'del(.data.username,.metadata.annotations,.metadata.creationTimestamp,.metadata.labels,.metadata.resourceVersion,.metadata.uid,.metadata.ownerReferences)')
         SECRET=$(echo ${SECRET} | jq '.metadata.namespace = "argocd"')
         SECRET=$(echo ${SECRET} | jq --arg name "${TARGET_NAMESPACE}" '.metadata.name = $name')

@@ -177,3 +177,5 @@ spec:
         export ARGOCD_SERVER=${ARGOCD_URL#*//}
 
         argocd app delete -l "app.edp.epam.com/stage=$STAGE" -l "app.edp.epam.com/pipeline=$PIPELINE" --core=false --grpc-web -y
+
+        sleep 40

@@ -54,6 +54,9 @@ spec:
 
         kubectl get cm argocd-ssh-known-hosts-cm -n argocd -o jsonpath='{.data.ssh_known_hosts}' > /tmp/ssh_known_hosts
 
+        # remove host for gerrit
+        ssh-keygen -f /tmp/ssh_known_hosts  -R "[gerrit.${TARGET_NAMESPACE}]:${gerritPort}" || true
+
         # Get known hosts from gerrit pod
 
         gerritPort=$(kubectl get gerrit gerrit -n ${TARGET_NAMESPACE} -o jsonpath='{.spec.sshPort}')

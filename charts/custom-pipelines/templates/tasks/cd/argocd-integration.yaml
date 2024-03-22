@@ -23,7 +23,7 @@ spec:
         optional: true
   steps:
     - name: argo-cd-integration
-      image: bitnami/kubectl:1.25.4
+      image: epamedp/tekton-autotest:0.1.4
       volumeMounts:
         - name: kubeconfig
           mountPath: /workspace/source/kube

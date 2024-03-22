@@ -27,7 +27,7 @@ spec:
         optional: true
   steps:
     - name: clean-edp
-      image: epamedp/tekton-autotest:0.1.3
+      image: epamedp/tekton-autotest:0.1.4
       volumeMounts:
         - name: kubeconfig
           mountPath: /workspace/source/kube

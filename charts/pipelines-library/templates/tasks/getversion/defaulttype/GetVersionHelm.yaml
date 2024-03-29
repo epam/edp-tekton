@@ -11,7 +11,7 @@ spec:
   params:
     - name: BRANCH_NAME
       type: string
-      description: Codebasebranch name
+      description: Branch name.
     - name: chart-dir
       type: string
   results:

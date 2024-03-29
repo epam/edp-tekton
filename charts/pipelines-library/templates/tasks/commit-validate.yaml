@@ -24,7 +24,6 @@ spec:
   steps:
     - image: $(params.BASE_IMAGE)
       name: commit-validate
-      workingDir: $(workspaces.source.path)
       env:
         - name: COMMIT_MESSAGE_PATTERN
           value: $(params.COMMIT_MESSAGE_PATTERN)

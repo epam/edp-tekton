@@ -63,10 +63,6 @@ spec:
       taskRef:
         kind: Task
         name: commit-validate
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
 
     - name: sam-lint
       runAfter:

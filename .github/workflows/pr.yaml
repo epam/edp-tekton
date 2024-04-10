@@ -16,9 +16,6 @@ jobs:
 
   check-commit-message:
     runs-on: ubuntu-20.04
-    env:
-      COMMIT_MESSAGE_PATTERN: '^(feat|fix|docs|style|refactor|test|chore){1}(!)?:\s[A-Z][a-z]([\/\.\w\-\s]+)\(\#\d+\)$'
-      MAX_LINE_LENGTH: '80'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,6 +27,10 @@ jobs:
         with:
           pattern: '^(fix|feat|docs|style|refactor|test|chore): .+ \(#\d+\)$'
           error: 'Your commit message should be in the format "type: Description (#issue)". Example: "fix: Update build (#33)"'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Line Length
         uses: gsactions/commit-message-checker@v2

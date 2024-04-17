@@ -60,12 +60,10 @@ jobs:
     needs: [helm-docs]
     runs-on: ubuntu-20.04
     env:
-     CHART_DIR: "deploy-templates"
-     CT_CONFIGS_DIR: "."
-     CT_CONFIGS_DIR_DEFAULT: "ct-configs"
-     CT_FILE_PATH: "ct.yaml"
-     LINTCONF_FILE_PATH: "lintconf.yaml"
-     CHART_SCHEMA_FILE_PATH: "chart_schema.yaml"
+     CHART_DIR: "charts/common-library,charts/custom-pipelines,charts/pipelines-library"
+     CT_FILE_PATH: "ct/ct.yaml"
+     LINTCONF_FILE_PATH: "ct/lintconf.yaml"
+     CHART_SCHEMA_FILE_PATH: "ct/chart_schema.yaml"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,12 +83,19 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.0
 
+      - name: Update dependencies
+        run: |
+            helm repo add epamedp https://epam.github.io/edp-helm-charts/stable \
+              --force-update && \
+            helm repo update
+
       - name: Run chart-testing (lint)
-        run: ct lint --target-branch ${{ github.event.repository.default_branch }} \
-               --charts ${CHART_DIR}/ \
-               --config ${CT_FILE_PATH} \
-               --lint-conf ${LINTCONF_FILE_PATH} \
-               --chart-yaml-schema ${CHART_SCHEMA_FILE_PATH}
+        run: |
+              ct lint --target-branch ${{ github.event.repository.default_branch }} \
+               --charts charts/common-library,charts/custom-pipelines,charts/pipelines-library/ \
+               --config ct/ct.yaml \
+               --lint-conf ct/lintconf.yaml \
+               --chart-yaml-schema ct/chart_schema.yaml
 
   build-and-lint:
     needs: [helm-lint]

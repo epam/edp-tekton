@@ -26,6 +26,8 @@ spec:
           app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE)
           app.edp.epam.com/cdstage: $(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)
           app.edp.epam.com/pipelinetype: deploy
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

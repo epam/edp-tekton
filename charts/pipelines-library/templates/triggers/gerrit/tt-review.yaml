@@ -42,6 +42,8 @@ spec:
           app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
           app.edp.epam.com/codebase: $(tt.params.codebase)
           app.edp.epam.com/pipelinetype: review
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

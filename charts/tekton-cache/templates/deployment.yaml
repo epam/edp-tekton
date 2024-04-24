@@ -6,6 +6,8 @@ metadata:
     {{- include "tekton-cache.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "tekton-cache.selectorLabels" . | nindent 6 }}

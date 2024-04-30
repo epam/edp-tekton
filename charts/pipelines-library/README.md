@@ -127,6 +127,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | nameOverride | string | `""` |  |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
+| tekton.configs.gradleConfigMap | string | `"custom-gradle-settings"` | Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables. |
 | tekton.configs.mavenConfigMap | string | `"custom-maven-settings"` | Default configuration map for provisioning Maven settings.xml file. To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml |
 | tekton.configs.npmConfigMap | string | `"custom-npm-settings"` | Default configuration maps for provisioning NPM .npmrc files. To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml |
 | tekton.configs.nugetConfigMap | string | `"custom-nuget-settings"` | Default configuration maps for provisioning nuget.config file. |

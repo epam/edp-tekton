@@ -36,13 +36,18 @@ spec:
   volumes:
     - name: settings-gradle
       configMap:
-        name: custom-gradle-settings
+        name: {{ .Values.tekton.configs.gradleConfigMap }}
   steps:
     - name: compile
       image: $(params.BASE_IMAGE)
       volumeMounts:
         - name: settings-gradle
           mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+        - secretRef:
+            name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         #!/bin/bash
@@ -82,6 +87,11 @@ spec:
       volumeMounts:
         - name: settings-gradle
           mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+        - secretRef:
+            name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         #!/bin/bash
@@ -120,6 +130,11 @@ spec:
       volumeMounts:
         - name: settings-gradle
           mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+        - secretRef:
+            name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         #!/bin/bash

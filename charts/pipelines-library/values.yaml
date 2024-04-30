@@ -84,6 +84,10 @@ tekton:
     # To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap".
     # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml
     mavenConfigMap: "custom-maven-settings"
+    # To use custom init.gradle file, the user should prepare another configuration map and update "gradleConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-gradle-settings.yaml.
+    # -- Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables.
+    gradleConfigMap: "custom-gradle-settings"
     # -- Default configuration maps for provisioning NPM .npmrc files.
     # To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap".
     # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml

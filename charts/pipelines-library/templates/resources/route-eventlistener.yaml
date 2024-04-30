@@ -26,5 +26,6 @@ spec:
     targetPort: http-listener
   wildcardPolicy: None
 {{- end }}
+---
 {{- end }}
 {{- end }}

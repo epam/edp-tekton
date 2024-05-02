@@ -97,4 +97,16 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: url
+        - name: SNAPSHOTS_REPO_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.tekton.configs.gradleConfigMap }}
+              key: SNAPSHOTS_REPO_PATH
+              optional: true
+        - name: RELEASES_REPO_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.tekton.configs.gradleConfigMap }}
+              key: RELEASES_REPO_PATH
+              optional: true
 {{- include "resources" . | nindent 6 }}

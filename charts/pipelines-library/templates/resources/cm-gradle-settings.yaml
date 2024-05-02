@@ -10,6 +10,8 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 data:
+  SNAPSHOTS_REPO_PATH: "/repository/edp-maven-snapshots"
+  RELEASES_REPO_PATH: "/repository/edp-maven-releases"
   init.gradle: |
     // Copyright 2024 EPAM Systems.
     //

@@ -56,9 +56,6 @@ spec:
         gradle \
           -I \
           /var/configmap/init.gradle \
-          -PnexusLogin=${CI_USERNAME} \
-          -PnexusPassword=${CI_PASSWORD} \
-          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             clean \
             compileJava \
             -x test
@@ -100,9 +97,6 @@ spec:
         gradle \
           -I \
           /var/configmap/init.gradle \
-          -PnexusLogin=${CI_USERNAME} \
-          -PnexusPassword=${CI_PASSWORD} \
-          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             test \
             jacocoTestReport
       env:
@@ -143,9 +137,6 @@ spec:
         gradle \
           -I \
           /var/configmap/init.gradle \
-          -PnexusLogin=${CI_USERNAME} \
-          -PnexusPassword=${CI_PASSWORD} \
-          -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
             build -x test
       env:
         - name: XDG_CONFIG_HOME

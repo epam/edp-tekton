@@ -32,3 +32,10 @@ Selector labels
 app.kubernetes.io/name: {{ include "tekton-dashboard.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Define tekton-dashboard URL
+*/}}
+{{- define "tekton-dashboard.url" -}}
+{{- printf "tekton-%s.%s" .Release.Namespace .Values.global.dnsWildCard  }}
+{{- end }}

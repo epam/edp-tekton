@@ -324,6 +324,11 @@ dashboard:
       # -- Uncomment it to enable tekton-dashboard OIDC on EKS cluster
       # nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri'
       # nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth'
+    # -- Defines the base URL for the tekton.
+    # -- If not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]"
+    host: ""
+    # -- Ingress TLS configuration
+    # -- If hosts not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]"
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:

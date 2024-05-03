@@ -80,7 +80,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | dashboard.image.tag | string | `"v0.46.0"` | Define tekton dashboard docker image tag |
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.enabled | bool | `true` | Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }} |
-| dashboard.ingress.tls | list | `[]` | Uncomment it to enable tekton-dashboard OIDC on EKS cluster nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri' nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth' |
+| dashboard.ingress.host | string | `""` | If not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]" |
+| dashboard.ingress.tls | list | `[]` | If hosts not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]" |
 | dashboard.nameOverride | string | `"tekton-dashboard"` |  |
 | dashboard.nodeSelector | object | `{}` | Node labels for pod assignment |
 | dashboard.openshift_proxy | object | `{"enabled":false,"image":{"repository":"quay.io/openshift/origin-oauth-proxy","tag":"4.9.0"},"resources":{"limits":{"cpu":"60m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"40Mi"}}}` | For EKS scenario - uncomment dashboard.ingress.annotations block |

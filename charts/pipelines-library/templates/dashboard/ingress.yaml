@@ -20,14 +20,20 @@ spec:
   tls:
     {{- range .Values.dashboard.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
+        {{- if .hosts }}
+        {{- toYaml .hosts | nindent 8 }}
+        {{- else }}
+        - {{ include "tekton-dashboard.url" $ }}
         {{- end }}
       secretName: {{ .secretName }}
     {{- end }}
   {{- end }}
   rules:
-    - host: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    {{- if .Values.dashboard.ingress.host }}
+    - host: {{ .Values.dashboard.ingress.host }}
+    {{- else}}
+    - host: {{ include "tekton-dashboard.url" . }}
+    {{- end}}
       http:
         paths:
           - path: /

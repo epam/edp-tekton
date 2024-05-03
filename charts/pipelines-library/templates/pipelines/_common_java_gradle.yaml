@@ -39,25 +39,12 @@
       workspace: shared-workspace
       subPath: source
 
-- name: get-nexus-repository-url
-  taskRef:
-    kind: Task
-    name: get-nexus-repository-url
-  runAfter:
-    - get-version
-  params:
-    - name: VERSION
-      value: $(tasks.get-version.results.VERSION)
-    - name: TOOL
-      value: "maven"
-
 - name: push
   taskRef:
     kind: Task
     name: gradle
   runAfter:
     - sonar
-    - get-nexus-repository-url
   params:
     - name: BASE_IMAGE
       value: $(params.image)

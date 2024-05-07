@@ -70,7 +70,7 @@ spec:
             - --log-format=json
             - --stream-logs=true
             - --external-logs=
-            - --namespace={{ .Release.Namespace }}
+            - --namespaces={{ .Release.Namespace }}
           env:
             - name: INSTALLED_NAMESPACE
               valueFrom:

@@ -31,6 +31,7 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: aws_region
+              optional: true
         - name: CHART_DIR
           value: $(params.chart-dir)
         - name: CONTAINER_REGISTRY_SPACE
@@ -71,6 +72,7 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: aws_region
+              optional: true
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:

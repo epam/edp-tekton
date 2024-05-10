@@ -47,7 +47,7 @@ spec:
       type: string
     - name: base-image
       description: "Base image"
-      default: "golang:1.20-bullseye"
+      default: "golang:1.22-bookworm"
       type: string
     - name: goproxy
       description: "Go proxy server"

@@ -30,7 +30,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: 'golang:1.20-bullseye'
+      default: 'golang:1.22-bookworm'
       description: "go image with make installed"
       type: string
     - name: GOPROXY
@@ -131,7 +131,7 @@ spec:
         - build
       params:
         - name: BASE_IMAGE
-          value: 'epamedp/tekton-python-make:0.1.4'
+          value: 'epamedp/tekton-python-make:0.1.6'
         - name: GOPROXY
           value: $(params.GOPROXY)
         - name: EXTRA_COMMANDS

@@ -20,7 +20,7 @@ spec:
       description: git revision to checkout (branch, tag, sha, ref…)
       name: git-source-revision
       type: string
-    - default: 'golang:1.20-bullseye'
+    - default: 'golang:1.22-bookworm'
       description: npm image version
       name: image
       type: string

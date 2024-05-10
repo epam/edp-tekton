@@ -1,6 +1,6 @@
 run:
   timeout: 5m
-  go: "1.20"
+  go: "1.22"
   issues-exit-code: 1
   build-tags:
     - mytag
@@ -10,7 +10,7 @@ run:
   allow-parallel-runners: false
 
 output:
-  format: colored-line-number
+  formats: colored-line-number
   print-issued-lines: true
 
   # print linter name in the end of issue text, default is true
@@ -280,8 +280,6 @@ linters-settings:
     simplify: true
 
   gofumpt:
-    lang-version: "1.20"
-
     # Choose whether or not to use the extra rules that are disabled
     # by default
     extra-rules: false
@@ -325,13 +323,7 @@ linters-settings:
     min-confidence: 0.8
 
   gomnd:
-    settings:
-      mnd:
-        # the list of enabled checks, see https://github.com/tommy-muehle/go-mnd/#checks for description.
-        checks: argument,case,condition,operation,return,assign
-        # ignored-numbers: 1000
-        # ignored-files: magic_.*.go
-        # ignored-functions: math.*
+    checks: argument,case,condition,operation,return,assign
 
   gomoddirectives:
     # Allow local `replace` directives. Default is false.
@@ -369,9 +361,6 @@ linters-settings:
     checks: [ "all" ]
 
   govet:
-    # report about shadowed variables
-    check-shadowing: true
-
     # settings per analyzer
     settings:
       printf: # analyzer name, run `go tool vet help` to see all analyzers
@@ -423,15 +412,6 @@ linters-settings:
       - fieldalignment
     enable-all: false
     disable-all: false
-
-  depguard:
-    list-type: blacklist
-    include-go-root: false
-    packages:
-      - github.com/sirupsen/logrus
-    packages-with-error-message:
-      # specify an error message to output when a blacklisted package is used
-      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
 
   ifshort:
     # Maximum length of variable declaration measured in number of lines, after which linter won't suggest using short syntax.
@@ -878,7 +858,6 @@ linters:
     - containedctx
     - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupl
     - durationcheck
@@ -886,7 +865,6 @@ linters:
     - errchkjson
     - errname
     - errorlint
-    - execinquery
     - exhaustive
     - exportloopref
     - forbidigo
@@ -901,7 +879,6 @@ linters:
     - ineffassign
     - typecheck
     - revive
-    - megacheck
     - decorder
     - forcetypeassert
     - funlen
@@ -909,10 +886,6 @@ linters:
     - wrapcheck
     - wsl
     - unused
-
-  disabled:
-    - contextcheck #Disabled due to issue https://github.com/golangci/golangci-lint/issues/2649.
-    - bodyclose #Disabled due to issue https://github.com/timakin/bodyclose/issues/30
   fast: false
 
 issues:

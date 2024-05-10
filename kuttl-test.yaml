@@ -3,7 +3,7 @@ kind: TestSuite
 testDirs:
   - ./tests/e2e/
 skipClusterDelete: false
-timeout: 180
+timeout: 240
 parallel: 1
 commands:
   # Install Cert manager which is used by Interceptor
@@ -21,6 +21,9 @@ commands:
   - command: kubectl create ns tekton-pipelines-resolvers
     namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+    namespaced: false
+  # wait for webhooks to be ready
+  - command: sleep 180
     namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
     namespaced: false

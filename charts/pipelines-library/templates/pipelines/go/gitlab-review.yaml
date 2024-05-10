@@ -42,7 +42,7 @@ spec:
       description: "repository full name"
       type: string
     - name: image
-      default: 'golang:1.20-bullseye'
+      default: 'golang:1.22-bookworm'
       description: "go image version"
       type: string
     - name: CHART_DIR

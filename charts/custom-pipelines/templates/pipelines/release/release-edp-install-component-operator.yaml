@@ -27,7 +27,7 @@ spec:
       description: "Project version"
       type: string
     - name: build-image
-      default: "golang:1.20-bullseye"
+      default: "golang:1.22-bookworm"
       description: "Image for build agent"
       type: string
     - name: goproxy

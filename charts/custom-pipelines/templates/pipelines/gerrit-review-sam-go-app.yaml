@@ -24,7 +24,7 @@ spec:
       description: Refspec to fetch before checking out revision.
       name: git-refspec
       type: string
-    - default: 'golang:1.20-bullseye'
+    - default: 'golang:1.22-bookworm'
       description: npm image version
       name: image
       type: string

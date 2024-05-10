@@ -1,6 +1,6 @@
 module github.com/epam/edp-tekton
 
-go 1.20
+go 1.22
 
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.13.0
@@ -11,11 +11,11 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.org/x/oauth2 v0.7.0
 	google.golang.org/grpc v1.56.3
-	k8s.io/api v0.25.3
-	k8s.io/apimachinery v0.25.3
+	k8s.io/api v0.25.16
+	k8s.io/apimachinery v0.25.16
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	knative.dev/pkg v0.0.0-20221011175852-714b7630a836
-	sigs.k8s.io/controller-runtime v0.12.1
+	sigs.k8s.io/controller-runtime v0.12.3
 )
 
 require (

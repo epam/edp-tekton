@@ -20,7 +20,7 @@ spec:
         name: "cel"
       params:
         - name: "filter"
-          value: "body.action in ['opened', 'synchronize', 'edited', 'created']"
+          value: "body.action in ['opened', 'synchronize', 'created']"
     - ref:
         name: "edp"
         kind: NamespacedInterceptor

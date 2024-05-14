@@ -8,6 +8,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  GOLANG_VERSION: '1.22'
+
 jobs:
   e2e-tests-127:
     name: End-to-end tests 1.27

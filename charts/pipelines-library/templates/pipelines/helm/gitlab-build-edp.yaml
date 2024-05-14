@@ -52,6 +52,21 @@ spec:
 
 {{- include "gitlab-build-start" . | nindent 4 }}
 
+    - name: check-chart-name
+      params:
+        - name: codebase_name
+          value: $(params.CODEBASE_NAME)
+        - name: chart_dir
+          value: $(params.CHART_DIR)
+      runAfter:
+        - fetch-repository
+      taskRef:
+        name: check-helm-chart-name
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
+
     - name: get-version
       taskRef:
         kind: Task

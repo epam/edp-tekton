@@ -84,6 +84,21 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
+    - name: check-chart-name
+      params:
+        - name: codebase_name
+          value: $(params.CODEBASE_NAME)
+        - name: chart_dir
+          value: $(params.CHART_DIR)
+      runAfter:
+        - fetch-repository
+      taskRef:
+        name: check-helm-chart-name
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
+
     - name: helm-docs
       taskRef:
         kind: Task

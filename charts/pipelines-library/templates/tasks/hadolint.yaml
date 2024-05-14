@@ -19,7 +19,7 @@ spec:
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
-      default: ghcr.io/hadolint/hadolint:v2.8.0-debian@sha256:50b0e60aa2b4aba5a26eeb4ad08c96ed7a828fca996632e29114aabea18345f4
+      default: ghcr.io/hadolint/hadolint:v2.12.0-alpine@sha256:3c206a451cec6d486367e758645269fd7d696c5ccb6ff59d8b03b0e45268a199
     - default: './Dockerfile'
       description: Dockerfile path.
       name: dockerfile-path
@@ -43,6 +43,5 @@ spec:
         - name: OFORMAT
           value: "$(params.output-format)"
       script: |
-        #!/bin/bash
         set -e
         hadolint "$DOCKERFILE" -f "$OFORMAT"

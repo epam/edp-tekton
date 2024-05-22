@@ -1,4 +1,4 @@
-package event_processor
+package gerrit
 
 import (
 	"context"
@@ -15,6 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
 func TestGerritEventProcessor_Process(t *testing.T) {
@@ -32,7 +34,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 		kubeObjects []client.Object
 		args        args
 		wantErr     require.ErrorAssertionFunc
-		want        *EventInfo
+		want        *event_processor.EventInfo
 	}{
 		{
 			name: "change event process successfully",
@@ -48,7 +50,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 				},
 			},
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Project: struct {
 						Name string `json:"name"`
 					}{
@@ -63,11 +65,11 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGerrit,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGerrit,
 				RepoPath:     "test-repo",
 				TargetBranch: "test-branch",
-				Type:         EventTypeMerge,
+				Type:         event_processor.EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -94,7 +96,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 				},
 			},
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Project: struct {
 						Name string `json:"name"`
 					}{
@@ -105,16 +107,16 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 					}{
 						Branch: "test-branch",
 					},
-					Type:    GerritEventTypeCommentAdded,
+					Type:    event_processor.GerritEventTypeCommentAdded,
 					Comment: "/recheck",
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGerrit,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGerrit,
 				RepoPath:           "test-repo",
 				TargetBranch:       "test-branch",
-				Type:               EventTypeReviewComment,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -142,7 +144,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 				},
 			},
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Project: struct {
 						Name string `json:"name"`
 					}{
@@ -153,16 +155,16 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 					}{
 						Branch: "test-branch",
 					},
-					Type:    GerritEventTypeCommentAdded,
+					Type:    event_processor.GerritEventTypeCommentAdded,
 					Comment: "fix it",
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGerrit,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGerrit,
 				RepoPath:     "test-repo",
 				TargetBranch: "test-branch",
-				Type:         EventTypeReviewComment,
+				Type:         event_processor.EventTypeReviewComment,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -178,7 +180,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 		{
 			name: "failed to get codebase",
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Project: struct {
 						Name string `json:"name"`
 					}{
@@ -200,7 +202,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 		{
 			name: "failed to get branch",
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Project: struct {
 						Name string `json:"name"`
 					}{
@@ -217,7 +219,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 		{
 			name: "failed to get repository path",
 			args: args{
-				GerritEvent{
+				event_processor.GerritEvent{
 					Type: "default",
 				},
 			},
@@ -236,7 +238,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			body, err := json.Marshal(tt.args.body)
 			require.NoError(t, err)
 
-			p := NewGerritEventProcessor(
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				zap.NewNop().Sugar(),
 			)

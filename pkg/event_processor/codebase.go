@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	codebaseListLimit = 1000
+	CodebaseListLimit = 1000
 )
 
-// getCodebaseByRepoPath returns codebase by repository path.
-func getCodebaseByRepoPath(ctx context.Context, client ctrlClient.Reader, ns, repoPath string) (*codebaseApi.Codebase, error) {
+// GetCodebaseByRepoPath returns codebase by repository path.
+func GetCodebaseByRepoPath(ctx context.Context, client ctrlClient.Reader, ns, repoPath string) (*codebaseApi.Codebase, error) {
 	codebaseList := &codebaseApi.CodebaseList{}
-	if err := client.List(ctx, codebaseList, ctrlClient.InNamespace(ns), ctrlClient.Limit(codebaseListLimit)); err != nil {
+	if err := client.List(ctx, codebaseList, ctrlClient.InNamespace(ns), ctrlClient.Limit(CodebaseListLimit)); err != nil {
 		return nil, fmt.Errorf("unable to get codebase list: %w", err)
 	}
 
@@ -30,8 +30,8 @@ func getCodebaseByRepoPath(ctx context.Context, client ctrlClient.Reader, ns, re
 	return nil, fmt.Errorf("codebase with repository path %s not found", repoPath)
 }
 
-// convertRepositoryPath converts repository path to the format which is used in codebase.
-func convertRepositoryPath(repo string) string {
+// ConvertRepositoryPath converts repository path to the format which is used in codebase.
+func ConvertRepositoryPath(repo string) string {
 	if !strings.HasPrefix(repo, "/") {
 		repo = "/" + repo
 	}

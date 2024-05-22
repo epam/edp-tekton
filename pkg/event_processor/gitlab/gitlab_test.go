@@ -1,4 +1,4 @@
-package event_processor
+package gitlab
 
 import (
 	"context"
@@ -15,6 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
 func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
@@ -32,20 +34,21 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		args        args
 		kubeObjects []client.Object
 		wantErr     require.ErrorAssertionFunc
-		want        *EventInfo
+		want        *event_processor.EventInfo
 	}{
 		{
 			name: "merge event process successfully",
 			args: args{
-				body: GitLabMergeRequestsEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					ObjectAttributes: GitLabMergeRequest{
+					ObjectAttributes: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 						Title:        "fix",
-						LastCommit: GitLabCommit{
-							ID: "123",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
@@ -64,11 +67,11 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGitLab,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitLab,
 				RepoPath:     "/o/r",
 				TargetBranch: "master",
-				Type:         EventTypeMerge,
+				Type:         event_processor.EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -79,22 +82,23 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadSha:      "123",
-					Title:        "fix",
-					HeadRef:      "feature1",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadSha:           "123",
+					Title:             "fix",
+					HeadRef:           "feature1",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
 		{
 			name: "failed to get codebase",
 			args: args{
-				body: GitLabMergeRequestsEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					ObjectAttributes: GitLabMergeRequest{
+					ObjectAttributes: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 					},
 				},
@@ -107,8 +111,8 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		{
 			name: "failed to get branch",
 			args: args{
-				body: GitLabMergeRequestsEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
 				},
@@ -121,7 +125,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		{
 			name: "failed to get repository path",
 			args: args{
-				body: GitLabMergeRequestsEvent{},
+				body: event_processor.GitLabMergeRequestsEvent{},
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
@@ -138,7 +142,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 			body, err := json.Marshal(tt.args.body)
 			require.NoError(t, err)
 
-			p := NewGitLabEventProcessor(
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				zap.NewNop().Sugar(),
 			)
@@ -166,25 +170,26 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 		args        args
 		kubeObjects []client.Object
 		wantErr     require.ErrorAssertionFunc
-		want        *EventInfo
+		want        *event_processor.EventInfo
 	}{
 		{
 			name: "comment event process successfully",
 			args: args{
-				body: GitLabCommentEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					MergeRequest: GitLabMergeRequest{
+					MergeRequest: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 						Title:        "fix",
-						LastCommit: GitLabCommit{
-							ID: "123",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
 					},
-					ObjectAttributes: GitLabComment{
+					ObjectAttributes: event_processor.GitLabComment{
 						Note: "/recheck",
 					},
 				},
@@ -201,11 +206,11 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitLab,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitLab,
 				RepoPath:           "/o/r",
 				TargetBranch:       "master",
-				Type:               EventTypeReviewComment,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -217,31 +222,33 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature1",
-					HeadSha:      "123",
-					Title:        "fix",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					Title:             "fix",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
 		{
 			name: "comment event with no recheck",
 			args: args{
-				body: GitLabCommentEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					MergeRequest: GitLabMergeRequest{
+					MergeRequest: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 						Title:        "fix",
-						LastCommit: GitLabCommit{
-							ID: "123",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
 					},
-					ObjectAttributes: GitLabComment{
+					ObjectAttributes: event_processor.GitLabComment{
 						Note: "no recheck",
 					},
 				},
@@ -258,11 +265,11 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGitLab,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitLab,
 				RepoPath:     "/o/r",
 				TargetBranch: "master",
-				Type:         EventTypeReviewComment,
+				Type:         event_processor.EventTypeReviewComment,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -273,19 +280,20 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature1",
-					HeadSha:      "123",
-					Title:        "fix",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					Title:             "fix",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
 		{
 			name: "comment event with no target branch",
 			args: args{
-				body: GitLabCommentEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
 				},
@@ -302,9 +310,9 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider: GitProviderGitLab,
-				Type:        EventTypeReviewComment,
+			want: &event_processor.EventInfo{
+				GitProvider: event_processor.GitProviderGitLab,
+				Type:        event_processor.EventTypeReviewComment,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -320,8 +328,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "failed to get codebase",
 			args: args{
-				body: GitLabCommentEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
 				},
@@ -334,7 +342,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "repository path empty",
 			args: args{
-				body: GitLabCommentEvent{},
+				body: event_processor.GitLabCommentEvent{},
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
@@ -351,7 +359,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 			body, err := json.Marshal(tt.args.body)
 			require.NoError(t, err)
 
-			p := NewGitLabEventProcessor(
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				zap.NewNop().Sugar(),
 			)
@@ -380,20 +388,21 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 		kubeObjects []client.Object
 		args        args
 		wantErr     require.ErrorAssertionFunc
-		want        *EventInfo
+		want        *event_processor.EventInfo
 	}{
 		{
 			name: "merge event",
 			args: args{
-				body: GitLabMergeRequestsEvent{
-					Project: GitLabProject{
+				body: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					ObjectAttributes: GitLabMergeRequest{
+					ObjectAttributes: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 						Title:        "fix",
-						LastCommit: GitLabCommit{
-							ID: "123",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
@@ -412,11 +421,11 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGitLab,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitLab,
 				RepoPath:     "/o/r",
 				TargetBranch: "master",
-				Type:         EventTypeMerge,
+				Type:         event_processor.EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "test-codebase",
@@ -427,32 +436,34 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature1",
-					HeadSha:      "123",
-					Title:        "fix",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					Title:             "fix",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
 		{
 			name: "comment event",
 			args: args{
-				eventType: GitLabEventTypeCommentAdded,
-				body: GitLabCommentEvent{
-					Project: GitLabProject{
+				eventType: event_processor.GitLabEventTypeCommentAdded,
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
-					MergeRequest: GitLabMergeRequest{
+					MergeRequest: event_processor.GitLabMergeRequest{
 						TargetBranch: "master",
 						Title:        "fix",
-						LastCommit: GitLabCommit{
-							ID: "123",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
 					},
-					ObjectAttributes: GitLabComment{
+					ObjectAttributes: event_processor.GitLabComment{
 						Note: "/recheck",
 					},
 				},
@@ -469,11 +480,11 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitLab,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitLab,
 				RepoPath:           "/o/r",
 				TargetBranch:       "master",
-				Type:               EventTypeReviewComment,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -485,11 +496,12 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature1",
-					HeadSha:      "123",
-					Title:        "fix",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					Title:             "fix",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
@@ -503,7 +515,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 			body, err := json.Marshal(tt.args.body)
 			require.NoError(t, err)
 
-			p := NewGitLabEventProcessor(
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				zap.NewNop().Sugar(),
 			)

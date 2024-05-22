@@ -23,7 +23,9 @@ import (
 	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
 	buildInfo "github.com/epam/edp-common/pkg/config"
 
-	"github.com/epam/edp-tekton/pkg/event_processor"
+	"github.com/epam/edp-tekton/pkg/event_processor/gerrit"
+	"github.com/epam/edp-tekton/pkg/event_processor/gitlab"
+	"github.com/epam/edp-tekton/pkg/github"
 	"github.com/epam/edp-tekton/pkg/interceptor"
 )
 
@@ -97,9 +99,9 @@ func main() {
 		&edpInterceptorHandler{
 			EDPInterceptor: interceptor.NewEDPInterceptor(
 				client,
-				event_processor.NewGitHubEventProcessor(client, &event_processor.GitHubEventProcessorOptions{Logger: logger}),
-				event_processor.NewGitLabEventProcessor(client, logger),
-				event_processor.NewGerritEventProcessor(client, logger),
+				github.NewEventProcessor(client, &github.EventProcessorOptions{Logger: logger}),
+				gitlab.NewEventProcessor(client, logger),
+				gerrit.NewEventProcessor(client, logger),
 				logger,
 			),
 			Logger: logger,

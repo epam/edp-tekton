@@ -180,10 +180,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 							},
 						},
 						PullRequest: &event_processor.PullRequest{
-							HeadRef:      "feature",
-							HeadSha:      "sha",
-							Title:        "fix",
-							ChangeNumber: 1,
+							HeadRef:           "feature",
+							HeadSha:           "sha",
+							Title:             "fix",
+							ChangeNumber:      1,
+							LastCommitMessage: "commit message",
 						},
 					}, nil)
 
@@ -237,10 +238,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest": &event_processor.PullRequest{
-						HeadRef:      "feature",
-						HeadSha:      "sha",
-						Title:        "fix",
-						ChangeNumber: 1,
+						HeadRef:           "feature",
+						HeadSha:           "sha",
+						Title:             "fix",
+						ChangeNumber:      1,
+						LastCommitMessage: "commit message",
 					},
 				},
 				Continue: true,

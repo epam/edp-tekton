@@ -1,4 +1,4 @@
-package event_processor
+package github
 
 import (
 	"context"
@@ -15,27 +15,29 @@ import (
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
 const gitServerTokenField = "token"
 
-type GitHubEventProcessor struct {
+type EventProcessor struct {
 	ksClient     ctrlClient.Reader
 	logger       *zap.SugaredLogger
 	gitHubClient func(ctx context.Context, token string) *github.Client
 }
 
-type GitHubEventProcessorOptions struct {
+type EventProcessorOptions struct {
 	Logger       *zap.SugaredLogger
 	GitHubClient func(ctx context.Context, token string) *github.Client
 }
 
-func NewGitHubEventProcessor(
+func NewEventProcessor(
 	ksClient ctrlClient.Reader,
-	options *GitHubEventProcessorOptions,
-) *GitHubEventProcessor {
+	options *EventProcessorOptions,
+) *EventProcessor {
 	if options == nil {
-		options = &GitHubEventProcessorOptions{}
+		options = &EventProcessorOptions{}
 	}
 
 	if options.Logger == nil {
@@ -55,16 +57,16 @@ func NewGitHubEventProcessor(
 		}
 	}
 
-	return &GitHubEventProcessor{
+	return &EventProcessor{
 		ksClient:     ksClient,
 		logger:       options.Logger,
 		gitHubClient: options.GitHubClient,
 	}
 }
 
-func (p *GitHubEventProcessor) Process(ctx context.Context, body []byte, ns, eventType string) (*EventInfo, error) {
+func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType string) (*event_processor.EventInfo, error) {
 	switch eventType {
-	case GitHubEventTypeCommentAdded:
+	case event_processor.GitHubEventTypeCommentAdded:
 		return p.processCommentEvent(ctx, body, ns)
 	default:
 		return p.processMergeEvent(ctx, body, ns)
@@ -73,7 +75,7 @@ func (p *GitHubEventProcessor) Process(ctx context.Context, body []byte, ns, eve
 
 // processCommentEvent processes GitHub comment event.
 // nolint:cyclop // function is not complex
-func (p *GitHubEventProcessor) processMergeEvent(ctx context.Context, body []byte, ns string) (*EventInfo, error) {
+func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
 	gitHubEvent := &github.PullRequestEvent{}
 	if err := json.Unmarshal(body, gitHubEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitHub event: %w", err)
@@ -94,47 +96,62 @@ func (p *GitHubEventProcessor) processMergeEvent(ctx context.Context, body []byt
 		return nil, errors.New("github head branch empty")
 	}
 
-	repoPath := convertRepositoryPath(*gitHubEvent.Repo.FullName)
+	repoPath := event_processor.ConvertRepositoryPath(*gitHubEvent.Repo.FullName)
 
-	codebase, err := getCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}
 
-	return &EventInfo{
-		GitProvider:  GitProviderGitHub,
+	gitServerToken, err := p.getGitServerToken(ctx, codebase)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get git server token for GitHub PullRequestEvent: %w", err)
+	}
+
+	client := p.gitHubClient(ctx, gitServerToken)
+
+	commitMessage, err := p.getCommitMessage(
+		ctx,
+		client,
+		gitHubEvent.GetRepo().GetOwner().GetLogin(),
+		gitHubEvent.GetRepo().GetName(),
+		gitHubEvent.GetNumber(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &event_processor.EventInfo{
+		GitProvider:  event_processor.GitProviderGitHub,
 		RepoPath:     repoPath,
 		TargetBranch: *gitHubEvent.PullRequest.Base.Ref,
 		Codebase:     codebase,
-		Type:         EventTypeMerge,
-		PullRequest: &PullRequest{
-			HeadRef:      gitHubEvent.GetPullRequest().GetHead().GetRef(),
-			HeadSha:      gitHubEvent.GetPullRequest().GetHead().GetSHA(),
-			Title:        gitHubEvent.GetPullRequest().GetTitle(),
-			ChangeNumber: gitHubEvent.GetNumber(),
+		Type:         event_processor.EventTypeMerge,
+		PullRequest: &event_processor.PullRequest{
+			HeadRef:           gitHubEvent.GetPullRequest().GetHead().GetRef(),
+			HeadSha:           gitHubEvent.GetPullRequest().GetHead().GetSHA(),
+			Title:             gitHubEvent.GetPullRequest().GetTitle(),
+			ChangeNumber:      gitHubEvent.GetNumber(),
+			LastCommitMessage: commitMessage,
 		},
 	}, nil
 }
 
-// getCodebaseByRepoPath returns codebase by repository path.
+// processCommentEvent processes GitHub comment event.
 // nolint:funlen // function is not so complex
-func (p *GitHubEventProcessor) processCommentEvent(ctx context.Context, body []byte, ns string) (*EventInfo, error) {
-	event := new(github.IssueCommentEvent)
+func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+	event := &github.IssueCommentEvent{}
 	if err := json.Unmarshal(body, event); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitHub IssueCommentEvent: %w", err)
 	}
 
 	if event.GetAction() != "created" {
-		return &EventInfo{
-			GitProvider:        GitProviderGitHub,
-			Type:               EventTypeReviewComment,
-			HasPipelineRecheck: false,
-		}, nil
+		return createEventInfoWithoutRecheck(), nil
 	}
 
-	repoPath := convertRepositoryPath(event.GetRepo().GetFullName())
+	repoPath := event_processor.ConvertRepositoryPath(event.GetRepo().GetFullName())
 
-	codebase, err := getCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}
@@ -147,23 +164,16 @@ func (p *GitHubEventProcessor) processCommentEvent(ctx context.Context, body []b
 	client := p.gitHubClient(ctx, gitServerToken)
 
 	pullReq, _, err := client.PullRequests.Get(
-		context.Background(),
+		ctx,
 		event.GetRepo().GetOwner().GetLogin(),
 		event.GetRepo().GetName(),
 		event.GetIssue().GetNumber(),
 	)
 	if err != nil {
-		var responseErr *github.ErrorResponse
-		if errors.As(err, &responseErr) {
+		if isPRNotFoundErr(err) {
 			p.logger.Info("GitHub pull request not found")
 
-			if responseErr.Response.StatusCode == http.StatusNotFound {
-				return &EventInfo{
-					GitProvider:        GitProviderGitHub,
-					Type:               EventTypeReviewComment,
-					HasPipelineRecheck: false,
-				}, nil
-			}
+			return createEventInfoWithoutRecheck(), nil
 		}
 
 		return nil, fmt.Errorf("failed to get GitHub pull request: %w", err)
@@ -177,23 +187,60 @@ func (p *GitHubEventProcessor) processCommentEvent(ctx context.Context, body []b
 		return nil, errors.New("github head branch empty")
 	}
 
-	return &EventInfo{
-		GitProvider:        GitProviderGitHub,
+	commitMessage, err := p.getCommitMessage(
+		ctx,
+		client,
+		event.GetRepo().GetOwner().GetLogin(),
+		event.GetRepo().GetName(),
+		event.GetIssue().GetNumber(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &event_processor.EventInfo{
+		GitProvider:        event_processor.GitProviderGitHub,
 		RepoPath:           repoPath,
 		TargetBranch:       pullReq.GetBase().GetRef(),
-		Type:               EventTypeReviewComment,
-		HasPipelineRecheck: containsPipelineRecheck(event.GetComment().GetBody()),
+		Type:               event_processor.EventTypeReviewComment,
+		HasPipelineRecheck: event_processor.ContainsPipelineRecheck(event.GetComment().GetBody()),
 		Codebase:           codebase,
-		PullRequest: &PullRequest{
-			HeadRef:      pullReq.GetHead().GetRef(),
-			HeadSha:      pullReq.GetHead().GetSHA(),
-			Title:        pullReq.GetTitle(),
-			ChangeNumber: pullReq.GetNumber(),
+		PullRequest: &event_processor.PullRequest{
+			HeadRef:           pullReq.GetHead().GetRef(),
+			HeadSha:           pullReq.GetHead().GetSHA(),
+			Title:             pullReq.GetTitle(),
+			ChangeNumber:      pullReq.GetNumber(),
+			LastCommitMessage: commitMessage,
 		},
 	}, nil
 }
 
-func (p *GitHubEventProcessor) getGitServerToken(ctx context.Context, codebase *codebaseApi.Codebase) (string, error) {
+func (*EventProcessor) getCommitMessage(
+	ctx context.Context,
+	client *github.Client,
+	owner string,
+	repo string,
+	number int,
+) (string, error) {
+	commits, _, err := client.PullRequests.ListCommits(ctx, owner, repo, number, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to get GitHub pull request commits: %w", err)
+	}
+
+	if len(commits) == 0 {
+		return "", errors.New("github pull request commits empty")
+	}
+
+	m := commits[len(commits)-1].Commit.Message
+
+	if m == nil {
+		return "", nil
+	}
+
+	return *m, nil
+}
+
+func (p *EventProcessor) getGitServerToken(ctx context.Context, codebase *codebaseApi.Codebase) (string, error) {
 	gitServer := &codebaseApi.GitServer{}
 	if err := p.ksClient.Get(ctx, types.NamespacedName{Namespace: codebase.Namespace, Name: codebase.Spec.GitServer}, gitServer); err != nil {
 		return "", fmt.Errorf("failed to get GitServer: %w", err)
@@ -211,4 +258,23 @@ func (p *GitHubEventProcessor) getGitServerToken(ctx context.Context, codebase *
 	}
 
 	return token, nil
+}
+
+func createEventInfoWithoutRecheck() *event_processor.EventInfo {
+	return &event_processor.EventInfo{
+		GitProvider:        event_processor.GitProviderGitHub,
+		Type:               event_processor.EventTypeReviewComment,
+		HasPipelineRecheck: false,
+	}
+}
+
+func isPRNotFoundErr(err error) bool {
+	var responseErr *github.ErrorResponse
+	if errors.As(err, &responseErr) {
+		if responseErr.Response.StatusCode == http.StatusNotFound {
+			return true
+		}
+	}
+
+	return false
 }

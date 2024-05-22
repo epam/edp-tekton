@@ -1,4 +1,4 @@
-package event_processor
+package github
 
 import (
 	"context"
@@ -20,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+
+	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
 func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
@@ -38,7 +40,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 		args        args
 		mockhttp    func(t *testing.T) (URL string, teardown func())
 		kubeObjects []client.Object
-		want        *EventInfo
+		want        *event_processor.EventInfo
 		wantErr     require.ErrorAssertionFunc
 	}{
 		{
@@ -82,6 +84,21 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					w.WriteHeader(http.StatusOK)
 				})
 
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{
+						{
+							"commit": map[string]interface{}{
+								"message": "commit message",
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
 				server := httptest.NewServer(apiHandler)
 				return server.URL, server.Close
 			},
@@ -116,11 +133,11 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitHub,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
 				RepoPath:           "/o/r",
 				TargetBranch:       "master",
-				Type:               EventTypeReviewComment,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: true,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -133,11 +150,12 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature",
-					HeadSha:      "6dcb09b5b57875f334f61aebed695e2e4193db5e",
-					Title:        "feature 1",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature",
+					HeadSha:           "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+					Title:             "feature 1",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
@@ -182,6 +200,21 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					w.WriteHeader(http.StatusOK)
 				})
 
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{
+						{
+							"commit": map[string]interface{}{
+								"message": "commit message",
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
 				server := httptest.NewServer(apiHandler)
 				return server.URL, server.Close
 			},
@@ -216,11 +249,11 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitHub,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
 				RepoPath:           "/o/r",
 				TargetBranch:       "master",
-				Type:               EventTypeReviewComment,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: false,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -233,11 +266,12 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						GitUrlPath: pointer.String("/o/r"),
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "feature",
-					HeadSha:      "6dcb09b5b57875f334f61aebed695e2e4193db5e",
-					Title:        "feature 1",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature",
+					HeadSha:           "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+					Title:             "feature 1",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
@@ -301,10 +335,181 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitHub,
-				Type:               EventTypeReviewComment,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: false,
+			},
+		},
+		{
+			name: "comment event - pull request commits empty",
+			args: args{
+				body: map[string]interface{}{
+					"action": "created",
+					"issue": map[string]interface{}{
+						"number": 1,
+					},
+					"comment": map[string]interface{}{
+						"body": "/recheck",
+					},
+					"repository": map[string]interface{}{
+						"full_name": "o/r",
+						"name":      "p",
+						"owner": map[string]interface{}{
+							"login": "o",
+						},
+					},
+				},
+			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal(map[string]interface{}{
+						"title":  "feature 1",
+						"number": 1,
+						"base": map[string]interface{}{
+							"ref": "master",
+						},
+						"head": map[string]interface{}{
+							"ref": "feature",
+							"sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "codebase1",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitServer:  "github",
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
+					},
+				},
+			},
+			wantErr: func(t require.TestingT, err error, i ...interface{}) {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "github pull request commits empty")
+			},
+		},
+		{
+			name: "comment event - failed to get pull request commits",
+			args: args{
+				body: map[string]interface{}{
+					"action": "created",
+					"issue": map[string]interface{}{
+						"number": 1,
+					},
+					"comment": map[string]interface{}{
+						"body": "/recheck",
+					},
+					"repository": map[string]interface{}{
+						"full_name": "o/r",
+						"name":      "p",
+						"owner": map[string]interface{}{
+							"login": "o",
+						},
+					},
+				},
+			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal(map[string]interface{}{
+						"title":  "feature 1",
+						"number": 1,
+						"base": map[string]interface{}{
+							"ref": "master",
+						},
+						"head": map[string]interface{}{
+							"ref": "feature",
+							"sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusBadRequest)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "codebase1",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitServer:  "github",
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
+					},
+				},
+			},
+			wantErr: func(t require.TestingT, err error, i ...interface{}) {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "failed to get GitHub pull request commits")
 			},
 		},
 		{
@@ -597,9 +802,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				return server.URL, server.Close
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitHub,
-				Type:               EventTypeReviewComment,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: false,
 			},
 		},
@@ -616,9 +821,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			serverURL, err := url.Parse(rawURL)
 			require.NoError(t, err)
 
-			p := NewGitHubEventProcessor(
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
-				&GitHubEventProcessorOptions{
+				&EventProcessorOptions{
 					Logger: zap.NewNop().Sugar(),
 					GitHubClient: func(ctx context.Context, token string) *github.Client {
 						c := github.NewClient(nil)
@@ -644,6 +849,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
+	require.NoError(t, corev1.AddToScheme(scheme))
 
 	type args struct {
 		body any
@@ -652,8 +858,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
+		mockhttp    func(t *testing.T) (URL string, teardown func())
 		kubeObjects []client.Object
-		want        *EventInfo
+		want        *event_processor.EventInfo
 		wantErr     require.ErrorAssertionFunc
 	}{
 		{
@@ -663,6 +870,10 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					Number: pointer.Int(1),
 					Repo: &github.Repository{
 						FullName: pointer.String("o/r"),
+						Name:     pointer.String("p"),
+						Owner: &github.User{
+							Login: pointer.String("o"),
+						},
 					},
 					PullRequest: &github.PullRequest{
 						Title: pointer.String("title"),
@@ -676,6 +887,27 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{
+						{
+							"commit": map[string]interface{}{
+								"message": "commit message",
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
 			kubeObjects: []client.Object{
 				&codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -684,15 +916,34 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 					Spec: codebaseApi.CodebaseSpec{
 						GitUrlPath: pointer.String("/o/r"),
+						GitServer:  "github",
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGitHub,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitHub,
 				RepoPath:     "/o/r",
 				TargetBranch: "master",
-				Type:         EventTypeMerge,
+				Type:         event_processor.EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "codebase1",
@@ -701,14 +952,85 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 					Spec: codebaseApi.CodebaseSpec{
 						GitUrlPath: pointer.String("/o/r"),
+						GitServer:  "github",
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "branch",
-					HeadSha:      "sha",
-					Title:        "title",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "branch",
+					HeadSha:           "sha",
+					Title:             "title",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
+			},
+		},
+		{
+			name: "merge event - failed to get pull request commits",
+			args: args{
+				body: github.PullRequestEvent{
+					Number: pointer.Int(1),
+					Repo: &github.Repository{
+						FullName: pointer.String("o/r"),
+						Name:     pointer.String("p"),
+						Owner: &github.User{
+							Login: pointer.String("o"),
+						},
+					},
+					PullRequest: &github.PullRequest{
+						Title: pointer.String("title"),
+						Base: &github.PullRequestBranch{
+							Ref: pointer.String("master"),
+						},
+						Head: &github.PullRequestBranch{
+							Ref: pointer.String("branch"),
+							SHA: pointer.String("sha"),
+						},
+					},
+				},
+			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusBadRequest)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "codebase1",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: pointer.String("/o/r"),
+						GitServer:  "github",
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
+					},
+				},
+			},
+			wantErr: func(t require.TestingT, err error, i ...interface{}) {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "failed to get GitHub pull request commits")
 			},
 		},
 		{
@@ -729,6 +1051,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "failed to get codebase")
@@ -746,6 +1071,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "github target branch empty")
@@ -761,6 +1089,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					PullRequest: &github.PullRequest{},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "github target branch empty")
@@ -775,6 +1106,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "github target branch empty")
@@ -787,6 +1121,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 					Repo: &github.Repository{},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "github repository path empty")
@@ -796,6 +1133,9 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			name: "merge event - repo empty",
 			args: args{
 				body: github.PullRequestEvent{},
+			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
@@ -809,9 +1149,23 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := NewGitHubEventProcessor(
+			rawURL, teardown := tt.mockhttp(t)
+			defer teardown()
+
+			serverURL, err := url.Parse(rawURL)
+			require.NoError(t, err)
+
+			p := NewEventProcessor(
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
-				nil,
+				&EventProcessorOptions{
+					Logger: zap.NewNop().Sugar(),
+					GitHubClient: func(ctx context.Context, token string) *github.Client {
+						c := github.NewClient(nil)
+						c.BaseURL = serverURL.JoinPath("/")
+
+						return c
+					},
+				},
 			)
 
 			body, err := json.Marshal(tt.args.body)
@@ -829,6 +1183,7 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
+	require.NoError(t, corev1.AddToScheme(scheme))
 
 	type args struct {
 		body      any
@@ -838,9 +1193,10 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
+		mockhttp    func(t *testing.T) (URL string, teardown func())
 		kubeObjects []client.Object
 		wantErr     require.ErrorAssertionFunc
-		want        *EventInfo
+		want        *event_processor.EventInfo
 	}{
 		{
 			name: "merge event",
@@ -849,6 +1205,10 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					Number: pointer.Int(1),
 					Repo: &github.Repository{
 						FullName: pointer.String("o/r"),
+						Name:     pointer.String("r"),
+						Owner: &github.User{
+							Login: pointer.String("o"),
+						},
 					},
 					PullRequest: &github.PullRequest{
 						Title: pointer.String("title"),
@@ -862,6 +1222,27 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+
+				apiHandler.HandleFunc("/repos/o/r/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{
+						{
+							"commit": map[string]interface{}{
+								"message": "commit message",
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
 			kubeObjects: []client.Object{
 				&codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
@@ -870,15 +1251,34 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					},
 					Spec: codebaseApi.CodebaseSpec{
 						GitUrlPath: pointer.String("/o/r"),
+						GitServer:  "github",
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:  GitProviderGitHub,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitHub,
 				RepoPath:     "/o/r",
 				TargetBranch: "master",
-				Type:         EventTypeMerge,
+				Type:         event_processor.EventTypeMerge,
 				Codebase: &codebaseApi.Codebase{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:            "codebase1",
@@ -887,20 +1287,22 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					},
 					Spec: codebaseApi.CodebaseSpec{
 						GitUrlPath: pointer.String("/o/r"),
+						GitServer:  "github",
 					},
 				},
-				PullRequest: &PullRequest{
-					HeadRef:      "branch",
-					HeadSha:      "sha",
-					Title:        "title",
-					ChangeNumber: 1,
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "branch",
+					HeadSha:           "sha",
+					Title:             "title",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
 		{
 			name: "comment event",
 			args: args{
-				eventType: GitHubEventTypeCommentAdded,
+				eventType: event_processor.GitHubEventTypeCommentAdded,
 				body: map[string]interface{}{
 					"action": "deleted",
 					"issue": map[string]interface{}{
@@ -918,10 +1320,13 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					},
 				},
 			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				return "", func() {}
+			},
 			wantErr: require.NoError,
-			want: &EventInfo{
-				GitProvider:        GitProviderGitHub,
-				Type:               EventTypeReviewComment,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
+				Type:               event_processor.EventTypeReviewComment,
 				HasPipelineRecheck: false,
 			},
 		},
@@ -932,13 +1337,25 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			body, err := json.Marshal(tt.args.body)
+			rawURL, teardown := tt.mockhttp(t)
+			defer teardown()
+
+			serverURL, err := url.Parse(rawURL)
 			require.NoError(t, err)
 
-			p := &GitHubEventProcessor{
+			p := &EventProcessor{
 				ksClient: fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				logger:   zap.NewNop().Sugar(),
+				gitHubClient: func(ctx context.Context, token string) *github.Client {
+					c := github.NewClient(nil)
+					c.BaseURL = serverURL.JoinPath("/")
+
+					return c
+				},
 			}
+
+			body, err := json.Marshal(tt.args.body)
+			require.NoError(t, err)
 
 			got, err := p.Process(context.Background(), body, "default", tt.args.eventType)
 			tt.wantErr(t, err)
@@ -952,7 +1369,7 @@ func TestNewGitHubEventProcessor(t *testing.T) {
 
 	type args struct {
 		ksClient client.Reader
-		options  *GitHubEventProcessorOptions
+		options  *EventProcessorOptions
 	}
 
 	tests := []struct {
@@ -969,7 +1386,7 @@ func TestNewGitHubEventProcessor(t *testing.T) {
 			name: "new github event processor with options",
 			args: args{
 				ksClient: fake.NewClientBuilder().Build(),
-				options: &GitHubEventProcessorOptions{
+				options: &EventProcessorOptions{
 					Logger: zap.NewNop().Sugar(),
 					GitHubClient: func(ctx context.Context, token string) *github.Client {
 						return github.NewClient(nil)
@@ -984,7 +1401,7 @@ func TestNewGitHubEventProcessor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := NewGitHubEventProcessor(tt.args.ksClient, tt.args.options)
+			got := NewEventProcessor(tt.args.ksClient, tt.args.options)
 			assert.NotNil(t, got)
 		})
 	}

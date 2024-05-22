@@ -37,7 +37,8 @@ type GitLabMergeRequest struct {
 }
 
 type GitLabCommit struct {
-	ID string `json:"id"`
+	ID      string `json:"id"`
+	Message string `json:"message"`
 }
 
 // GitLabCommentEvent represents GitLab comment event.
@@ -78,10 +79,11 @@ type EventInfo struct {
 }
 
 type PullRequest struct {
-	HeadRef      string `json:"headRef"`
-	HeadSha      string `json:"headSha"`
-	Title        string `json:"title"`
-	ChangeNumber int    `json:"changeNumber"`
+	HeadRef           string `json:"headRef"`
+	HeadSha           string `json:"headSha"`
+	Title             string `json:"title"`
+	ChangeNumber      int    `json:"changeNumber"`
+	LastCommitMessage string `json:"lastCommitMessage"`
 }
 
 // IsReviewCommentEvent returns true if the event is a review comment event.
@@ -89,6 +91,6 @@ func (e *EventInfo) IsReviewCommentEvent() bool {
 	return e.Type == EventTypeReviewComment
 }
 
-func containsPipelineRecheck(s string) bool {
+func ContainsPipelineRecheck(s string) bool {
 	return strings.Contains(s, recheckComment)
 }

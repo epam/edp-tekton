@@ -72,7 +72,7 @@ spec:
             # and hold cache in the /cache directory
 
             # build
-            python setup.py clean build install --user
+            python setup.py clean build sdist bdist_wheel
 
             # lint
             pip3 install -r test-requirements.txt

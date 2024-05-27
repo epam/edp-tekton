@@ -29,7 +29,7 @@ spec:
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     - name: commitMessage
-      value: "$(extensions.pullRequest.title)"
+      value: "$(extensions.pullRequest.lastCommitMessage)"
     - name: codebase
       value: "$(extensions.codebase)"
     - name: codebasebranch

@@ -29,7 +29,7 @@ spec:
     - name: cbtype
       value: "$(extensions.cbtype_short)"
     - name: commitMessage
-      value: "$(extensions.pullRequest.title)"
+      value: "$(extensions.pullRequest.lastCommitMessage)"
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
     - name: codebase

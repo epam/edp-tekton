@@ -77,7 +77,7 @@ spec:
         parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
         codebaseFileTags = os.getenv('CODEBASE_TAGS')
 
-        autotests = json.loads(subprocess.check_output(["kubectl", "get", "stage", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+        autotests = json.loads(subprocess.check_output(["kubectl", "get", "stages.v2.edp.epam.com", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
 
         for element in autotests["qualityGates"]:
             if element["qualityGateType"] == "autotests":

@@ -39,7 +39,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'docker.io/library/node:18.10-alpine3.16'
+      default: 'docker.io/library/node:18.20.3-alpine3.20'
       description: "npm image version"
       type: string
     - name: gitfullrepositoryname

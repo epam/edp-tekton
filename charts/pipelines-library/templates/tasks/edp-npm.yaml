@@ -21,7 +21,7 @@ spec:
       description: The path where package.json of the project is defined.
     - name: BASE_IMAGE
       type: string
-      default: "docker.io/library/node:18.10-alpine3.16"
+      default: "docker.io/library/node:18.20.3-alpine3.20"
       description: The node image you want to use.
     - name: ci-nexus
       type: string
@@ -83,6 +83,7 @@ spec:
         
         export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
         export npm_config_userconfig=/var/configmap/.npmrc-ci
+        export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
         npm ci
 
     - name: build

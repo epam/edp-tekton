@@ -12,18 +12,37 @@ metadata:
 data:
   .npmrc-ci: |
     registry=${NEXUS_HOST_URL}/repository/edp-npm-group
-    _auth=${upBase64}
+    ${NEXUS_HOST}/repository/:email=ci.user@edp.com
+    ${NEXUS_HOST}/repository/:_auth=${upBase64}
     cache=${NPM_CACHE_DIR}
 
   .npmrc-publish-snapshots: |
     registry=${NEXUS_HOST_URL}/repository/edp-npm-snapshots
-    _auth=${upBase64}
+    ${NEXUS_HOST}/repository/:email=ci.user@edp.com
+    ${NEXUS_HOST}/repository/:_auth=${upBase64}
     cache=${NPM_CACHE_DIR}
 
   .npmrc-publish-releases: |
     registry=${NEXUS_HOST_URL}/repository/edp-npm-releases
-    _auth=${upBase64}
+    ${NEXUS_HOST}/repository/:email=ci.user@edp.com
+    ${NEXUS_HOST}/repository/:_auth=${upBase64}
     cache=${NPM_CACHE_DIR}
+
+  # Example of how to push changes when using Node.js version 18.10.0 with the node:18.10-alpine3.16 image
+  # .npmrc-ci: |
+  #   registry=${NEXUS_HOST_URL}/repository/edp-npm-group
+  #   _auth=${upBase64}
+  #   cache=${NPM_CACHE_DIR}
+
+  # .npmrc-publish-snapshots: |
+  #   registry=${NEXUS_HOST_URL}/repository/edp-npm-snapshots
+  #   _auth=${upBase64}
+  #   cache=${NPM_CACHE_DIR}
+
+  # .npmrc-publish-releases: |
+  #   registry=${NEXUS_HOST_URL}/repository/edp-npm-releases
+  #   _auth=${upBase64}
+  #   cache=${NPM_CACHE_DIR}
 
   # Example for pushing a snapshot package to GitLab
   # Ref: https://docs.gitlab.com/ee/user/packages/npm_registry/

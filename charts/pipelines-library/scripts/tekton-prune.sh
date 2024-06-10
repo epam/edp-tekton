@@ -10,49 +10,25 @@ verify() {
     exit 1
   fi
   echo 'Ok'
-  echo 'Verify that required environment variables are defined'
+  echo 'Verify that namespace variables are defined'
   if test -z "${NAMESPACE}"; then
     echo 'NAMESPACE env variable not defined.'
-    exit 1
-  fi
-  if test -z "${RECENT_MINUTES_PODS}"; then
-    echo 'RECENT_MINUTES_PODS env variable not defined.'
-    exit 1
-  fi
-  if test -z "${RECENT_MINUTES_PVCS}"; then
-    echo 'RECENT_MINUTES_PVCS env variable not defined.'
     exit 1
   fi
   echo 'Ok'
 }
 
-get_pipelinerun_pods_to_file() {
+get_pipelinerun_to_file() {
   pods_file_path="$1"
-  kubectl get -n "${NAMESPACE}" pod -l tekton.dev/memberOf -o name > "${pods_file_path}"
+  kubectl get -n "${NAMESPACE}" pipelinerun -o name > "${pods_file_path}"
 }
 
-get_pipelinerun_pvcs_to_file() {
-  pvcs_file_path="$1"
-  separator="$2"
-  owner="$3"
-  kubectl get -n "${NAMESPACE}" -o json $(kubectl get -n "${NAMESPACE}" pvc -o name) \
-    | jq -r --arg separator "${separator}" --arg owner "${owner}" '.items[]
-    | select(.metadata.ownerReferences[0].kind? == "\($owner)")
-    | "\(.metadata.name)\($separator)\(.metadata.ownerReferences[0].name)"' > "${pvcs_file_path}"
-}
 
 get_active_pipelineruns() {
   kubectl get -n "${NAMESPACE}" pipelineruns \
     -o jsonpath='{.items[?(@.status.conditions[0].reason=="Running")].metadata.name}'
 }
 
-get_recent_pipelineruns() {
-  minutes="$1"
-  date_minus_minutes_iso8601=$(TZ=UTC date -u +"%FT%TZ" --date "-${minutes} min")
-  kubectl get pipelineruns -n "${NAMESPACE}" -o json \
-    | jq -r --arg d "${date_minus_minutes_iso8601}" \
-      '.items[] | select (.status.completionTime? > $d ) | .metadata.name'
-}
 
 delete_lines_from_file() {
   file="$1"
@@ -79,51 +55,26 @@ prune_resources() {
 main() {
   separator=';'
   pvc_owner_kind='PipelineRun'
-  pods_to_delete_file_path='/tmp/pods-to-delete.txt'
-  pvcs_to_delete_file_path='/tmp/PVCs-to-delete.txt'
+  pipelinerun_to_delete_file_path='/tmp/runs-to-delete.txt'
 
   verify
 
   echo 'Get active pipelineruns'
   active_pipelineruns=$(get_active_pipelineruns)
-  echo "active pipelineruns: $active_pipelineruns"
+  echo "Running pipelineruns: $active_pipelineruns"
 
-  echo "Get pipelineruns completed recently (in the last ${RECENT_MINUTES_PODS} minutes)"
-  recent_pipelineruns_pods=$(get_recent_pipelineruns "${RECENT_MINUTES_PODS}")
-  echo "recent pipelineruns: $recent_pipelineruns_pods"
+  echo "Get pipelinerun list"
+  get_pipelinerun_to_file "${pipelinerun_to_delete_file_path}"
+  cat "${pipelinerun_to_delete_file_path}"
 
-  echo "Get pipelineruns completed recently (in the last ${RECENT_MINUTES_FOR_PVCS} minutes)"
-  recent_pipelineruns_pvcs=$(get_recent_pipelineruns "${RECENT_MINUTES_FOR_PVCS}")
-  echo "recent pipelineruns: $recent_pipelineruns_pvcs"
+  echo 'Exclude running pipelineruns from deletion list':
+  delete_lines_from_file "${pipelinerun_to_delete_file_path}" "${active_pipelineruns}"
+  cat "${pipelinerun_to_delete_file_path}"
 
-  echo 'Get pods that need to be deleted, pods with tekton.dev/memberOf label:'
-  get_pipelinerun_pods_to_file "${pods_to_delete_file_path}"
-  cat "${pods_to_delete_file_path}"
-
-  echo 'Exclude pods of the active and recent pipelineruns from deletion list':
-  delete_lines_from_file "${pods_to_delete_file_path}" "${active_pipelineruns}"
-  delete_lines_from_file "${pods_to_delete_file_path}" "${recent_pipelineruns_pods}"
-  cat "${pods_to_delete_file_path}"
-
-  echo 'Get PVCs that were used by pipelineruns and now need to be deleted:'
-  get_pipelinerun_pvcs_to_file "${pvcs_to_delete_file_path}" "${separator}" "${pvc_owner_kind}"
-  cat "${pvcs_to_delete_file_path}"
-
-  echo 'Exclude PVCs of the active and recent pipelineruns from deletion list:'
-  delete_lines_from_file "${pvcs_to_delete_file_path}" "${active_pipelineruns}"
-  delete_lines_from_file "${pvcs_to_delete_file_path}" "${recent_pipelineruns_pvcs}"
-  cat "${pvcs_to_delete_file_path}"
-
-  echo 'Remove owner info from PVCs list'
-  sed -i "s,${separator}.*,," "${pvcs_to_delete_file_path}"
-
-  echo 'Delete pods'
-  prune_resources "${pods_to_delete_file_path}" ''
+  echo 'Delete pipelineruns'
+  prune_resources "${pipelinerun_to_delete_file_path}" ''
   echo 'Ok'
 
-  echo 'Delete pvcs'
-  prune_resources "${pvcs_to_delete_file_path}" 'pvc/'
-  echo 'Ok'
 }
 
 main

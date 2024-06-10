@@ -1,6 +1,6 @@
 {{ if .Values.tekton.pruner.create }}
 ---
-kind: Secret
+kind: ConfigMap
 apiVersion: v1
 type: Opaque
 metadata:
@@ -8,5 +8,5 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 data:
-{{ (.Files.Glob "scripts/tekton-prune.sh").AsSecrets | indent 2 }}
+{{ (.Files.Glob "scripts/tekton-prune.sh").AsConfig | indent 2 }}
 {{ end }}

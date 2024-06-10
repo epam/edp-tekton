@@ -17,8 +17,8 @@ spec:
         spec:
           volumes:
             - name: scripts
-              secret:
-                secretName: tekton-resource-pruner-scripts
+              configMap:
+                name: tekton-resource-pruner-scripts
           containers:
             - name: kubectl
               image: "{{ default "bitnami/kubectl:latest" .Values.tekton.pruner.image }}"
@@ -28,10 +28,6 @@ spec:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: metadata.namespace
-                - name: RECENT_MINUTES_PODS
-                  value: {{ default 30 .Values.tekton.pruner.recentMinutes_pods | quote }}
-                - name: RECENT_MINUTES_PVCS
-                  value: {{ default 60 .Values.tekton.pruner.recentMinutes_pvcs | quote }}
               command:
                 - bash
                 - /scripts/tekton-prune.sh

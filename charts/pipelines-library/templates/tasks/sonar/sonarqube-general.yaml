@@ -75,7 +75,9 @@ spec:
         PROJECT_EXISTS=$(curl -s -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}" | jq -r ".component.key")
 
         if [ "$PROJECT_EXISTS" == "null" ]; then
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
+          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+          echo "Create project ${SONAR_PROJECT_KEY}"
+          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
         else
           echo "Project ${SONAR_PROJECT_KEY} already exists"
         fi

@@ -9,4 +9,5 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 data:
 {{ (.Files.Glob "scripts/tekton-prune.sh").AsConfig | indent 2 }}
+type: Opaque
 {{ end }}

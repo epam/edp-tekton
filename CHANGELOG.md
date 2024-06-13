@@ -2,6 +2,68 @@
 ## [Unreleased]
 
 
+<a name="v0.12.0"></a>
+## [v0.12.0] - 2024-06-13
+### Features
+
+- Align chart for ingress TLS configuration([#178](https://github.com/epam/edp-tekton/issues/178))
+- Add lastCommitMessage to interceptor response ([#193](https://github.com/epam/edp-tekton/issues/193))
+- Add quality gate for chart name alignment with codebase name([#191](https://github.com/epam/edp-tekton/issues/191))
+- Dynamically set repository URLs for package types ([#132](https://github.com/epam/edp-tekton/issues/132))
+- Enhance Gradle proxy support ([#132](https://github.com/epam/edp-tekton/issues/132))
+- Exclude pipelinerun from resources displayed in argocd([#169](https://github.com/epam/edp-tekton/issues/169))
+
+### Bug Fixes
+
+- Resolve Version Conflict Between h11 and httpcore ([#195](https://github.com/epam/edp-tekton/issues/195))
+- Set full stage name in autotests tekton task ([#199](https://github.com/epam/edp-tekton/issues/199))
+- Make possible work with registry without registry parameter([#184](https://github.com/epam/edp-tekton/issues/184))
+- multiple eventListeners route creation([#175](https://github.com/epam/edp-tekton/issues/175))
+- Add lint config and remove cache from e2e ([#164](https://github.com/epam/edp-tekton/issues/164))
+- Remove volume workspace from commit-validate task ([#78](https://github.com/epam/edp-tekton/issues/78))
+- Update argocd-integration step logic ([#153](https://github.com/epam/edp-tekton/issues/153))
+- Update custom deploy pipeline logic ([#153](https://github.com/epam/edp-tekton/issues/153))
+- Update route for el ([#151](https://github.com/epam/edp-tekton/issues/151))
+- Fix gitProviders parameter in custom pipelines ([#150](https://github.com/epam/edp-tekton/issues/150))
+
+### Code Refactoring
+
+- Refactor pipeline and remove nexus URL step ([#132](https://github.com/epam/edp-tekton/issues/132)) ([#177](https://github.com/epam/edp-tekton/issues/177))
+
+### Routine
+
+- Update current version ([#211](https://github.com/epam/edp-tekton/issues/211))
+- Update current version ([#211](https://github.com/epam/edp-tekton/issues/211))
+- Align argo diff for pruner ([#209](https://github.com/epam/edp-tekton/issues/209))
+- Align argo diff for pruner ([#205](https://github.com/epam/edp-tekton/issues/205))
+- Update tekton pruner logic ([#205](https://github.com/epam/edp-tekton/issues/205))
+- Set default branch during project creation ([#207](https://github.com/epam/edp-tekton/issues/207))
+- Update CodeQL to the latest version ([#203](https://github.com/epam/edp-tekton/issues/203))
+- Bump Node image version to 18.20.3-alpine3.20 ([#201](https://github.com/epam/edp-tekton/issues/201))
+- Use commit message instead PR title ([#197](https://github.com/epam/edp-tekton/issues/197))
+- Remove PR modify action for review pipeline ([#187](https://github.com/epam/edp-tekton/issues/187))
+- Use Go 1.22 for e2e workflow ([#182](https://github.com/epam/edp-tekton/issues/182))
+- Bump hadolint version to v2.12.0-alpine ([#188](https://github.com/epam/edp-tekton/issues/188))
+- Bump to go 1.22 ([#182](https://github.com/epam/edp-tekton/issues/182))
+- Update tekton-dashboard([#180](https://github.com/epam/edp-tekton/issues/180))
+- Switch cache to recreate strategy ([#171](https://github.com/epam/edp-tekton/issues/171))
+- Adjust tekton pruner logic ([#147](https://github.com/epam/edp-tekton/issues/147))
+- Add codeowners file to the repo ([#166](https://github.com/epam/edp-tekton/issues/166))
+- Align commit message pattern ([#160](https://github.com/epam/edp-tekton/issues/160))
+- Update sonar project properties ([#160](https://github.com/epam/edp-tekton/issues/160))
+- Remove mount volume from all commit-validate tasks([#159](https://github.com/epam/edp-tekton/issues/159))
+- Update workspace volume size ([#158](https://github.com/epam/edp-tekton/issues/158))
+- Align codebase branch name and codebase name([#157](https://github.com/epam/edp-tekton/issues/157))
+- Update Tekton pruner logic ([#147](https://github.com/epam/edp-tekton/issues/147))
+- Bump custom deploy images ([#153](https://github.com/epam/edp-tekton/issues/153))
+- Add timeout after clean-edp task ([#152](https://github.com/epam/edp-tekton/issues/152))
+- Switch Argo CD integration to edp-ci user ([#152](https://github.com/epam/edp-tekton/issues/152))
+- Use new icon for gerrit QuickLink ([#152](https://github.com/epam/edp-tekton/issues/152))
+- Remove deprecated EDPComponents CRD ([#149](https://github.com/epam/edp-tekton/issues/149))
+- Bump java-maven deploy plugin version ([#148](https://github.com/epam/edp-tekton/issues/148))
+- Update current development version ([#149](https://github.com/epam/edp-tekton/issues/149))
+
+
 <a name="v0.11.0"></a>
 ## [v0.11.0] - 2024-03-12
 ### Features
@@ -373,7 +435,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.12.0...HEAD
+[v0.12.0]: https://github.com/epam/edp-tekton/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/epam/edp-tekton/compare/v0.10.2...v0.11.0
 [v0.10.2]: https://github.com/epam/edp-tekton/compare/v0.10.1...v0.10.2
 [v0.10.1]: https://github.com/epam/edp-tekton/compare/v0.10.0...v0.10.1

@@ -145,8 +145,8 @@ jobs:
         with:
           dockerfile: Dockerfile
 
-  e2e-tests-127:
-    name: End-to-end tests 1.27
+  e2e-tests-128:
+    name: End-to-end tests 1.28
     needs: [docker-lint]
     runs-on: ubuntu-20.04
     strategy:
@@ -177,7 +177,7 @@ jobs:
 
       - name: "run tests"
         env:
-          KUBE_VERSION: "1.27"
+          KUBE_VERSION: "1.28"
         run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
 
       - name: Save cache
@@ -191,7 +191,7 @@ jobs:
 
   e2e-tests-128:
     name: End-to-end tests 1.28
-    needs: [e2e-tests-127]
+    needs: [e2e-tests-128]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -236,13 +236,13 @@ jobs:
   e2e-tests-check:
     runs-on: ubuntu-20.04
     if: always()
-    needs: [e2e-tests-127, e2e-tests-128]
+    needs: [e2e-tests-128, e2e-tests-128]
     steps:
       - name: Print result
-        run: echo ${{ needs.e2e-tests-127.result }} && echo ${{ needs.e2e-tests-128.result }}
+        run: echo ${{ needs.e2e-tests-128.result }} && echo ${{ needs.e2e-tests-128.result }}
       - name: Interpret result
         run: |
-          if [[ success == ${{ needs.e2e-tests-127.result }} && success == ${{ needs.e2e-tests-128.result }} ]]
+          if [[ success == ${{ needs.e2e-tests-128.result }} && success == ${{ needs.e2e-tests-128.result }} ]]
           then
             echo "All matrix jobs passed!"
           else

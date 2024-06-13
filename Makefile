@@ -13,7 +13,7 @@ HOST_ARCH?=$(shell go env GOARCH)
 # Use kind cluster for testing
 START_KIND_CLUSTER?=true
 KIND_CLUSTER_NAME?="tekton"
-KUBE_VERSION?=1.27
+KUBE_VERSION?=1.28
 KIND_CONFIG?=./hack/kind-$(KUBE_VERSION).yaml
 
 CONTAINER_REGISTRY_URL?="repo"

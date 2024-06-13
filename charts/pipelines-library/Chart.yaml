@@ -3,8 +3,8 @@ description: A Helm chart for EDP Tekton Pipelines
 home: https://epam.github.io/edp-install/
 name: edp-tekton
 type: application
-version: 0.12.0-SNAPSHOT
-appVersion: 0.12.0-SNAPSHOT
+version: 0.12.0
+appVersion: 0.12.0
 icon: https://epam.github.io/edp-install/assets/logo.png
 keywords:
   - edp
@@ -42,6 +42,6 @@ dependencies:
     version: 0.2.18
     repository: "file://../common-library"
   - name: tekton-cache
-    version: 0.3.2
+    version: 0.3.3
     repository: "@epamedp"
     condition: tekton-cache.enabled

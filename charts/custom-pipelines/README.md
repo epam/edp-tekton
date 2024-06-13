@@ -26,7 +26,7 @@ Custom library EDP4EDP delivers custom Tekton pipelines used by the EDP Platform
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../common-library | edp-tekton-common-library | 0.2.17 |
+| file://../common-library | edp-tekton-common-library | 0.2.18 |
 
 ## Values
 

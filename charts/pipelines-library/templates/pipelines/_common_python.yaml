@@ -47,7 +47,7 @@
       value: 'python:3.8-slim'
     - name: EXTRA_COMMANDS
       value: |
-        pip install twine==4.0.1
+        pip install -r requirements.txt
         python setup.py sdist
 
         # Get package version from the get-version task

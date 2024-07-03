@@ -27,10 +27,10 @@ commands:
     namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
     namespaced: false
-  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
-    namespaced: false
   # wait for webhooks to be ready
   - command: sleep 60
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
     namespaced: false
   - command: helm repo add epamedp https://epam.github.io/edp-helm-charts/stable
     namespaced: true

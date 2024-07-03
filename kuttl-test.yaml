@@ -20,11 +20,14 @@ commands:
     namespaced: false
   - command: kubectl create ns tekton-pipelines-resolvers
     namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    namespaced: false
+  # wait for webhooks to be ready
+  - command: sleep 60
+    namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
     namespaced: false
   - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
-    namespaced: false
-  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
     namespaced: false
   # wait for webhooks to be ready
   - command: sleep 60

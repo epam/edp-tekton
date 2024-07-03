@@ -18,7 +18,7 @@ spec:
       default: 1000
   steps:
     - name: wait-for
-      image: epamedp/tekton-helm:0.1.6
+      image: epamedp/tekton-helm:0.1.8
       env:
         - name: TASK
           value: $(params.task_name)

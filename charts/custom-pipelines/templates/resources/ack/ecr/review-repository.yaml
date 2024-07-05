@@ -1,9 +1,0 @@
-apiVersion: ecr.services.k8s.aws/v1alpha1
-kind: Repository
-metadata:
-  name: "review-{{ .Release.Namespace }}"
-spec:
-  name: "review/{{ .Release.Namespace }}"
-  imageScanningConfiguration:
-    scanOnPush: false
-  imageTagMutability: MUTABLE

@@ -1,16 +1,22 @@
 # tekton-cache
 
-![Version: 0.3.3](https://img.shields.io/badge/Version-0.3.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.3](https://img.shields.io/badge/AppVersion-0.3.3-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.0](https://img.shields.io/badge/AppVersion-0.4.0-informational?style=flat-square)
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
-A Helm chart for EDP Tekton Cache
+A Helm chart for KubeRocketCI Tekton Cache
 
-**Homepage:** <https://epam.github.io/edp-install/>
+## Additional Information
+
+The Tekton Cache Helm chart is designed to enhance your CI/CD pipeline by providing a caching mechanism that is both efficient and easy to integrate.
+It leverages the power of Kubernetes/Tekton to cache dependencies and build outputs, reducing build times.
+
+**Homepage:** <https://docs.kuberocketci.io>
 
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/epam-delivery-platform> |
+| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/kuberocketci> |
 | sergk |  | <https://github.com/SergK> |
 
 ## Source Code
@@ -38,4 +44,3 @@ A Helm chart for EDP Tekton Cache
 | securityContext | object | `{}` | Security context to be added to Tekton-cache pods. |
 | service | object | `{"name":"tekton-cache","port":8080,"type":"ClusterIP"}` | Tekton-cache service configurations. |
 | tolerations | list | `[]` | Node tolerations for pod scheduling to nodes with taints. |
-

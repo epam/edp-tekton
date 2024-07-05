@@ -1,21 +1,21 @@
 # edp-tekton-common-library
 
-![Version: 0.2.18](https://img.shields.io/badge/Version-0.2.18-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square) ![AppVersion: 0.2.18](https://img.shields.io/badge/AppVersion-0.2.18-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square) ![AppVersion: 0.3.0](https://img.shields.io/badge/AppVersion-0.3.0-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
-A Helm chart library with common components for EDP Tekton Pipelines
+A Helm chart library with common components for KubeRocketCI Tekton Pipelines
 
 ## Additional Information
 
-Common library that holds steps for EDP pipelines
+Common library that holds steps for KubeRocketCI pipelines
 
-**Homepage:** <https://epam.github.io/edp-install/>
+**Homepage:** <https://docs.kuberocketci.io>
 
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/epam-delivery-platform> |
+| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/kuberocketci> |
 | sergk |  | <https://github.com/SergK> |
 
 ## Source Code

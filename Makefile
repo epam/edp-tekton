@@ -95,9 +95,7 @@ test-chart: ${CURRENT_DIR}/.venv/bin/activate
 		pip3 install -r ${CURRENT_DIR}/requirements.txt; \
 		helm repo add epamedp https://epam.github.io/edp-helm-charts/stable; \
 		helm dependency update ./charts/pipelines-library; \
-		helm dependency update ./charts/custom-pipelines; \
 		pytest -sv ./charts/pipelines-library/ --color=yes -n auto; \
-		pytest -sv ./charts/custom-pipelines/ --color=yes -n auto; \
 	)
 
 ${CURRENT_DIR}/.venv/bin/activate:

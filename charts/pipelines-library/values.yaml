@@ -32,7 +32,7 @@ tekton-cache:
   # -- Enables the Tekton-cache subchart.
   enabled: true
   #
-  # If 'tekton-cache.enabled' is set to 'false' the tekton-cache won't be deployed as part of the EDP installation,
+  # If 'tekton-cache.enabled' is set to 'false' the tekton-cache won't be deployed as part of the KubeRocketCI installation,
   # but it can be deployed separately to share among different instances.
   # For this case, use the following pattern for the url: "http://<service_name>.<namespace>:8080".
   # Where,
@@ -263,9 +263,9 @@ ctLint:
       truthy:
         level: warning
 
-# Deploy EDP Tekton Dashboard along with pipelines library
+# Deploy KubeRocketCI Tekton Dashboard along with pipelines library
 dashboard:
-  # -- Deploy EDP Dashboard as a part of pipeline library when true. Default: true
+  # -- Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: true
   enabled: true
 
   # -- The resource limits and requests for the Tekton Dashboard

@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: e2e-vcluster
-  labels:
-    {{- include "edp-custom-pipelines.labels" . | nindent 4 }}

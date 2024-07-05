@@ -1,9 +1,0 @@
-{{- if eq .Values.imageScanReport.enable true }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: report-junit
-data:
-  grype-junit.tpl:{{ toYaml .Values.imageScanReport.grypeTemplate | nindent 4 }}
-  trivy-junit.tpl:{{ toYaml .Values.imageScanReport.trivyTemplate | nindent 4 }}
-{{- end }}

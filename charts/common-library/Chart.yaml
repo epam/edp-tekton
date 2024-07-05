@@ -1,11 +1,11 @@
 apiVersion: v2
-description: A Helm chart library with common components for EDP Tekton Pipelines
-home: https://epam.github.io/edp-install/
+description: A Helm chart library with common components for KubeRocketCI Tekton Pipelines
+home: https://docs.kuberocketci.io
 name: edp-tekton-common-library
 type: library
-version: 0.2.18
-appVersion: 0.2.18
-icon: https://epam.github.io/edp-install/assets/logo.png
+version: 0.3.0
+appVersion: 0.3.0
+icon: https://docs.kuberocketci.io/img/logo.svg
 keywords:
   - edp
   - tekton
@@ -22,16 +22,15 @@ keywords:
 maintainers:
   - name: epmd-edp
     email: SupportEPMD-EDP@epam.com
-    url: https://solutionshub.epam.com/solution/epam-delivery-platform
+    url: https://solutionshub.epam.com/solution/kuberocketci
   - name: sergk
     url: https://github.com/SergK
 sources:
   - https://github.com/epam/edp-tekton
 annotations:
   artifacthub.io/license: Apache-2.0
-  artifacthub.io/operatorCapabilities: Basic Install
   artifacthub.io/links: |
-    - name: EDP Documentation
-      url: https://epam.github.io/edp-install/
+    - name: KubeRocketCI Documentation
+      url: https://docs.kuberocketci.io
     - name: EPAM SolutionHub
-      url: https://solutionshub.epam.com/solution/epam-delivery-platform
+      url: https://solutionshub.epam.com/solution/kuberocketci

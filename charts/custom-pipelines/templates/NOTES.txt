@@ -1,1 +1,0 @@
-EDP4EDP Tekton Pipeline Library is configured

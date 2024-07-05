@@ -60,7 +60,7 @@ jobs:
     needs: [helm-docs]
     runs-on: ubuntu-20.04
     env:
-     CHART_DIR: "charts/common-library,charts/custom-pipelines,charts/pipelines-library"
+     CHART_DIR: "charts/common-library,charts/pipelines-library"
      CT_FILE_PATH: "ct/ct.yaml"
      LINTCONF_FILE_PATH: "ct/lintconf.yaml"
      CHART_SCHEMA_FILE_PATH: "ct/chart_schema.yaml"
@@ -92,7 +92,7 @@ jobs:
       - name: Run chart-testing (lint)
         run: |
               ct lint --target-branch ${{ github.event.repository.default_branch }} \
-               --charts charts/common-library,charts/custom-pipelines,charts/pipelines-library/ \
+               --charts charts/common-library,charts/pipelines-library/ \
                --config ct/ct.yaml \
                --lint-conf ct/lintconf.yaml \
                --chart-yaml-schema ct/chart_schema.yaml

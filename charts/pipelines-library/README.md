@@ -3,28 +3,29 @@
 ![Version: 0.13.0-SNAPSHOT](https://img.shields.io/badge/Version-0.13.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.13.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.13.0--SNAPSHOT-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
-A Helm chart for EDP Tekton Pipelines
+A Helm chart for KubeRocketCI Tekton Pipelines
 
 ## Additional Information
 
-### EDP Tekton Pipelines
+## Tekton Pipelines
 
-Tekton Pipelines supports three VCS: Gerrit, GitHub, GitLab. To check the VCS Import strategy, please refer to the [EDP Documentation](https://epam.github.io/edp-install/operator-guide/import-strategy/).
+Tekton Pipelines supports three VCS: Gerrit, GitHub, GitLab. To check the VCS Import strategy, please refer to the [KubeRocketCI Documentation](https://docs.kuberocketci.io)).
 
-EDP Tekton Pipelines are implemented and packaged using the [helm-chart](./charts/pipelines-library/) approach. The helm-chart contains:
+Tekton Pipelines are implemented and packaged using the [helm-chart](./charts/pipelines-library/) approach. The helm-chart contains:
 
 - `Tasks` - basic building block for Tekton. Some of the tasks are forks from [Upstream Tekton Catalog](https://github.com/tektoncd/catalog).
-- `Pipelines`, which consist of `Tasks` and implement logic for the CI flow. EDP follows the below approach for pipelines definition:
+- `Pipelines`, which consist of `Tasks` and implement logic for the CI flow. KubeRocketCI follows the below approach for pipelines definition:
   - Each type of VCS has its own Pipelines, e.g. for Gerrit, GitHub, GitLab;
-  - EDP has [two types of Pipelines](https://epam.github.io/edp-install/user-guide/ci-pipeline-details/): `CodeReview` - triggers on Review, `Build` - triggers on Merged Event.
+  - KubeRocketCI has [two types of Pipelines](https://docs.kuberocketci.io/docs/operator-guide/ci/tekton-overview): `CodeReview` - triggers on Review, `Build` - triggers on Merged Event.
 - `Triggers`, `TriggerBindings`, `TriggerTemplates` - defines the logic for specific VCS Events (Gerrit, GitHub, GitLab) and Pipelines.
-- `Resources` - Kubernetes resources, that are used from Pipelines, e.g. `ServiceAccount` with [IRSA Enablement](https://epam.github.io/edp-install/operator-guide/kaniko-irsa/), `ConfigMaps` for Maven/Gradle Pipelines, PVC to share resources between Tasks.
+- `Resources` - Kubernetes resources, that are used from Pipelines, e.g. `ServiceAccount` with [IRSA Enablement](https://docs.kuberocketci.io/docs/developer-guide/aws-reference-architecture#iam-roles-for-service-accounts-irsa), `ConfigMaps` for Maven/Gradle Pipelines, Tekton cache, CodeNarc, CTLint, and PVC to share resources between Tasks.
+- `Tekton Pipeline pruner` - created as a cron job, it is designed to clear outdated pipelines.
 
 ### EDP Interceptor
 
-EDP Interceptor is used as a component that provides EDP data for Tekton Pipelines. The code is based on [Upstream implementation](https://github.com/tektoncd/triggers/tree/main/pkg/interceptors).
+EDP Interceptor is used as a component that provides KubeRocketCI metadata for Tekton Pipelines. The code is based on [Upstream implementation](https://github.com/tektoncd/triggers/tree/main/pkg/interceptors).
 
-EDP Interceptor extracts information from VCS payload, like `repository_name`. The `repository_name` has 1-2-1 mapping with `EDP Codebase` (kind: Codebase; apiVersion:v2.edp.epam.com/v1). Interceptor populates Tekton Pipelines with [Codebase SPEC](https://github.com/epam/edp-codebase-operator/blob/master/docs/api.md#codebasespec) data, see the diagram below:
+EDP Interceptor extracts information from VCS payload, like `repository_name`. The `repository_name` has 1-2-1 mapping with `Codebase` (kind: Codebase; apiVersion:v2.edp.epam.com/v1). Interceptor populates Tekton Pipelines with [Codebase SPEC](https://github.com/epam/edp-codebase-operator/blob/master/docs/api.md#codebasespec) data, see the diagram below:
 
         ┌────────────┐              ┌─────────────────┐       ┌─────────────┐
         │            │              │ EDP Interceptor │       │   Tekton    │
@@ -43,17 +44,17 @@ EDP Interceptor extracts information from VCS payload, like `repository_name`. T
                             └────────────────────────────────┘
 
 The data, retrieved from the Codebase SPEC, is used in Tekton Pipelines logic.
-The docker images for EDP Interceptor are available on the [DockerHub](https://hub.docker.com/repository/docker/epamedp/edp-tekton).
+The docker images for Interceptor are available on the [DockerHub](https://hub.docker.com/repository/docker/epamedp/edp-tekton).
 The helm-chart for interceptor deployment is in the same repository by the [charts/interceptor](./charts/interceptor) directory.
-Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinterceptors/) paradigm and enriches payload from different Version Control Systems (VCS) like Gerrit, GitHub or GitLab with EDP specific data.
+Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinterceptors/) paradigm and enriches payload from different Version Control Systems (VCS) like Gerrit, GitHub or GitLab with KubeRocketCI specific data.
 
-**Homepage:** <https://epam.github.io/edp-install/>
+**Homepage:** <https://docs.kuberocketci.io>
 
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/epam-delivery-platform> |
+| epmd-edp | <SupportEPMD-EDP@epam.com> | <https://solutionshub.epam.com/solution/kuberocketci> |
 | sergk |  | <https://github.com/SergK> |
 
 ## Source Code
@@ -65,7 +66,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | Repository | Name | Version |
 |------------|------|---------|
 | @epamedp | tekton-cache | 0.3.2 |
-| file://../common-library | edp-tekton-common-library | 0.2.18 |
+| file://../common-library | edp-tekton-common-library | 0.3.0 |
 
 ## Values
 
@@ -75,7 +76,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | ctLint.lintconf | string | `"---\nrules:\n  braces:\n    min-spaces-inside: 0\n    max-spaces-inside: 0\n    min-spaces-inside-empty: -1\n    max-spaces-inside-empty: -1\n  brackets:\n    min-spaces-inside: 0\n    max-spaces-inside: 0\n    min-spaces-inside-empty: -1\n    max-spaces-inside-empty: -1\n  colons:\n    max-spaces-before: 0\n    max-spaces-after: 1\n  commas:\n    max-spaces-before: 0\n    min-spaces-after: 1\n    max-spaces-after: 1\n  comments:\n    require-starting-space: true\n    min-spaces-from-content: 2\n  document-end: disable\n  document-start: disable           # No --- to start a file\n  empty-lines:\n    max: 2\n    max-start: 0\n    max-end: 0\n  hyphens:\n    max-spaces-after: 1\n  indentation:\n    spaces: consistent\n    indent-sequences: whatever      # - list indentation will handle both indentation and without\n    check-multi-line-strings: false\n  key-duplicates: enable\n  line-length: disable              # Lines can be any length\n  new-line-at-end-of-file: enable\n  new-lines:\n    type: unix\n  trailing-spaces: enable\n  truthy:\n    level: warning\n"` |  |
 | ctLint.validateMaintainers | bool | `false` |  |
 | dashboard.affinity | object | `{}` | Affinity settings for pod assignment |
-| dashboard.enabled | bool | `true` | Deploy EDP Dashboard as a part of pipeline library when true. Default: true |
+| dashboard.enabled | bool | `true` | Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: true |
 | dashboard.image.repository | string | `"gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"` | Define tekton dashboard docker image name |
 | dashboard.image.tag | string | `"v0.46.0"` | Define tekton dashboard docker image tag |
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |

@@ -33,7 +33,7 @@ spec:
             backend:
               service:
                 # The service name will come from EventListener CR
-                name: el-{{ $name }}
+                name: el-edp-{{ $name }}
                 port:
                   number: 8080
 {{- end }}

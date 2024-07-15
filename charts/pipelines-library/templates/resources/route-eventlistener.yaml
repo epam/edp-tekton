@@ -20,7 +20,7 @@ spec:
     termination: edge
   to:
     kind: Service
-    name: el-{{ $name }}
+    name: el-edp-{{ $name }}
     weight: 100
   port:
     targetPort: http-listener

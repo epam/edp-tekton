@@ -66,7 +66,7 @@ gitServers:
 
     assert el_Name in r["ingress"]
     assert "el-my-gitlab-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-my-gitlab" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-edp-my-gitlab" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_github_el():
@@ -113,7 +113,7 @@ gitServers:
 
     assert el_Name in r["ingress"]
     assert "el-my-github-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-my-github" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-edp-my-github" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_ingress_for_gerrit_el():
@@ -160,7 +160,7 @@ gitServers:
 
     assert el_Name in r["ingress"]
     assert "el-my-gerrit-ns.example.com" in r["ingress"][el_Name]["spec"]["rules"][0]["host"]
-    assert "el-my-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
+    assert "el-edp-my-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
 def test_pruner_disabled():

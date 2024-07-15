@@ -18,6 +18,6 @@ status:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: el-edp-my-github
+  name: el-my-github
 status:
   readyReplicas: 1

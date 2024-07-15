@@ -43,11 +43,13 @@ gitServers:
     r = helm_template(config)
 
     # Access the event listener using the new structure
-    el = r["eventlistener"]["edp-my-github"]["spec"]
+    el = r["eventlistener"]["my-github"]["spec"]
 
     # Check if the triggers are correctly set
     assert "github-build" == el["triggers"][0]["triggerRef"]
     assert "github-review" == el["triggers"][1]["triggerRef"]
+    # check that labels are correctly set
+    assert "my-github" == r["eventlistener"]["my-github"]["metadata"]["labels"]["app.edp.epam.com/gitServer"]
 
     gitserver = r["gitserver"]["my-github"]["spec"]
 

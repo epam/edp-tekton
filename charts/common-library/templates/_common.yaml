@@ -305,3 +305,11 @@ finally:
 {{ include "push-to-jira" . | nindent 2 }}
 
 {{- end -}}
+
+{{- define "build-result" -}}
+results:
+  - description: VCS tag
+    name: VCS_TAG
+    type: string
+    value: $(tasks.get-version.results.VCS_TAG)
+{{- end -}}

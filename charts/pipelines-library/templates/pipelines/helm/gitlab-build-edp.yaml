@@ -48,6 +48,9 @@ spec:
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "."
+
+{{- include "build-result" . | nindent 2 }}
+
   tasks:
 
 {{- include "gitlab-build-start" . | nindent 4 }}

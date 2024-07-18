@@ -43,6 +43,9 @@ spec:
     - name: JIRA_SERVER
       description: "Jira server name"
       default: ""
+
+{{- include "build-result" . | nindent 2 }}
+
   tasks:
 
 {{- include "gitlab-build-start" . | nindent 4 }}

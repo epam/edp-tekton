@@ -59,6 +59,9 @@ spec:
     - name: JIRA_SERVER
       description: "Jira server name"
       default: ""
+
+{{- include "build-result" $ | nindent 2 }}
+
   tasks:
 
 {{- include "gerrit-build-start" $ | nindent 4 }}

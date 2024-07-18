@@ -33,6 +33,9 @@ spec:
       default: '{{ $valueFromAlt }}'
       description: "sonar image version"
       type: string
+
+{{- include "build-result" $ | nindent 2 }}
+
   tasks:
 
 {{- include "gitlab-build-start" $ | nindent 4 }}

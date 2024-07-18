@@ -337,6 +337,21 @@ dashboard:
   # -- Affinity settings for pod assignment
   affinity: {}
 
+# Labels used to tag ConfigMaps that contain Grafana dashboards.
+# These labels allow Grafana to discover and load dashboard ConfigMaps.
+grafana:
+  enabled: false
+  dashboards:
+    labelKey: grafana_dashboard
+    labelValue: "1"
+  # Label applied to the ServiceMonitor resource.
+  # This label is used by Prometheus to discover and integrate the ServiceMonitor
+  # into its configuration, allowing Prometheus to scrape metrics from the
+  # services specified by the ServiceMonitor.
+  serviceMonitor:
+    prometheusReleaseLabels:
+      release: prom
+
 # GitServers configuration section
 # GitServer creation depends on the gitProviders configuration, if gitProvider is not enabled,
 # the GitServer will not be created.

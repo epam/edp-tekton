@@ -32,6 +32,9 @@ spec:
       default: "maven:3.9.0-eclipse-temurin-17"
       description: "sonar image version"
       type: string
+
+{{- include "build-result" $ | nindent 2 }}
+
   tasks:
 
 {{- include "gitlab-build-start" $ | nindent 4 }}

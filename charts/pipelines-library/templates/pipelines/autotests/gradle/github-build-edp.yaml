@@ -33,6 +33,9 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
+
+{{- include "build-result" $ | nindent 2 }}
+
   tasks:
 
 {{- include "github-build-start" $ | nindent 4 }}

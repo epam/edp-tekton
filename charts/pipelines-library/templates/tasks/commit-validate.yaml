@@ -39,19 +39,26 @@ spec:
         import re
 
         commit_message_pattern = os.getenv("COMMIT_MESSAGE_PATTERN")
+
         if not commit_message_pattern:
             print("[TEKTON] Pattern to validate commit message is empty")
             sys.exit(1)
 
         commit_message = os.getenv("COMMIT_MESSAGE")
 
-        print("[TEKTON] Pattern to validate commit message: " + commit_message_pattern)
-        print("[TEKTON] Commit message to validate has been fetched:\n" + commit_message)
+        print("[TEKTON] Pattern to validate commit message: " +
+        commit_message_pattern)
+
+        print("[TEKTON] Commit message to validate has been fetched:\n" +
+        commit_message)
 
         # Extract the first line of the commit message
+
         first_line = commit_message.split('\n', 1)[0]
 
+
         # Apply regex validation to the first line only
+
         result = re.match(commit_message_pattern, first_line)
 
         if result is None:
@@ -59,7 +66,9 @@ spec:
             sys.exit(1)
 
         max_line_length = int(os.getenv("MAX_LINE_LENGTH"))
+
         lines = commit_message.split('\n')
+
         for line in lines:
             if len(line) > max_line_length:
                 print(f"[TEKTON] A line in the commit message is too long. Each line should be no longer than {max_line_length} characters.")

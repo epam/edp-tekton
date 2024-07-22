@@ -13,7 +13,7 @@ spec:
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "python-python-python-3.8"

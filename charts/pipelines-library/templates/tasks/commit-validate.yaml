@@ -46,12 +46,15 @@ spec:
         commit_message = os.getenv("COMMIT_MESSAGE")
 
         print("[TEKTON] Pattern to validate commit message: " + commit_message_pattern)
-
         print("[TEKTON] Commit message to validate has been fetched:\n" + commit_message)
 
-        result = re.search(commit_message_pattern, commit_message)
+        # Extract the first line of the commit message
+        first_line = commit_message.split('\n', 1)[0]
 
-        if result == None:
+        # Apply regex validation to the first line only
+        result = re.match(commit_message_pattern, first_line)
+
+        if result is None:
             print("[TEKTON] Commit message is invalid. The required pattern is " + commit_message_pattern)
             sys.exit(1)
 

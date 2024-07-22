@@ -1,0 +1,88 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: maven
+  labels:
+    app.kubernetes.io/based-on: "0.2"
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a Maven build.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: MAVEN_IMAGE
+      type: string
+      description: Maven base image
+      default: maven:3.9.0-eclipse-temurin-11
+    - name: GOALS
+      description: maven goals to run
+      type: array
+      default:
+        - "package"
+    - name: CONTEXT_DIR
+      type: string
+      description: >-
+        The context directory within the repository for sources on
+        which we want to execute maven goals.
+      default: "source"
+    - name: ci-nexus
+      type: string
+      description: name of the secret holding the Nexus CI integration data
+      default: ci-nexus
+    - name: ci-sonarqube
+      type: string
+      description: name of the secret holding the Sonarqube CI integration data
+      default: "ci-sonarqube"
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
+  steps:
+    - name: mvn-goals
+      image: $(params.MAVEN_IMAGE)
+      volumeMounts:
+        - name: settings-maven
+          mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+      - secretRef:
+          name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
+      workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
+      command: ["/usr/bin/mvn"]
+      args:
+        - -s
+        - /var/configmap/settings.xml
+        - "$(params.GOALS)"
+      env:
+        - name: HOME
+          value: $(workspaces.source.path)
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+{{- include "resources" . | nindent 6 }}

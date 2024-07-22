@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: tekton-autotests-role
+rules:
+  - verbs:
+      - create
+      - get
+      - list
+      - watch
+      - patch
+      - update
+    apiGroups:
+      - tekton.dev
+    resources:
+      - pipelines
+      - pipelineruns
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - v2.edp.epam.com
+    resources:
+      - codebases
+      - gitservers
+      - stages
+  - verbs:
+      - list
+      - get
+    apiGroups:
+      - argoproj.io
+    resources:
+      - applications

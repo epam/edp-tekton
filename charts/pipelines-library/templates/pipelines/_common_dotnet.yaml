@@ -1,0 +1,156 @@
+{{- define "dotnet-6-0-build-common" -}}
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-dotnet
+  runAfter:
+    - build
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: branch
+      value: $(params.git-source-revision)
+    - name: BASE_IMAGE
+      value: 'epamedp/tekton-dotnet:6.0.2'
+    - name: EXTRA_COMMANDS
+      value: |
+        slnFilename=$(ls *.sln)
+        dotnet sonarscanner begin \
+          /d:sonar.host.url=${SONAR_HOST_URL} \
+          /d:sonar.qualitygate.wait=true \
+          /d:sonar.login=${SONAR_TOKEN} \
+          /k:${SONAR_PROJECT_KEY} \
+          /n:${SONAR_PROJECT_NAME} \
+          /d:sonar.branch.name=${BRANCH}
+        dotnet build ${sln_filename}
+        dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: push
+  taskRef:
+    kind: Task
+    name: dotnet
+  runAfter:
+    - sonar
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
+        set -x
+        slnFilename=$(ls *.sln)
+        nugetPackagesPath="/tmp/project-nupkgs/"
+        dotnet pack ${slnFilename} --no-build --output ${nugetPackagesPath} "-p:PackageVersion=$(tasks.get-version.results.VERSION)"
+
+        # Get package version from the get-version task
+        versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')
+
+        # Define a repository for publishing the package
+        if echo "$versionLowerCase" | grep -q "snapshot"; then
+            ARTIFACT_REPOSITORY_SOURCE="nugetStorageSnapshots"
+        else
+            ARTIFACT_REPOSITORY_SOURCE="nugetStorageReleases"
+        fi
+        
+        # Note: The api-key is only used as a placeholder. 
+        # Ref: https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages
+        dotnet nuget push ${nugetPackagesPath} --source ${ARTIFACT_REPOSITORY_SOURCE} --api-key key
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "dotnet-6-0-review-common" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-dotnet
+  runAfter:
+    - get-cache
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-dotnet
+  runAfter:
+    - build
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: target-branch
+      value: $(params.targetBranch)
+    - name: source-branch
+      value: $(params.git-refspec)
+    - name: key-id
+      value: $(params.changeNumber)
+    - name: BASE_IMAGE
+      value: 'epamedp/tekton-dotnet:6.0.2'
+    - name: EXTRA_COMMANDS
+      value: |
+        slnFilename=$(ls *.sln)
+        dotnet sonarscanner begin \
+          /d:sonar.host.url=${SONAR_HOST_URL} \
+          /d:sonar.qualitygate.wait=true \
+          /d:sonar.login=${SONAR_TOKEN} \
+          /k:${SONAR_PROJECT_KEY} \
+          /n:${SONAR_PROJECT_NAME} \
+          /d:sonar.pullrequest.key=${KEY_ID} \
+          /d:sonar.pullrequest.branch=${SOURCE_BRANCH} \
+          /d:sonar.pullrequest.base=${TARGET_BRANCH}
+        dotnet build ${sln_filename}
+        dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "dockerbuild-verify-dotnet" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - dotnet-publish
+    - dockerfile-lint
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-dotnet-image-build-push-common" -}}
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - dotnet-publish
+  params:
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}

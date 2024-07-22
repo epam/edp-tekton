@@ -1,0 +1,23 @@
+apiVersion: v2
+name: tekton-cache
+home: https://docs.kuberocketci.io
+description: A Helm chart for KubeRocketCI Tekton Cache
+type: application
+version: 0.4.0
+appVersion: 0.4.0
+icon: https://docs.kuberocketci.io/img/logo.svg
+maintainers:
+  - name: epmd-edp
+    email: SupportEPMD-EDP@epam.com
+    url: https://solutionshub.epam.com/solution/kuberocketci
+  - name: sergk
+    url: https://github.com/SergK
+sources:
+  - https://github.com/epam/edp-tekton
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: KubeRocketCI Documentation
+      url: https://docs.kuberocketci.io
+    - name: EPAM SolutionHub
+      url: https://solutionshub.epam.com/solution/kuberocketci

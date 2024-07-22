@@ -1,0 +1,66 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/displayName: Commit-Validate
+    tekton.dev/platforms: linux/amd64
+  name: commit-validate
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: |
+    This task validates a commit message.
+  params:
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+    - name: BASE_IMAGE
+      description: "The base image for the task."
+      default: "python:3.10.1-alpine3.15"
+    - name: MAX_LINE_LENGTH
+      description: "Maximum length of each line in the commit message."
+      default: "80"
+  steps:
+    - image: $(params.BASE_IMAGE)
+      name: commit-validate
+      env:
+        - name: COMMIT_MESSAGE_PATTERN
+          value: $(params.COMMIT_MESSAGE_PATTERN)
+        - name: COMMIT_MESSAGE
+          value: $(params.COMMIT_MESSAGE)
+        - name: MAX_LINE_LENGTH
+          value: $(params.MAX_LINE_LENGTH)
+      script: |
+        #!/usr/bin/env python
+
+        import os
+        import sys
+        import re
+
+        commit_message_pattern = os.getenv("COMMIT_MESSAGE_PATTERN")
+        if not commit_message_pattern:
+            print("[TEKTON] Pattern to validate commit message is empty")
+            sys.exit(1)
+
+        commit_message = os.getenv("COMMIT_MESSAGE")
+
+        print("[TEKTON] Pattern to validate commit message: " + commit_message_pattern)
+        print("[TEKTON] Commit message to validate has been fetched:\n" + commit_message)
+
+        # Extract the first line of the commit message
+        first_line = commit_message.split('\n', 1)[0]
+
+        # Apply regex validation to the first line only
+        result = re.match(commit_message_pattern, first_line)
+
+        if result is None:
+            print("[TEKTON] Commit message is invalid. The required pattern is " + commit_message_pattern)
+            sys.exit(1)
+
+        max_line_length = int(os.getenv("MAX_LINE_LENGTH"))
+        lines = commit_message.split('\n')
+        for line in lines:
+            if len(line) > max_line_length:
+                print(f"[TEKTON] A line in the commit message is too long. Each line should be no longer than {max_line_length} characters.")
+                sys.exit(1)

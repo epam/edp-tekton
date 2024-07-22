@@ -1,0 +1,89 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
+{{- range $k := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-go-{{ $k }}-app-build-default
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/go-go-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: "{{ $k }}-go"
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: 'golang:1.22-bookworm'
+      description: "go image version"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "gerrit-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+{{- include "get-cache" $ | nindent 4 }}
+
+{{ include "security" . | nindent 4 }}
+
+{{- include "golang-build-common" . | nindent 4 }}
+
+{{- include "build-pipeline-golang-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

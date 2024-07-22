@@ -1,0 +1,5 @@
+{{- define "resources" -}}
+{{- with .Values.tekton.resources }}
+computeResources: {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end -}}

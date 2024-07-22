@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: init-values
+spec:
+  params:
+    - name: CODEBASE_NAME
+      type: string
+      description: Codebasebranch name.
+      default: "CODEBASE_NAME_placeholder"
+    - name: BRANCH_NAME
+      type: string
+      description: Branch name.
+      default: "BRANCH_placeholder"
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      type: string
+      default: bitnami/kubectl:1.25.2
+  results:
+    - name: TENANT_NAME
+      description: "edp name"
+    - name: NORMALIZED_BRANCH
+      description: "Branch name without '/' symbols and lowercase"
+    - name: RESULT_IMAGE_NAME
+      description: "Codebase name with only letters and dashes"
+  steps:
+    - name: get-values
+      image: $(params.BASE_IMAGE)
+      env:
+        - name: CODEBASE
+          value: "$(params.CODEBASE_NAME)"
+        - name: BRANCH
+          value: "$(params.BRANCH_NAME)"
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        tenantName=$(kubectl get cm edp-config -o jsonpath='{.data.edp_name}')
+        echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
+
+        normalizedBranch=$(echo ${BRANCH//[^\(?!.)a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')
+        printf "%s" "${normalizedBranch}" > "$(results.NORMALIZED_BRANCH.path)"
+
+        resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
+        printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"

@@ -1,0 +1,8 @@
+{{ if index .Values "tekton-cache" "url" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tekton-cache
+data:
+  url: {{ index .Values "tekton-cache" "url" }}
+{{ end }}

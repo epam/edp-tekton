@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-cache
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/displayName: "get-cache"
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task is used to get the cache from the distribution server. It stores cache in the root of the workspace.
+  params:
+    - name: CACHE_NAME
+      description: "Cache name (filename) to be downloaded from the cache server."
+      type: string
+    - name: BASE_IMAGE
+      description: "Base image"
+      default: "ghcr.io/curl/curl-container/curl-multi:8.3.0"
+      type: string
+
+  workspaces:
+    - name: cache
+
+  steps:
+    - name: get-cache
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.cache.path)
+
+      script: |
+        #!/usr/bin/env sh
+        set -ex
+        set -o pipefail
+
+        curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz || {
+              echo "no cache found"
+              exit 0
+        }
+
+        echo "Getting cache"
+        curl ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz|tar -xz -f-
+      env:
+        - name: CACHE_SERVER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: tekton-cache
+              key: url
+              optional: true
+        - name: CACHE_NAME
+          value: "$(params.CACHE_NAME)"
+      # TODO: We need to run this task as root because the workspace is owned by root.
+      securityContext:
+        runAsUser: 0
+
+      computeResources:
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi

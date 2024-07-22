@@ -1,0 +1,114 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gitlab-helm-charts-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      description: "Project name"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: CHART_DIR
+      description: "The directory in source that contains the helm chart"
+      default: "charts"
+      type: string
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+      type: string
+    - name: targetBranch
+      description: "Target branch of Merge Request"
+      type: string
+    - name: CHART_VERSION_INCREMENT
+      description: "Check Chart version increment"
+      default: 'true'
+      type: string
+  tasks:
+
+    - name: report-pipeline-start-to-gitlab
+      taskRef:
+        kind: Task
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "pending"
+        - name: "GITLAB_HOST_URL"
+          value: "$(params.git-source-url)"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: ci-gitlab
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: token
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "ci-pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by EDP. Run with Tekton"
+
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      runAfter:
+        - report-pipeline-start-to-gitlab
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+        - name: subdirectory
+          value: source
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: helm-docs
+      taskRef:
+        kind: Task
+        name: helm-library-docs
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "helm-library-review-common" . | nindent 4 }}
+
+{{ include "gitlab-review-vote" . | nindent 2 }}
+
+{{ end }}

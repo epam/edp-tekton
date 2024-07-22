@@ -1,0 +1,68 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: save-cache
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/displayName: "save-cache"
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task is used to save the cache to the distribution server. It packs and uploads the root of workspace to the distribution server
+  params:
+    - name: CACHE_NAME
+      description: "Cache name (filename) to be downloaded from the cache server."
+      type: string
+    - name: BASE_IMAGE
+      description: "Base image"
+      default: "epamedp/tekton-autotest:0.1.2"
+      type: string
+
+  workspaces:
+    - name: cache
+
+  steps:
+    - name: save-cache
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.cache.path)
+
+      script: |
+        #!/usr/bin/env bash
+        set -ex
+
+        curl -o/dev/null -s -f -X POST -F path=test -F file=@/etc/motd  ${CACHE_SERVER_URL}/upload || {
+            echo "No cache server found"
+            exit 0
+        }
+
+        lm="$(curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz|sed -n '/Last-Modified/ { s/Last-Modified: //;s/\r//; p}')"
+        if [ -n "${lm}" ];then
+          expired=$(python -c "import datetime, sys;print(datetime.datetime.now() > datetime.datetime.strptime(sys.argv[1], '%a, %d %b %Y %X %Z') + datetime.timedelta(days=1))" "${lm}")
+          if [ "${expired}" = "False" ]; then
+              echo "Cache is younger than a day"
+              exit
+          fi
+        fi
+
+        tar czf - . |curl -# -L -f -F path=${CACHE_NAME}.tar.gz -X POST -F "file=@-" ${CACHE_SERVER_URL}/upload
+      env:
+        - name: CACHE_SERVER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: tekton-cache
+              key: url
+              optional: true
+        - name: CACHE_NAME
+          value: "$(params.CACHE_NAME)"
+
+      computeResources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi

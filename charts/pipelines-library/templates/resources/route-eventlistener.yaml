@@ -1,0 +1,31 @@
+{{- if eq .Values.global.platform "openshift" }}
+{{- $root := $ -}}
+{{- range $name, $server := .Values.gitServers }}
+{{- if and (has $server.gitProvider $.Values.global.gitProviders) (and $server.eventListener.ingress (default false $server.eventListener.ingress.enabled)) }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: event-listener-{{ $name }}
+  labels:
+    app.edp.epam.com/gitServer: {{ $name }}
+    {{- include "edp-tekton.labels" $root | nindent 4 }}
+  {{- with $server.eventListener.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  host: el-{{ $name }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: el-edp-{{ $name }}
+    weight: 100
+  port:
+    targetPort: http-listener
+  wildcardPolicy: None
+{{- end }}
+---
+{{- end }}
+{{- end }}

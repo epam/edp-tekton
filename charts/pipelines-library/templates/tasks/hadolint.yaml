@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/categories: Code Quality
+    tekton.dev/displayName: Hadolint
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/platforms: linux/amd64
+    tekton.dev/tags: 'Kubernetes, Misconfiguration'
+  name: hadolint
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: >-
+    This task makes it possible to use Hadolint within Tekton Pipeline.
+    A smarter Dockerfile linter that helps you build best practice Docker
+    images. The linter parses the Dockerfile into an AST and performs rules on
+    top of the AST
+  params:
+    - name: BASE_IMAGE
+      description: The base image for the task.
+      default: ghcr.io/hadolint/hadolint:v2.12.0-alpine@sha256:3c206a451cec6d486367e758645269fd7d696c5ccb6ff59d8b03b0e45268a199
+    - default: './Dockerfile'
+      description: Dockerfile path.
+      name: dockerfile-path
+      type: string
+    - default: tty
+      description: >-
+        The output format for the results [tty | json | checkstyle | codeclimate
+        | gitlab_codeclimate | codacy] (default tty).
+      name: output-format
+      type: string
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  steps:
+    - image: $(params.BASE_IMAGE)
+      name: lint-dockerfile
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: DOCKERFILE
+          value: "$(params.dockerfile-path)"
+        - name: OFORMAT
+          value: "$(params.output-format)"
+      script: |
+        set -e
+        hadolint "$DOCKERFILE" -f "$OFORMAT"

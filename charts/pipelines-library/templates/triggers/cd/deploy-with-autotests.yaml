@@ -1,0 +1,56 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: deploy-with-autotests
+  labels:
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  params:
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
+    - name: KUBECONFIG_SECRET_NAME
+      description: The name of secret with Kubeconfig to connect to the remote cluster
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: deploy-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-auto-
+        labels:
+          app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE)
+          app.edp.epam.com/cdstage: $(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)
+          app.edp.epam.com/pipelinetype: deploy
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+        pipelineRef:
+          name: deploy-with-autotests
+        params:
+          - name: APPLICATIONS_PAYLOAD
+            value: $(tt.params.APPLICATIONS_PAYLOAD)
+          - name: CDSTAGE
+            value: $(tt.params.CDSTAGE)
+          - name: CDPIPELINE
+            value: $(tt.params.CDPIPELINE)
+          - name: KUBECONFIG_SECRET_NAME
+            value: $(tt.params.KUBECONFIG_SECRET_NAME)
+        timeouts:
+          pipeline: 1h00m0s
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: "1Gi"
+            subPath: codebase

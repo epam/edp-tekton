@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: trivy-scan
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Scan Tools
+    tekton.dev/tags: scan-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: BASE_IMAGE
+      type: string
+      description: Semgrep image
+      default: "aquasec/trivy:0.41.0"
+    - name: targetImage
+      type: string
+      default: ""
+  steps:
+    - name: trivy
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: TARGET_IMAGE
+          value: $(params.targetImage)
+      script: |
+        #!/usr/bin/env sh
+        set -e
+
+        trivy image --scanners vuln --severity HIGH,CRITICAL "${TARGET_IMAGE}"

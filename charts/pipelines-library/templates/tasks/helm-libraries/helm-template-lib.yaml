@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-library-template
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/categories: CI
+    tekton.dev/pipelines.minVersion: "0.41.0"
+    tekton.dev/tags: helm
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task will run `helm template` command for helm chart
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  params:
+    - name: CHART_DIR
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: release_name
+      description: The helm release name
+      default: "helm-release"
+    - name: template_extra_params
+      description: "Extra parameters passed for the helm template command"
+      default: ""
+    - name: extra_commands
+      description: Arguments to add to the helm-lint step
+      default: ""
+    - name: helm_image
+      description: "Specify a specific helm image"
+      default: "alpine/helm:3.11.1"
+    - name: user_home
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+      type: string
+      default: "/tekton/home"
+  steps:
+    - name: helm
+      image: $(params.helm_image)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: RELEASE_NAME
+          value: $(params.release_name)
+        - name: TEMPLATE_EXTRA_PARAMS
+          value: $(params.template_extra_params)
+        - name: HOME
+          value: $(params.user_home)
+      script: |
+        #!/bin/bash
+        set -ex
+
+        chart_directory=(${CHART_DIR}/*)
+        for i in "${chart_directory[@]}"
+        do
+            helm template ${RELEASE_NAME} ${i} ${TEMPLATE_EXTRA_PARAMS}
+            $(params.extra_commands)
+        done

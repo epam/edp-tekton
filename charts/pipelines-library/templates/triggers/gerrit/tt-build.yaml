@@ -1,0 +1,92 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: gerrit-build-template
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gerritproject
+      description: Gerrit project name
+    - name: buildtool
+      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: framework
+      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: cbtype
+      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: versioning-type
+      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
+    - name: codebase
+      description: Codebase name used in pipeline
+    - name: codebasebranch
+      description: Codebasebranch name used in pipeline
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: ticketNamePattern
+      description: Ticket name pattern
+    - name: commitMessagePattern
+      description: Commit message pattern to run commit-validate task
+    - name: commitMessage
+      description: Commit message
+    - name: jiraIssueMetadataPayload
+      description: Jira issue payload
+    - name: jiraServer
+      description: Jira server name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.codebasebranch)-build-
+        labels:
+          # used by UI to sort pipelines for codebasebranches
+          app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
+          app.edp.epam.com/codebase: $(tt.params.codebase)
+          app.edp.epam.com/pipelinetype: build
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+        pipelineRef:
+          name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
+        params:
+          - name: git-source-url
+            value: "ssh://edp-ci@gerrit:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.codebase)
+          - name: CODEBASEBRANCH_NAME
+            value: $(tt.params.codebasebranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: patchsetNumber
+            value: $(tt.params.patchsetNumber)
+          - name: TICKET_NAME_PATTERN
+            value: $(tt.params.ticketNamePattern)
+          - name: COMMIT_MESSAGE_PATTERN
+            value: $(tt.params.commitMessagePattern)
+          - name: COMMIT_MESSAGE
+            value: $(tt.params.commitMessage)
+          - name: JIRA_ISSUE_METADATA_PAYLOAD
+            value: $(tt.params.jiraIssueMetadataPayload)
+          - name: JIRA_SERVER
+            value: $(tt.params.jiraServer)
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: {{ .Values.tekton.workspaceSize }}
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: gerrit-ciuser-sshkey
+{{ end }}

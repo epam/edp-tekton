@@ -1,0 +1,85 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: golang
+  labels:
+    app.kubernetes.io/version: "0.3"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/displayName: "golang build"
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task is Golang task to build Go projects.
+  params:
+    - name: GOOS
+      description: "running program's operating system target"
+      default: linux
+      type: string
+    - name: GOARCH
+      description: "running program's architecture target"
+      default: amd64
+      type: string
+    - name: GO111MODULE
+      description: "value of module support"
+      default: auto
+      type: string
+    - name: GOCACHE
+      description: "Go caching directory path"
+      default: "$(workspaces.source.path)/cache"
+      type: string
+    - name: GOMODCACHE
+      description: "Go mod caching directory path"
+      default: "$(workspaces.source.path)/cache"
+      type: string
+    - name: CGO_ENABLED
+      description: "Toggle cgo tool during Go build. Use value '0' to disable cgo (for static builds)."
+      default: '0'
+      type: string
+    - name: GOSUMDB
+      description: "Go checksum database url. Use value 'off' to disable checksum validation."
+      default: ""
+      type: string
+    - name: EXTRA_COMMANDS
+      type: string
+      description: Extra commands
+      default: ""
+    - name: BASE_IMAGE
+      description: "Base image"
+      default: "golang:1.22-bookworm"
+      type: string
+    - name: GOPROXY
+      description: "Go proxy server"
+      default: ""
+      type: string
+  workspaces:
+    - name: source
+
+  steps:
+    - name: golang
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+
+      script: |
+        set -ex
+        $(params.EXTRA_COMMANDS)
+      env:
+        - name: GOOS
+          value: "$(params.GOOS)"
+        - name: GOARCH
+          value: "$(params.GOARCH)"
+        - name: GO111MODULE
+          value: "$(params.GO111MODULE)"
+        - name: GOCACHE
+          value: "$(params.GOCACHE)"
+        - name: GOMODCACHE
+          value: "$(params.GOMODCACHE)"
+        - name: CGO_ENABLED
+          value: "$(params.CGO_ENABLED)"
+        - name: GOSUMDB
+          value: "$(params.GOSUMDB)"
+        - name: GOPROXY
+          value: "$(params.GOPROXY)"
+{{- include "resources" . | nindent 6 }}

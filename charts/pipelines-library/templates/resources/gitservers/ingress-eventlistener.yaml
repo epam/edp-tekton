@@ -1,0 +1,42 @@
+{{- if eq .Values.global.platform "kubernetes" }}
+{{- $root := $ -}}
+{{- range $name, $server := .Values.gitServers }}
+{{- if and (has $server.gitProvider $.Values.global.gitProviders) (and $server.eventListener.ingress (default false $server.eventListener.ingress.enabled)) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: event-listener-{{ $name }}
+  labels:
+    app.edp.epam.com/gitServer: {{ $name }}
+    {{- include "edp-tekton.labels" $root | nindent 4 }}
+  annotations:
+    {{- with $server.eventListener.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+{{- if $server.eventListener.ingress.tls }}
+  tls:
+    {{- range $server.eventListener.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+{{- end }}
+  rules:
+    - host: el-{{ $name }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # The service name will come from EventListener CR
+                name: el-edp-{{ $name }}
+                port:
+                  number: 8080
+{{- end }}
+---
+{{- end }}
+{{- end }}

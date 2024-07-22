@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-gradle
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: BRANCH_VERSION
+      type: string
+      description: "Branch version"
+    - name: BUILD_ID
+      type: string
+      description: "Version"
+    - name: IS_RELEASE_BRANCH
+      type: string
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "alpine:3.18.6"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: BRANCH_VERSION
+          value: "$(params.BRANCH_VERSION)"
+        - name: BUILD_ID
+          value: "$(params.BUILD_ID)"
+      script: |
+        set -ex
+
+        if [ "${IS_RELEASE_BRANCH}" = "true" ] ; then
+            sed -i "s/version = .*/version = \'${BRANCH_VERSION}-${BUILD_ID}\'/" build.gradle
+        else
+            sed -i "s/^version = .*/version = \'${BRANCH_VERSION}\'/" build.gradle
+        fi

@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: terraform-check
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run opa tests on a project.
+  workspaces:
+    - name: source
+  params:
+    - name: PROJECT_DIR
+      description: The directory containing terraform files
+      type: string
+      default: "."
+    - name: EXTRA_COMMANDS
+      type: string
+    - name: BASE_IMAGE
+      type: string
+      default: epamedp/tekton-pre-commit:0.1.5
+      description: The terraform-check image.
+  steps:
+    - name: terraform
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        set -ex
+        $(params.EXTRA_COMMANDS)
+      securityContext:
+        runAsUser: 0
+{{- include "resources" . | nindent 6 }}

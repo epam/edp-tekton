@@ -1,0 +1,38 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+testDirs:
+  - ./tests/e2e/
+skipClusterDelete: false
+timeout: 240
+parallel: 1
+commands:
+  # Install Cert manager which is used by Interceptor
+  - command: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+    namespaced: false
+  # install QuickLink CRD first
+  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_quicklinks.yaml
+    namespaced: false
+  # install GitServer CRD
+  - command: kubectl apply -f https://raw.githubusercontent.com/epam/edp-codebase-operator/master/deploy-templates/crds/v2.edp.epam.com_gitservers.yaml
+    namespaced: false
+  # install Tekton
+  - command: kubectl create ns tekton-pipelines
+    namespaced: false
+  - command: kubectl create ns tekton-pipelines-resolvers
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+    namespaced: false
+  # wait for webhooks to be ready
+  - command: sleep 60
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+    namespaced: false
+  # wait for webhooks to be ready
+  - command: sleep 60
+    namespaced: false
+  - command: kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
+    namespaced: false
+  - command: helm repo add epamedp https://epam.github.io/edp-helm-charts/stable
+    namespaced: true
+  - command: helm dependency update ./charts/pipelines-library
+    namespaced: true

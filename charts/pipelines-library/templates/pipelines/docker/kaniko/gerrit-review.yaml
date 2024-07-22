@@ -1,0 +1,84 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-kaniko-docker-lib-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/container-kaniko-docker"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: CODEBASE_NAME
+      default: 'docker-kaniko'
+      description: "Project name"
+      type: string
+    - name: image
+      default: 'ghcr.io/hadolint/hadolint:v2.10.0-alpine'
+      description: "kaniko image version"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+  tasks:
+
+{{- include "gerrit-review-start" . | nindent 4 }}
+
+    # The fetch-target-branch Task will fetch the target branch during the code-review pipeline
+    # because the fetch-repository Task fetches only user changes.
+    - name: fetch-target-branch
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - fetch-repository
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git fetch origin $(params.targetBranch):refs/remotes/origin/$(params.targetBranch)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-target-branch
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "dockerbuild-verify-docker" . | nindent 4 }}
+
+{{ include "gerrit-review-vote" . | nindent 2 }}
+
+{{ end }}

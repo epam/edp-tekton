@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: |
+      helm install tekton-e2e ../../../charts/pipelines-library
+        --values ../values.yaml
+        --set interceptor.image.repository=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${E2E_IMAGE_REPOSITORY}
+        --set interceptor.image.tag=${E2E_IMAGE_TAG}
+        --set global.dnsWildCard=example.com
+        --set global.gitProviders[0]=gerrit
+        --set global.dockerRegistry.type=harbor
+        --set global.dockerRegistry.url=harbor.example.com
+        --set tekton-cache.enabled=false
+        --replace --wait
+    namespaced: true

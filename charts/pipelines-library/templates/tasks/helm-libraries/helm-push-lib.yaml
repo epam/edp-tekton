@@ -1,0 +1,132 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-push-lib
+spec:
+  description: |
+    This Task allows Uset to push a new version of the Helm Chart
+    to the repository with Snapshot versions.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  volumes:
+    - name: dockerconfig
+      secret:
+        secretName: kaniko-docker-config
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+        optional: true
+  params:
+    - name: chart-dir
+      description: The directory in source that contains the helm chart
+      default: "."
+  steps:
+    - name: init-repository
+      image: amazon/aws-cli:2.7.35
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: aws_region
+              optional: true
+        - name: CHART_DIR
+          value: $(params.chart-dir)
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_type
+      script: |
+          #!/bin/bash
+
+          set -ex
+
+          if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
+            chart_directory=(${CHART_DIR}/*)
+            for i in "${chart_directory[@]}"
+            do
+                REPO_NAME=$(awk '/^name:/ {print $2}' ${i}/Chart.yaml)
+            aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}" || aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}";
+            done
+
+          else
+            echo 'Registry not ECR, stage skipped';
+          fi
+
+    - name: push-helm-chart
+      image: alpine/k8s:1.25.15
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.chart-dir)
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: aws_region
+              optional: true
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_space
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: edp-config
+              key: container_registry_type
+        - name: PLATFORM
+          valueFrom:
+            configMapKeyRef:
+              key: platform
+              name: edp-config
+      script: |
+        #!/bin/bash
+        set -ex
+
+        helm_push_command="helm push *-*.tgz oci://${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}"
+
+        if [ $CONTAINER_REGISTRY_TYPE != "ecr" ]; then
+          helm_push_command+=" --registry-config /.config/helm/registry/config.json"
+        fi
+
+        if [ $PLATFORM == "openshift" ]; then
+          helm_push_command+=" --insecure-skip-tls-verify"
+        fi
+
+        if [ $CONTAINER_REGISTRY_TYPE == "ecr" ]; then
+          aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | helm registry login --username AWS --password-stdin ${CONTAINER_REGISTRY_URL}
+        fi
+
+        chart_directory=(${CHART_DIR}/*)
+        for i in "${chart_directory[@]}"
+        do
+            if ! git diff --quiet HEAD^ HEAD -- $i; then
+                helm package ${i}
+                $helm_push_command
+                rm *-*.tgz
+            fi
+        done
+
+      # Adding this securityContext makes it explicit that it needs to run as root.
+      # Required for Openshift.
+      securityContext:
+        runAsUser: 0
+      # This secret mount is necessary for helm push to internal openshift registry
+      volumeMounts:
+        - mountPath: /.config/helm/registry
+          name: dockerconfig
+{{- include "resources" . | nindent 6 }}

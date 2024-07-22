@@ -1,0 +1,73 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-library-docs
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/categories: CI
+    tekton.dev/pipelines.minVersion: "0.41.0"
+    tekton.dev/tags: helm
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task will run `helm-docs` command for helm chart
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  params:
+    - name: CHART_DIR
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: helm_docs_image
+      description: "Specify a specific helm-docs image"
+      default: "jnorwood/helm-docs:v1.13.1"
+    - name: user_home
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
+      type: string
+      default: "/tekton/home"
+  steps:
+    - name: helm-docs
+      image: $(params.helm_docs_image)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: HOME
+          value: $(params.user_home)
+      script: |
+        set -ex
+
+        chart_directory=$(ls -1 ${CHART_DIR}/)
+        for i in ${chart_directory}
+        do
+            README_FILE_PATH="${CHART_DIR}/${i}/README.md"
+            if [ -f "${README_FILE_PATH}" ]; then
+                echo "[TEKTON][INFO] The file has been found at the given location \"${README_FILE_PATH}\""
+            else
+                echo "[TEKTON][ERROR] The file has not been found at the given location \"${README_FILE_PATH}\""
+                exit 1
+            fi
+        done
+
+        helm-docs --chart-search-root ${CHART_DIR}
+
+    - name: validate-helm-docs
+      image: bitnami/git:2.41.0
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: HOME
+          value: $(params.user_home)
+      script: |
+        set -ex
+
+        git config --global --add safe.directory $(pwd)
+
+        chart_directory=$(ls -1 ${CHART_DIR}/)
+        for i in ${chart_directory}
+        do
+            git diff -s --exit-code ${CHART_DIR}/${i}/README.md || (echo "Run 'helm-docs' to address the issue." && git diff && exit 1)
+        done

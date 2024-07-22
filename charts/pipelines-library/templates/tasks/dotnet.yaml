@@ -1,0 +1,87 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: dotnet
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/displayName: DotNet
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a DotNet build.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the dotnet project.
+
+  volumes:
+    - name: settings-nuget
+      configMap:
+        name: {{ .Values.tekton.configs.nugetConfigMap }}
+
+  params:
+    - name: BASE_IMAGE
+      description: DotNet base image.
+      type: string
+      default: "mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16"
+    - name: PROJECT_DIR
+      description: The directory containing source code.
+      type: string
+      default: "."
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: ci-sonarqube
+      type: string
+      description: name of the secret for the Sonarqube integration
+      default: "ci-sonarqube"
+    - name: EXTRA_COMMANDS
+      type: string
+  steps:
+    - name: dotnet
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+
+      volumeMounts:
+        - name: settings-nuget
+          mountPath: $(workspaces.source.path)/$(params.PROJECT_DIR)/nuget.config
+          subPath: nuget.config
+
+      env:
+        - name: HOME
+          value: $(workspaces.source.path)
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        $(params.EXTRA_COMMANDS)
+{{- include "resources" . | nindent 6 }}

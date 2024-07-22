@@ -1,0 +1,166 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gitlab-codenarc-codenarc-lib-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/groovy-pipeline-codenarc-codenarc"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'groovy-pipeline'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: 'gradle:7.5.1-jdk11'
+      description: "gradle image version"
+      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" . | nindent 2 }}
+
+  tasks:
+
+{{- include "gitlab-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-gradle-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: codenarc
+      runAfter:
+        - update-build-number
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_ARGS
+          value: |
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            build -x test -x compileGroovy
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-gradle
+      runAfter:
+        - build
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: EXTRA_COMMANDS
+          value: |
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME) \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.branch.name=$(params.git-source-revision) \
+            -Dsonar.qualitygate.wait=true \
+            sonarqube
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: git-tag
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - build
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+{{ end }}

@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: npm
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run npm goals on a project
+    where package.json is present and has some pre-defined
+    npm scripts.
+  params:
+    - name: PATH_CONTEXT
+      type: string
+      default: "."
+      description: The path where package.json of the project is defined.
+    - name: EXTRA_COMMANDS
+      type: string
+    - name: BASE_IMAGE
+      type: string
+      default: "docker.io/library/node:18.20.3-alpine3.20"
+      description: The node image you want to use.
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+
+  workspaces:
+    - name: source
+
+  volumes:
+    - name: settings-npm
+      configMap:
+        name: {{ .Values.tekton.configs.npmConfigMap }}
+
+  steps:
+    - name: npm
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+
+      volumeMounts:
+        - name: settings-npm
+          mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+      - secretRef:
+          name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
+
+      env:
+        - name: HOME
+          value: "$(workspaces.source.path)"
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+      script: |
+        #!/usr/bin/env sh
+        set -e
+
+        $(params.EXTRA_COMMANDS)
+{{- include "resources" . | nindent 6 }}

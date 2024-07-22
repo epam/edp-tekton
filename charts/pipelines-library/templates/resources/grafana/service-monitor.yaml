@@ -1,0 +1,23 @@
+{{ if .Values.grafana.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    {{- with .Values.grafana.serviceMonitor.prometheusReleaseLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: tekton-overview
+spec:
+  endpoints:
+    - interval: 10s
+      path: /metrics
+      port: http-metrics
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - tekton-pipelines
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/part-of: tekton-pipelines
+{{- end }}

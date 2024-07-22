@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-npm-default
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of npm project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "node:18.9.0"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        #!/usr/bin/env sh
+        set -ex
+
+        NPM_VERSION=$(node -p "require('./package.json').version" | tr '[:upper:]' '[:lower:]')
+
+        BUILD_VERSION="${NPM_VERSION}-${VERSION}"
+
+        npm --no-git-tag-version version ${BUILD_VERSION}

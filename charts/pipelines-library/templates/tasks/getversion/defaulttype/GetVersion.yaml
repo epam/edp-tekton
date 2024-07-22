@@ -1,0 +1,53 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-version-default
+spec:
+  description: |
+    This task generates a version number for the application based on the current timestamp and the branch name.
+    The version number is used to tag the image and the codebase image stream.
+  params:
+    - name: BRANCH_NAME
+      type: string
+      description: Branch name.
+  results:
+    - name: VERSION
+      description: "Application version"
+    - name: VCS_TAG
+      description: "VCS tag"
+    - name: IS_TAG
+      description: "CodebaseImageStream tag"
+    - name: TIMESTAMP
+      description: Current timestamp
+  steps:
+    - name: get-timestamp
+      image: alpine:3.18.6
+      script: |
+        ts=$(date "+%Y%m%d-%H%M%S")
+        echo "Current Timestamp: ${ts}"
+        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+
+    - name: get-version
+      image: alpine:3.18.6
+      env:
+        - name: BRANCH_NAME
+          value: "$(params.BRANCH_NAME)"
+      script: |
+        set -e
+
+        # get current BUILD ID
+        BUILD_ID=$(cat $(results.TIMESTAMP.path))
+
+        BUILD_VERSION="${BUILD_ID}"
+        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
+        IS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
+
+        echo "Application version - ${BUILD_VERSION}"
+        echo "VCS tag - ${VCS_TAG}"
+        echo "IS tag - ${IS_TAG}"
+
+        printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
+        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+        printf "%s" "${BUILD_ID}" > "$(results.VERSION.path)"

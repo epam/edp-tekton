@@ -1,0 +1,139 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: security
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Scan Tools
+    tekton.dev/tags: scan-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: BASE_IMAGE
+      type: string
+      description: Semgrep image
+      default: returntocorp/semgrep:1.58.0
+    - name: ci-defectdojo
+      type: string
+      description: name of the secret holding the DefectDojo CI integration data
+      default: ci-defectdojo
+    - name: reportDataPath
+      type: string
+      default: "security-semgrep-report.json"
+    - name: reportDataProductName
+      type: string
+      default: ""
+    - name: reportDataEngagementName
+      type: string
+      default: ""
+    - name: PROJECT_NAME
+      description: That is the name of the project that will be updated/created on the dependency track side
+      default: ''
+      type: string
+    - name: PROJECT_BRANCH
+      description: That is the branch of the project that will be updated/created on the dependency track side
+      default: ''
+      type: string
+    - name: ci-dependency-track
+      type: string
+      description: Name of the secret holding the ci-dependency-track api token
+      default: ci-dependency-track
+  steps:
+    - name: semgrep-scan-and-report
+      image: $(params.BASE_IMAGE)
+      computeResources: {}
+      workingDir: $(workspaces.source.path)
+      script: |
+        set -e
+        # The .docker/config.json file contained sensitive information, so it was added to the ignorelist.
+        echo ".docker/config.json" >> .semgrepignore
+        semgrep --jobs 1 --config=p/r2c-ci . --json --output $(params.reportDataPath) --disable-version-check
+
+        if [ -z "$DD_HOST_URL" ]
+        then
+          exit 0
+        fi
+
+        reportDataActive="true"
+        reportDataVerified="false"
+        reportDataPath="security-semgrep-report.json"
+        reportDataType="Semgrep JSON Report"
+        reportDataProductTypeName="Tenant"
+        reportDataProductName=$(params.reportDataProductName)
+        reportDataEngagementName=$(params.reportDataEngagementName)
+        reportDataAutoCreateContext="true"
+        reportDataCloseOldFindings="true"
+        reportDataPushToJira="false"
+        reportDataEnvironment="Development"
+        reportDataTestTitle="security"
+        curl -X POST "${DD_HOST_URL}/api/v2/import-scan/" \
+            -H "accept: application/json" \
+            -H "Authorization: Token ${DD_TOKEN}" \
+            -H "Content-Type: multipart/form-data" \
+            -F "scan_date=$(date +%Y-%m-%d)" \
+            -F "minimum_severity=Info" \
+            -F "active=${reportDataActive}" \
+            -F "verified=${reportDataVerified}" \
+            -F "scan_type=${reportDataType}" \
+            -F "file=@${reportDataPath};type=application/json" \
+            -F "product_type_name=${reportDataProductTypeName}" \
+            -F "product_name=${reportDataProductName}" \
+            -F "engagement_name=${reportDataEngagementName}" \
+            -F "auto_create_context=${reportDataAutoCreateContext}" \
+            -F "close_old_findings=${reportDataCloseOldFindings}" \
+            -F "push_to_jira=${reportDataPushToJira}" \
+            -F "environment=${reportDataEnvironment}" \
+            -F "test_title=${reportDataTestTitle}"
+
+      env:
+        - name: HOME
+          value: "$(workspaces.source.path)"
+        - name: SEMGREP_VERSION_CACHE_PATH
+          value: "$(workspaces.source.path)/.cache"
+        - name: DD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo)
+              key: token
+              optional: true
+        - name: DD_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-defectdojo)
+              key: url
+              optional: true
+    - env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: token
+              optional: true
+        - name: DEPTRACK_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-dependency-track)
+              key: url
+              optional: true
+        - name: PROJECT_NAME
+          value: $(params.PROJECT_NAME)
+        - name: PROJECT_BRANCH
+          value: $(params.PROJECT_BRANCH)
+      image: >-
+        ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
+      name: cdxgen
+      computeResources: {}
+      script: >
+        #!/usr/bin/env sh
+
+        set -e
+
+        set +x
+
+        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME --project-version=$PROJECT_BRANCH
+      workingDir: $(workspaces.source.path)

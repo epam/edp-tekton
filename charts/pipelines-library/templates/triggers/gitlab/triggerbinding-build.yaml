@@ -1,0 +1,43 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gitlab-binding-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.object_attributes.target_branch)
+    - name: gitrepositoryurl
+      value: $(body.project.git_ssh_url)
+    - name: gitrepositoryname
+      value: $(body.project.name)
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
+    - name: versioning-type
+      value: "$(extensions.spec.versioning.type)"
+    - name: codebase
+      value: "$(extensions.codebase)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
+    # commitMessage is used for 'push-to-jira' Task
+    - name: commitMessage
+      value: "$(body.object_attributes.title)"
+    # commitMessagePattern is used for 'commit-validate' Tasks
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
+    # jiraIssueMetadataPayload is used for 'push-to-jira' Task
+    - name: jiraIssueMetadataPayload
+      value: "$(extensions.spec.jiraIssueMetadataPayload)"
+    # ticketNamePattern is used for 'push-to-jira' Task
+    - name: ticketNamePattern
+      value: "$(extensions.spec.ticketNamePattern)"
+    # jiraServer is used for 'push-to-jira' Task
+    - name: jiraServer
+      value: "$(extensions.spec.jiraServer)"
+{{ end }}

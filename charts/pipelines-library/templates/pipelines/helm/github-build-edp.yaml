@@ -1,0 +1,197 @@
+{{ if has "github" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: github-helm-helm-app-build-edp
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/container-kaniko-docker"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+    - name: CHART_DIR
+      description: "The directory in source that contains the helm chart"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+
+{{- include "build-result" . | nindent 2 }}
+
+  tasks:
+
+{{- include "github-build-start" . | nindent 4 }}
+
+    - name: check-chart-name
+      params:
+        - name: codebase_name
+          value: $(params.CODEBASE_NAME)
+        - name: chart_dir
+          value: $(params.CHART_DIR)
+      runAfter:
+        - fetch-repository
+      taskRef:
+        name: check-helm-chart-name
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-edp
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-helm-chart
+      runAfter:
+        - get-version
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: helm-dependency-update
+      taskRef:
+        kind: Task
+        name: helm-dependency-update
+      runAfter:
+        - get-version
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - helm-dependency-update
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: helm-template
+      taskRef:
+        kind: Task
+        name: helm-template
+      runAfter:
+        - helm-lint
+      params:
+        - name: release_name
+          value: $(params.CODEBASE_NAME)
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: helm-push
+      taskRef:
+        kind: Task
+        name: helm-push
+      runAfter:
+        - helm-template
+      params:
+        - name: image-tag
+          value: "$(tasks.get-version.results.IS_TAG)"
+        - name: chart-dir
+          value: $(params.CHART_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: git-tag
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - helm-push
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: update-cbis
+      taskRef:
+        kind: Task
+        name: update-cbis
+      runAfter:
+        - git-tag
+      params:
+        - name: CBIS_NAME
+          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: IMAGE_TAG
+          value: $(tasks.get-version.results.IS_TAG)
+
+{{ include "finally-block-edp" . | nindent 2 }}
+
+{{ end }}

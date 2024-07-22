@@ -1,0 +1,129 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- $altResourceMapping := dict "java8" "gradle:7.5.1-jdk11" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
+{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-gradle-{{ $k }}-aut-build-default
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-gradle'
+      description: "Project name"
+      type: string
+    - name: image
+      default: '{{ $v }}'
+      description: "gradle image version"
+      type: string
+    - name: sonar_image
+      default: '{{ $valueFromAlt }}'
+      description: "sonar image version"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "gerrit-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-gradle-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-gradle
+      runAfter:
+        - update-build-number
+      params:
+        - name: BASE_IMAGE
+          value: $(params.sonar_image)
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: EXTRA_COMMANDS
+          value: |
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+            -Dsonar.projectName=$(params.CODEBASE_NAME) \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.branch.name=$(params.git-source-revision) \
+            -Dsonar.qualitygate.wait=true \
+            sonarqube
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: git-tag
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - sonar
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+---
+{{ end }}
+{{ end }}

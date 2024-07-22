@@ -1,0 +1,38 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: gitlab-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  interceptors:
+    - ref:
+        name: "gitlab"
+      params:
+        - name: "secretRef"
+          value:
+            secretName: ci-gitlab
+            secretKey: secretString
+        - name: "eventTypes"
+          value: ["Merge Request Hook"]
+    - ref:
+        name: "cel"
+      params:
+        - name: "filter"
+          value: "body.object_attributes.action in ['merge']"
+    - ref:
+        name: "edp"
+        kind: NamespacedInterceptor
+    - ref:
+        name: "cel"
+      params:
+        - name: "overlays"
+          value:
+          - key: cbtype_short
+            expression: "extensions.spec.type.truncate(3)"
+  bindings:
+    - ref: gitlab-binding-build
+  template:
+    ref: gitlab-build-template
+{{ end }}

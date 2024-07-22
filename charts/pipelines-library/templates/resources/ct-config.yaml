@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ct-config
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  ct.yaml: |
+    validate-maintainers: {{ default "false" .Values.ctLint.validateMaintainers }}
+  chart_schema.yaml:{{ toYaml .Values.ctLint.chartSchema | nindent 4 }}
+  lintconf.yaml:{{ toYaml .Values.ctLint.lintconf | nindent 4 }}

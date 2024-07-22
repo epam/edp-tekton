@@ -1,0 +1,43 @@
+{{ if .Values.tekton.pruner.create }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tekton-resource-pruner
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  schedule: {{ default "0 * * * *" .Values.tekton.pruner.schedule | quote }}
+  suspend: {{ default "false" .Values.tekton.pruner.disableJob }}
+  concurrencyPolicy: {{ default "Forbid" .Values.tekton.pruner.concurrencyPolicy }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ default (int 3) .Values.tekton.pruner.backoffLimit }}
+      template:
+        spec:
+          volumes:
+            - name: scripts
+              configMap:
+                name: tekton-resource-pruner-scripts
+          containers:
+            - name: kubectl
+              image: "{{ default "bitnami/kubectl:latest" .Values.tekton.pruner.image }}"
+              env:
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+              command:
+                - bash
+                - /scripts/tekton-prune.sh
+              volumeMounts: [{name: scripts, mountPath: /scripts}]
+              resources:
+                {{- toYaml .Values.tekton.pruner.resources | nindent 16 }}
+          restartPolicy: {{ default "OnFailure" .Values.tekton.pruner.restartPolicy }}
+          serviceAccountName: tekton-resource-pruner
+          serviceAccount: tekton-resource-pruner
+      ttlSecondsAfterFinished: {{ default (int 10) .Values.tekton.pruner.ttlSecondsAfterFinished }}
+  successfulJobsHistoryLimit: {{ default (int 3) .Values.tekton.pruner.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default (int 1) .Values.tekton.pruner.failedJobsHistoryLimit }}
+{{ end }}

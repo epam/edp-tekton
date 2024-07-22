@@ -1,0 +1,155 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: sonarqube-gradle
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Security
+    tekton.dev/tags: security
+    tekton.dev/displayName: "sonarqube scanner"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    The sonarqube-scanner Task will update parameters in the
+    sonar-project.properties file or create a new sonar-project.properties
+    file and put parameters of a sonar project into it.
+
+    Task will run sonar-scanner for scanning after preparing the sonar-project.properties file.
+
+  workspaces:
+    - name: source
+  params:
+    - name: SONAR_PROJECT_KEY
+      description: Project's unique key
+      default: ""
+    - name: SONAR_PROJECT_NAME
+      description: Project's unique name
+      default: ""
+    - name: SONAR_QUALITYGATE_WAIT
+      description: Forces the analysis step to poll the SonarQube instance and wait for the Quality Gate status.
+      default: "true"
+    - name: ci-sonarqube
+      type: string
+      description: name of the secret holding the Sonarqube CI integration data
+      default: "ci-sonarqube"
+    - name: branch
+      type: string
+      description: Branch of scanning (for build pipeline)
+      default: ""
+    - name: target-branch
+      type: string
+      description: Target branch of Merge Request
+      default: ""
+    - name: source-branch
+      type: string
+      description: Source branch of Merge Request
+      default: ""
+    - name: key-id
+      type: string
+      description: Change number from Merge Request
+      default: ""
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: BASE_IMAGE
+      description: Gradle base image.
+      type: string
+      default: gradle:7.5.1-jdk11
+    - name: PROJECT_DIR
+      description: The directory containing build.gradle
+      type: string
+      default: "."
+    - name: EXTRA_COMMANDS
+      type: string
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: {{ .Values.tekton.configs.gradleConfigMap }}
+  steps:
+    - image: epamedp/tekton-autotest:0.1.3
+      name: prepare-project
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
+        - name: SONAR_PROJECT_NAME
+          value: "$(params.SONAR_PROJECT_NAME)"
+      script: |
+        set -e
+
+        PROJECT_EXISTS=$(curl -s -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}" | jq -r ".component.key")
+
+        if [ "$PROJECT_EXISTS" == "null" ]; then
+          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+          echo "Create project ${SONAR_PROJECT_KEY}"
+          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+        else
+          echo "Project ${SONAR_PROJECT_KEY} already exists"
+        fi
+    - name: gradle-tasks
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-gradle
+          mountPath: /var/configmap
+      {{- if .Values.tekton.packageRegistriesSecret.enabled }}
+      envFrom:
+        - secretRef:
+            name: {{ .Values.tekton.packageRegistriesSecret.name }}
+      {{- end }}
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/bin/bash
+        set -e
+
+        gradle \
+          -I \
+          /var/configmap/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          $(params.EXTRA_COMMANDS)
+      env:
+        - name: XDG_CONFIG_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: GRADLE_USER_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: SONAR_USER_HOME
+          value: $(workspaces.source.path)/$(params.PROJECT_DIR)
+        - name: SONAR_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: token
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+{{- include "resources" . | nindent 6 }}

@@ -1,0 +1,63 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: tekton-pipeline-role
+rules:
+  # allow to get configs for EDP from configmap
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+
+  # baseline operations with codebase and cbis
+  - apiGroups:
+      - 'v2.edp.epam.com'
+    resources:
+      - cdpipelines
+      - codebasebranches
+      - codebasebranches/status
+      - codebaseimagestreams
+      - codebases
+      - stages
+    verbs:
+      - get
+      - update
+      - patch
+      - list
+
+  # we need to create jira issues
+  - apiGroups:
+      - 'v2.edp.epam.com'
+    resources:
+      - jiraissuemetadatas
+    verbs:
+      - create
+      - get
+
+  # we need to get information about the taskRun running in ns containers
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - tekton.dev
+    resources:
+      - taskruns
+
+  # we need to manage Argo ApplicationSet (except create, delete)
+  - verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+    apiGroups:
+      - argoproj.io
+    resources:
+      - applicationsets

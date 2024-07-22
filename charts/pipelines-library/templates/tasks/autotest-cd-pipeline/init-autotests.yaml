@@ -1,0 +1,148 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: init-autotest
+spec:
+  workspaces:
+    - name: source
+      description: The workspace consisting of csharp project.
+  params:
+    - name: stage-name
+      type: string
+    - name: cd-pipeline-name
+      type: string
+    - name: AUTOTEST_PIPELINES
+      default: 'autotes-pipeline'
+    - name: codebase_tags
+      default: 'codebase_tags'
+    - name: parent-pipeline-name
+      default: ''
+  volumes:
+    - name: autotests-workspace-template
+      configMap:
+        name: autotests-workspace-template
+  results:
+    - name: AUTOTEST_PIPELINES
+      type: string
+    - name: codebase_tags
+      type: string
+  steps:
+    - name: init-autotest
+      image: epamedp/tekton-autotest:0.1.3
+      workingDir: $(workspaces.source.path)
+      volumeMounts:
+        - name: autotests-workspace-template
+          mountPath: "/var/configmap"
+      env:
+        - name: CODEBASE_TAGS
+          value: "$(params.codebase_tags)"
+        - name: AUTOTEST_PIPELINES
+          value: "$(params.AUTOTEST_PIPELINES)"
+        - name: STAGE_NAME
+          value: $(params.stage-name)
+        - name: CD_PIPELINE_NAME
+          value: $(params.cd-pipeline-name)
+        - name: PARENT_PIPELINE_NAME
+          value: $(params.parent-pipeline-name)
+
+      script: |
+        #!/usr/bin/env python
+
+        import subprocess
+        import json
+        import os
+        import re
+
+        autotestsList = []
+        autotestBuildTool = []
+        gitAutotesUrl = []
+        autotestsBranch = []
+        pipelines = ""
+        applications = []
+        tags = []
+        codebases = ""
+        autotestFramework =[]
+        gitSecret = {}
+
+        frameworks = {
+          "gradle-java8": "gradle:7.5.1-jdk8",
+          "gradle-java11": "gradle:7.5.1-jdk11",
+          "gradle-java17": "gradle:7.5.1-jdk17",
+          "maven-java8": "maven:3.9.0-eclipse-temurin-8",
+          "maven-java11": "maven:3.9.0-eclipse-temurin-11",
+          "maven-java17": "maven:3.9.0-eclipse-temurin-17"
+        }
+        cdPipelineName = os.getenv('CD_PIPELINE_NAME')
+        stage = os.getenv('STAGE_NAME')
+        parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
+        codebaseFileTags = os.getenv('CODEBASE_TAGS')
+
+        autotests = json.loads(subprocess.check_output(["kubectl", "get", "stages.v2.edp.epam.com", cdPipelineName + "-" + stage, "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+
+        for element in autotests["qualityGates"]:
+            if element["qualityGateType"] == "autotests":
+              autotestGitServer = subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec.gitServer}'"]).decode("utf-8").strip("'")
+              gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", autotestGitServer , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+              autotestsList.append(element["autotestName"])
+              autotestsBranch.append(element["branchName"])
+              autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
+              gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
+              autotestBuildTool.append(autotest["buildTool"])
+              autotestFramework.append(autotest["framework"])
+
+              gitSecret[element["autotestName"]] = gitserver['nameSshKeySecret']
+
+        for count, element in enumerate(autotestsList):
+            print("[TEKTON][DEBUG]: Run autotest - autotests-" + autotestBuildTool[count])
+            print("[TEKTON][DEBUG]: Autotest URL - " + gitAutotesUrl[count])
+            print("[TEKTON][DEBUG]: Autotest branch - " + autotestsBranch[count])
+            command = "tkn pipeline start autotests-" + autotestBuildTool[count] + " \
+            --use-param-defaults \
+            -p git-source-url=" + gitAutotesUrl[count] + " \
+            -p git-source-revision=" + autotestsBranch[count] + " \
+            -p stage-name=" + stage +" \
+            -p base-image=" + frameworks[autotestBuildTool[count] + "-" + autotestFramework[count]] + " \
+            --labels app.edp.epam.com/pipeline=" + cdPipelineName + " \
+            --labels app.edp.epam.com/stage=" + stage + " \
+            --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \
+            --labels app.edp.epam.com/branch=" + autotestsBranch[count] + " \
+            --labels app.edp.epam.com/parentPipelineRun=" + parentPipelineName + " \
+            --workspace name=ssh-creds,secret=" + gitSecret[autotestsList[count]] + " \
+            --workspace name=shared-workspace,volumeClaimTemplateFile=/var/configmap/volumeclaimtemplate.yaml"
+
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            output = re.search("autotests(-[A-Za-z0-9]*)* ", result.stdout)
+            pipelines += output.group() + " "
+
+        autotests_pipelines_file = os.getenv("AUTOTEST_PIPELINES")
+        with open(autotests_pipelines_file, "w") as outfile:
+            outfile.write(pipelines)
+
+        try:
+            listApplications = json.loads(subprocess.check_output(["kubectl", "get", "cdpipeline", cdPipelineName , "-o=jsonpath='{.spec.applicationsToPromote}'"]).decode("utf-8").strip("'"))
+            kindApplications = subprocess.check_output(["kubectl", "get", "applications"])
+
+            for element in listApplications:
+                output = re.search(cdPipelineName + "-" + stage + "-" + element, str(kindApplications))
+                applications.append(output.group())
+
+            print("[TEKTON][DEBUG]: Images to promote:")
+            for element in applications:
+                print(element)
+
+            for count, element in enumerate(applications):
+                temp = subprocess.check_output(["kubectl", "get", "application", element.strip(" ") , "-o=jsonpath='{.spec.source.helm.parameters[0].value}'"]).decode("utf-8").strip("'")
+                codebases += listApplications[count] + "=" + temp + " "
+
+            with open(codebaseFileTags, "w") as outfile:
+                outfile.write(codebases)
+
+            with open("/tekton/results/" + codebaseFileTags, "w") as outfile:
+                outfile.write(codebases)
+        except:
+            with open("/tekton/results/" + codebaseFileTags, "w") as outfile:
+                outfile.write("not-set")
+            print("[TEKTON][DEBUG]: No images to promote.")
+
+
+{{- include "resources" . | nindent 6 }}

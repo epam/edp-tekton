@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tekton-cache.name" . }}
+  labels:
+    {{- include "tekton-cache.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "tekton-cache.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tekton-cache.selectorLabels" . | nindent 8 }}
+    spec:
+      volumes:
+        - name: cache
+          persistentVolumeClaim:
+            claimName: cache
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: fix-permissions
+          image: {{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}
+          command:
+            - chmod
+            - '-R'
+            - '0775'
+            - /uploads
+          resources: {}
+          volumeMounts:
+            - name: cache
+              mountPath: /uploads
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+            runAsUser: 0
+      containers:
+        - name: {{ .Chart.Name }}
+          volumeMounts:
+            - mountPath: "/uploads"
+              name: cache
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: UPLOADER_HOST
+              value: "0.0.0.0"
+            - name: UPLOADER_PORT
+              value: "{{ .Values.service.port }}"
+            - name: UPLOADER_DIRECTORY
+              value: "/uploads"
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

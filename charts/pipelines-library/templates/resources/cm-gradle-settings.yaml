@@ -1,0 +1,95 @@
+{{- $configs := (.Values.tekton.configs | default dict) }}
+{{- $settingsConfigMap := $configs.gradleConfigMap | default "" }}
+{{- if eq $settingsConfigMap "custom-gradle-settings" }}
+# Default configuration map for provisioning Gradle init.gradle file.
+# To change it, prepare another configuration map and update "tekton.configs.gradleConfigMap"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-gradle-settings
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+  SNAPSHOTS_REPO_PATH: "/repository/edp-maven-snapshots"
+  RELEASES_REPO_PATH: "/repository/edp-maven-releases"
+  init.gradle: |
+    // Copyright 2024 EPAM Systems.
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    // http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    //
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+
+    allprojects {
+        buildscript {
+            repositories {
+                maven {
+                    name "nexus"
+                    credentials {
+                        username = System.getenv("CI_USERNAME")
+                        password = System.getenv("CI_PASSWORD")
+                    }
+                    url = System.getenv("NEXUS_HOST_URL") + "/repository/edp-maven-group"
+                    allowInsecureProtocol = true
+                }
+            }
+            dependencies {
+                classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3"
+            }
+        }
+
+        repositories {
+            maven {
+                name "nexus"
+                credentials {
+                    username = System.getenv("CI_USERNAME")
+                    password = System.getenv("CI_PASSWORD")
+                }
+                url = System.getenv("NEXUS_HOST_URL") + "/repository/edp-maven-group"
+                allowInsecureProtocol = true
+            }
+            maven {
+                name "gitlab-registry"
+                url = "https://gitlab.example.com/api/v4/projects/PROJECT_ID/packages/maven"
+                credentials(HttpHeaderCredentials) {
+                    name = System.getenv("CI_GITLAB_TOKEN_TYPE")
+                    value = System.getenv("CI_GITLAB_TOKEN")
+                }
+                authentication {
+                    header(HttpHeaderAuthentication)
+                }
+            }
+            maven {
+                name "github-registry"
+                url = "https://maven.pkg.github.com/OWNER/REPOSITORY"
+                credentials {
+                    username = System.getenv("CI_GITHUB_USERNAME")
+                    password = System.getenv("CI_GITHUB_PASSWORD")
+                }
+            }
+            maven {
+                name "azure-devops-registry"
+                url 'https://pkgs.dev.azure.com'
+                credentials {
+                    username = System.getenv("CI_AZURE_DEVOPS_USERNAME")
+                    password = System.getenv("CI_AZURE_DEVOPS_PASSWORD")
+                }
+            }
+        }
+
+        apply plugin: 'java'
+        apply plugin: 'jacoco'
+        apply plugin: 'maven-publish'
+
+        afterEvaluate { project ->
+            project.apply plugin: 'org.sonarqube'
+        }
+    }
+{{- end }}

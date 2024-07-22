@@ -1,0 +1,46 @@
+apiVersion: v2
+description: A Helm chart for KubeRocketCI Tekton Pipelines
+home: https://docs.kuberocketci.io
+name: edp-tekton
+type: application
+version: 0.13.0-SNAPSHOT
+appVersion: 0.13.0-SNAPSHOT
+icon: https://docs.kuberocketci.io/img/logo.svg
+keywords:
+  - edp
+  - tekton
+  - cd-pipeline
+  - pipelines
+  - jira
+  - ci
+  - cd
+  - promote
+  - git
+  - gerrit
+  - github
+  - gitlab
+maintainers:
+  - name: epmd-edp
+    email: SupportEPMD-EDP@epam.com
+    url: https://solutionshub.epam.com/solution/kuberocketci
+  - name: sergk
+    url: https://github.com/SergK
+sources:
+  - https://github.com/epam/edp-tekton
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: KubeRocketCI Documentation
+      url: https://docs.kuberocketci.io
+    - name: EPAM SolutionHub
+      url: https://solutionshub.epam.com/solution/kuberocketci
+
+# we use templates from common library
+dependencies:
+  - name: edp-tekton-common-library
+    version: 0.3.1
+    repository: "file://../common-library"
+  - name: tekton-cache
+    version: 0.3.2
+    repository: "@epamedp"
+    condition: tekton-cache.enabled

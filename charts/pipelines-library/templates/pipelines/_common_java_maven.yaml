@@ -1,0 +1,331 @@
+{{- define "java-maven-build-common" -}}
+- name: compile
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - get-cache
+    - security
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - compile
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: test
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - compile
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - org.jacoco:jacoco-maven-plugin:prepare-agent
+        - '-Dmaven.test.failure.ignore=true'
+        - verify
+        - org.jacoco:jacoco-maven-plugin:report
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-maven
+  runAfter:
+    - test
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: MAVEN_IMAGE
+      value: $(params.sonar_image)
+    - name: EXTRA_COMMANDS
+      value:
+        - -B
+        - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+        - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+        - '-Dsonar.branch.name=$(params.git-source-revision)'
+        - '-Dsonar.qualitygate.wait=true'
+        - verify
+        - sonar:sonar
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: build
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - sonar
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - clean
+        - package
+        - '-DskipTests=true'
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: push
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - build
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - deploy
+        - '-DskipTests=true'
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "java-maven-review-common-gerrit" -}}
+- name: compile
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - get-cache
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - compile
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: test
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - compile
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - org.jacoco:jacoco-maven-plugin:prepare-agent
+        - '-Dmaven.test.failure.ignore=true'
+        - verify
+        - org.jacoco:jacoco-maven-plugin:report
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-maven
+  runAfter:
+    - test
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: MAVEN_IMAGE
+      value: $(params.sonar_image)
+    - name: EXTRA_COMMANDS
+      value:
+        - -B
+        - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+        - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+        - '-Dsonar.pullrequest.key=$(params.changeNumber)'
+        - '-Dsonar.pullrequest.branch=$(params.git-refspec)'
+        - '-Dsonar.pullrequest.base=$(params.targetBranch)'
+        - '-Dsonar.qualitygate.wait=true'
+        - verify
+        - sonar:sonar
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: build
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - sonar
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - clean
+        - package
+        - '-DskipTests=true'
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "java-maven-review-common" -}}
+- name: compile
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - get-cache
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - compile
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: test
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - compile
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - org.jacoco:jacoco-maven-plugin:prepare-agent
+        - '-Dmaven.test.failure.ignore=true'
+        - verify
+        - org.jacoco:jacoco-maven-plugin:report
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-maven
+  runAfter:
+    - test
+  params:
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: MAVEN_IMAGE
+      value: $(params.sonar_image)
+    - name: EXTRA_COMMANDS
+      value:
+        - -B
+        - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+        - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+        - '-Dsonar.pullrequest.key=$(params.changeNumber)'
+        - '-Dsonar.pullrequest.branch=$(params.git-source-revision)'
+        - '-Dsonar.pullrequest.base=$(params.targetBranch)'
+        - '-Dsonar.qualitygate.wait=true'
+        - verify
+        - sonar:sonar
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: build
+  taskRef:
+    kind: Task
+    name: maven
+  runAfter:
+    - sonar
+  params:
+    - name: MAVEN_IMAGE
+      value: $(params.image)
+    - name: GOALS
+      value:
+        - -B
+        - clean
+        - package
+        - '-DskipTests=true'
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "java-maven-get-module" -}}
+- name: get-maven-module
+  taskRef:
+    kind: Task
+    name: get-maven-module
+  runAfter:
+    - init-values
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "dockerbuild-verify-maven" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - get-maven-module
+    - build
+    - dockerfile-lint
+  params:
+    - name: context
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-java-maven-image-build-push-common" -}}
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - get-maven-module
+    - push
+    - build
+  params:
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
+    - name: context
+      value: "$(tasks.get-maven-module.results.DEPLOYABLE_MODULE_DIR)"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}

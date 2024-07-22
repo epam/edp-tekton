@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-npm
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: BRANCH_VERSION
+      type: string
+      description: "Branch version"
+    - name: BUILD_ID
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "node:18.9.0"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: BRANCH_VERSION
+          value: "$(params.BRANCH_VERSION)"
+        - name: BUILD_ID
+          value: "$(params.BUILD_ID)"
+      script: |
+        #!/usr/bin/env sh
+        set -ex
+
+        npm --no-git-tag-version version ${BRANCH_VERSION}-${BUILD_ID}

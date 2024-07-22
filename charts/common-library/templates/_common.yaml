@@ -1,0 +1,315 @@
+{{- define "get-cache" -}}
+- name: get-cache
+  taskRef:
+    kind: Task
+    name: get-cache
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}
+
+{{- define "save-cache" -}}
+- name: save-cache
+  taskRef:
+    kind: Task
+    name: save-cache
+  runAfter:
+    - build
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}
+
+{{- define "helm-docs" -}}
+- name: helm-docs
+  taskRef:
+    kind: Task
+    name: helm-docs
+  params:
+    - name: CHART_DIR
+      value: "deploy-templates"
+  runAfter:
+    - fetch-repository
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "sonar-cleanup" -}}
+- name: sonar-cleanup
+  taskRef:
+    kind: Task
+    name: sonar-cleanup
+  runAfter:
+    - init-values
+  params:
+    - name: patchsetNumber
+      value: $(params.patchsetNumber)
+    - name: changeNumber
+      value: $(params.changeNumber)
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH
+      value: $(tasks.init-values.results.NORMALIZED_BRANCH)
+{{- end -}}
+
+{{- define "security" -}}
+- name: security
+  taskRef:
+    kind: Task
+    name: security
+  runAfter:
+    - get-version
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: PROJECT_BRANCH
+      value: $(params.git-source-revision)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "security-edp" -}}
+- name: security
+  taskRef:
+    kind: Task
+    name: security
+  runAfter:
+    - update-build-number
+  params:
+    - name: reportDataProductName
+      value: $(tasks.init-values.results.TENANT_NAME)
+    - name: reportDataEngagementName
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: PROJECT_BRANCH
+      value: $(params.git-source-revision)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+# The last section for Build Pipeline
+{{- define "build-pipeline-end" -}}
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - kaniko-build
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: update-cbis
+  taskRef:
+    kind: Task
+    name: update-cbis
+  runAfter:
+    - git-tag
+  params:
+    - name: CBIS_NAME
+      value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+    - name: IMAGE_TAG
+      value: $(tasks.get-version.results.IS_TAG)
+{{- end -}}
+
+{{- define "build-pipeline-lib-end" -}}
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - push
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+{{- end -}}
+
+# final section for gerrit codereview pipelines
+{{- define "gerrit-review-vote" -}}
+finally:
+  - name: gerrit-vote-success
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      kind: Task
+      name: gerrit-ssh-cmd
+    params:
+      - name: GERRIT_PORT
+        value: '{{ .Values.global.gerritSSHPort }}'
+      - name: SSH_GERRIT_COMMAND
+        value: "review --verified +1 --message 'Build Successfull $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)"
+    workspaces:
+      - name: ssh-directory
+        workspace: ssh-creds
+
+  - name: gerrit-vote-failure
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Failed"]
+    taskRef:
+      kind: Task
+      name: gerrit-ssh-cmd
+    params:
+      - name: GERRIT_PORT
+        value: '{{ .Values.global.gerritSSHPort }}'
+      - name: SSH_GERRIT_COMMAND
+        value: "review --verified -1 --message 'Build Failed $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)"
+    workspaces:
+      - name: ssh-directory
+        workspace: ssh-creds
+{{- end -}}
+
+# final section for all build pipelines that use edp versioning
+{{- define "update-cbb" -}}
+finally:
+  - name: update-cbb
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      kind: Task
+      name: update-cbb
+    params:
+      - name: CODEBASEBRANCH_NAME
+        value: $(params.CODEBASEBRANCH_NAME)
+      - name: CURRENT_BUILD_NUMBER
+        value: $(tasks.get-version.results.BUILD_ID)
+{{- end -}}
+
+{{- define "update-codebasebranch" -}}
+- name: update-cbb
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Succeeded"]
+  taskRef:
+    kind: Task
+    name: update-cbb
+  params:
+    - name: CODEBASEBRANCH_NAME
+      value: $(params.CODEBASEBRANCH_NAME)
+    - name: CURRENT_BUILD_NUMBER
+      value: $(tasks.get-version.results.BUILD_ID)
+{{- end -}}
+
+{{- define "push-to-jira" -}}
+- name: push-to-jira
+  taskRef:
+    kind: Task
+    name: push-to-jira
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Succeeded"]
+    - input: "$(params.JIRA_SERVER)"
+      operator: notin
+      values: [ "" ]
+  params:
+    - name: TICKET_NAME_PATTERN
+      value: "$(params.TICKET_NAME_PATTERN)"
+    - name: COMMIT_MESSAGE
+      value: "$(params.COMMIT_MESSAGE)"
+    - name: COMMIT_ID
+      value: "$(tasks.fetch-repository.results.commit)"
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
+    - name: CODEBASE_NAME
+      value: "$(params.CODEBASE_NAME)"
+    - name: PIPELINE_URL
+      value: "$(params.pipelineUrl)"
+    - name: VCS_TAG
+      value: "$(tasks.get-version.results.VCS_TAG)"
+    - name: VERSION
+      value: "$(tasks.get-version.results.VERSION)"
+{{- end -}}
+
+{{- define "send-to-microsoft-teams-build" -}}
+- name: send-to-microsoft-teams-failed
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed", "PipelineRunTimeout"]
+  taskRef:
+    name: send-to-microsoft-teams
+  params:
+  - name: webhook-url-secret
+    value: microsoft-teams-webhook-url-secret
+  - name: webhook-url-secret-key
+    value: url
+  - name: message
+    value: >-
+      Build Failed project: $(params.CODEBASE_NAME)<br> branch: $(params.git-source-revision)<br> pipeline: <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a><br> commit message: $(params.COMMIT_MESSAGE)
+{{- end -}}
+
+# final section for all build pipelines that use default versioning
+{{- define "finally-block-default" -}}
+finally:
+{{ include "push-to-jira" . | nindent 2 }}
+
+{{- end -}}
+
+# final section for all build pipelines that use edp versioning
+{{- define "finally-block-edp" -}}
+finally:
+{{ include "update-codebasebranch" . | nindent 2 }}
+
+{{ include "push-to-jira" . | nindent 2 }}
+
+{{- end -}}
+
+{{- define "build-result" -}}
+results:
+  - description: VCS tag
+    name: VCS_TAG
+    type: string
+    value: $(tasks.get-version.results.VCS_TAG)
+{{- end -}}

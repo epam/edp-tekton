@@ -1,0 +1,40 @@
+{{- define "opa-build-common" -}}
+- name: test
+  taskRef:
+    name: opa
+  runAfter:
+    - get-version
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS
+      value: |
+        python "${JUNIT_SCRIPT}" "${OPA_RESULTS}" > testReport.xml
+        cat testReport.xml
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - test
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+{{- end -}}

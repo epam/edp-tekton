@@ -1,0 +1,101 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-python-python-3.8-app-build-default
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "python-python-python-3.8"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "master"
+      type: string
+    - name: CODEBASE_NAME
+      default: "python-app"
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: 'python:3.8-alpine3.16'
+      description: "python image version"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" . | nindent 2 }}
+
+  tasks:
+
+{{- include "gerrit-build-start" . | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-python-default
+      runAfter:
+        - get-version
+      params:
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "security-edp" . | nindent 4 }}
+
+{{ include "python-build-common" . | nindent 4 }}
+
+{{- include "build-pipeline-python-image-build-push-common" . | nindent 4 }}
+
+{{- include "save-cache-pyhton" $ | nindent 4 }}
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+{{ end }}

@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-python
+spec:
+  description:
+  workspaces:
+    - name: source
+      description: The workspace consisting of maven project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "alpine:3.18.6"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        #!/bin/sh
+        set -ex
+
+        VERSION_LOWER_CASE=$(echo "${VERSION}" | tr '[:upper:]' '[:lower:]')
+        if [[ ! ${VERSION_LOWER_CASE} == *"snapshot"* ]]; then
+            sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
+        fi
+        cat version/__init__.py

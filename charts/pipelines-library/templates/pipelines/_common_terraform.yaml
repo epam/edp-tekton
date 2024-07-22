@@ -1,0 +1,75 @@
+{{- define "terraform-check-review-common" -}}
+
+- name: terraform-check
+  taskRef:
+    kind: Task
+    name: terraform-check
+  runAfter:
+    - init-values
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        if [ -f .terraform-version ]; then
+            tfenv install
+        else
+            tfenv install "$(params.terraform_default_version)";
+            tfenv use "$(params.terraform_default_version)";
+        fi
+        terraform init
+        chown -R $(whoami):$(whoami) .
+        pre-commit run --all-files
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+{{- end -}}
+
+{{- define "terraform-check-build-common" -}}
+
+- name: terraform-check
+  taskRef:
+    kind: Task
+    name: terraform-check
+  runAfter:
+    - get-version
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        if [ -f .terraform-version ]; then
+            tfenv install
+        else
+            tfenv install "$(params.terraform_default_version)";
+            tfenv use "$(params.terraform_default_version)";
+        fi
+        terraform init
+        chown -R $(whoami):$(whoami) .
+        pre-commit run --all-files
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - terraform-check
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+
+{{- end -}}

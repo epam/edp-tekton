@@ -1,0 +1,101 @@
+{{ if has "github" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "dotnet-3.1" "mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16" "dotnet-6.0" "mcr.microsoft.com/dotnet/sdk:6.0.407-alpine3.17" -}}
+{{- range $k, $v := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: github-dotnet-{{ $k }}-lib-build-default
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/csharp-dotnet-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'csharp-dotnet-{{ $k }}'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: "{{ $v }}"
+      description: "dotnet-sdk image version"
+      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "github-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-dotnet-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "get-cache" $ | nindent 4 }}
+
+{{ include "security" . | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: edp-dotnet
+      runAfter:
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "dotnet-6-0-build-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+---
+{{ end }}
+{{ end }}

@@ -1,0 +1,84 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: codenarc
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/displayName: CodeNarc
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This Task can be used to run a Gradle build and a Groovy CodeNarc review.
+    Download the output of the 'codenarc-report' step as logs from Tekton
+    and save it as 'html'.
+    Open the 'html' file in a browser to see the CodeNarc report.
+
+  workspaces:
+    - name: source
+      description: The workspace consisting of the gradle project.
+  params:
+    - name: BASE_IMAGE
+      description: Gradle base image.
+      type: string
+      default: gradle:7.5.1-jdk11
+    - name: PROJECT_DIR
+      description: The directory containing build.gradle
+      type: string
+      default: "."
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: EXTRA_ARGS
+      description: Extra arguments to add to the gradle build
+      default: |
+        -Dorg.gradle.internal.publish.checksums.insecure=true \
+        publish
+  volumes:
+    - name: settings-codenarc
+      configMap:
+        name: custom-codenarc-settings
+  steps:
+    - name: gradle-tasks
+      image: $(params.BASE_IMAGE)
+      volumeMounts:
+        - name: settings-codenarc
+          mountPath: /var/configmap
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        #!/bin/bash
+        set -e
+
+        gradle \
+          -I \
+          /var/configmap/init.gradle \
+          -PnexusLogin=${CI_USERNAME} \
+          -PnexusPassword=${CI_PASSWORD} \
+          $(params.EXTRA_ARGS)
+      env:
+        - name: HOME
+          value: $(workspaces.source.path)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+    - name: codenarc-report
+      image: alpine:3.18.6
+      workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
+      script: |
+        cat /workspace/source/build/reports/codenarc/main.html

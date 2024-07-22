@@ -1,0 +1,39 @@
+{{ if has "github" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-binding-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: $(extensions.pullRequest.headRef)
+    - name: gitrepositoryurl
+      value: $(body.repository.ssh_url)
+    - name: gitrepositoryname
+      value: $(body.repository.name)
+    - name: gitfullrepositoryname
+      value: $(body.repository.full_name)
+    - name: gitsha
+      value: $(extensions.pullRequest.headSha)
+    - name: targetBranch
+      value: "$(extensions.targetBranch)"
+    - name: changeNumber
+      value: "$(extensions.pullRequest.changeNumber)"
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    # Truncated cbtype type name to reduce string length
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
+    - name: commitMessage
+      value: "$(extensions.pullRequest.lastCommitMessage)"
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
+    - name: codebase
+      value: "$(extensions.codebase)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
+{{ end }}

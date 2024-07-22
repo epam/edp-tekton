@@ -1,0 +1,95 @@
+# The init section for gerrit build pipeline
+{{- define "gerrit-build-start" -}}
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: gerrit-notify
+  taskRef:
+    kind: Task
+    name: gerrit-ssh-cmd
+  params:
+    - name: GERRIT_PORT
+      value: '{{ .Values.global.gerritSSHPort }}'
+    # Use 'gerrit review' command https://gerrit-review.googlesource.com/Documentation/cmd-review.html
+    - name: SSH_GERRIT_COMMAND
+      value: review --message 'Build Started $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)
+    # we can trigger build pipeline without GerritPatchSet, so let's skip exit code if Patch doesn't exists
+    - name: ERR_EXIT_CODE
+      value: '0'
+  workspaces:
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
+{{- end -}}
+
+# The init section for gerrit code-review pipeline
+{{- define "gerrit-review-start" -}}
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: refspec
+      value: $(params.git-refspec)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: gerrit-notify
+  taskRef:
+    kind: Task
+    name: gerrit-ssh-cmd
+  params:
+    - name: GERRIT_PORT
+      value: '{{ .Values.global.gerritSSHPort }}'
+    - name: SSH_GERRIT_COMMAND
+      value: review --verified 0 --message 'Build Started $(params.pipelineUrl)' $(params.changeNumber),$(params.patchsetNumber)
+  workspaces:
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.targetBranch)
+{{- end -}}

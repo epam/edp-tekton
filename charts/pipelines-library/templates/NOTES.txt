@@ -1,0 +1,1 @@
+KubeRocketCI Tekton Pipeline Library is configured

@@ -1,0 +1,457 @@
+# Default values for edp-tekton.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
+  # Pipelines, EventListener, Tasks, etc.
+  # -- Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default)
+  gitProviders:
+    - github
+    - gitlab
+    - gerrit
+
+  # -- a cluster DNS wildcard name
+  dnsWildCard: ""
+  # -- Gerrit SSH node port
+  # gerritSSHPort: "30003"
+  # -- platform type that can be "kubernetes" or "openshift"
+  platform: "kubernetes"
+  dockerRegistry:
+    # -- Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub
+    type: "ecr"
+    # -- Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>)
+    url: "<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"
+
+## The tekton-cache related configurations.
+# Ref: https://github.com/epam/edp-tekton/blob/master/charts/tekton-cache/values.yaml
+tekton-cache:
+  # -- Enables the Tekton-cache subchart.
+  enabled: true
+  #
+  # If 'tekton-cache.enabled' is set to 'false' the tekton-cache won't be deployed as part of the KubeRocketCI installation,
+  # but it can be deployed separately to share among different instances.
+  # For this case, use the following pattern for the url: "http://<service_name>.<namespace>:8080".
+  # Where,
+  # <service_name> is the Kubernetes service name of the tekton-cache Helm chart, by default: tekton-cache;
+  # <namespace> is the Kubernetes namespace where the Kubernetes service of the tekton-cache Helm chart is deployed.
+  #
+  # -- Defines the URL to the tekton-cache. Default: http://tekton-cache:8080
+  url: "http://tekton-cache:8080"
+
+# Kaniko configuration section
+kaniko:
+  # -- AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
+  roleArn: ""
+  image:
+    repository: gcr.io/kaniko-project/executor
+    tag: v1.12.1
+  # -- Set up true if external docker registry use custom certificate
+  # -- Save cert in secret "custom-ca-certificates" with key ca.crt
+  customCert: false
+
+# Tekton configuration section
+tekton:
+  # Settings for the 'package-registries-auth-secret' secret that contains package registries authentication information.
+  #
+  # This secret is used for authenticating to package registries when pulling or pushing artifacts in Tekton Pipelines.
+  #
+  # By default, the Maven settings.xml file supports the following environment variables:
+  # environment variables    | description
+  # ==============================================================================
+  # CI_GITLAB_TOKEN_TYPE     | The type of the token used for GitLab authentication, usually "Private-Token"
+  # CI_GITLAB_TOKEN          | GitLab token used for authentication to push to the GitLab registry
+  # CI_GITHUB_USERNAME       | GitHub username used for authentication to push to the GitHub registry
+  # CI_GITHUB_PASSWORD       | GitHub password or personal access token used for authentication
+  # CI_AZURE_DEVOPS_USERNAME | Azure DevOps username used for authentication to push to the Azure DevOps registry
+  # CI_AZURE_DEVOPS_PASSWORD | Azure DevOps password or personal access token used for authentication
+  #
+  # To use additional environment variables in files such as Maven settings.xml,
+  # include them in this secret. They will be accessible in the configuration files.
+  #
+  packageRegistriesSecret:
+    # -- Set this as `true` if the secret should be available in Pipelines
+    enabled: false
+    # -- Secret name that will be used in Pipelines. Default: package-registries-auth-secret
+    name: "package-registries-auth-secret"
+
+  # Reference to configuration map containing settings.xml file to overwrite the default configuration.
+  configs:
+    # -- Default configuration map for provisioning Maven settings.xml file.
+    # To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml
+    mavenConfigMap: "custom-maven-settings"
+    # To use custom init.gradle file, the user should prepare another configuration map and update "gradleConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-gradle-settings.yaml.
+    # -- Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables.
+    gradleConfigMap: "custom-gradle-settings"
+    # -- Default configuration maps for provisioning NPM .npmrc files.
+    # To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml
+    npmConfigMap: "custom-npm-settings"
+    # To use custom Python settings, the user should prepare another configuration map and update "pythonConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-python-settings.yaml
+    # -- Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX_PATH, PIP_INDEX_URL_PATH,
+    # REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables for Python tasks.
+    pythonConfigMap: "custom-python-settings"
+    # To use custom NuGet settings, the user should prepare another configuration map and update "nugetConfigMap".
+    # For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-nuget-settings.yaml.
+    # -- Default configuration maps for provisioning nuget.config file.
+    nugetConfigMap: "custom-nuget-settings"
+
+  # Pruner provides auto clean up feature for the Tekton resources
+  pruner:
+    # -- Specifies whether a cronjob should be created
+    create: true
+    # -- How often to clean up resources
+    schedule: "0 10 */1 * *"
+    # -- Docker image to run the pruner, expected to have kubectl and jq
+    image: bitnami/kubectl:1.25
+    # -- Pod resources for Tekton pruner job
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "70Mi"
+      requests:
+        cpu: "50m"
+        memory: "50Mi"
+
+  # -- Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines
+  workspaceSize: "5Gi"
+  # -- The resource limits and requests for the Tekton Tasks
+  resources:
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+
+# Deploy EDP Tekton Interceptor along with pipelines library
+interceptor:
+  # -- Deploy EDP interceptor as a part of pipeline library when true. Default: true
+  enabled: true
+
+  nameOverride: "tekton-interceptor"
+
+  image:
+    repository: epamedp/edp-tekton
+    pullPolicy: IfNotPresent
+    # -- Overrides the image tag whose default is the chart appVersion.
+    tag:
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use.
+    # -- If not set, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+
+  # -- The resource limits and requests for the Tekton Interceptor
+  resources:
+    limits:
+      memory: 60Mi
+      cpu: 70m
+    requests:
+      cpu: 50m
+      memory: 40Mi
+
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+  # -- Toleration labels for pod assignment
+  tolerations: []
+  # -- Affinity settings for pod assignment
+  affinity: {}
+
+ctLint:
+  validateMaintainers: false
+  chartSchema: |
+    name: str()
+    home: str()
+    version: str()
+    type: str()
+    apiVersion: str()
+    appVersion: any(str(), num())
+    description: str()
+    keywords: list(str(), required=False)
+    sources: list(str(), required=True)
+    maintainers: list(include('maintainer'), required=True)
+    dependencies: list(include('dependency'), required=False)
+    icon: str(required=False)
+    engine: str(required=False)
+    condition: str(required=False)
+    tags: str(required=False)
+    deprecated: bool(required=False)
+    kubeVersion: str(required=False)
+    annotations: map(str(), str(), required=False)
+    ---
+    maintainer:
+      name: str(required=True)
+      email: str(required=False)
+      url: str(required=False)
+    ---
+    dependency:
+      name: str()
+      version: str()
+      repository: str()
+      condition: str(required=False)
+      tags: list(str(), required=False)
+      enabled: bool(required=False)
+      import-values: any(list(str()), list(include('import-value')), required=False)
+      alias: str(required=False)
+  lintconf: |
+    ---
+    rules:
+      braces:
+        min-spaces-inside: 0
+        max-spaces-inside: 0
+        min-spaces-inside-empty: -1
+        max-spaces-inside-empty: -1
+      brackets:
+        min-spaces-inside: 0
+        max-spaces-inside: 0
+        min-spaces-inside-empty: -1
+        max-spaces-inside-empty: -1
+      colons:
+        max-spaces-before: 0
+        max-spaces-after: 1
+      commas:
+        max-spaces-before: 0
+        min-spaces-after: 1
+        max-spaces-after: 1
+      comments:
+        require-starting-space: true
+        min-spaces-from-content: 2
+      document-end: disable
+      document-start: disable           # No --- to start a file
+      empty-lines:
+        max: 2
+        max-start: 0
+        max-end: 0
+      hyphens:
+        max-spaces-after: 1
+      indentation:
+        spaces: consistent
+        indent-sequences: whatever      # - list indentation will handle both indentation and without
+        check-multi-line-strings: false
+      key-duplicates: enable
+      line-length: disable              # Lines can be any length
+      new-line-at-end-of-file: enable
+      new-lines:
+        type: unix
+      trailing-spaces: enable
+      truthy:
+        level: warning
+
+# Deploy KubeRocketCI Tekton Dashboard along with pipelines library
+dashboard:
+  # -- Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: true
+  enabled: true
+
+  # -- The resource limits and requests for the Tekton Dashboard
+  resources:
+    limits:
+      cpu: "60m"
+      memory: "70Mi"
+    requests:
+      cpu: "50m"
+      memory: "40Mi"
+  # -- Make it possible to use openshift as OIDC provider to hide tekton-dashboard.
+  # -- Only for openshift deploy scenario,
+  # -- For EKS scenario - uncomment dashboard.ingress.annotations block
+  openshift_proxy:
+    # -- Enable oauth-proxy to include authorization layer on tekton-dashboard. Default: false
+    enabled: false
+    image:
+      # -- oauth-proxy image repository
+      repository: quay.io/openshift/origin-oauth-proxy
+      # -- oauth-proxy image tag
+      tag: 4.9.0
+
+    # -- The resource limits and requests for the Tekton Proxy
+    resources:
+      limits:
+        cpu: "60m"
+        memory: "70Mi"
+      requests:
+        cpu: "50m"
+        memory: "40Mi"
+
+  # -- Namespace where cluster tekton pipelines deployed. Default: tekton-pipelines
+  pipelinesNamespace: "tekton-pipelines"
+  # -- Namespace where cluster tekton triggers deployed. Default: tekton-pipelines
+  triggersNamespace: "tekton-pipelines"
+
+  nameOverride: "tekton-dashboard"
+  # -- Define mode for Tekton Dashboard. Enable/disaable capability to create/modify/remove Tekton objects via Tekton Dashboard. Default: false
+  readOnly: false
+
+  image:
+    # -- Define tekton dashboard docker image name
+    repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+    # -- Define tekton dashboard docker image tag
+    tag: v0.46.0
+
+  ingress:
+    # -- Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}
+    enabled: true
+    # -- Annotations for Ingress resource
+    annotations: {}
+      # -- Uncomment it to enable tekton-dashboard OIDC on EKS cluster
+      # nginx.ingress.kubernetes.io/auth-signin: 'https://<oauth-ingress-host>/oauth2/start?rd=https://$host$request_uri'
+      # nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.<edp-project>.svc.cluster.local:8080/oauth2/auth'
+    # -- Defines the base URL for the tekton.
+    # -- If not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]"
+    host: ""
+    # -- Ingress TLS configuration
+    # -- If hosts not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]"
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - tekton-edp.example.com
+
+  # -- Node labels for pod assignment
+  nodeSelector: {}
+  # -- Toleration labels for pod assignment
+  tolerations: []
+  # -- Affinity settings for pod assignment
+  affinity: {}
+
+# Labels used to tag ConfigMaps that contain Grafana dashboards.
+# These labels allow Grafana to discover and load dashboard ConfigMaps.
+grafana:
+  enabled: false
+  dashboards:
+    labelKey: grafana_dashboard
+    labelValue: "1"
+  # Label applied to the ServiceMonitor resource.
+  # This label is used by Prometheus to discover and integrate the ServiceMonitor
+  # into its configuration, allowing Prometheus to scrape metrics from the
+  # services specified by the ServiceMonitor.
+  serviceMonitor:
+    prometheusReleaseLabels:
+      release: prom
+
+# GitServers configuration section
+# GitServer creation depends on the gitProviders configuration, if gitProvider is not enabled,
+# the GitServer will not be created.
+gitServers: {}
+#   my-github:
+#     gitProvider: github
+#     host: github.com
+#     webhook:
+#       skipWebhookSSLVerification: false
+#     eventListener:
+#       # -- Enable EventListener
+#       enabled: true
+#       # -- EventListener resources
+#       resources:
+#         requests:
+#           memory: "64Mi"
+#           cpu: "50m"
+#         limits:
+#           memory: "128Mi"
+#           cpu: "500m"
+#       # -- Node labels for EventListener pod assignment
+#       nodeSelector: {}
+#       # -- Tolerations for EventListener pod assignment
+#       tolerations: []
+#       # -- Affinity for EventListener pod assignment
+#       affinity: {}
+
+#       ingress:
+#         # -- Enable ingress controller resource
+#         enabled: true
+#         # -- Ingress annotations
+#         annotations: {}
+#         # -- Ingress TLS configuration
+#         tls: []
+
+#   my-gitlab:
+#     gitProvider: gitlab
+#     host: gitlab.com
+#     webhook:
+#       # codebase operator will use this URL to create webhooks in GitLab, if it is not defined
+#       # the operator will use the Ingress value
+#       url: "http://gitlab.example.com"
+#       skipWebhookSSLVerification: false
+#     eventListener:
+#       # -- Enable EventListener
+#       enabled: true
+#       # -- EventListener resources
+#       resources:
+#         requests:
+#           memory: "64Mi"
+#           cpu: "50m"
+#         limits:
+#           memory: "128Mi"
+#           cpu: "500m"
+#       # -- Node labels for EventListener pod assignment
+#       nodeSelector: {}
+#       # -- Tolerations for EventListener pod assignment
+#       tolerations: []
+#       # -- Affinity for EventListener pod assignment
+#       affinity: {}
+
+#       ingress:
+#         # -- Enable ingress controller resource
+#         enabled: true
+#         # -- Ingress annotations
+#         annotations: {}
+#         # -- Ingress TLS configuration
+#         tls: []
+
+#   my-gerrit:
+#     gitProvider: gerrit
+#     host: gerrit.example.com
+#     gitUser: ci-user
+#     httpsPort: 443
+#     nameSshKeySecret: gerrit-ciuser-sshkey
+#     sshPort: 30022
+#     webhook:
+#       skipWebhookSSLVerification: false
+#     eventListener:
+#       # -- Enable EventListener
+#       enabled: true
+#       # -- EventListener resources
+#       resources:
+#         requests:
+#           memory: "64Mi"
+#           cpu: "50m"
+#         limits:
+#           memory: "128Mi"
+#           cpu: "500m"
+#       # -- Node labels for EventListener pod assignment
+#       nodeSelector: {}
+#       # -- Tolerations for EventListener pod assignment
+#       tolerations: []
+#       # -- Affinity for EventListener pod assignment
+#       affinity: {}
+
+#       ingress:
+#         # -- Enable ingress controller resource
+#         enabled: true
+#         # -- Ingress annotations
+#         annotations: {}
+#         # -- Ingress TLS configuration
+#         tls: []

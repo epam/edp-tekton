@@ -1,0 +1,152 @@
+# The init section for gitlab build pipeline
+{{- define "gitlab-build-start" -}}
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
+{{- end -}}
+
+# The init section for gitlab code-review pipeline
+{{- define "gitlab-review-start" -}}
+- name: report-pipeline-start-to-gitlab
+  taskRef:
+    kind: Task
+    name: gitlab-set-status
+  params:
+    - name: "STATE"
+      value: "pending"
+    - name: "GITLAB_HOST_URL"
+      value: "$(params.git-source-url)"
+    - name: "REPO_FULL_NAME"
+      value: "$(params.gitfullrepositoryname)"
+    - name: "GITLAB_TOKEN_SECRET_NAME"
+      value: ci-gitlab
+    - name: "GITLAB_TOKEN_SECRET_KEY"
+      value: token
+    - name: "SHA"
+      value: "$(params.git-source-revision)"
+    - name: "TARGET_URL"
+      value: $(params.pipelineUrl)
+    - name: "CONTEXT"
+      value: "ci-pipeline"
+    - name: "DESCRIPTION"
+      value: "Managed by EDP. Run with Tekton"
+
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  runAfter:
+    - report-pipeline-start-to-gitlab
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: refspec
+      value: $(params.git-refspec)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
+{{- end -}}
+
+
+# final section for gitlab codereview pipelines
+{{- define "gitlab-review-vote" -}}
+finally:
+  - name: gitlab-set-success-status
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      kind: Task
+      name: gitlab-set-status
+    params:
+      - name: "STATE"
+        value: "success"
+      - name: "GITLAB_HOST_URL"
+        value: "$(params.git-source-url)"
+      - name: "REPO_FULL_NAME"
+        value: "$(params.gitfullrepositoryname)"
+      - name: "GITLAB_TOKEN_SECRET_NAME"
+        value: ci-gitlab
+      - name: "GITLAB_TOKEN_SECRET_KEY"
+        value: token
+      - name: "SHA"
+        value: "$(params.git-source-revision)"
+      - name: "TARGET_URL"
+        value: $(params.pipelineUrl)
+      - name: "CONTEXT"
+        value: "ci-pipeline"
+      - name: "DESCRIPTION"
+        value: "Managed by EDP. Run with Tekton"
+
+  - name: gitlab-set-failure-status
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Failed"]
+    taskRef:
+      kind: Task
+      name: gitlab-set-status
+    params:
+      - name: "STATE"
+        value: "failed"
+      - name: "GITLAB_HOST_URL"
+        value: "$(params.git-source-url)"
+      - name: "REPO_FULL_NAME"
+        value: "$(params.gitfullrepositoryname)"
+      - name: "GITLAB_TOKEN_SECRET_NAME"
+        value: ci-gitlab
+      - name: "GITLAB_TOKEN_SECRET_KEY"
+        value: token
+      - name: "SHA"
+        value: "$(params.git-source-revision)"
+      - name: "TARGET_URL"
+        value: $(params.pipelineUrl)
+      - name: "CONTEXT"
+        value: "ci-pipeline"
+      - name: "DESCRIPTION"
+        value: "Managed by EDP. Run with Tekton"
+{{- end -}}

@@ -1,0 +1,130 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: python
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run python goals on a project.
+    It utilizes default PIP and Twine environment variables.
+    Twine logs in to nexus using environment variables to upload packages.
+    PIP does not support username and password environment variables yet.
+    Thus, we use the ~/.netrc file for PIP to download packages.
+    The ~/.config/pip/pip.conf file can also be used along with ~/.netrc.
+  workspaces:
+    - name: source
+  params:
+    - name: PATH_CONTEXT
+      type: string
+      default: "source"
+      description: The path where package.json of the project is defined.
+    - name: TWINE_REPOSITORY_URL
+      type: string
+      default: ""
+      description: Nexus Repository URL Twine uploads to.
+    - name: TWINE_NON_INTERACTIVE
+      type: string
+      default: "1"
+      description: Do not interactively prompt for credentials if they are missing.
+    - name: EXTRA_COMMANDS
+      type: string
+    - name: BASE_IMAGE
+      type: string
+      default: "python:3.8-slim"
+      description: The python image you want to use.
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
+    - name: PIP_CACHE_DIR
+      type: string
+      description: Cache directory of the pip
+      default: "$(workspaces.source.path)/cache/.cache/pip"
+  steps:
+    - name: python
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      env:
+        - name: HOME
+          value: $(workspaces.source.path)
+        - name: PIP_CACHE_DIR
+          value: $(params.PIP_CACHE_DIR)
+        - name: TWINE_REPOSITORY_URL
+          value: $(params.TWINE_REPOSITORY_URL)
+        - name: TWINE_NON_INTERACTIVE
+          value: $(params.TWINE_NON_INTERACTIVE)
+        - name: TWINE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: TWINE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: url
+        - name: PIP_INDEX_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: PIP_INDEX_PATH
+              optional: true
+        - name: PIP_INDEX_URL_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: PIP_INDEX_URL_PATH
+        - name: REPOSITORY_SNAPSHOTS_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: REPOSITORY_SNAPSHOTS_PATH
+        - name: REPOSITORY_RELEASES_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: custom-python-settings
+              key: REPOSITORY_RELEASES_PATH
+      script: |
+        #!/usr/bin/env sh
+        set -ex
+        export PATH=$PATH:$HOME/.local/bin
+
+        # Artifact Storage Repository host PIP connects to via HTTP. e.g. 'nexus'
+        export PIP_TRUSTED_HOST=$(echo "${NEXUS_HOST_URL}" | cut -d '/' -f 3 | cut -d ':' -f 1)
+
+        # Concatenate the base URL with the specific paths from the ConfigMap
+        export PIP_INDEX="${NEXUS_HOST_URL}${PIP_INDEX_PATH}"
+        export PIP_INDEX_URL="${NEXUS_HOST_URL}${PIP_INDEX_URL_PATH}"
+        export REPOSITORY_URL_SNAPSHOTS="${NEXUS_HOST_URL}${REPOSITORY_SNAPSHOTS_PATH}"
+        export REPOSITORY_URL_RELEASES="${NEXUS_HOST_URL}${REPOSITORY_RELEASES_PATH}"
+
+        echo "[TEKTON][INFO] NEXUS_HOST_URL contains ${NEXUS_HOST_URL}"
+        echo "[TEKTON][INFO] PIP_INDEX contains ${PIP_INDEX}"
+        echo "[TEKTON][INFO] PIP_INDEX_URL contains ${PIP_INDEX_URL}"
+        echo "[TEKTON][INFO] PIP_TRUSTED_HOST contains ${PIP_TRUSTED_HOST}"
+        echo "[TEKTON][INFO] REPOSITORY_URL_SNAPSHOTS contains ${REPOSITORY_URL_SNAPSHOTS}"
+        echo "[TEKTON][INFO] REPOSITORY_URL_RELEASES contains ${REPOSITORY_URL_RELEASES}"
+
+        netcr_file="$HOME/.netrc"
+        if [ ! -f "${netcr_file}" ]; then
+          cat <<-EOF > "${netcr_file}"
+        machine ${PIP_TRUSTED_HOST}
+        login ${TWINE_USERNAME}
+        password ${TWINE_PASSWORD}
+        EOF
+        chmod 0600 "${netcr_file}"
+        fi
+
+        $(params.EXTRA_COMMANDS)
+{{- include "resources" . | nindent 6 }}

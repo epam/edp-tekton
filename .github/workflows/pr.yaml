@@ -1,0 +1,251 @@
+name: "pull_request"
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  GOLANG_VERSION: '1.22'
+
+jobs:
+
+  check-commit-message:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Commit Format
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '^(fix|feat|docs|style|refactor|test|chore){1}(\([\w\-\.]+\))?(!)?: .+( (#\d+))?$'
+          error: 'Your commit message should be in the format "type: Description (#issue)". Example: "fix: Update build (#33)"'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Line Length
+        uses: gsactions/commit-message-checker@v2
+        with:
+          pattern: '.{0,50}'
+          error: 'The maximum line length of 50 characters is exceeded.'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+  helm-docs:
+    needs: [check-commit-message]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Make Build
+        run: make validate-docs
+
+  helm-lint:
+    needs: [helm-docs]
+    runs-on: ubuntu-20.04
+    env:
+     CHART_DIR: "charts/common-library,charts/pipelines-library"
+     CT_FILE_PATH: "ct/ct.yaml"
+     LINTCONF_FILE_PATH: "ct/lintconf.yaml"
+     CHART_SCHEMA_FILE_PATH: "ct/chart_schema.yaml"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.1
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          check-latest: true
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.0
+
+      - name: Update dependencies
+        run: |
+            helm repo add epamedp https://epam.github.io/edp-helm-charts/stable \
+              --force-update && \
+            helm repo update
+
+      - name: Run chart-testing (lint)
+        run: |
+              ct lint --target-branch ${{ github.event.repository.default_branch }} \
+               --charts charts/common-library,charts/pipelines-library/ \
+               --config ct/ct.yaml \
+               --lint-conf ct/lintconf.yaml \
+               --chart-yaml-schema ct/chart_schema.yaml
+
+  build-and-lint:
+    needs: [helm-lint]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Make Build
+        run: make build
+
+      - name: Make Lint
+        run: make lint
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+  docker-lint:
+    needs: [build-and-lint]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run hadolint
+        uses: hadolint/hadolint-action@v1.5.0
+        with:
+          dockerfile: Dockerfile
+
+  e2e-tests-128:
+    name: End-to-end tests 1.28
+    needs: [docker-lint]
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: "install kuttl"
+        run: ./hack/install-kuttl.sh
+
+      - name: "run tests"
+        env:
+          KUBE_VERSION: "1.28"
+        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+  e2e-tests-129:
+    name: End-to-end tests 1.29
+    needs: [e2e-tests-128]
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Get cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: "install kuttl"
+        run: ./hack/install-kuttl.sh
+
+      - name: "run tests"
+        env:
+          KUBE_VERSION: "1.29"
+        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+
+      - name: Save cache
+        id: cache-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+  e2e-tests-check:
+    runs-on: ubuntu-20.04
+    if: always()
+    needs: [e2e-tests-128, e2e-tests-129]
+    steps:
+      - name: Print result
+        run: echo ${{ needs.e2e-tests-128.result }} && echo ${{ needs.e2e-tests-129.result }}
+      - name: Interpret result
+        run: |
+          if [[ success == ${{ needs.e2e-tests-128.result }} && success == ${{ needs.e2e-tests-129.result }} ]]
+          then
+            echo "All matrix jobs passed!"
+          else
+            echo "One or more matrix jobs failed."
+            false
+          fi

@@ -1,0 +1,46 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: gerrit-binding-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: "$(body.change.branch)"
+    - name: gerritproject
+      value: "$(body.change.project)"
+    - name: buildtool
+      value: "$(extensions.spec.buildTool)"
+    - name: framework
+      value: "$(extensions.spec.framework)"
+    # Truncated cbtype type name to reduce string length
+    - name: cbtype
+      value: "$(extensions.cbtype_short)"
+    - name: versioning-type
+      value: "$(extensions.spec.versioning.type)"
+    - name: changeNumber
+      value: "$(body.change.number)"
+    - name: patchsetNumber
+      value: "$(body.patchSet.number)"
+    - name: codebase
+      value: "$(extensions.codebase)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
+    # commitMessage is used for 'push-to-jira' Task
+    - name: commitMessage
+      value: "$(body.change.commitMessage)"
+    # commitMessagePattern is used for 'commit-validate' Tasks
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
+    # jiraIssueMetadataPayload is used for 'push-to-jira' Task
+    - name: jiraIssueMetadataPayload
+      value: "$(extensions.spec.jiraIssueMetadataPayload)"
+    # ticketNamePattern is used for 'push-to-jira' Task
+    - name: ticketNamePattern
+      value: "$(extensions.spec.ticketNamePattern)"
+    # jiraServer is used for 'push-to-jira' Task
+    - name: jiraServer
+      value: "$(extensions.spec.jiraServer)"
+{{ end }}

@@ -1,0 +1,95 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
+{{- range $k := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-{{ $k }}-app-review
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: image
+      default: 'docker.io/library/node:18.20.3-alpine3.20'
+      description: "npm image version"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+  tasks:
+
+{{- include "gerrit-review-start" $ | nindent 4 }}
+
+{{- include "helm-docs" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+{{- include "js-npm-review-common" . | nindent 4 }}
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "dockerbuild-verify-js" $ | nindent 4 }}
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "gerrit-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

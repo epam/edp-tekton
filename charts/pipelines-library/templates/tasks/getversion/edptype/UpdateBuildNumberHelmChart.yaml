@@ -1,0 +1,34 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-helm-chart
+spec:
+  description: >-
+    This Task can be used to update a helm chart version.
+  workspaces:
+    - name: source
+      description: The workspace consisting of helm chart project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: CHART_DIR
+      description: The directory in source that contains the helm chart
+      default: "."
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "alpine:3.18.6"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+      script: |
+        #!/bin/sh
+        set -ex
+
+        sed -i "s/^version: .*$/version: ${VERSION}/" ${CHART_DIR}/Chart.yaml

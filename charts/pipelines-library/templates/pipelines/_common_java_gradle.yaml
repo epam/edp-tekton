@@ -1,0 +1,183 @@
+{{- define "java-gradle-build-common" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-gradle
+  runAfter:
+    - get-cache
+    - update-build-number
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-gradle
+  runAfter:
+    - build
+  params:
+    - name: BASE_IMAGE
+      value: $(params.sonar_image)
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: EXTRA_COMMANDS
+      value: |
+        -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+        -Dsonar.projectName=$(params.CODEBASE_NAME) \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
+        -Dsonar.branch.name=$(params.git-source-revision) \
+        -Dsonar.qualitygate.wait=true \
+        sonarqube
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: push
+  taskRef:
+    kind: Task
+    name: gradle
+  runAfter:
+    - sonar
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_ARGS
+      value: |
+        -Dorg.gradle.internal.publish.checksums.insecure=true \
+        -PsnapshotsRepoUrl=${NEXUS_HOST_URL}${SNAPSHOTS_REPO_PATH} \
+        -PreleasesRepoUrl=${NEXUS_HOST_URL}${RELEASES_REPO_PATH} \
+        publish -i
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "java-gradle-review-common-gerrit" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-gradle
+  runAfter:
+    - get-cache
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-gradle
+  runAfter:
+    - build
+  params:
+    - name: BASE_IMAGE
+      value: $(params.sonar_image)
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: EXTRA_COMMANDS
+      value: |
+        -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+        -Dsonar.projectName=$(params.CODEBASE_NAME) \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
+        -Dsonar.qualitygate.wait=true \
+        -Dsonar.pullrequest.key=$(params.changeNumber) \
+        -Dsonar.pullrequest.branch=$(params.git-refspec) \
+        -Dsonar.pullrequest.base=$(params.targetBranch) \
+        sonarqube
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "java-gradle-review-common" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-gradle
+  runAfter:
+    - get-cache
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+
+- name: sonar
+  taskRef:
+    kind: Task
+    name: sonarqube-gradle
+  runAfter:
+    - build
+  params:
+    - name: BASE_IMAGE
+      value: $(params.sonar_image)
+    - name: SONAR_PROJECT_KEY
+      value: $(params.CODEBASE_NAME)
+    - name: SONAR_PROJECT_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: EXTRA_COMMANDS
+      value: |
+        -Dsonar.projectKey=$(params.CODEBASE_NAME) \
+        -Dsonar.projectName=$(params.CODEBASE_NAME) \
+        -Dsonar.host.url=${SONAR_HOST_URL} \
+        -Dsonar.qualitygate.wait=true \
+        -Dsonar.pullrequest.key=$(params.changeNumber) \
+        -Dsonar.pullrequest.branch=$(params.git-source-revision) \
+        -Dsonar.pullrequest.base=$(params.targetBranch) \
+        sonarqube
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "dockerbuild-verify-gradle" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - build
+    - dockerfile-lint
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-java-gradle-image-build-push-common" -}}
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - push
+  params:
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}

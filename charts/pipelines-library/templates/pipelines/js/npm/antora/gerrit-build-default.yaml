@@ -1,0 +1,129 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "antora" "antora/antora:3.1.4" -}}
+{{- range $k, $v := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-npm-{{ $k }}-app-build-default
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://tekton-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/#/namespaces/$(context.pipelineRun.namespace)/pipelineruns/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: '{{ $v }}'
+      description: "npm image version"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "gerrit-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-npm-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "security-edp" . | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: npm
+      runAfter:
+        - update-build-number
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
+        - name: EXTRA_COMMANDS
+          value: |
+            export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+            export npm_config_userconfig=/var/configmap/.npmrc-ci
+            export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
+            export NPM_CACHE_DIR=/workspace/source/cache
+            npm ci
+            npm run build:prod
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "build-pipeline-antora-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

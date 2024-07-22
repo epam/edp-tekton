@@ -1,0 +1,11 @@
+{{ if .Values.tekton.pruner.create }}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tekton-resource-pruner-scripts
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+data:
+{{ (.Files.Glob "scripts/tekton-prune.sh").AsConfig | indent 2 }}
+{{ end }}

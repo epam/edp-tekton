@@ -53,6 +53,14 @@ kaniko:
   # -- Save cert in secret "custom-ca-certificates" with key ca.crt
   customCert: false
 
+
+# -- Enabling this feature ensures that Tekton pipelines trigger only when the repo owner creates a PR.
+# More information: https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests
+githubOwners:
+  enabled: true
+  # This value is needed for private repos or when checkType is set to orgMembers or repoMembers or all
+  checkType: "all"
+
 # Tekton configuration section
 tekton:
   # Settings for the 'package-registries-auth-secret' secret that contains package registries authentication information.

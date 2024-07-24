@@ -16,6 +16,16 @@ spec:
             secretKey: secretString
         - name: "eventTypes"
           value: ["pull_request", "issue_comment"]
+{{- if .Values.githubOwners.enabled }}
+        - name: "githubOwners"
+          value:
+            enabled: true
+            # This value is needed for private repos or when checkType is set to orgMembers or repoMembers or all
+            personalAccessToken:
+              secretKey: token
+              secretName: ci-github
+            checkType: {{ .Values.githubOwners.checkType }}
+{{- end }}
     - ref:
         name: "cel"
       params:

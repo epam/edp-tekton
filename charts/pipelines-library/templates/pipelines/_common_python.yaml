@@ -211,3 +211,93 @@
       workspace: shared-workspace
       subPath: cache
 {{- end -}}
+
+{{- define "ansible-check-review-common" -}}
+
+- name: ansible-lint
+  taskRef:
+    kind: Task
+    name: ansible
+  runAfter:
+    - init-values
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        ansible-lint
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: ansible-tests
+  taskRef:
+    kind: Task
+    name: ansible
+  runAfter:
+    -  ansible-lint
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        ansible-playbook tests/*.*
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+{{- end -}}
+
+{{- define "ansible-check-build-common" -}}
+
+- name: ansible-lint
+  taskRef:
+    kind: Task
+    name: ansible
+  runAfter:
+    - init-values
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        ansible-lint
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: ansible-tests
+  taskRef:
+    kind: Task
+    name: ansible
+  runAfter:
+    -  ansible-lint
+  params:
+    - name: EXTRA_COMMANDS
+      value: |
+        ansible-playbook tests/*.*
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - ansible-tests
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+
+{{- end -}}

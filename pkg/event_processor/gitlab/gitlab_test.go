@@ -232,6 +232,65 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 			},
 		},
 		{
+			name: "comment event process successfully - OkToTestComment",
+			args: args{
+				body: event_processor.GitLabCommentEvent{
+					Project: event_processor.GitLabProject{
+						PathWithNamespace: "/o/r",
+					},
+					MergeRequest: event_processor.GitLabMergeRequest{
+						TargetBranch: "master",
+						Title:        "fix",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "123",
+							Message: "commit message",
+						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
+					},
+					ObjectAttributes: event_processor.GitLabComment{
+						Note: event_processor.OkToTestComment,
+					},
+				},
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-codebase",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+			},
+			wantErr: require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitLab,
+				RepoPath:           "/o/r",
+				TargetBranch:       "master",
+				Type:               event_processor.EventTypeReviewComment,
+				HasPipelineRecheck: true,
+				Codebase: &codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "test-codebase",
+						Namespace:       "default",
+						ResourceVersion: "999",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					Title:             "fix",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
+				},
+			},
+		},
+		{
 			name: "comment event with no recheck",
 			args: args{
 				body: event_processor.GitLabCommentEvent{

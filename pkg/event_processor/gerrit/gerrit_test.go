@@ -131,6 +131,54 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "comment event process successfully - OkToTestComment",
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-codebase",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: pointer.String("/test-repo"),
+					},
+				},
+			},
+			args: args{
+				event_processor.GerritEvent{
+					Project: struct {
+						Name string `json:"name"`
+					}{
+						Name: "test-repo",
+					},
+					Change: struct {
+						Branch string `json:"branch"`
+					}{
+						Branch: "test-branch",
+					},
+					Type:    event_processor.GerritEventTypeCommentAdded,
+					Comment: event_processor.OkToTestComment,
+				},
+			},
+			wantErr: require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGerrit,
+				RepoPath:           "test-repo",
+				TargetBranch:       "test-branch",
+				Type:               event_processor.EventTypeReviewComment,
+				HasPipelineRecheck: true,
+				Codebase: &codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "test-codebase",
+						Namespace:       "default",
+						ResourceVersion: "999",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: pointer.String("/test-repo"),
+					},
+				},
+			},
+		},
+		{
 			name: "comment event with no recheck",
 			kubeObjects: []client.Object{
 				&codebaseApi.Codebase{

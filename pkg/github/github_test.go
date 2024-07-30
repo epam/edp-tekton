@@ -160,6 +160,122 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			},
 		},
 		{
+			name: "comment event OkToTestComment - should process pull request",
+			args: args{
+				body: map[string]interface{}{
+					"action": "created",
+					"issue": map[string]interface{}{
+						"number": 1,
+					},
+					"comment": map[string]interface{}{
+						"body": event_processor.OkToTestComment,
+					},
+					"repository": map[string]interface{}{
+						"full_name": "o/r",
+						"name":      "p",
+						"owner": map[string]interface{}{
+							"login": "o",
+						},
+					},
+				},
+			},
+			mockhttp: func(t *testing.T) (URL string, teardown func()) {
+				apiHandler := http.NewServeMux()
+				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal(map[string]interface{}{
+						"title":  "feature 1",
+						"number": 1,
+						"base": map[string]interface{}{
+							"ref": "master",
+						},
+						"head": map[string]interface{}{
+							"ref": "feature",
+							"sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				apiHandler.HandleFunc("/repos/o/p/pulls/1/commits", func(w http.ResponseWriter, r *http.Request) {
+					resp, err := json.Marshal([]map[string]interface{}{
+						{
+							"commit": map[string]interface{}{
+								"message": "commit message",
+							},
+						},
+					})
+					require.NoError(t, err)
+
+					_, err = w.Write(resp)
+					require.NoError(t, err)
+					w.WriteHeader(http.StatusOK)
+				})
+
+				server := httptest.NewServer(apiHandler)
+				return server.URL, server.Close
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "codebase1",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitServer:  "github",
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+				&codebaseApi.GitServer{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "github",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.GitServerSpec{
+						NameSshKeySecret: "ssh-key-secret",
+					},
+				},
+				&corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ssh-key-secret",
+						Namespace: "default",
+					},
+					Data: map[string][]byte{
+						gitServerTokenField: []byte("ssh-privatekey"),
+					},
+				},
+			},
+			wantErr: require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider:        event_processor.GitProviderGitHub,
+				RepoPath:           "/o/r",
+				TargetBranch:       "master",
+				Type:               event_processor.EventTypeReviewComment,
+				HasPipelineRecheck: true,
+				Codebase: &codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "codebase1",
+						Namespace:       "default",
+						ResourceVersion: "999",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitServer:  "github",
+						GitUrlPath: pointer.String("/o/r"),
+					},
+				},
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature",
+					HeadSha:           "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+					Title:             "feature 1",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
+				},
+			},
+		},
+		{
 			name: "comment event - should process with no pipeline recheck",
 			args: args{
 				body: map[string]interface{}{

@@ -64,7 +64,8 @@ const (
 	EventTypeReviewComment = "comment"
 	EventTypeMerge         = "merge"
 
-	recheckComment = "/recheck"
+	RecheckComment  = "/recheck"
+	OkToTestComment = "/ok-to-test"
 )
 
 // EventInfo represents information about an event.
@@ -92,5 +93,5 @@ func (e *EventInfo) IsReviewCommentEvent() bool {
 }
 
 func ContainsPipelineRecheck(s string) bool {
-	return strings.Contains(s, recheckComment)
+	return strings.Contains(s, RecheckComment) || strings.Contains(s, OkToTestComment)
 }

@@ -25,7 +25,6 @@ import (
 
 const (
 	executeTimeOut = 3 * time.Second
-	recheckComment = "/recheck"
 )
 
 // EDPInterceptorInterface is an interface for EDPInterceptor.
@@ -111,7 +110,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 			}
 		}
 
-		i.logger.Infof("Found pipeline %s comment, triggering pipeline", recheckComment)
+		i.logger.Infof("Found comment for recheck, triggering pipeline")
 	}
 
 	prepareCodebase(event.Codebase)

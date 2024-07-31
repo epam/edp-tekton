@@ -30,8 +30,6 @@ spec:
     - name: context
       description: The build context used by Kaniko.
       default: ./
-      description: The build context used by Kaniko.
-      default: ./
     - name: builder-image
       description: The image on which builds will run
       default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug

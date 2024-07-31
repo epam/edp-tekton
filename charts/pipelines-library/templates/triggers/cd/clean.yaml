@@ -1,0 +1,37 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: clean
+  labels:
+    app.edp.epam.com/pipelinetype: clean
+spec:
+  params:
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: clean-$(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)-
+        labels:
+          app.edp.epam.com/cdpipeline: $(tt.params.CDPIPELINE)
+          app.edp.epam.com/cdstage: $(tt.params.CDPIPELINE)-$(tt.params.CDSTAGE)
+          app.edp.epam.com/pipelinetype: clean
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+        pipelineRef:
+          name: clean
+        params:
+          - name: CDSTAGE
+            value: $(tt.params.CDSTAGE)
+          - name: CDPIPELINE
+            value: $(tt.params.CDPIPELINE)
+        timeouts:
+          pipeline: 1h00m0s

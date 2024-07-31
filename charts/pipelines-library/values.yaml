@@ -14,10 +14,14 @@ global:
     - gitlab
     - gerrit
 
+  # -- Gerrit SSH node port, must be specified if gerrit is enabled
+  # gerritSSHPort: "30003"
+  # -- Gerrit Host URL, must be specified if gerrit is enabled
+  gerritHost: "gerrit"
+
   # -- a cluster DNS wildcard name
   dnsWildCard: ""
-  # -- Gerrit SSH node port
-  # gerritSSHPort: "30003"
+
   # -- platform type that can be "kubernetes" or "openshift"
   platform: "kubernetes"
   dockerRegistry:

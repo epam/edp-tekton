@@ -22,6 +22,7 @@ def test_gerrit_is_enabled():
 global:
   gitProviders:
     - gerrit
+  gerritHost: "gerrit"
 gitServers:
   my-gerrit:
     gitProvider: gerrit
@@ -81,6 +82,7 @@ global:
   gitProviders:
     - gerrit
   gerritSSHPort: "777"
+  gerritHost: "gerrit"
     """
 
     r = helm_template(config)

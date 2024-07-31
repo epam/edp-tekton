@@ -7,7 +7,7 @@ import (
 
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 )
 
 const (
@@ -22,7 +22,7 @@ func GetCodebaseByRepoPath(ctx context.Context, client ctrlClient.Reader, ns, re
 	}
 
 	for n := range codebaseList.Items {
-		if codebaseList.Items[n].Spec.GitUrlPath != nil && strings.EqualFold(*codebaseList.Items[n].Spec.GitUrlPath, repoPath) {
+		if strings.EqualFold(codebaseList.Items[n].Spec.GitUrlPath, repoPath) {
 			return &codebaseList.Items[n], nil
 		}
 	}

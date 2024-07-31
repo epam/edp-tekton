@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: clean
+spec:
+  description: |
+    This Task is used to delete Argo CD application.
+  params:
+    - name: PIPELINE
+      type: string
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: STAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+
+  steps:
+    - name: clean-argo-app
+      image: epamedp/tekton-cd-pipeline:0.1.2
+      env:
+        - name: ARGOCD_URL
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: url
+        - name: ARGOCD_AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ci-argocd
+              key: token
+      script: |
+        set -ex
+
+        export ARGOCD_OPTS="--core=false --grpc-web"
+        # the address of the Argo CD server without https:// prefix
+        export ARGOCD_SERVER=${ARGOCD_URL#*//}
+
+        pipeline=$(params.PIPELINE)
+        stage=$(params.STAGE)
+
+        selector="app.edp.epam.com/stage=$(params.STAGE),app.edp.epam.com/pipeline=$(params.PIPELINE)"
+
+        argocd app delete -l $selector -y

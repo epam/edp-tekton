@@ -20,7 +20,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApiV1 "github.com/epam/edp-codebase-operator/v2/api/v1"
 	buildInfo "github.com/epam/edp-common/pkg/config"
 
 	"github.com/epam/edp-tekton/pkg/event_processor/gerrit"

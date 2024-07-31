@@ -10,11 +10,10 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
@@ -62,7 +61,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -79,7 +78,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
@@ -201,7 +200,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -219,7 +218,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
@@ -260,7 +259,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -278,7 +277,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
@@ -319,7 +318,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -336,7 +335,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
@@ -364,7 +363,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -379,7 +378,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -475,7 +474,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -492,7 +491,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
@@ -534,7 +533,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 			},
@@ -552,7 +551,7 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/o/r"),
+						GitUrlPath: "/o/r",
 					},
 				},
 				PullRequest: &event_processor.PullRequest{

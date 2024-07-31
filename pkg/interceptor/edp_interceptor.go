@@ -18,7 +18,7 @@ import (
 	"k8s.io/utils/pointer"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
@@ -190,10 +190,7 @@ func getEventTypeFromHeader(headerData []string) string {
 
 // prepareCodebase prepares codebase for interceptor response.
 func prepareCodebase(codebase *codebaseApi.Codebase) {
-	if codebase.Spec.Framework != nil {
-		framework := strings.ToLower(*codebase.Spec.Framework)
-		codebase.Spec.Framework = &framework
-	}
+	codebase.Spec.Framework = strings.ToLower(codebase.Spec.Framework)
 
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 

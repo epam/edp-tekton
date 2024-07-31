@@ -10,11 +10,10 @@ import (
 	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
@@ -45,7 +44,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -77,7 +76,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -91,7 +90,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -125,7 +124,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -139,7 +138,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -173,7 +172,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -187,7 +186,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},
@@ -220,7 +219,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						ResourceVersion: "999",
 					},
 					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: pointer.String("/test-repo"),
+						GitUrlPath: "/test-repo",
 					},
 				},
 			},

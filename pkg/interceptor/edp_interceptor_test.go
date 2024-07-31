@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
 	"github.com/epam/edp-tekton/pkg/event_processor/mocks"
@@ -65,8 +65,8 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 						},
 						Spec: codebaseApi.CodebaseSpec{
 							BuildTool:  "maven",
-							Framework:  pointer.String("spring"),
-							GitUrlPath: pointer.String("/o/r"),
+							Framework:  "spring",
+							GitUrlPath: "/o/r",
 						},
 					},
 				}, nil)
@@ -76,9 +76,9 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 			wantResp: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            pointer.String("spring"),
+						Framework:            "spring",
 						BuildTool:            "maven",
-						GitUrlPath:           pointer.String("/o/r"),
+						GitUrlPath:           "/o/r",
 						CommitMessagePattern: pointer.String(""),
 						JiraServer:           pointer.String(""),
 					},
@@ -172,9 +172,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Name:      "demo",
 							},
 							Spec: codebaseApi.CodebaseSpec{
-								Framework:            pointer.String("spring"),
+								Framework:            "spring",
 								BuildTool:            "maven",
-								GitUrlPath:           pointer.String("/o/r"),
+								GitUrlPath:           "/o/r",
 								CommitMessagePattern: pointer.String(""),
 								JiraServer:           pointer.String(""),
 							},
@@ -228,9 +228,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            pointer.String("spring"),
+						Framework:            "spring",
 						BuildTool:            "maven",
-						GitUrlPath:           pointer.String("/o/r"),
+						GitUrlPath:           "/o/r",
 						CommitMessagePattern: pointer.String(""),
 						JiraServer:           pointer.String(""),
 					},
@@ -268,9 +268,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Name:      "demo",
 							},
 							Spec: codebaseApi.CodebaseSpec{
-								Framework:            pointer.String("spring"),
+								Framework:            "spring",
 								BuildTool:            "maven",
-								GitUrlPath:           pointer.String("/o/r"),
+								GitUrlPath:           "/o/r",
 								CommitMessagePattern: pointer.String(""),
 								JiraServer:           pointer.String(""),
 							},
@@ -322,9 +322,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            pointer.String("spring"),
+						Framework:            "spring",
 						BuildTool:            "maven",
-						GitUrlPath:           pointer.String("/o/r"),
+						GitUrlPath:           "/o/r",
 						CommitMessagePattern: pointer.String(""),
 						JiraServer:           pointer.String(""),
 					},
@@ -364,9 +364,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Name:      "demo",
 							},
 							Spec: codebaseApi.CodebaseSpec{
-								Framework:            pointer.String("spring"),
+								Framework:            "spring",
 								BuildTool:            "maven",
-								GitUrlPath:           pointer.String("/o/r"),
+								GitUrlPath:           "/o/r",
 								CommitMessagePattern: pointer.String(""),
 								JiraServer:           pointer.String(""),
 							},
@@ -407,9 +407,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            pointer.String("spring"),
+						Framework:            "spring",
 						BuildTool:            "maven",
-						GitUrlPath:           pointer.String("/o/r"),
+						GitUrlPath:           "/o/r",
 						CommitMessagePattern: pointer.String(""),
 						JiraServer:           pointer.String(""),
 					},
@@ -444,9 +444,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Name:      "demo",
 							},
 							Spec: codebaseApi.CodebaseSpec{
-								Framework:            pointer.String("spring"),
+								Framework:            "spring",
 								BuildTool:            "maven",
-								GitUrlPath:           pointer.String("/o/r"),
+								GitUrlPath:           "/o/r",
 								CommitMessagePattern: pointer.String(""),
 								JiraServer:           pointer.String(""),
 							},
@@ -479,9 +479,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 			want: &triggersv1.InterceptorResponse{
 				Extensions: map[string]interface{}{
 					"spec": codebaseApi.CodebaseSpec{
-						Framework:            pointer.String("spring"),
+						Framework:            "spring",
 						BuildTool:            "maven",
-						GitUrlPath:           pointer.String("/o/r"),
+						GitUrlPath:           "/o/r",
 						CommitMessagePattern: pointer.String(""),
 						JiraServer:           pointer.String(""),
 					},

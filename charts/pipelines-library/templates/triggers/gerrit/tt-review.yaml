@@ -51,7 +51,7 @@ spec:
           name: gerrit-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
         params:
           - name: git-source-url
-            value: "ssh://edp-ci@gerrit:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
+            value: "ssh://edp-ci@{{ .Values.global.gerritHost }}:{{ .Values.global.gerritSSHPort }}/$(tt.params.gerritproject)"
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: git-refspec

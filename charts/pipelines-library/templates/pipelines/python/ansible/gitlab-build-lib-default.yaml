@@ -25,6 +25,10 @@ spec:
       default: 'ansible'
       description: "Project name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""

@@ -25,6 +25,10 @@ spec:
       default: 'rego-opa'
       description: "Project name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
     - name: image
       default: 'openpolicyagent/opa:0.45.0-debug'
       description: "opa image version"

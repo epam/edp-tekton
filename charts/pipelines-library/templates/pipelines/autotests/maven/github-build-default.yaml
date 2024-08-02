@@ -24,6 +24,10 @@ spec:
       default: '{{ $k }}-maven'
       description: "Project name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
     - name: image
       default: '{{ $v }}'
       description: "maven image version"

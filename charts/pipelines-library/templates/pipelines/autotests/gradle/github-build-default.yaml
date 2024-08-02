@@ -26,6 +26,10 @@ spec:
       default: '{{ $k }}-gradle'
       description: "Project name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
     - name: image
       default: '{{ $v }}'
       description: "gradle image version"

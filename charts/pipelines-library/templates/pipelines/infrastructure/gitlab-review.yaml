@@ -29,6 +29,10 @@ spec:
       default: 'terraform-terraform'
       description: "Project name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string

@@ -26,6 +26,8 @@ spec:
       value: "$(extensions.codebase)"
     - name: codebasebranch
       value: "$(extensions.codebasebranch)"
+    - name: changeNumber
+      value: "$(extensions.pullRequest.changeNumber)"
     # commitMessage is used for 'push-to-jira' Task
     - name: commitMessage
       value: "$(body.pull_request.title)"

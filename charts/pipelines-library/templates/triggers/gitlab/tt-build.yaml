@@ -27,6 +27,8 @@ spec:
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
     - name: commitMessage
+    - name: changeNumber
+      description: Change number from Merge Request
       description: Commit message
     - name: jiraIssueMetadataPayload
       description: Jira issue payload
@@ -58,6 +60,8 @@ spec:
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME
             value: $(tt.params.codebasebranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
           - name: TICKET_NAME_PATTERN
             value: $(tt.params.ticketNamePattern)
           - name: COMMIT_MESSAGE_PATTERN

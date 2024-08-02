@@ -33,6 +33,10 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
 
 {{- include "build-result" $ | nindent 2 }}
 

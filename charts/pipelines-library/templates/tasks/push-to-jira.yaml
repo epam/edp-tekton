@@ -22,8 +22,6 @@ spec:
       type: string
     - name: CODEBASE_NAME
       type: string
-    - name: PIPELINE_URL
-      type: string
     - name: VCS_TAG
       type: string
     - name: VERSION
@@ -42,8 +40,6 @@ spec:
           value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
-        - name: PIPELINE_URL
-          value: "$(params.PIPELINE_URL)"
         - name: VCS_TAG
           value: "$(params.VCS_TAG)"
         - name: VERSION
@@ -55,6 +51,7 @@ spec:
         import sys
         import re
         import json
+        import subprocess
         from random import randint
 
         ticket_message_pattern = os.getenv("TICKET_NAME_PATTERN")
@@ -62,7 +59,6 @@ spec:
         commit_id = os.getenv("COMMIT_ID")
         jira_issue_metadata_payload = os.getenv("JIRA_ISSUE_METADATA_PAYLOAD")
         codebase = os.getenv("CODEBASE_NAME")
-        pipeline_url = os.getenv("PIPELINE_URL")
         vcs_tag = os.getenv("VCS_TAG")
         version = os.getenv("VERSION")
 
@@ -71,9 +67,33 @@ spec:
         print(f"[TEKTON][DEBUG] COMMIT_ID: {commit_id}")
         print(f"[TEKTON][DEBUG] JIRA_ISSUE_METADATA_PAYLOAD: {jira_issue_metadata_payload}")
         print(f"[TEKTON][DEBUG] CODEBASE_NAME: {codebase}")
-        print(f"[TEKTON][DEBUG] PIPELINE_URL: {pipeline_url}")
         print(f"[TEKTON][DEBUG] VCS_TAG: {vcs_tag}")
         print(f"[TEKTON][DEBUG] VERSION: {version}")
+
+        def get_cr_field(field_path):
+            cmd = [
+                "kubectl", "get", "codebase", codebase, "-o",
+                f"jsonpath={field_path}"
+            ]
+            try:
+                result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+                return result.stdout.strip()
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred: {e.stderr.decode()}")
+                sys.exit(1)
+
+        # Retrieve variables from the Custom Resource
+        GIT_SERVER = get_cr_field("{.spec.gitServer}")
+        GIT_WEB_URL = get_cr_field("{.status.gitWebUrl}")
+
+        # Append suffix to GIT_WEB_URL based on the GIT_SERVER
+        if GIT_SERVER in ["github", "gitlab"]:
+            GIT_WEB_URL = f"{GIT_WEB_URL}/commit/{commit_id}"
+        elif GIT_SERVER == "gerrit":
+            GIT_WEB_URL = f"{GIT_WEB_URL};a=commit;h={commit_id}"
+
+        print(f"[TEKTON][DEBUG] GIT_SERVER: {GIT_SERVER}")
+        print(f"[TEKTON][DEBUG] GIT_WEB_URL: {GIT_WEB_URL}")
         print("")
 
         def search_pattern(message, pattern):
@@ -123,7 +143,7 @@ spec:
         linkInfo = {
             "ticket": ticket_number,
             "title": f"{commit_message} [{codebase}][{vcs_tag}]",
-            "url": pipeline_url
+            "url": GIT_WEB_URL
         }
         print("[TEKTON] Issue Link:\n{}".format(json.dumps(linkInfo, indent = 4)))
 

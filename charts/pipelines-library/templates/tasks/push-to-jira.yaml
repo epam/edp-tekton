@@ -22,16 +22,19 @@ spec:
       type: string
     - name: CODEBASE_NAME
       type: string
-    - name: PIPELINE_URL
-      type: string
     - name: VCS_TAG
       type: string
     - name: VERSION
+      type: string
+    - name: GIT_URL
+      description: Repository URL to clone from.
       type: string
   steps:
     - name: push-to-jira
       image: epamedp/tekton-autotest:0.1.3
       env:
+        - name: GIT_URL
+          value: $(params.GIT_URL)
         - name: TICKET_NAME_PATTERN
           value: "$(params.TICKET_NAME_PATTERN)"
         - name: COMMIT_MESSAGE
@@ -42,8 +45,6 @@ spec:
           value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
         - name: CODEBASE_NAME
           value: "$(params.CODEBASE_NAME)"
-        - name: PIPELINE_URL
-          value: "$(params.PIPELINE_URL)"
         - name: VCS_TAG
           value: "$(params.VCS_TAG)"
         - name: VERSION
@@ -62,19 +63,31 @@ spec:
         commit_id = os.getenv("COMMIT_ID")
         jira_issue_metadata_payload = os.getenv("JIRA_ISSUE_METADATA_PAYLOAD")
         codebase = os.getenv("CODEBASE_NAME")
-        pipeline_url = os.getenv("PIPELINE_URL")
         vcs_tag = os.getenv("VCS_TAG")
         version = os.getenv("VERSION")
+        git_url = os.getenv("GIT_URL")
 
+        print(f"[TEKTON][DEBUG] GIT_URL: {git_url}")
         print(f"[TEKTON][DEBUG] TICKET_NAME_PATTERN: {ticket_message_pattern}")
         print(f"[TEKTON][DEBUG] COMMIT_MESSAGE: \n{commit_message_with_change_id}")
         print(f"[TEKTON][DEBUG] COMMIT_ID: {commit_id}")
         print(f"[TEKTON][DEBUG] JIRA_ISSUE_METADATA_PAYLOAD: {jira_issue_metadata_payload}")
         print(f"[TEKTON][DEBUG] CODEBASE_NAME: {codebase}")
-        print(f"[TEKTON][DEBUG] PIPELINE_URL: {pipeline_url}")
         print(f"[TEKTON][DEBUG] VCS_TAG: {vcs_tag}")
         print(f"[TEKTON][DEBUG] VERSION: {version}")
         print("")
+
+        def convert_ssh_to_https_with_commit(ssh_url, commit_id):
+            # Regular expression to extract information from SSH URLs
+            match = re.match(r"git@(.*?):(.*?)/(.*?)\.git", ssh_url)
+            if match:
+                domain, user, repo = match.groups()
+                # Construct the HTTPS address with the commit_id at the end
+                https_url = f"https://{domain}/{user}/{repo}/commit/{commit_id}"
+                return https_url
+            else:
+                # If it doesn't match the SSH pattern, return the original URL
+                return ssh_url
 
         def search_pattern(message, pattern):
             result = re.search(pattern, message)
@@ -115,6 +128,10 @@ spec:
         print("[TEKTON] Getting Ticket number and Commit message")
         ticket_number = search_pattern(commit_message_with_change_id, ticket_message_pattern)
         print(f"[TEKTON] Ticket number is {ticket_number}")
+
+        git_commit_url = convert_ssh_to_https_with_commit(git_url, commit_id)
+        print(f"[TEKTON] Git Commit URL {git_commit_url}")
+
         # Use the first line of commit message as a commit message for JiraIssueMetadata CR
         commit_message = commit_message_with_change_id.split("\n")[0]
         print(f"[TEKTON] Commit message was parsed: {commit_message}")
@@ -123,7 +140,7 @@ spec:
         linkInfo = {
             "ticket": ticket_number,
             "title": f"{commit_message} [{codebase}][{vcs_tag}]",
-            "url": pipeline_url
+            "url": git_commit_url
         }
         print("[TEKTON] Issue Link:\n{}".format(json.dumps(linkInfo, indent = 4)))
 

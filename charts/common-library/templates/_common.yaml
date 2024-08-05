@@ -264,12 +264,12 @@ finally:
       value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
     - name: CODEBASE_NAME
       value: "$(params.CODEBASE_NAME)"
-    - name: PIPELINE_URL
-      value: "$(params.pipelineUrl)"
     - name: VCS_TAG
       value: "$(tasks.get-version.results.VCS_TAG)"
     - name: VERSION
       value: "$(tasks.get-version.results.VERSION)"
+    - name: GIT_URL
+      value: $(params.git-source-url)
 {{- end -}}
 
 {{- define "send-to-microsoft-teams-build" -}}

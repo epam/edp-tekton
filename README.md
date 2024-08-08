@@ -1,9 +1,9 @@
 [![codecov](https://codecov.io/gh/epam/edp-tekton/branch/master/graph/badge.svg?token=P2RDX1F68O)](https://codecov.io/gh/epam/edp-tekton)
 
-# EDP Tekton
+# KubeRocketCI Tekton
 <!-- TOC -->
 
-- [EDP Tekton](#edp-tekton)
+- [KubeRocketCI Tekton](#kuberocketci-tekton)
   - [EDP Interceptor](#edp-interceptor)
   - [Tekton Pipelines](#tekton-pipelines)
 

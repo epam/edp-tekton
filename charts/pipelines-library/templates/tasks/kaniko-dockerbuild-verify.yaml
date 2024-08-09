@@ -21,6 +21,9 @@ spec:
     - name: image-tag
       description: Image tag
       default: "lastest"
+    - name: PATH_CONTEXT
+      type: string
+      default: ""
     - name: image-tar
       description: Name (reference) of the image tar.
       default: "image_tar"
@@ -47,7 +50,7 @@ spec:
       description: URL of the image just built.
   steps:
     - name: build-no-push
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       image: "$(params.builder-image)"
       env:
         - name: CODEBASE_NAME
@@ -72,8 +75,8 @@ spec:
               key: container_registry_space
       script: |
         /kaniko/executor \
-          --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
-          --context=$(workspaces.source.path)/${CONTEXT} \
+          --dockerfile=/workspace/source/${DOCKERFILE} \
+          --context=/workspace/source/${CONTEXT} \
           --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
           --digest-file=$(results.IMAGE_DIGEST.path) \
           --tar-path=${IMAGE_TAR}.tar \

@@ -1,0 +1,48 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: edp-c
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Build Tools
+    tekton.dev/tags: build-tool
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task can be used to run npm goals on a project
+    where package.json is present and has some pre-defined
+    npm scripts.
+  params:
+    - name: PATH_CONTEXT
+      type: string
+      default: "source"
+      description: The directory containing source code.
+    - name: BASE_IMAGE
+      type: string
+      default: "epamedp/tekton-python-make:0.1.7"
+      description: C base image
+    - name: EXTRA_COMMANDS_BUILD
+      type: string
+    - name: EXTRA_COMMANDS_TEST
+      type: string
+  workspaces:
+    - name: source
+
+  steps:
+    - name: build
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      script: |
+        set -ex
+
+        $(params.EXTRA_COMMANDS_BUILD)
+    - name: test
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
+      script: |
+        set -ex
+
+        $(params.EXTRA_COMMANDS_TEST)
+{{- include "resources" . | nindent 6 }}

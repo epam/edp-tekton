@@ -1,0 +1,89 @@
+{{- define "dockerbuild-verify-c" -}}
+- name: dockerbuild-verify
+  taskRef:
+    kind: Task
+    name: dockerbuild-verify
+  runAfter:
+    - dockerfile-lint
+    - build
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-c-image-build-push-common" -}}
+
+- name: kaniko-build
+  taskRef:
+    kind: Task
+    name: kaniko
+  runAfter:
+    - get-version
+    - build
+  params:
+    - name: codebase-name
+      value: "$(params.CODEBASE_NAME)"
+    - name: image-tag
+      value: "$(tasks.get-version.results.IS_TAG)"
+    - name: image-tar
+      value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
+    - name: kaniko-cache-path
+      value: "kaniko-cache"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+
+
+{{- define "c-make-build-common" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-c
+  runAfter:
+    - fetch-repository
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS_BUILD
+      value: |
+        make build
+    - name: EXTRA_COMMANDS_TEST
+      value: |
+        make test
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}
+
+{{- define "c-cmake-build-common" -}}
+- name: build
+  taskRef:
+    kind: Task
+    name: edp-c
+  runAfter:
+    - fetch-repository
+  params:
+    - name: BASE_IMAGE
+      value: $(params.image)
+    - name: EXTRA_COMMANDS_BUILD
+      value: |
+        mkdir -p build && cd build
+
+        cmake ..
+
+        cmake --build .
+    - name: EXTRA_COMMANDS_TEST
+      value: |
+        cd build
+
+        cmake ..
+
+        ctest
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+{{- end -}}

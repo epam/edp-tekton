@@ -19,6 +19,9 @@ spec:
   params:
     - name: codebase-name
       description: Name of codebase
+    - name: PATH_CONTEXT
+      type: string
+      default: ""
     - name: image-tag
       description: Image tag
     - name: image-tar
@@ -90,7 +93,7 @@ spec:
           fi
 
     - name: build-and-push
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       image: "$(params.builder-image)"
       env:
         - name: CODEBASE_NAME

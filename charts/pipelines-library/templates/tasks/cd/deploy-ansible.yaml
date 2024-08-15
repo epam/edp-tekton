@@ -1,0 +1,182 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-ansible
+spec:
+  description: |
+    This task deploys applications using Ansible through an inline Python script.
+  params:
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
+      type: string
+    - name: PIPELINE
+      type: string
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: STAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+
+  steps:
+    - name: run-ansible-script
+      image: epamedp/tekton-ansible:0.1.1
+      env:
+        - name: APPLICATIONS_PAYLOAD
+          value: "$(params.APPLICATIONS_PAYLOAD)"
+        - name: PIPELINE
+          value: "$(params.PIPELINE)"
+        - name: STAGE
+          value: "$(params.STAGE)"
+        - name: GIT_URL
+          valueFrom:
+            secretKeyRef:
+              name: cd-ansible-gitops-key
+              key: url
+        - name: NEXUS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: ci-nexus
+              key: username
+        - name: NEXUS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ci-nexus
+              key: password
+      script: |
+        #!/usr/bin/env python
+        import os
+        import subprocess
+        import json
+        from glob import glob
+
+        def load_payload(payload):
+            """Load the JSON payload into a dictionary."""
+            return json.loads(payload)
+
+        def clone_git_repo(git_url, ssh_key_path):
+            """Clone the Git repository using the provided SSH key and URL."""
+            repo_dir = "/tmp/repo"
+
+            os.makedirs("/root/.ssh", exist_ok=True)
+            subprocess.run(["cp", ssh_key_path, "/root/.ssh/id_rsa_gitops"], check=True)
+            subprocess.run(["chmod", "400", "/root/.ssh/id_rsa_gitops"], check=True)
+
+            os.environ['GIT_SSH_COMMAND'] = 'ssh -i /root/.ssh/id_rsa_gitops -o StrictHostKeyChecking=no'
+            subprocess.run(["git", "clone", git_url, repo_dir], check=True)
+
+            print(f"Cloned {git_url} into {repo_dir}")
+
+            return repo_dir
+
+        def run_ansible_playbook(playbook_path, inventory_path, ansible_group, repo_dir):
+            """Run an Ansible playbook."""
+            ansible_command = [
+                "ansible-playbook",
+                "-i", inventory_path,
+                playbook_path,
+                "-e", f"target={ansible_group} src_path={repo_dir}",  # Pass the ansible_group variable to the playbook
+            ]
+
+            print(f"Running Ansible playbook {playbook_path} on group={ansible_group}...")
+            subprocess.run(ansible_command, check=True)
+
+        def run_ansible_deployment(repo_dir, payload, ansible_group, pipeline, stage):
+            """Run Ansible playbook for each application in the payload."""
+            inventory_path = os.path.join(repo_dir, 'inventory.ini')
+
+            for codebase, details in payload.items():
+                image_tag = details.get("imageTag")
+                custom_values = details.get("customValues", False)
+
+                if image_tag:
+                    # Construct the Ansible command to install the package
+                    ansible_command = [
+                        "ansible",
+                        "-i", inventory_path,
+                        ansible_group,
+                        "-m", "yum",
+                        "-a", f"name={codebase} state=present allow_downgrade=true",
+                        "-b",
+                        "--become"
+                    ]
+
+                    print(f"Running Ansible command to deploy {codebase} with image tag {image_tag}...")
+                    subprocess.run(ansible_command, check=True)
+
+                if custom_values:
+                    # Construct the path for custom values with the PIPELINE variable
+                    custom_values_dir = os.path.join(repo_dir, pipeline, stage, codebase)
+                    repository_dir = os.path.join(pipeline, stage, codebase)
+                    print(f"Custom values directory: {repository_dir}")
+
+                    if os.path.exists(custom_values_dir):
+                        print(f"Repository directory exists: {repository_dir}")
+                        custom_values_playbooks = sorted(glob(os.path.join(custom_values_dir, '*.yml')))
+                        repository_dir_playbook = sorted(glob(os.path.join(repository_dir, '*.yml')))
+
+                        if custom_values_playbooks:
+                            print(f"Found playbooks: {repository_dir_playbook}")
+                            for playbook_file in custom_values_playbooks:
+                                print(f"Running custom values playbook {playbook_file}...")
+                                run_ansible_playbook(playbook_file, inventory_path, ansible_group, repo_dir)
+                        else:
+                            print(f"No playbooks found in directory: {repository_dir}")
+                    else:
+                        print(f"Directory does not exist: {repository_dir}")
+
+        def prepare_ssh_keys(gitops_ssh_key_path, ansible_ssh_key_path):
+            """Prepare SSH keys for Git and Ansible."""
+            os.makedirs("/root/.ssh", exist_ok=True)
+            subprocess.run(["cp", gitops_ssh_key_path, "/root/.ssh/id_rsa_gitops"], check=True)
+            subprocess.run(["chmod", "400", "/root/.ssh/id_rsa_gitops"], check=True)
+            subprocess.run(["cp", ansible_ssh_key_path, "/root/.ssh/id_rsa_ansible"], check=True)
+            subprocess.run(["chmod", "400", "/root/.ssh/id_rsa_ansible"], check=True)
+
+        def main():
+            ansible_ssh_key_path = "/tmp/ssh-key/id_rsa"
+            gitops_ssh_key_path = "/tmp/ssh-gitops-key/id_rsa"
+            git_url = os.getenv('GIT_URL')
+            payload = load_payload(os.getenv("APPLICATIONS_PAYLOAD", "{}"))
+            pipeline = os.getenv('PIPELINE')
+            stage = os.getenv('STAGE')
+            ansible_group = f"{pipeline}_{stage}"
+
+            print(f"APPLICATIONS_PAYLOAD: {payload}")
+            print(f"PIPELINE: {pipeline}")
+            print(f"STAGE: {stage}")
+            print(f"ansible_group: {ansible_group}")
+            print(f"GIT_URL: {git_url}")
+            print(f"NEXUS_USERNAME: {os.getenv('NEXUS_USERNAME')}")
+
+            prepare_ssh_keys(gitops_ssh_key_path, ansible_ssh_key_path)
+
+            repo_dir = clone_git_repo(git_url, gitops_ssh_key_path)
+
+            # Run pre-deploy playbook
+            pre_deploy_playbook_path = os.path.join(repo_dir, 'pre-deploy.yml')
+            run_ansible_playbook(pre_deploy_playbook_path, os.path.join(repo_dir, 'inventory.ini'), ansible_group, repo_dir)
+
+            # Run deployment playbooks
+            run_ansible_deployment(repo_dir, payload, ansible_group, pipeline, stage)
+
+        if __name__ == "__main__":
+            main()
+
+      volumeMounts:
+        - name: ansible-ssh-key-volume
+          mountPath: /tmp/ssh-key
+        - name: gitops-ssh-key-volume
+          mountPath: /tmp/ssh-gitops-key
+
+  volumes:
+    - name: ansible-ssh-key-volume
+      secret:
+        secretName: cd-ansible-ssh-key
+    - name: gitops-ssh-key-volume
+      secret:
+        secretName: cd-ansible-gitops-key
+    - name: nexus-credentials
+      secret:
+        secretName: ci-nexus

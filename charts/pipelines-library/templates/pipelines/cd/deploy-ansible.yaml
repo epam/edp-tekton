@@ -1,0 +1,79 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: deploy-ansible
+  labels:
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  description: |
+    This Pipeline is responsible for deploying rpm packages to the target Stage (Environment).
+  params:
+    - name: pipelineUrl
+      description: |
+        URL of the pipeline run in Tekton Dashboard.
+      type: string
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+      type: string
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+      type: string
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
+      type: string
+  tasks:
+    - name: pre-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      params:
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
+    - name: deploy-app
+      taskRef:
+        kind: Task
+        name: deploy-ansible
+      runAfter:
+        - pre-deploy
+      params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+
+    - name: post-deploy
+      taskRef:
+        kind: Task
+        name: run-quality-gate
+      runAfter:
+        - deploy-app
+      params:
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
+    - name: promote-images
+      taskRef:
+        kind: Task
+        name: promote-images
+      runAfter:
+        - post-deploy
+      params:
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+        - name: CDPIPELINE_STAGE
+          value: $(params.CDSTAGE)
+        - name: CDPIPELINE_CR
+          value: $(params.CDPIPELINE)

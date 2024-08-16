@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc/codes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -37,6 +37,12 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "demo-master",
+		},
+		Spec: codebaseApi.CodebaseBranchSpec{
+			Pipelines: map[string]string{
+				"review": "review-pipeline",
+				"build":  "build-pipeline",
+			},
 		},
 	}
 	fakeClient := fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(codebaseBranch).Build()
@@ -79,13 +85,17 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 						Framework:            "spring",
 						BuildTool:            "maven",
 						GitUrlPath:           "/o/r",
-						CommitMessagePattern: pointer.String(""),
-						JiraServer:           pointer.String(""),
+						CommitMessagePattern: ptr.To(""),
+						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest":    nil,
+					"pipelines": map[string]string{
+						"review": "review-pipeline",
+						"build":  "build-pipeline",
+					},
 				},
 				Continue: true,
 			},
@@ -175,8 +185,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Framework:            "spring",
 								BuildTool:            "maven",
 								GitUrlPath:           "/o/r",
-								CommitMessagePattern: pointer.String(""),
-								JiraServer:           pointer.String(""),
+								CommitMessagePattern: ptr.To(""),
+								JiraServer:           ptr.To(""),
 							},
 						},
 						PullRequest: &event_processor.PullRequest{
@@ -202,6 +212,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 							Namespace: "default",
 							Name:      "demo-master",
 						},
+						Spec: codebaseApi.CodebaseBranchSpec{
+							Pipelines: map[string]string{
+								"review": "review-pipeline",
+								"build":  "build-pipeline",
+							},
+						},
 					},
 				},
 			},
@@ -216,11 +232,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				},
 				reqBody: github.PullRequestEvent{
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
+						FullName: ptr.To("o/r"),
 					},
 					PullRequest: &github.PullRequest{
 						Base: &github.PullRequestBranch{
-							Ref: pointer.String("master"),
+							Ref: ptr.To("master"),
 						},
 					},
 				},
@@ -231,8 +247,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Framework:            "spring",
 						BuildTool:            "maven",
 						GitUrlPath:           "/o/r",
-						CommitMessagePattern: pointer.String(""),
-						JiraServer:           pointer.String(""),
+						CommitMessagePattern: ptr.To(""),
+						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
@@ -243,6 +259,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Title:             "fix",
 						ChangeNumber:      1,
 						LastCommitMessage: "commit message",
+					},
+					"pipelines": map[string]string{
+						"review": "review-pipeline",
+						"build":  "build-pipeline",
 					},
 				},
 				Continue: true,
@@ -271,8 +291,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Framework:            "spring",
 								BuildTool:            "maven",
 								GitUrlPath:           "/o/r",
-								CommitMessagePattern: pointer.String(""),
-								JiraServer:           pointer.String(""),
+								CommitMessagePattern: ptr.To(""),
+								JiraServer:           ptr.To(""),
 							},
 						},
 						PullRequest: &event_processor.PullRequest{
@@ -293,6 +313,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
 							Name:      "demo-master",
+						},
+						Spec: codebaseApi.CodebaseBranchSpec{
+							Pipelines: map[string]string{
+								"review": "review-pipeline",
+								"build":  "build-pipeline",
+							},
 						},
 					},
 				},
@@ -325,8 +351,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Framework:            "spring",
 						BuildTool:            "maven",
 						GitUrlPath:           "/o/r",
-						CommitMessagePattern: pointer.String(""),
-						JiraServer:           pointer.String(""),
+						CommitMessagePattern: ptr.To(""),
+						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
@@ -336,6 +362,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						HeadSha:      "sha",
 						Title:        "fix",
 						ChangeNumber: 1,
+					},
+					"pipelines": map[string]string{
+						"review": "review-pipeline",
+						"build":  "build-pipeline",
 					},
 				},
 				Continue: true,
@@ -367,8 +397,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Framework:            "spring",
 								BuildTool:            "maven",
 								GitUrlPath:           "/o/r",
-								CommitMessagePattern: pointer.String(""),
-								JiraServer:           pointer.String(""),
+								CommitMessagePattern: ptr.To(""),
+								JiraServer:           ptr.To(""),
 							},
 						},
 					}, nil)
@@ -380,6 +410,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
 							Name:      "demo-master",
+						},
+						Spec: codebaseApi.CodebaseBranchSpec{
+							Pipelines: map[string]string{
+								"review": "review-pipeline",
+								"build":  "build-pipeline",
+							},
 						},
 					},
 				},
@@ -410,13 +446,17 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Framework:            "spring",
 						BuildTool:            "maven",
 						GitUrlPath:           "/o/r",
-						CommitMessagePattern: pointer.String(""),
-						JiraServer:           pointer.String(""),
+						CommitMessagePattern: ptr.To(""),
+						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
+					"pipelines": map[string]string{
+						"review": "review-pipeline",
+						"build":  "build-pipeline",
+					},
 				},
 				Continue: true,
 			},
@@ -447,8 +487,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 								Framework:            "spring",
 								BuildTool:            "maven",
 								GitUrlPath:           "/o/r",
-								CommitMessagePattern: pointer.String(""),
-								JiraServer:           pointer.String(""),
+								CommitMessagePattern: ptr.To(""),
+								JiraServer:           ptr.To(""),
 							},
 						},
 					}, nil)
@@ -482,13 +522,14 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Framework:            "spring",
 						BuildTool:            "maven",
 						GitUrlPath:           "/o/r",
-						CommitMessagePattern: pointer.String(""),
-						JiraServer:           pointer.String(""),
+						CommitMessagePattern: ptr.To(""),
+						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
 					"codebasebranch": "demo-master",
 					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
+					"pipelines":      codebaseApi.CodebaseBranchSpec{}.Pipelines,
 				},
 				Continue: false,
 			},

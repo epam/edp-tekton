@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
@@ -143,6 +143,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 			"codebasebranch": codebaseBranchName,
 			"targetBranch":   event.TargetBranch,
 			"pullRequest":    event.PullRequest,
+			"pipelines":      codebaseBranch.Spec.Pipelines,
 		},
 	}
 }
@@ -195,11 +196,11 @@ func prepareCodebase(codebase *codebaseApi.Codebase) {
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
 	if codebase.Spec.CommitMessagePattern == nil {
-		codebase.Spec.CommitMessagePattern = pointer.String("")
+		codebase.Spec.CommitMessagePattern = ptr.To("")
 	}
 
 	if codebase.Spec.JiraServer == nil {
-		codebase.Spec.JiraServer = pointer.String("")
+		codebase.Spec.JiraServer = ptr.To("")
 	}
 }
 

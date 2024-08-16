@@ -15,7 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -983,22 +983,22 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			name: "merge event - success",
 			args: args{
 				body: github.PullRequestEvent{
-					Number: pointer.Int(1),
+					Number: ptr.To(1),
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
-						Name:     pointer.String("p"),
+						FullName: ptr.To("o/r"),
+						Name:     ptr.To("p"),
 						Owner: &github.User{
-							Login: pointer.String("o"),
+							Login: ptr.To("o"),
 						},
 					},
 					PullRequest: &github.PullRequest{
-						Title: pointer.String("title"),
+						Title: ptr.To("title"),
 						Base: &github.PullRequestBranch{
-							Ref: pointer.String("master"),
+							Ref: ptr.To("master"),
 						},
 						Head: &github.PullRequestBranch{
-							Ref: pointer.String("branch"),
-							SHA: pointer.String("sha"),
+							Ref: ptr.To("branch"),
+							SHA: ptr.To("sha"),
 						},
 					},
 				},
@@ -1084,22 +1084,22 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			name: "merge event - failed to get pull request commits",
 			args: args{
 				body: github.PullRequestEvent{
-					Number: pointer.Int(1),
+					Number: ptr.To(1),
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
-						Name:     pointer.String("p"),
+						FullName: ptr.To("o/r"),
+						Name:     ptr.To("p"),
 						Owner: &github.User{
-							Login: pointer.String("o"),
+							Login: ptr.To("o"),
 						},
 					},
 					PullRequest: &github.PullRequest{
-						Title: pointer.String("title"),
+						Title: ptr.To("title"),
 						Base: &github.PullRequestBranch{
-							Ref: pointer.String("master"),
+							Ref: ptr.To("master"),
 						},
 						Head: &github.PullRequestBranch{
-							Ref: pointer.String("branch"),
-							SHA: pointer.String("sha"),
+							Ref: ptr.To("branch"),
+							SHA: ptr.To("sha"),
 						},
 					},
 				},
@@ -1154,15 +1154,15 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			args: args{
 				body: github.PullRequestEvent{
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
+						FullName: ptr.To("o/r"),
 					},
 					PullRequest: &github.PullRequest{
 						Base: &github.PullRequestBranch{
-							Ref: pointer.String("master"),
+							Ref: ptr.To("master"),
 						},
 						Head: &github.PullRequestBranch{
-							Ref: pointer.String("branch"),
-							SHA: pointer.String("sha"),
+							Ref: ptr.To("branch"),
+							SHA: ptr.To("sha"),
 						},
 					},
 				},
@@ -1180,7 +1180,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			args: args{
 				body: github.PullRequestEvent{
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
+						FullName: ptr.To("o/r"),
 					},
 					PullRequest: &github.PullRequest{
 						Base: &github.PullRequestBranch{},
@@ -1200,7 +1200,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			args: args{
 				body: github.PullRequestEvent{
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
+						FullName: ptr.To("o/r"),
 					},
 					PullRequest: &github.PullRequest{},
 				},
@@ -1218,7 +1218,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 			args: args{
 				body: github.PullRequestEvent{
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
+						FullName: ptr.To("o/r"),
 					},
 				},
 			},
@@ -1318,22 +1318,22 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 			name: "merge event",
 			args: args{
 				body: github.PullRequestEvent{
-					Number: pointer.Int(1),
+					Number: ptr.To(1),
 					Repo: &github.Repository{
-						FullName: pointer.String("o/r"),
-						Name:     pointer.String("r"),
+						FullName: ptr.To("o/r"),
+						Name:     ptr.To("r"),
 						Owner: &github.User{
-							Login: pointer.String("o"),
+							Login: ptr.To("o"),
 						},
 					},
 					PullRequest: &github.PullRequest{
-						Title: pointer.String("title"),
+						Title: ptr.To("title"),
 						Base: &github.PullRequestBranch{
-							Ref: pointer.String("master"),
+							Ref: ptr.To("master"),
 						},
 						Head: &github.PullRequestBranch{
-							Ref: pointer.String("branch"),
-							SHA: pointer.String("sha"),
+							Ref: ptr.To("branch"),
+							SHA: ptr.To("sha"),
 						},
 					},
 				},

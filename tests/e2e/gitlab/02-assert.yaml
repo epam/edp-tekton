@@ -1,14 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tekton-dashboard
-status:
-  readyReplicas: 1
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: tekton-interceptor
 status:
   readyReplicas: 1

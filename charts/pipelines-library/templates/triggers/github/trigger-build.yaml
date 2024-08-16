@@ -24,13 +24,6 @@ spec:
     - ref:
         name: "edp"
         kind: NamespacedInterceptor
-    - ref:
-        name: "cel"
-      params:
-        - name: "overlays"
-          value:
-            - key: cbtype_short
-              expression: "extensions.spec.type.truncate(3)"
   bindings:
     - ref: github-binding-build
   template:

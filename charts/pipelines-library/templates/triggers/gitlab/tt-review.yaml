@@ -12,12 +12,6 @@ spec:
     - name: gitrepositoryname
     - name: gitfullrepositoryname
       description: Full Repo name. Used in "gitlab-set-status" step as REPO_PATH_ONLY
-    - name: buildtool
-      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: framework
-      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: cbtype
-      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: targetBranch
       description: Target branch of Merge Request
     - name: changeNumber
@@ -30,6 +24,8 @@ spec:
       description: Commit message pattern to run commit-validate task
     - name: commitMessage
       description: Commit message
+    - name: pipelineName
+      description: Pipeline to trigger. Populated by edp interceptor from codebasebranch spec
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -46,7 +42,7 @@ spec:
         taskRunTemplate:
           serviceAccountName: tekton
         pipelineRef:
-          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-review
+          name: $(tt.params.pipelineName)
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)

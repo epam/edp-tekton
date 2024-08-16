@@ -10,14 +10,6 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
-    - name: buildtool
-      description: Build tool for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: framework
-      description: Framework for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: cbtype
-      description: Application or library type for codebase. Used to generate build pipeline name. Populated by edp interceptor
-    - name: versioning-type
-      description: Versioning type for codebase. Used to generate build pipeline name. Populated by edp interceptor
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
@@ -34,6 +26,8 @@ spec:
       description: Jira issue payload
     - name: jiraServer
       description: Jira server name
+    - name: pipelineName
+      description: Pipeline to trigger. Populated by edp interceptor from codebasebranch spec
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -50,7 +44,7 @@ spec:
         taskRunTemplate:
           serviceAccountName: tekton
         pipelineRef:
-          name: gitlab-$(tt.params.buildtool)-$(tt.params.framework)-$(tt.params.cbtype)-build-$(tt.params.versioning-type)
+          name: $(tt.params.pipelineName)
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)

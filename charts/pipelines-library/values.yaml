@@ -277,8 +277,8 @@ ctLint:
 
 # Deploy KubeRocketCI Tekton Dashboard along with pipelines library
 dashboard:
-  # -- Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: true
-  enabled: true
+  # -- Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: false
+  enabled: false
 
   # -- The resource limits and requests for the Tekton Dashboard
   resources:

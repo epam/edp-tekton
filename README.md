@@ -4,7 +4,7 @@
 <!-- TOC -->
 
 - [KubeRocketCI Tekton](#kuberocketci-tekton)
-  - [EDP Interceptor](#edp-interceptor)
+  - [KubeRocketCI Interceptor](#edp-interceptor)
   - [Tekton Pipelines](#tekton-pipelines)
 
 <!-- /TOC -->
@@ -12,20 +12,20 @@
 The edp-tekton repository consolidates elements for Tekton integration with [KubeRocketCI](https://docs.kuberocketci.io) (former EPAM Delivery Platform (EDP)).
 and disposes of two main components:
 
-- **EDP Interceptor**. Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinterceptors/) paradigm and enriches payload from different Version Control Systems (VCS) like Gerrit, GitHub or GitLab with the platform specific metadata.
+- **KubeRocketCI Interceptor**. Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinterceptors/) paradigm and enriches payload from different Version Control Systems (VCS) like Gerrit, GitHub or GitLab with the platform specific metadata.
 - **Tekton Pipelines**. Consists of [Tekton Tasks, Pipelines, Triggers](https://tekton.dev/docs/pipelines/) and implements KubeRocketCI Pipelines logic. Some of the tasks are forks from [origin source](https://github.com/tektoncd/catalog), the others are platform specific.
 
-## EDP Interceptor
+## KubeRocketCI Interceptor
 
-EDP Interceptor is used as a component that provides KubeRocketCI metadata for Tekton Pipelines. The code is based on [Upstream implementation](https://github.com/tektoncd/triggers/tree/main/pkg/interceptors).
+KubeRocketCI Interceptor is used as a component that provides KubeRocketCI metadata for Tekton Pipelines. The code is based on [Upstream implementation](https://github.com/tektoncd/triggers/tree/main/pkg/interceptors).
 
-EDP Interceptor extracts information from VCS payload, like `repository_name`. The `repository_name` has 1-2-1 mapping with the KubeRocketCI `Codebase` (kind: Codebase; apiVersion:v2.edp.epam.com/v1). Interceptor populates Tekton Pipelines with [Codebase SPEC](https://github.com/epam/edp-codebase-operator/blob/master/docs/api.md#codebasespec) data, see the diagram below:
+KubeRocketCI Interceptor extracts information from VCS payload, like `repository_name`. The `repository_name` has 1-2-1 mapping with the KubeRocketCI `Codebase` (kind: Codebase; apiVersion:v2.edp.epam.com/v1). Interceptor populates Tekton Pipelines with [Codebase SPEC](https://github.com/epam/edp-codebase-operator/blob/master/docs/api.md#codebasespec) data, see the diagram below:
 
-        ┌────────────┐              ┌─────────────────┐       ┌─────────────┐
-        │            │              │ EDP Interceptor │       │   Tekton    │
-        │  VCS(Git)  ├──────────────►                 ├───────►             │
-        │            │              │                 │       │  Pipelines  │
-        └──────┬─────┘              └────────┬────────┘       └─────────────┘
+        ┌────────────┐              ┌──────────────────┐       ┌─────────────┐
+        │            │              │   KubeRocketCI   │       │   Tekton    │
+        │  VCS(Git)  ├──────────────►                  ├───────►             │
+        │            │              │   Interceptor    │       │  Pipelines  │
+        └──────┬─────┘              └────────┬─────────┘       └─────────────┘
                │                             │
         ┌──────┴─────┐                       │ extract
         │    Repo    │                       │
@@ -39,7 +39,7 @@ EDP Interceptor extracts information from VCS payload, like `repository_name`. T
 
 The data, retrieved from the Codebase SPEC, is used in Tekton Pipelines logic.
 The docker images for Interceptor are available on the [DockerHub](https://hub.docker.com/repository/docker/epamedp/edp-tekton).
-The helm-chart for interceptor deployment is in the same repository by the [charts/interceptor](./charts/interceptor) directory.
+The helm-chart for interceptor deployment is in the same repository by the [charts/interceptor](./charts/pipelines-library/values.yaml#L146) directory.
 
 ## Tekton Pipelines
 

@@ -8,6 +8,7 @@ kind: Pipeline
 metadata:
   name: gerrit-maven-{{ $k }}-lib-build-default
   labels:
+    app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:

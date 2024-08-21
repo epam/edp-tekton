@@ -8,6 +8,7 @@ kind: Pipeline
 metadata:
   name: gerrit-gradle-{{ $k }}-aut-build-edp
   labels:
+    app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:

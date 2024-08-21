@@ -4,6 +4,7 @@ kind: Pipeline
 metadata:
   name: github-kaniko-docker-lib-build-edp
   labels:
+    app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:

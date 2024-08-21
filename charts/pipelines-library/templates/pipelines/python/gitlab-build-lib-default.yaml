@@ -4,6 +4,7 @@ kind: Pipeline
 metadata:
   name: gitlab-python-python-3.8-lib-build-default
   labels:
+    app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:

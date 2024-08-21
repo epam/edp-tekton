@@ -8,6 +8,7 @@ kind: Pipeline
 metadata:
   name: gitlab-maven-{{ $k }}-app-build-edp
   labels:
+    app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   workspaces:

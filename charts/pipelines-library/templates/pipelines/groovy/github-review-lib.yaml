@@ -4,6 +4,7 @@ kind: Pipeline
 metadata:
   name: github-codenarc-codenarc-lib-review
   labels:
+    app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   workspaces:

@@ -19,13 +19,18 @@ spec:
       description: "CodebaseImageStream tag"
     - name: TIMESTAMP
       description: Current timestamp
+    - name: NORMALIZED_VERSION
+      description: Normalized version
   steps:
     - name: get-timestamp
       image: alpine:3.18.6
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
+        nts=$(date "+%Y%m%d.%H%M%S")
         echo "Current Timestamp: ${ts}"
+        echo "Current Normalized Timestamp: ${nts}"
         echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
+        echo ${nts} | tr -d "\n" | tee $(results.NORMALIZED_VERSION.path)
 
     - name: get-version
       image: alpine:3.18.6
@@ -42,12 +47,15 @@ spec:
         VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
         NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
         IS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
+        NORMALIZED_VERSION="$(cat $(results.NORMALIZED_VERSION.path))"
 
         echo "Application version - ${BUILD_VERSION}"
         echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
+        echo "Normalized Version - ${NORMALIZED_VERSION}"
 
         printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
         printf "%s" "${BUILD_ID}" > "$(results.VERSION.path)"
+        printf "%s" "${NORMALIZED_VERSION}" > "$(results.NORMALIZED_VERSION.path)"

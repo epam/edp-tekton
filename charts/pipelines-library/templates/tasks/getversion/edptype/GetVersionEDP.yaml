@@ -17,6 +17,10 @@ spec:
       description: "CodebaseImageStream tag"
     - name: BUILD_ID
       description: "Build id"
+    - name: NUMERIC_VERSION
+      description: "Numeric version"
+    - name: SUFFIX
+      description: "Version suffix"
     - name: BRANCH_VERSION
       description: "Branch version"
     - name: IS_RELEASE_BRANCH
@@ -45,6 +49,12 @@ spec:
         # Get current version
         VERSION=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.spec.version})
 
+        # Get current number version (eg 0.0.0)
+        NUMERIC_VERSION=$(printf '%s' ${VERSION} | sed -nE 's/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p')
+
+        SUFFIX=$(echo "$VERSION" | sed -nE 's/^[0-9]+\.[0-9]+\.[0-9]+-//p')
+        SUFFIX=${SUFFIX}.${BUILD_ID}
+
         # Replace slashes
         VERSION=$(printf '%s' ${VERSION} | sed 's/\//-/g')
 
@@ -54,17 +64,20 @@ spec:
         IS_TAG=${VERSION}
         DEPLOYABLE_MODULE_DIR="."
 
-        echo "Application version - ${VERSION}"
-        echo "VCS tag - ${VCS_TAG}"
-        echo "IS tag - ${IS_TAG}"
-        echo "Build id - ${BUILD_ID}"
-        echo "Branch version - ${BRANCH_VERSION}"
-
         if [ "${IS_RELEASE_BRANCH}" = "true" ] ; then
             VERSION="${BRANCH_VERSION}.${BUILD_ID}"
         else
             VERSION="${BRANCH_VERSION}"
         fi
+
+        echo "Application version - ${VERSION}"
+        echo "VCS tag - ${VCS_TAG}"
+        echo "IS tag - ${IS_TAG}"
+        echo "Build id - ${BUILD_ID}"
+        echo "Branch version - ${BRANCH_VERSION}"
+        echo "Numeric version - ${NUMERIC_VERSION}"
+        echo "Suffix - ${SUFFIX}"
+
 
         printf "%s" "${VERSION}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
@@ -73,3 +86,5 @@ spec:
         printf "%s" "${BRANCH_VERSION}" > "$(results.BRANCH_VERSION.path)"
         printf "%s" "${IS_RELEASE_BRANCH}" > "$(results.IS_RELEASE_BRANCH.path)"
         printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"
+        printf "%s" "${NUMERIC_VERSION}" > "$(results.NUMERIC_VERSION.path)"
+        printf "%s" "${SUFFIX}" > "$(results.SUFFIX.path)"

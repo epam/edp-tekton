@@ -1,0 +1,63 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: deploy-ansible-awx
+spec:
+  description: >
+    This Task is designed to configure the tower-cli tool and invoke 
+    an Ansible AWX Template that runs an Ansible Playbook for installing 
+    RPM packages on target servers.
+  params:
+    - description: >
+        Applications payload in format: {"codebase1": {"imageTag": "version1",
+        "customValues": true}, "codebase2": {"imageTag": "version2",
+        "customValues": true}}.
+      name: APPLICATIONS_PAYLOAD
+      type: string
+    - description: >
+        EDP kind:CDPipeline name used for deployment. For example: mypipe,
+        myfeature
+      name: PIPELINE
+      type: string
+    - description: >
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
+        values. For example: dev, test, prod
+      name: STAGE
+      type: string
+  steps:
+    - name: deploy-ansible-awx
+      image: epamedp/tekton-ansible:0.1.1
+      env:
+        - name: APPLICATIONS_PAYLOAD
+          value: $(params.APPLICATIONS_PAYLOAD)
+        - name: PIPELINE
+          value: $(params.PIPELINE)
+        - name: STAGE
+          value: $(params.STAGE)
+        - name: AWX_HOST
+          valueFrom:
+            secretKeyRef:
+              name: ci-awx
+              key: url
+        - name: AWX_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: ci-awx
+              key: username
+        - name: AWX_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ci-awx
+              key: password
+      script: |
+        #!/usr/bin/env sh
+
+        set -eu
+        tower-cli config host ${AWX_HOST}
+        tower-cli config username ${AWX_USERNAME} 
+        tower-cli config password ${AWX_PASSWORD}
+        tower-cli config verify_ssl false
+
+        tower-cli job launch --job-template=package-install \
+          --extra-vars="{\"APPLICATIONS_PAYLOAD\":${APPLICATIONS_PAYLOAD},\"STAGE\":\"${STAGE}\",\"PIPELINE\":\"${PIPELINE}\"}" \
+          --inventory=${PIPELINE} --wait --limit=${PIPELINE}_${STAGE}

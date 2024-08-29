@@ -1,0 +1,45 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: deploy-with-approve
+  labels:
+    app.edp.epam.com/pipelinetype: deploy
+spec:
+  params:
+    - name: APPLICATIONS_PAYLOAD
+      description: |
+        Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
+    - name: CDPIPELINE
+      description: |
+        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+    - name: CDSTAGE
+      description: |
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: deploy-with-approve-
+        labels:
+          app.edp.epam.com/pipelinetype: deploy
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+        pipelineRef:
+          name: deploy-with-approve
+        params:
+          - name: APPLICATIONS_PAYLOAD
+            value: $(tt.params.APPLICATIONS_PAYLOAD)
+          - name: CDSTAGE
+            value: $(tt.params.CDSTAGE)
+          - name: CDPIPELINE
+            value: $(tt.params.CDPIPELINE)
+        workspaces:
+          - name: git-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi

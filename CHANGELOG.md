@@ -1,6 +1,53 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Add deploy pipeline with approve task([#279](https://github.com/epam/edp-tekton/issues/279))
+- Implement rpm build functionality ([#272](https://github.com/epam/edp-tekton/issues/272))
+- Enhance Pipeline Triggering Process ([#263](https://github.com/epam/edp-tekton/issues/263))
+- Add dynamic pipeline name retrieval from CodebaseBranch spec ([#263](https://github.com/epam/edp-tekton/issues/263))
+- Add C make/cmake application pipelines ([#260](https://github.com/epam/edp-tekton/issues/260))
+- Update jira task Include GitCommitUrl instead of Pipelinerun([#252](https://github.com/epam/edp-tekton/issues/252))
+- Add clean pipelines for tekton ([#244](https://github.com/epam/edp-tekton/issues/244))
+- Re-trigger Tekton Pipeline with /ok-to-test comment ([#238](https://github.com/epam/edp-tekton/issues/238))
+- Add GitHub owners check configuration ([#234](https://github.com/epam/edp-tekton/issues/234))
+- Add pipelines tasks tests for new codebase ansible([#236](https://github.com/epam/edp-tekton/issues/236))
+
+### Bug Fixes
+
+- Align rpm-build argo diff  ([#272](https://github.com/epam/edp-tekton/issues/272))
+- Update parameter definition ([#261](https://github.com/epam/edp-tekton/issues/261))
+- Fix code duplication in dockerbuild-verify Task([#242](https://github.com/epam/edp-tekton/issues/242))
+- Fix commit-validate task to check only the first line ([#229](https://github.com/epam/edp-tekton/issues/229))
+- Fix commit-validate task to check only the first line ([#229](https://github.com/epam/edp-tekton/issues/229))
+- Install packages via requirements ([#215](https://github.com/epam/edp-tekton/issues/215))
+
+### Routine
+
+- Update report message
+- Enable labels for review and build pipelines ([#270](https://github.com/epam/edp-tekton/issues/270))
+- Disable Tekton dashboard deployments([#266](https://github.com/epam/edp-tekton/issues/266))
+- Update KubeRocketCI names ([#258](https://github.com/epam/edp-tekton/issues/258))
+- Update templates to include changeNumber from Merge Request ([#250](https://github.com/epam/edp-tekton/issues/250))
+- Make Tekton Dashboard quickLink deployment optional([#246](https://github.com/epam/edp-tekton/issues/246))
+- Update Gerrit Trigger Template for Remote Cluster Deployment ([#248](https://github.com/epam/edp-tekton/issues/248))
+- Update github.com/epam/edp-codebase-operator dependency ([#240](https://github.com/epam/edp-tekton/issues/240))
+- Switch redirect link from Tekton Dashboard to KRCI Portal page ([#232](https://github.com/epam/edp-tekton/issues/232))
+- Add Grafana Tekton dashboard ([#227](https://github.com/epam/edp-tekton/issues/227))
+- Implement Results Emission for All Build Pipelines ([#225](https://github.com/epam/edp-tekton/issues/225))
+- Revert Update gitservers event listener name and add label ([#222](https://github.com/epam/edp-tekton/issues/222))
+- Update gitservers event listener name and add label ([#222](https://github.com/epam/edp-tekton/issues/222))
+- Align to new name KubeRocketCI ([#220](https://github.com/epam/edp-tekton/issues/220))
+- Address flaky e2e tests ([#215](https://github.com/epam/edp-tekton/issues/215))
+- Update tekton-helm image version ([#215](https://github.com/epam/edp-tekton/issues/215))
+- Update current version ([#211](https://github.com/epam/edp-tekton/issues/211))
+- Update kuttle and kind images ([#215](https://github.com/epam/edp-tekton/issues/215))
+
+### Documentation
+
+- Replace EDP with KubeRocketCI in README md ([#268](https://github.com/epam/edp-tekton/issues/268))
+
 
 <a name="v0.12.0"></a>
 ## [v0.12.0] - 2024-06-13

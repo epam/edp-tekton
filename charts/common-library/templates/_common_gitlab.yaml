@@ -54,7 +54,7 @@
     - name: "CONTEXT"
       value: "ci-pipeline"
     - name: "DESCRIPTION"
-      value: "Managed by EDP. Run with Tekton"
+      value: "Managed by KubeRocketCI. Run with Tekton"
 
 - name: fetch-repository
   taskRef:
@@ -120,7 +120,7 @@ finally:
       - name: "CONTEXT"
         value: "ci-pipeline"
       - name: "DESCRIPTION"
-        value: "Managed by EDP. Run with Tekton"
+        value: "Managed by KubeRocketCI. Run with Tekton"
 
   - name: gitlab-set-failure-status
     when:
@@ -148,5 +148,5 @@ finally:
       - name: "CONTEXT"
         value: "ci-pipeline"
       - name: "DESCRIPTION"
-        value: "Managed by EDP. Run with Tekton"
+        value: "Managed by KubeRocketCI. Run with Tekton"
 {{- end -}}

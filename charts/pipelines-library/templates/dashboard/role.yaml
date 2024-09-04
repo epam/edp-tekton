@@ -91,6 +91,7 @@ rules:
       - pipelineruns
       - pipelineresources
       - runs
+      - customruns
     verbs:
       - get
       - list

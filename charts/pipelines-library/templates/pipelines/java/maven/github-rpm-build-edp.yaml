@@ -34,11 +34,11 @@ spec:
       default: ""
       type: string
     - name: image
-      default: 'maven:3.9.0-eclipse-temurin-11'
+      default: 'maven:3.9.0-eclipse-temurin-17'
       description: "maven image version"
       type: string
     - name: sonar_image
-      default: 'maven:3.9.0-eclipse-temurin-11'
+      default: 'maven:3.9.0-eclipse-temurin-17'
       description: "sonar image version"
       type: string
     - name: TICKET_NAME_PATTERN
@@ -279,21 +279,20 @@ spec:
         - push
         - build
       params:
-        - name: codebase_name
-          value: "$(params.CODEBASE_NAME)"
         - name: suffix
           value: "$(tasks.get-version.results.SUFFIX)"
         - name: numeric_version
           value: "$(tasks.get-version.results.NUMERIC_VERSION)"
         - name: EXTRA_LINT_COMMAND
           value: |
-            make rpm-lint NAME=${CODEBASE_NAME}
+            make rpm-lint
         - name: EXTRA_BUILD_COMMAND
-          value: >
-            make rpm-build NAME=${CODEBASE_NAME} VERSION=${NUMERIC_VERSION} RELEASE=${SUFFIX}
+          value: |
+            make rpm-build VERSION=${NUMERIC_VERSION} RELEASE=${SUFFIX}
         - name: EXTRA_PUSH_COMMAND
-          value: >
-            make publish NAME=${CODEBASE_NAME} RELEASE=${SUFFIX} VERSION=${NUMERIC_VERSION} CI_USERNAME=${CI_USERNAME} CI_PASSWORD=${CI_PASSWORD} NEXUS_HOST_URL=${NEXUS_HOST_URL}
+          value: |
+            make rpm-publish RELEASE=${SUFFIX} VERSION=${NUMERIC_VERSION} \
+            CI_USERNAME=${CI_USERNAME} CI_PASSWORD=${CI_PASSWORD} NEXUS_HOST_URL=${NEXUS_HOST_URL}
       workspaces:
         - name: source
           workspace: shared-workspace

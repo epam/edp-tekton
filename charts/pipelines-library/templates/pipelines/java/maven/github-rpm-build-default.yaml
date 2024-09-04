@@ -291,8 +291,7 @@ spec:
             make rpm-build RELEASE=${SUFFIX}
         - name: EXTRA_PUSH_COMMAND
           value: |
-            make rpm-publish RELEASE=${SUFFIX} \
-            CI_USERNAME=${CI_USERNAME} CI_PASSWORD=${CI_PASSWORD} NEXUS_HOST_URL=${NEXUS_HOST_URL}
+            make rpm-publish RELEASE=${SUFFIX}
       workspaces:
         - name: source
           workspace: shared-workspace

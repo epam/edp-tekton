@@ -281,19 +281,18 @@ spec:
         - push
         - build
       params:
-        - name: codebase_name
-          value: "$(params.CODEBASE_NAME)"
         - name: suffix
           value: "$(tasks.get-version.results.NORMALIZED_VERSION)"
         - name: EXTRA_LINT_COMMAND
           value: |
-            make rpm-lint NAME=${CODEBASE_NAME}
+            make rpm-lint
         - name: EXTRA_BUILD_COMMAND
           value: |
-            make rpm-build NAME=${CODEBASE_NAME} RELEASE=${SUFFIX}
+            make rpm-build RELEASE=${SUFFIX}
         - name: EXTRA_PUSH_COMMAND
           value: |
-            make publish NAME=${CODEBASE_NAME} RELEASE=${SUFFIX} CI_USERNAME=${CI_USERNAME} CI_PASSWORD=${CI_PASSWORD} NEXUS_HOST_URL=${NEXUS_HOST_URL}
+            make rpm-publish RELEASE=${SUFFIX} \
+            CI_USERNAME=${CI_USERNAME} CI_PASSWORD=${CI_PASSWORD} NEXUS_HOST_URL=${NEXUS_HOST_URL}
       workspaces:
         - name: source
           workspace: shared-workspace

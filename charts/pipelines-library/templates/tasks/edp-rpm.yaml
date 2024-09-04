@@ -8,25 +8,23 @@ metadata:
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/categories: Build Tools
     tekton.dev/tags: build-tool
-    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+    tekton.dev/platforms: "linux/amd64"
 spec:
+  description: >-
+    This task is used to build rpm artifact
   params:
     - name: PATH_CONTEXT
       type: string
       default: ""
-      description: The path where package.json of the project is defined.
+      description: The path to the context.
     - name: BASE_IMAGE
       type: string
       default: "docker.io/epamedp/tekton-rpm:0.1.4"
-      description: The rpm image you want to use.
+      description: The rpm image. Should contain all necessary tools to build rpm.
     - name: ci-nexus
       type: string
-      description: name of the secret for the Nexus integration
+      description: Name of the secret for the Nexus integration
       default: ci-nexus
-    - name: codebase_name
-      type: string
-      description: Codebase name of application
-      default: c
     - name: numeric_version
       type: string
       description: Current numeric version of application
@@ -40,16 +38,13 @@ spec:
       description: The path to the cache directory.
     - name: EXTRA_LINT_COMMAND
       type: string
-      description: q
-      default: ""
+      description: Run rpm lint command
     - name: EXTRA_BUILD_COMMAND
       type: string
-      description: q
-      default: ""
+      description: Run rpm build command
     - name: EXTRA_PUSH_COMMAND
       type: string
-      description: q
-      default: ""
+      description: Publish rpm artifact
 
   workspaces:
     - name: source
@@ -57,9 +52,6 @@ spec:
     - name: lint
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
-      env:
-        - name: CODEBASE_NAME
-          value: $(params.codebase_name)
       script: |
         set -e
 
@@ -69,8 +61,6 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
-        - name: CODEBASE_NAME
-          value: $(params.codebase_name)
         - name: NUMERIC_VERSION
           value: $(params.numeric_version)
         - name: SUFFIX
@@ -84,8 +74,6 @@ spec:
       image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
-        - name: CODEBASE_NAME
-          value: $(params.codebase_name)
         - name: NUMERIC_VERSION
           value: $(params.numeric_version)
         - name: SUFFIX
@@ -107,6 +95,7 @@ spec:
               key: url
       script: |
         set -e
+
         $(params.EXTRA_PUSH_COMMAND)
 
 {{- include "resources" . | nindent 6 }}

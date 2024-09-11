@@ -11,9 +11,12 @@ metadata:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "The Review pipeline for building {{ $k }} automation tests with Gradle"
+
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
+
   params:
     - name: pipelineUrl
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
@@ -48,6 +51,7 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+
   tasks:
 
 {{- include "gerrit-review-start" $ | nindent 4 }}

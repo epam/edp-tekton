@@ -9,9 +9,12 @@ metadata:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "The Build pipeline for building {{ $k }} automation tests with Maven (EDP versioning)"
+
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
+
   params:
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"

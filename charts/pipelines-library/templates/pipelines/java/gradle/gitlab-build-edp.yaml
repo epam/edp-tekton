@@ -11,9 +11,12 @@ metadata:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "This pipeline is used to build Java application with Gradle"
+
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
+
   params:
     - name: pipelineUrl
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)

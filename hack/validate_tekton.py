@@ -4,6 +4,12 @@ import tempfile
 import os
 from subprocess import check_output, CalledProcessError
 
+PIPELINE_EXPECTED_ORDER = ['description', 'workspaces', 'params', 'results', 'tasks', 'finally']
+PIPELINE_MANDATORY_FIELDS = ['description', 'params', 'tasks']
+
+TASK_EXPECTED_ORDER = ['description', 'workspaces', 'params', 'results', 'steps']
+TASK_MANDATORY_FIELDS = ['description', 'params', 'steps']
+
 def helm_template(config, output_file):
     with tempfile.NamedTemporaryFile() as temp:
         with open(temp.name, "w") as values:
@@ -25,12 +31,23 @@ def check_description(yaml_file):
                 name = metadata.get('name', 'Unnamed')
                 spec = data.get('spec', {})
 
-                if kind not in ['Task', 'Pipeline']:
-                    # print(f"Skipping document kind '{kind}'.")
+                if kind == 'Pipeline':
+                    mandatory_fields = PIPELINE_MANDATORY_FIELDS
+                    expected_order = PIPELINE_EXPECTED_ORDER
+                elif kind == 'Task':
+                    mandatory_fields = TASK_MANDATORY_FIELDS
+                    expected_order = TASK_EXPECTED_ORDER
+                else:
                     continue
 
-                if 'description' not in spec:
-                    print(f"Error: '{kind}' named '{name}' does not have a 'description' defined.")
+                # Check for mandatory fields
+                for field in mandatory_fields:
+                    if field not in spec:
+                        print(f"Error: '{kind}' named '{name}' does not have a '{field}' defined.")
+                        return False
+
+                if not check_key_order(spec, expected_order):
+                    print(f"Error: '{kind}' named '{name}' does not have keys in the correct order.")
                     return False
 
                 print(f"'{kind}' named '{name}' ok")
@@ -42,6 +59,18 @@ def check_description(yaml_file):
         return False
 
     return True
+
+def check_key_order(spec, expected_order):
+    keys = list(spec.keys())
+    expected_keys = [key for key in expected_order if key in keys]
+
+    # Check if all required keys are present
+    for key in expected_order:
+        if key not in keys and key not in ['workspaces', 'finally', 'results']:
+            return False
+
+    # Check if the order of the present keys is correct
+    return keys[:len(expected_keys)] == expected_keys
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

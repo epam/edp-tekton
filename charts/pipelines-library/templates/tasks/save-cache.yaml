@@ -48,7 +48,11 @@ spec:
           fi
         fi
 
-        tar czf - . |curl -# -L -f -F path=${CACHE_NAME}.tar.gz -X POST -F "file=@-" ${CACHE_SERVER_URL}/upload
+        touch ${CACHE_NAME}.tar.zst
+
+        tar c -I"zstd -T1 -1" --exclude=${CACHE_NAME}.tar.zst -f ${CACHE_NAME}.tar.zst .
+
+        curl -# -L -f -F path=${CACHE_NAME}.tar.zst -X POST -F "file=@${CACHE_NAME}.tar.zst" ${CACHE_SERVER_URL}/upload
       env:
         - name: CACHE_SERVER_URL
           valueFrom:

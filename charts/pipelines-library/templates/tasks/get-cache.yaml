@@ -19,7 +19,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       description: "Base image"
-      default: "ghcr.io/curl/curl-container/curl-multi:8.3.0"
+      default: "epamedp/tekton-autotest:0.1.2"
       type: string
 
   workspaces:
@@ -41,7 +41,10 @@ spec:
         }
 
         echo "Getting cache"
-        curl ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz|tar -xz -f-
+        curl -O ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst
+
+        echo "Extracting cache archive"
+        tar -x --zstd -f ${CACHE_NAME}.tar.zst
       env:
         - name: CACHE_SERVER_URL
           valueFrom:

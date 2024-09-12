@@ -329,3 +329,87 @@
       workspace: shared-workspace
       subPath: source
 {{- end -}}
+
+{{- define "build-pipeline-java-maven-rpm-build-push-default" -}}
+- name: rpm-build
+  taskRef:
+    kind: Task
+    name: rpm-build
+  runAfter:
+    - get-maven-module
+    - push
+    - build
+  params:
+    - name: suffix
+      value: "$(tasks.get-version.results.NORMALIZED_VERSION)"
+    - name: EXTRA_LINT_COMMAND
+      value: |
+        make rpm-lint
+    - name: EXTRA_BUILD_COMMAND
+      value: |
+        make rpm-build RELEASE=${SUFFIX}
+    - name: EXTRA_PUSH_COMMAND
+      value: |
+        make rpm-publish RELEASE=${SUFFIX}
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-java-maven-rpm-build-push-edp" -}}
+- name: rpm-build
+  taskRef:
+    kind: Task
+    name: rpm-build
+  runAfter:
+    - get-maven-module
+    - push
+    - build
+  params:
+    - name: suffix
+      value: "$(tasks.get-version.results.SUFFIX)"
+    - name: numeric_version
+      value: "$(tasks.get-version.results.NUMERIC_VERSION)"
+    - name: EXTRA_LINT_COMMAND
+      value: |
+        make rpm-lint
+    - name: EXTRA_BUILD_COMMAND
+      value: |
+        make rpm-build VERSION=${NUMERIC_VERSION} RELEASE=${SUFFIX}
+    - name: EXTRA_PUSH_COMMAND
+      value: |
+        make rpm-publish RELEASE=${SUFFIX} VERSION=${NUMERIC_VERSION}
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}
+
+{{- define "build-pipeline-java-maven-rpm-review" -}}
+- name: rpm-build
+  taskRef:
+    kind: Task
+    name: rpm-build
+  runAfter:
+    - get-maven-module
+    - build
+  params:
+    - name: suffix
+      value: "0.0.0"
+    - name: numeric_version
+      value: "SNAPSHOT.1"
+    - name: EXTRA_LINT_COMMAND
+      value: |
+        make rpm-lint
+    - name: EXTRA_BUILD_COMMAND
+      value: |
+        make rpm-build VERSION=${NUMERIC_VERSION} RELEASE=${SUFFIX}
+    - name: EXTRA_PUSH_COMMAND
+      value: |
+        echo "Review pipeline - skip push step"
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+{{- end -}}

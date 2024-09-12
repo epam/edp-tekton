@@ -169,6 +169,42 @@
       workspace: ssh-creds
 {{- end -}}
 
+{{- define "build-pipeline-rpm-end" -}}
+- name: git-tag
+  taskRef:
+    kind: Task
+    name: git-cli
+  runAfter:
+    - rpm-build
+  params:
+    - name: GIT_USER_EMAIL
+      value: edp-ci@edp.ci-user
+    - name: GIT_USER_NAME
+      value: edp-ci
+    - name: GIT_SCRIPT
+      value: |
+        git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+        git push --tags
+  workspaces:
+    - name: source
+      workspace: shared-workspace
+      subPath: source
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: update-cbis
+  taskRef:
+    kind: Task
+    name: update-cbis
+  runAfter:
+    - git-tag
+  params:
+    - name: CBIS_NAME
+      value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+    - name: IMAGE_TAG
+      value: $(tasks.get-version.results.IS_TAG)
+{{- end -}}
+
 # final section for gerrit codereview pipelines
 {{- define "gerrit-review-vote" -}}
 finally:

@@ -35,7 +35,7 @@ spec:
         set -ex
         set -o pipefail
 
-        curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz || {
+        curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst || {
               echo "no cache found"
               exit 0
         }

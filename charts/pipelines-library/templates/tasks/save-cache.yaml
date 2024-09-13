@@ -39,7 +39,7 @@ spec:
             exit 0
         }
 
-        lm="$(curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.gz|sed -n '/Last-Modified/ { s/Last-Modified: //;s/\r//; p}')"
+        lm="$(curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst|sed -n '/Last-Modified/ { s/Last-Modified: //;s/\r//; p}')"
         if [ -n "${lm}" ];then
           expired=$(python -c "import datetime, sys;print(datetime.datetime.now() > datetime.datetime.strptime(sys.argv[1], '%a, %d %b %Y %X %Z') + datetime.timedelta(days=1))" "${lm}")
           if [ "${expired}" = "False" ]; then

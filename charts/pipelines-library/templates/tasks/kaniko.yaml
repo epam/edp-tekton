@@ -16,6 +16,25 @@ spec:
     This Task builds a simple Dockerfile with kaniko and pushes to a registry.
     This Task stores the image name and digest as results, allowing Tekton Chains to pick up
     that an image was built & sign it.
+  workspaces:
+    - name: source
+      description: Holds the context and Dockerfile
+  volumes:
+    - name: dockerconfig
+      secret:
+        secretName: kaniko-docker-config
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+        optional: true
+{{- if .Values.kaniko.customCert }}
+    - name: ca
+      secret:
+        items:
+          - key: ca.crt
+            path: ca.crt
+        secretName: custom-ca-certificates
+{{- end }}
   params:
     - name: codebase-name
       description: Name of codebase
@@ -36,25 +55,6 @@ spec:
     - name: kaniko-cache-path
       description: The repo where Kaniko stores cached image layers
       default: ""
-  workspaces:
-    - name: source
-      description: Holds the context and Dockerfile
-  volumes:
-    - name: dockerconfig
-      secret:
-        secretName: kaniko-docker-config
-        items:
-          - key: .dockerconfigjson
-            path: config.json
-        optional: true
-{{- if .Values.kaniko.customCert }}
-    - name: ca
-      secret:
-        items:
-          - key: ca.crt
-            path: ca.crt
-        secretName: custom-ca-certificates
-{{- end }}
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.

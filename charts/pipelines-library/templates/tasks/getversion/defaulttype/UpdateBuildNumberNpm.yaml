@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-npm-default
 spec:
-  description:
+  description: >-
+    This task updates the version in an npm project's `package.json` file to a new build version by appending a specified version suffix.
   workspaces:
     - name: source
       description: The workspace consisting of npm project.

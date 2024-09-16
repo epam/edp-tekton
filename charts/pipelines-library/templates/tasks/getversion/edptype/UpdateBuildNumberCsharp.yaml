@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-csharp
 spec:
-  description:
+  description: >-
+    This task updates the version in a C# project's `.csproj` file to the specified version.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

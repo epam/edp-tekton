@@ -11,6 +11,7 @@ metadata:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "The Build pipeline for building {{ $k }} library with Maven (default versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

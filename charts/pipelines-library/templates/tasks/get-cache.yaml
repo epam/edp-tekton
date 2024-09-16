@@ -13,6 +13,8 @@ metadata:
 spec:
   description: >-
     This Task is used to get the cache from the distribution server. It stores cache in the root of the workspace.
+  workspaces:
+    - name: cache
   params:
     - name: CACHE_NAME
       description: "Cache name (filename) to be downloaded from the cache server."
@@ -21,10 +23,6 @@ spec:
       description: "Base image"
       default: "epamedp/tekton-autotest:0.1.6"
       type: string
-
-  workspaces:
-    - name: cache
-
   steps:
     - name: get-cache
       image: $(params.BASE_IMAGE)

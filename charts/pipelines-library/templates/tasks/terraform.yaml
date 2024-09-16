@@ -11,7 +11,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This task can be used to run opa tests on a project.
+    This task executes Terraform commands in a specified project directory, allowing for custom operations on Terraform files using a specified version of Terraform.
   workspaces:
     - name: source
   params:

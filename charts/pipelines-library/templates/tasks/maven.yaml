@@ -12,11 +12,14 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This Task can be used to run a Maven build.
-
+    This task runs a Maven build for a specified project, using custom Maven settings and integration with SonarQube and Nexus for quality analysis and artifact management.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
   params:
     - name: MAVEN_IMAGE
       type: string
@@ -41,10 +44,6 @@ spec:
       type: string
       description: name of the secret holding the Sonarqube CI integration data
       default: "ci-sonarqube"
-  volumes:
-    - name: settings-maven
-      configMap:
-        name: {{ .Values.tekton.configs.mavenConfigMap }}
   steps:
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)

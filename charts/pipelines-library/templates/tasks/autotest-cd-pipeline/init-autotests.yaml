@@ -3,9 +3,15 @@ kind: Task
 metadata:
   name: init-autotest
 spec:
+  description: >-
+    This task initializes and triggers autotests for a specified CD pipeline and stage by dynamically generating Tekton PipelineRun commands based on autotest configurations.
   workspaces:
     - name: source
       description: The workspace consisting of csharp project.
+  volumes:
+    - name: autotests-workspace-template
+      configMap:
+        name: autotests-workspace-template
   params:
     - name: stage-name
       type: string
@@ -17,10 +23,6 @@ spec:
       default: 'codebase_tags'
     - name: parent-pipeline-name
       default: ''
-  volumes:
-    - name: autotests-workspace-template
-      configMap:
-        name: autotests-workspace-template
   results:
     - name: AUTOTEST_PIPELINES
       type: string

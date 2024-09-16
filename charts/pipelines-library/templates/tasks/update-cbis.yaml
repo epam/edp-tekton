@@ -3,6 +3,9 @@ kind: Task
 metadata:
   name: update-cbis
 spec:
+  description: >-
+    This task updates a Codebase ImageStream (CBIS) with a new image tag. It checks for the presence of tags in the specified CBIS and adds the new tag if it doesn't already exist.
+    The task utilizes kubectl commands and is customizable with parameters for CBIS
   params:
     - name: CBIS_NAME
       type: string

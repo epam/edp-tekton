@@ -3,6 +3,10 @@ kind: Task
 metadata:
   name: update-cbb
 spec:
+  description: >-
+    This task updates the status of a CodebaseBranch (CBB) with a new build number.
+    It uses kubectl commands to patch the CBB resource with the provided build number, ensuring the branch's status reflects the latest successful build.
+    The task allows customization through parameters for the branch name, build number, and base image.
   params:
     - name: CODEBASEBRANCH_NAME
       type: string

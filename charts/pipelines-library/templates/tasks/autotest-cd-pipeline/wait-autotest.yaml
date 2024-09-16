@@ -3,6 +3,8 @@ kind: Task
 metadata:
   name: wait-for-autotests
 spec:
+  description: >-
+    This task waits for the completion of specified autotest pipelines by monitoring their statuses and exits if any pipeline fails.
   workspaces:
     - name: source
       description: The workspace consisting of csharp project.

@@ -20,6 +20,10 @@ spec:
   workspaces:
     - name: source
       description: The workspace consisting of the gradle project.
+  volumes:
+    - name: settings-codenarc
+      configMap:
+        name: custom-codenarc-settings
   params:
     - name: BASE_IMAGE
       description: Gradle base image.
@@ -38,10 +42,6 @@ spec:
       default: |
         -Dorg.gradle.internal.publish.checksums.insecure=true \
         publish
-  volumes:
-    - name: settings-codenarc
-      configMap:
-        name: custom-codenarc-settings
   steps:
     - name: gradle-tasks
       image: $(params.BASE_IMAGE)

@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-python-default
 spec:
-  description:
+  description: >-
+    This task updates the version in a Python project's `version/__init__.py` file to the specified version.
   workspaces:
     - name: source
       description: The workspace consisting of python project.

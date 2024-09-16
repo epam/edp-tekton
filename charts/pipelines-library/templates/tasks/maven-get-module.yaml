@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: get-maven-module
 spec:
-  description: Get maven deployable multimodule directory name.
+  description: >-
+    This task determines the deployable multi-module directory in a Maven project and outputs its name as a result.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

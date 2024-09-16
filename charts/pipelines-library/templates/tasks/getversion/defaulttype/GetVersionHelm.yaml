@@ -3,8 +3,8 @@ kind: Task
 metadata:
   name: get-version-helm-default
 spec:
-  description:
-    The task is used to get the version of the application from the helm chart.
+  description: >-
+    This task retrieves the version from a Helm chart's `Chart.yaml` file and generates a VCS tag and IS tag based on the branch name and chart version.
   workspaces:
     - name: source
       description: The workspace consisting of csharp project.

@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: get-version-edp
 spec:
-  description:
+  description: >-
+    This task retrieves and updates the version information for a specified CodebaseBranch, generating the application version, VCS tag, build ID, and other version details.
   params:
     - name: CODEBASEBRANCH_NAME
       type: string

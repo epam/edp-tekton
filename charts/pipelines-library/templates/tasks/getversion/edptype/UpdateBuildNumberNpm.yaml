@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-npm
 spec:
-  description:
+  description: >-
+    This task updates the build number in an npm project by setting a new version in the `package.json` file using the provided branch version and build ID.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

@@ -10,6 +10,15 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
+  description: >-
+    This task runs `helm lint` to validate Helm charts using configurable chart testing settings, with support for version increment checks and custom commands.
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  volumes:
+    - name: ct-config-volume
+      configMap:
+        name: ct-config
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
@@ -40,13 +49,6 @@ spec:
       description: "Git branch"
       default: "master"
       type: string
-  workspaces:
-    - description: A workspace that contains fetched git repo.
-      name: source
-  volumes:
-    - name: ct-config-volume
-      configMap:
-        name: ct-config
   steps:
     - image: $(params.BASE_IMAGE)
       name: helm-lint

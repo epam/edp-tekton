@@ -9,7 +9,7 @@ metadata:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Review pipeline for building {{ $k }} library with npm and running tests"
+  description: "The Review pipeline for building {{ $k }} library with NPM"
 
   workspaces:
     - name: shared-workspace

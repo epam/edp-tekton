@@ -11,6 +11,7 @@ metadata:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "The Review pipeline for building {{ $k }} library with Gradle"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

@@ -4,11 +4,14 @@ metadata:
   name: run-tests-for-autotests
 spec:
   description: >-
-    This Task can be used to run tests for autotests.
-
+    This task checks for the presence of a `run.json` file, extracts a test command based on the provided test type, and executes the command with Maven using Nexus settings.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.
+  volumes:
+    - name: settings-maven
+      configMap:
+        name: {{ .Values.tekton.configs.mavenConfigMap }}
   params:
     - name: TEST_TYPE
       description: "Test type command in file run.json"
@@ -22,10 +25,6 @@ spec:
   results:
     - name: COMMAND
       type: string
-  volumes:
-    - name: settings-maven
-      configMap:
-        name: {{ .Values.tekton.configs.mavenConfigMap }}
   steps:
     - name: check-run-json-file
       image: "python:3.9.14-alpine3.16"

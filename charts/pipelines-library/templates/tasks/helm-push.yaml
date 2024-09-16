@@ -3,9 +3,8 @@ kind: Task
 metadata:
   name: helm-push
 spec:
-  description: |
-    This Task allows Uset to push a new version of the Helm Chart
-    to the repository with Snapshot versions.
+  description: >-
+   This task pushes a new version of a Helm chart to a container registry, supporting both ECR and other registry types, and includes handling for different platforms and registry configurations.
   workspaces:
     - name: source
       description: A workspace that contains the repository.

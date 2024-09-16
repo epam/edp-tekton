@@ -4,7 +4,7 @@ metadata:
   name: update-build-number-helm-chart
 spec:
   description: >-
-    This Task can be used to update a helm chart version.
+    This task updates the version number in a Helm chart's `Chart.yaml` file to the specified version.
   workspaces:
     - name: source
       description: The workspace consisting of helm chart project.

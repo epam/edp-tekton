@@ -8,8 +8,8 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  description: |
-    This task validates a commit message.
+  description: >-
+   This task validates a commit message against a specified regex pattern and checks that each line does not exceed a maximum length.
   params:
     - name: COMMIT_MESSAGE
       description: "Commit message"

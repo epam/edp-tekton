@@ -11,7 +11,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This task will run `helm template` command for helm chart
+   This task runs the `helm template` command to generate Kubernetes manifests from a Helm chart, with optional extra parameters and commands for customization.
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source

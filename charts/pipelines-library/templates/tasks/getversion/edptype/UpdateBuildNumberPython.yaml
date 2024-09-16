@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-python
 spec:
-  description:
+  description: >-
+    This task updates the build number in a Python project by modifying the version in the `version/__init__.py` file, provided the version does not contain "snapshot".
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

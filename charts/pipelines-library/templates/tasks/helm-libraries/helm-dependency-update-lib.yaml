@@ -11,7 +11,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This task will update dependencies of a helm chart
+    This task updates dependencies for all Helm charts in a specified directory using the `helm dependency update` command with optional extra parameters.
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source

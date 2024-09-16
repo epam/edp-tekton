@@ -11,7 +11,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This task can be used to scan images for vulnerabilites
+   This task scans container images for vulnerabilities using Trivy and Grype, generates reports in JUnit XML format, and uploads the reports to ReportPortal.
   workspaces:
     - name: source
   params:

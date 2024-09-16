@@ -12,11 +12,14 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This Task can be used to run a Gradle build.
-
+   This task compiles, tests, and builds a Gradle project with configurable integration for Nexus, using custom Gradle settings and caching.
   workspaces:
     - name: source
       description: The workspace consisting of the gradle project.
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: {{ .Values.tekton.configs.gradleConfigMap }}
   params:
     - name: BASE_IMAGE
       description: Gradle base image.
@@ -33,10 +36,6 @@ spec:
     - name: GRADLE_USER_CACHE
       description: Gradle user cache directory
       default: /workspace/source/cache
-  volumes:
-    - name: settings-gradle
-      configMap:
-        name: {{ .Values.tekton.configs.gradleConfigMap }}
   steps:
     - name: compile
       image: $(params.BASE_IMAGE)

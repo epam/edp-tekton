@@ -10,6 +10,8 @@ metadata:
     tekton.dev/tags: scan-tool
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
+  description: >-
+    This task scans the source code for security vulnerabilities using Semgrep and reports the results to DefectDojo and Dependency-Track for further analysis and tracking.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

@@ -13,7 +13,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This Task creates an ECR repo
+   This task creates an Amazon ECR repository if it doesn't already exist, based on the provided repository name and AWS region configuration.
   params:
     - name: REPO_NAME
       description: "The name of the ecr repository where we are going to push the image"

@@ -3,8 +3,8 @@ kind: Task
 metadata:
   name: clean
 spec:
-  description: |
-    This Task is used to delete Argo CD application.
+  description: >-
+    This task cleans up Argo CD applications for a specified pipeline and stage by deleting the applications matching the provided labels.
   params:
     - name: PIPELINE
       type: string

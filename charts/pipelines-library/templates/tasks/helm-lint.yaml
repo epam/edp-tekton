@@ -10,6 +10,15 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
+  description: >-
+   This task validates Helm charts using `helm-lint` with configurable chart and configuration directories, supporting custom user environments and additional commands.
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
+  volumes:
+    - name: ct-config-volume
+      configMap:
+        name: ct-config
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
@@ -28,13 +37,7 @@ spec:
     - name: CT_CONFIGS_DIR
       description: "ct-configs directory for helm-lint"
       default: "."
-  workspaces:
-    - description: A workspace that contains fetched git repo.
-      name: source
-  volumes:
-    - name: ct-config-volume
-      configMap:
-        name: ct-config
+
   steps:
     - image: $(params.BASE_IMAGE)
       name: helm-lint

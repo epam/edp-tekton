@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-gradle
 spec:
-  description:
+  description: >-
+    This task updates the version in a Gradle project's `build.gradle` file based on the branch version, build ID, and release branch status.
   workspaces:
     - name: source
       description: The workspace consisting of maven project.

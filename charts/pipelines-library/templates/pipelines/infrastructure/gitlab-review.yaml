@@ -7,6 +7,7 @@ metadata:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
+  description: "The Review pipeline for building Terraform infrastructure"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

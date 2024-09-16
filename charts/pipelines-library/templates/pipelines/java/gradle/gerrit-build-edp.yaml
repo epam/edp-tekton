@@ -11,7 +11,7 @@ metadata:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $k }} application with Gradle and running tests (EDP versioning)"
+  description: "The Build pipeline for building {{ $k }} application with Gradle (EDP versioning)"
 
   workspaces:
     - name: shared-workspace

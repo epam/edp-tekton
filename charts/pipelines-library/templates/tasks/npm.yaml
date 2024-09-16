@@ -14,6 +14,12 @@ spec:
     This task can be used to run npm goals on a project
     where package.json is present and has some pre-defined
     npm scripts.
+  workspaces:
+    - name: source
+  volumes:
+    - name: settings-npm
+      configMap:
+        name: {{ .Values.tekton.configs.npmConfigMap }}
   params:
     - name: PATH_CONTEXT
       type: string
@@ -29,15 +35,6 @@ spec:
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
-
-  workspaces:
-    - name: source
-
-  volumes:
-    - name: settings-npm
-      configMap:
-        name: {{ .Values.tekton.configs.npmConfigMap }}
-
   steps:
     - name: npm
       image: $(params.BASE_IMAGE)

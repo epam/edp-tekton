@@ -12,17 +12,15 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This Task can be used to run a DotNet build.
+    This task builds a .NET project with integration for Nexus and SonarQube, allowing for custom build commands and using a specified NuGet configuration.
 
   workspaces:
     - name: source
       description: The workspace consisting of the dotnet project.
-
   volumes:
     - name: settings-nuget
       configMap:
         name: {{ .Values.tekton.configs.nugetConfigMap }}
-
   params:
     - name: BASE_IMAGE
       description: DotNet base image.

@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: update-build-number-gradle-default
 spec:
-  description:
+  description: >-
+    This task updates the version in a Gradle project's `build.gradle` file to the specified version.
   workspaces:
     - name: source
       description: The workspace consisting of gradle project.

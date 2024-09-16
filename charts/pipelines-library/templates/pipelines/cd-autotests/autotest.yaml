@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
+  description: "The pipeline for running {{ $k }} in CD pipeline"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

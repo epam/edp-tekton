@@ -20,6 +20,10 @@ spec:
 
   workspaces:
     - name: source
+  volumes:
+    - name: settings-gradle
+      configMap:
+        name: {{ .Values.tekton.configs.gradleConfigMap }}
   params:
     - name: SONAR_PROJECT_KEY
       description: Project's unique key
@@ -64,10 +68,6 @@ spec:
       default: "."
     - name: EXTRA_COMMANDS
       type: string
-  volumes:
-    - name: settings-gradle
-      configMap:
-        name: {{ .Values.tekton.configs.gradleConfigMap }}
   steps:
     - image: epamedp/tekton-autotest:0.1.3
       name: prepare-project

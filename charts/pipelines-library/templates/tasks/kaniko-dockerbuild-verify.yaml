@@ -13,7 +13,14 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This Task builds a Dockerfile with kaniko.
+   This task builds a Docker image from a Dockerfile using Kaniko without pushing it to a registry. It outputs the image digest and stores the image as a tar file.
+  workspaces:
+    - name: source
+      description: Holds the context and Dockerfile
+    - name: dockerconfig
+      description: Includes a docker `config.json`
+      optional: true
+      mountPath: /kaniko/.docker
   params:
     - name: codebase-name
       description: Name of codebase
@@ -33,13 +40,6 @@ spec:
     - name: builder-image
       description: The image on which builds will run
       default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
-  workspaces:
-    - name: source
-      description: Holds the context and Dockerfile
-    - name: dockerconfig
-      description: Includes a docker `config.json`
-      optional: true
-      mountPath: /kaniko/.docker
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.

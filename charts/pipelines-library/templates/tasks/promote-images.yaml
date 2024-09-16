@@ -3,6 +3,7 @@ kind: Task
 metadata:
   name: promote-images
 spec:
+  description: "The task promotes images to the next deployment stage."
   params:
     - name: BASE_IMAGE
       description: The base image for the task.

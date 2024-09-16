@@ -16,6 +16,9 @@ spec:
     A smarter Dockerfile linter that helps you build best practice Docker
     images. The linter parses the Dockerfile into an AST and performs rules on
     top of the AST
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
@@ -30,9 +33,6 @@ spec:
         | gitlab_codeclimate | codacy] (default tty).
       name: output-format
       type: string
-  workspaces:
-    - description: A workspace that contains fetched git repo.
-      name: source
   steps:
     - image: $(params.BASE_IMAGE)
       name: lint-dockerfile

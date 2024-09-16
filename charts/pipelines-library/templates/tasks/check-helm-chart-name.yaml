@@ -3,6 +3,11 @@ kind: Task
 metadata:
   name: check-helm-chart-name
 spec:
+  description: >-
+   This task checks if the name specified in the Helm chart's `Chart.yaml` matches the provided `CODEBASE_NAME`.
+  workspaces:
+    - description: A workspace that contains fetched git repo.
+      name: source
   params:
     - name: codebase_name
       type: string
@@ -31,6 +36,4 @@ spec:
         fi
 
       workingDir: $(workspaces.source.path)
-  workspaces:
-    - description: A workspace that contains fetched git repo.
-      name: source
+

@@ -12,7 +12,9 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
   description: >-
-    This Task is Golang task to build Go projects.
+   This task builds a Go project using specified parameters for the target operating system, architecture, and build settings, with support for additional custom commands.
+  workspaces:
+    - name: source
   params:
     - name: GOOS
       description: "running program's operating system target"
@@ -54,9 +56,6 @@ spec:
       description: "Go proxy server"
       default: ""
       type: string
-  workspaces:
-    - name: source
-
   steps:
     - name: golang
       image: $(params.BASE_IMAGE)

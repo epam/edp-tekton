@@ -11,7 +11,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This task will run `helm-docs` command for helm chart
+   This task generates documentation for Helm charts using `helm-docs` and validates if the generated README.md is up-to-date.
   workspaces:
     - description: A workspace that contains fetched git repo.
       name: source

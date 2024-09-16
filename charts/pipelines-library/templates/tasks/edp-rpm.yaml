@@ -11,7 +11,10 @@ metadata:
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-    This task is used to build rpm artifact
+    This task builds an RPM package from source code using a specified RPM build image. It includes steps for linting, building, and publishing the RPM artifact to a Nexus repository.
+    The task is customizable through parameters for context paths, image versions, additional commands, and Nexus integration secrets.
+  workspaces:
+    - name: source
   params:
     - name: PATH_CONTEXT
       type: string
@@ -45,9 +48,6 @@ spec:
     - name: EXTRA_PUSH_COMMAND
       type: string
       description: Publish rpm artifact
-
-  workspaces:
-    - name: source
   steps:
     - name: lint
       image: $(params.BASE_IMAGE)

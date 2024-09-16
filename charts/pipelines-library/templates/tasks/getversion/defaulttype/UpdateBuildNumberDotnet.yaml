@@ -3,7 +3,8 @@ kind: Task
 metadata:
   name: get-version-dotnet-default
 spec:
-  description:
+  description: >-
+    This task retrieves the version information for a .NET project, generates a build version and VCS tag based on the branch name and current timestamp.
   workspaces:
     - name: source
       description: The workspace consisting of dotnet project.

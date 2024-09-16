@@ -3,6 +3,13 @@ kind: Task
 metadata:
   name: run-quality-gate
 spec:
+  description: >-
+    This task runs a quality gate. It can use a Kubeconfig secret to connect to a remote Kubernetes cluster.
+  volumes:
+    - name: kubeconfig
+      secret:
+        secretName: $(params.KUBECONFIG_SECRET_NAME)
+        optional: true
   params:
     - name: BASE_IMAGE
       description: The base image for the task (different for buildtools).
@@ -16,11 +23,6 @@ spec:
       type: string
       description: The name of secret with Kubeconfig to connect to the remote cluster
       default: "in-cluster"
-  volumes:
-    - name: kubeconfig
-      secret:
-        secretName: $(params.KUBECONFIG_SECRET_NAME)
-        optional: true
   steps:
     - name: run
       image: $(params.BASE_IMAGE)

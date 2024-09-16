@@ -8,6 +8,11 @@ metadata:
     tekton.dev/displayName: Dep-Analysis
     tekton.dev/platforms: linux/amd64
 spec:
+  description: >-
+   This task generates a CycloneDX Software Bill of Materials (SBOM) and uploads it to Dependency Track for analysis and tracking of project dependencies.
+
+  workspaces:
+    - name: source
   params:
     - default: ''
       description: That is the name of the project that will be updated/created on the dependency track side
@@ -44,5 +49,3 @@ spec:
 
         /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME
       workingDir: $(workspaces.source.path)
-  workspaces:
-    - name: source

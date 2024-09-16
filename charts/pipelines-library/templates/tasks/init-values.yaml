@@ -3,6 +3,8 @@ kind: Task
 metadata:
   name: init-values
 spec:
+  description: >-
+   This task initializes pipeline values by generating a tenant name, a normalized branch name, and a formatted codebase image name based on provided parameters.
   params:
     - name: CODEBASE_NAME
       type: string

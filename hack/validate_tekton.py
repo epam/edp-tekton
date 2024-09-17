@@ -10,6 +10,11 @@ PIPELINE_MANDATORY_FIELDS = ['description', 'params', 'tasks']
 TASK_EXPECTED_ORDER = ['description', 'workspaces', 'params', 'results', 'steps']
 TASK_MANDATORY_FIELDS = ['description', 'params', 'steps']
 
+config = """
+global:
+  dnsWildCard: example.com
+"""
+
 def helm_template(config, output_file):
     with tempfile.NamedTemporaryFile() as temp:
         with open(temp.name, "w") as values:
@@ -73,21 +78,6 @@ def check_key_order(spec, expected_order):
     return keys[:len(expected_keys)] == expected_keys
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python validate_tekton.py <config_file>")
-        sys.exit(1)
-
-    config_file = sys.argv[1]
-    try:
-        with open(config_file, 'r') as file:
-            config = file.read()
-    except FileNotFoundError:
-        print(f"Error: The file '{config_file}' does not exist.")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: Could not open or read the file '{config_file}'. {e}")
-        sys.exit(1)
-
     with tempfile.TemporaryDirectory() as temp_dir:
         output_file = os.path.join(temp_dir, "output.yaml")
         helm_template(config, output_file)

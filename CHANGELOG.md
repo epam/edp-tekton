@@ -3,6 +3,7 @@
 
 ### Features
 
+- Add maven-rpm pipelines ([#282](https://github.com/epam/edp-tekton/issues/282))
 - Add deploy pipeline with approve task([#279](https://github.com/epam/edp-tekton/issues/279))
 - Implement rpm build functionality ([#272](https://github.com/epam/edp-tekton/issues/272))
 - Enhance Pipeline Triggering Process ([#263](https://github.com/epam/edp-tekton/issues/263))
@@ -16,6 +17,8 @@
 
 ### Bug Fixes
 
+- Fix c lang pipelines ([#290](https://github.com/epam/edp-tekton/issues/290))
+- Fix TriggerTemplate for deploy with approve step ([#279](https://github.com/epam/edp-tekton/issues/279))
 - Align rpm-build argo diff  ([#272](https://github.com/epam/edp-tekton/issues/272))
 - Update parameter definition ([#261](https://github.com/epam/edp-tekton/issues/261))
 - Fix code duplication in dockerbuild-verify Task([#242](https://github.com/epam/edp-tekton/issues/242))
@@ -25,6 +28,17 @@
 
 ### Routine
 
+- Remove config.yaml from validation script ([#290](https://github.com/epam/edp-tekton/issues/290))
+- Add description to the approval promote procedure ([#279](https://github.com/epam/edp-tekton/issues/279))
+- Update save-cache and get-cache tasks ([#294](https://github.com/epam/edp-tekton/issues/294))
+- Update base image for cache tasks ([#294](https://github.com/epam/edp-tekton/issues/294))
+- Switch cache compression algorithm to zstd ([#294](https://github.com/epam/edp-tekton/issues/294))
+- Add check for the Tekton Pipeline and Task structure ([#290](https://github.com/epam/edp-tekton/issues/290))
+- Align Tekton Piplines formating
+- Add k8s 1.30 check and update kuttle ([#282](https://github.com/epam/edp-tekton/issues/282))
+- Update Tekton-dashboard version to v0.50.0 ([#286](https://github.com/epam/edp-tekton/issues/286))
+- Do not set make parameters for rpm build ([#282](https://github.com/epam/edp-tekton/issues/282))
+- Update rpm-build flow for java17 maven ([#282](https://github.com/epam/edp-tekton/issues/282))
 - Update report message
 - Enable labels for review and build pipelines ([#270](https://github.com/epam/edp-tekton/issues/270))
 - Disable Tekton dashboard deployments([#266](https://github.com/epam/edp-tekton/issues/266))

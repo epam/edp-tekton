@@ -60,7 +60,7 @@ gitServers:
     assert "webhookUrl" not in gitserver
 
     guicklink = r["quicklink"]["my-github"]["spec"]
-    assert "system" == guicklink["type"]
+    assert "default" == guicklink["type"]
     assert "https://github.com" == guicklink["url"]
 
 def test_github_build_trigger():

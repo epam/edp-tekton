@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  type: system
+  type: default
   url: "https://{{ dig "quickLink" "host" $server.host $server}}"
   visible: true
   {{- if eq $server.gitProvider "github" }}

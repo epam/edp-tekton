@@ -53,7 +53,7 @@ gitServers:
     assert "https://my-custom-ingress-name.example.com" == gitserver["webhookUrl"]
 
     guicklink = r["quicklink"]["my-gitlab"]["spec"]
-    assert "system" == guicklink["type"]
+    assert "default" == guicklink["type"]
     assert "https://gitlab.com" == guicklink["url"]
 
 def test_gitlab_build_trigger():

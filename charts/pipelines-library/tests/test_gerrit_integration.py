@@ -73,7 +73,7 @@ gitServers:
     assert 30100 == gitserver["sshPort"]
 
     guicklink = r["quicklink"]["my-gerrit"]["spec"]
-    assert "system" == guicklink["type"]
+    assert "default" == guicklink["type"]
     assert "https://gerrit-external.com" == guicklink["url"]
 
 def test_gerrit_is_enabled_with_custom_port():

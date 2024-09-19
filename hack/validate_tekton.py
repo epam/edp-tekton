@@ -7,7 +7,7 @@ from subprocess import check_output, CalledProcessError
 PIPELINE_EXPECTED_ORDER = ['description', 'workspaces', 'params', 'results', 'tasks', 'finally']
 PIPELINE_MANDATORY_FIELDS = ['description', 'params', 'tasks']
 
-TASK_EXPECTED_ORDER = ['description', 'workspaces', 'params', 'results', 'steps']
+TASK_EXPECTED_ORDER = ['description', 'workspaces', 'volumes', 'params', 'results', 'steps']
 TASK_MANDATORY_FIELDS = ['description', 'params', 'steps']
 
 config = """
@@ -71,7 +71,7 @@ def check_key_order(spec, expected_order):
 
     # Check if all required keys are present
     for key in expected_order:
-        if key not in keys and key not in ['workspaces', 'finally', 'results']:
+        if key not in keys and key not in ['workspaces', 'volumes', 'finally', 'results']:
             return False
 
     # Check if the order of the present keys is correct

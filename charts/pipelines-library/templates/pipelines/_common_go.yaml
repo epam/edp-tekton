@@ -28,8 +28,6 @@
       value: "$(tasks.get-version.results.IS_TAG)"
     - name: image-tar
       value: "$(params.CODEBASE_NAME)_$(tasks.get-version.results.IS_TAG)"
-    - name: kaniko-cache-path
-      value: "kaniko-cache"
   workspaces:
     - name: source
       workspace: shared-workspace

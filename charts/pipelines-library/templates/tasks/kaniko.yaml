@@ -52,9 +52,6 @@ spec:
     - name: builder-image
       description: The image on which builds will run
       default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
-    - name: kaniko-cache-path
-      description: The repo where Kaniko stores cached image layers
-      default: ""
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
@@ -103,8 +100,6 @@ spec:
           value: "$(params.dockerfile)"
         - name: CONTEXT
           value: "$(params.context)"
-        - name: KANIKO_CACHE_PATH
-          value: "$(params.kaniko-cache-path)"
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:
@@ -128,18 +123,11 @@ spec:
           --digest-file=/tekton/results/IMAGE_DIGEST \
           --tar-path=${IMAGE_TAR}.tar "
 
-        kaniko_cache=" --cache=true \
-                       --cache-repo=${CONTAINER_REGISTRY_URL}/${KANIKO_CACHE_PATH} "
-
         okd_skip_tls=" --skip-tls-verify "
 
         custom_certs={{- .Values.kaniko.customCert }}
 
         command=$base_command
-
-        if [ -n "$KANIKO_CACHE_PATH" ]; then
-          command="$command $kaniko_cache";
-        fi
 
         if [ $PLATFORM == "openshift" ]; then
           command="$command $okd_skip_tls";

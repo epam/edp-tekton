@@ -82,7 +82,9 @@ clean:  ## clean up
 	-rm -rf ${DIST_DIR}
 
 .PHONY: test ## Run tests
-test: test-chart
+test: test-chart test-go
+
+test-go:
 	go test ./... -coverprofile=coverage.out `go list ./...`
 
 .PHONY: lint

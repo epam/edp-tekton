@@ -124,6 +124,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 				mocks.NewProcessor(t),
 				mocks.NewProcessor(t),
 				tt.gerritProcessor(t),
+				mocks.NewProcessor(t),
 				zap.NewNop().Sugar(),
 			)
 
@@ -149,10 +150,11 @@ func TestEDPInterceptor_Process(t *testing.T) {
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
 
 	type fields struct {
-		gitHubProcessor func(t *testing.T) event_processor.Processor
-		gitLabProcessor func(t *testing.T) event_processor.Processor
-		gerritProcessor func(t *testing.T) event_processor.Processor
-		kubeObjects     []client.Object
+		gitHubProcessor    func(t *testing.T) event_processor.Processor
+		gitLabProcessor    func(t *testing.T) event_processor.Processor
+		gerritProcessor    func(t *testing.T) event_processor.Processor
+		bitBucketProcessor func(t *testing.T) event_processor.Processor
+		kubeObjects        []client.Object
 	}
 
 	type args struct {
@@ -204,6 +206,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					return &mocks.Processor{}
 				},
 				gerritProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
 					return &mocks.Processor{}
 				},
 				kubeObjects: []client.Object{
@@ -308,6 +313,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				gerritProcessor: func(t *testing.T) event_processor.Processor {
 					return &mocks.Processor{}
 				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
 				kubeObjects: []client.Object{
 					&codebaseApi.CodebaseBranch{
 						ObjectMeta: metav1.ObjectMeta{
@@ -405,6 +413,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 
 					return m
 				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
 				kubeObjects: []client.Object{
 					&codebaseApi.CodebaseBranch{
 						ObjectMeta: metav1.ObjectMeta{
@@ -495,6 +506,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 
 					return m
 				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
 			},
 			args: args{
 				r: &triggersv1.InterceptorRequest{
@@ -554,6 +568,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 
 					return m
 				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
+				},
 			},
 			args: args{
 				r: &triggersv1.InterceptorRequest{
@@ -597,6 +614,9 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					)
 
 					return m
+				},
+				bitBucketProcessor: func(t *testing.T) event_processor.Processor {
+					return &mocks.Processor{}
 				},
 			},
 			args: args{
@@ -644,6 +664,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 				tt.fields.gitHubProcessor(t),
 				tt.fields.gitLabProcessor(t),
 				tt.fields.gerritProcessor(t),
+				tt.fields.bitBucketProcessor(t),
 				zap.NewNop().Sugar(),
 			)
 

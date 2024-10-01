@@ -34,11 +34,12 @@ type EDPInterceptorInterface interface {
 
 // EDPInterceptor is an interceptor for EDP.
 type EDPInterceptor struct {
-	gitHubProcessor event_processor.Processor
-	gitLabProcessor event_processor.Processor
-	gerritProcessor event_processor.Processor
-	client          ctrlClient.Reader
-	logger          *zap.SugaredLogger
+	gitHubProcessor    event_processor.Processor
+	gitLabProcessor    event_processor.Processor
+	gerritProcessor    event_processor.Processor
+	bitbucketProcessor event_processor.Processor
+	client             ctrlClient.Reader
+	logger             *zap.SugaredLogger
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
@@ -47,14 +48,16 @@ func NewEDPInterceptor(
 	gitHubProcessor event_processor.Processor,
 	gitLabProcessor event_processor.Processor,
 	gerritProcessor event_processor.Processor,
+	bitbucketProcessor event_processor.Processor,
 	l *zap.SugaredLogger,
 ) *EDPInterceptor {
 	return &EDPInterceptor{
-		gitHubProcessor: gitHubProcessor,
-		gitLabProcessor: gitLabProcessor,
-		gerritProcessor: gerritProcessor,
-		client:          c,
-		logger:          l,
+		gitHubProcessor:    gitHubProcessor,
+		gitLabProcessor:    gitLabProcessor,
+		gerritProcessor:    gerritProcessor,
+		bitbucketProcessor: bitbucketProcessor,
+		client:             c,
+		logger:             l,
 	}
 }
 
@@ -152,6 +155,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.InterceptorRequest) (*event_processor.EventInfo, error) {
 	githubEventType, isGitHubEvent := r.Header["X-Github-Event"]
 	gitLabEventType, isGitLabEvent := r.Header["X-Gitlab-Event"]
+	bitbucketEventType, isBitbucketEvent := r.Header["X-Event-Key"]
 	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
 	if isGitLabEvent {
@@ -167,6 +171,15 @@ func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.Interce
 		event, err := i.gitHubProcessor.Process(ctx, []byte(r.Body), ns, getEventTypeFromHeader(githubEventType))
 		if err != nil {
 			return nil, fmt.Errorf("failed to process GitHub event: %w", err)
+		}
+
+		return event, nil
+	}
+
+	if isBitbucketEvent {
+		event, err := i.bitbucketProcessor.Process(ctx, []byte(r.Body), ns, getEventTypeFromHeader(bitbucketEventType))
+		if err != nil {
+			return nil, fmt.Errorf("failed to process Bitbucket event: %w", err)
 		}
 
 		return event, nil

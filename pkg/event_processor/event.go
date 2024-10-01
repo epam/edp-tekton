@@ -52,14 +52,69 @@ type GitLabComment struct {
 	Note string `json:"note"`
 }
 
-const (
-	GitProviderGitHub = "github"
-	GitProviderGitLab = "gitlab"
-	GitProviderGerrit = "gerrit"
+type BitbucketEvent struct {
+	Repository  BitbucketRepository  `json:"repository"`
+	PullRequest BitbucketPullRequest `json:"pullrequest"`
+	Actor       BitbucketActor       `json:"actor"`
+}
 
-	GerritEventTypeCommentAdded = "comment-added"
-	GitHubEventTypeCommentAdded = "issue_comment"
-	GitLabEventTypeCommentAdded = "Note Hook"
+type BitbucketCommentEvent struct {
+	BitbucketEvent
+	Comment BitbucketComment `json:"comment"`
+}
+
+type BitbucketRepository struct {
+	FullName string `json:"full_name"`
+}
+
+type BitbucketPullRequest struct {
+	ID          int                      `json:"id"`
+	Title       string                   `json:"title"`
+	Source      BitbucketPullRequestSrc  `json:"source"`
+	Destination BitbucketPullRequestDest `json:"destination"`
+	LastCommit  BitbucketCommit          `json:"last_commit"`
+}
+
+type BitbucketPullRequestSrc struct {
+	Branch BitbucketBranch `json:"branch"`
+	Commit BitbucketCommit `json:"commit"`
+}
+
+type BitbucketPullRequestDest struct {
+	Branch BitbucketBranch `json:"branch"`
+	Commit BitbucketCommit `json:"commit"`
+}
+
+type BitbucketBranch struct {
+	Name string `json:"name"`
+}
+
+type BitbucketComment struct {
+	Content BitbucketCommentContent `json:"content"`
+}
+
+type BitbucketCommentContent struct {
+	Raw string `json:"raw"`
+}
+
+type BitbucketCommit struct {
+	Hash string `json:"hash"`
+}
+
+type BitbucketActor struct {
+	DisplayName string `json:"display_name"`
+}
+
+const (
+	GitProviderGitHub    = "github"
+	GitProviderGitLab    = "gitlab"
+	GitProviderGerrit    = "gerrit"
+	GitProviderBitbucket = "bitbucket"
+
+	GerritEventTypeCommentAdded    = "comment-added"
+	GitHubEventTypeCommentAdded    = "issue_comment"
+	GitLabEventTypeCommentAdded    = "Note Hook"
+	BitbucketEventTypeCommentAdded = "pullrequest:comment_created"
 
 	EventTypeReviewComment = "comment"
 	EventTypeMerge         = "merge"

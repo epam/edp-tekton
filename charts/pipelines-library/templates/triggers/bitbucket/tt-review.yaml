@@ -1,0 +1,78 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: bitbucket-review-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+    - name: gitrepositoryurl
+    - name: gitrepositoryname
+    - name: gitfullrepositoryname
+      description: Full Repo name. Used in "bitbucket-set-status" step as REPO_PATH_ONLY
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: codebase
+      description: Codebase name used in pipeline
+    - name: codebasebranch
+      description: Codebasebranch name used in pipeline
+    - name: commitMessagePattern
+      description: Commit message pattern to run commit-validate task
+    - name: commitMessage
+      description: Commit message
+    - name: pipelineName
+      description: Pipeline to trigger. Populated by edp interceptor from codebasebranch spec
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.codebasebranch)-review-
+        labels:
+          # used by UI to sort pipelines for codebasebranches
+          app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)
+          app.edp.epam.com/codebase: $(tt.params.codebase)
+          app.edp.epam.com/pipelinetype: review
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+        pipelineRef:
+          name: $(tt.params.pipelineName)
+        params:
+          - name: git-source-url
+            value: $(tt.params.gitrepositoryurl)
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.codebase)
+          - name: CODEBASEBRANCH_NAME
+            value: $(tt.params.codebasebranch)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
+          - name: changeNumber
+            value: $(tt.params.changeNumber)
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
+          - name: COMMIT_MESSAGE_PATTERN
+            value: $(tt.params.commitMessagePattern)
+          - name: COMMIT_MESSAGE
+            value: $(tt.params.commitMessage)
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: {{ .Values.tekton.workspaceSize }}
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: ci-bitbucket
+{{ end }}

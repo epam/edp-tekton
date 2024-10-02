@@ -102,7 +102,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
 | global.gerritHost | string | `"gerrit"` | Gerrit Host URL, must be specified if gerrit is enabled |
-| global.gitProviders | list | `["github","gitlab","gerrit"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
+| global.gitProviders | list | `["bitbucket","gerrit","github","gitlab"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
 | grafana.dashboards.labelKey | string | `"grafana_dashboard"` |  |
 | grafana.dashboards.labelValue | string | `"1"` |  |

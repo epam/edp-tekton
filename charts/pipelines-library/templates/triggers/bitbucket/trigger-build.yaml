@@ -1,0 +1,28 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: bitbucket-build
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  interceptors:
+    - ref:
+        kind: ClusterInterceptor
+        name: "bitbucket"
+      params:
+        - name: "secretRef"
+          value:
+            secretName: ci-bitbucket
+            secretKey: secretString
+        - name: "eventTypes"
+          value:
+            - pullrequest:fulfilled
+    - ref:
+        name: "edp"
+        kind: NamespacedInterceptor
+  bindings:
+    - ref: bitbucket-binding-build
+  template:
+    ref: bitbucket-build-template
+{{ end }}

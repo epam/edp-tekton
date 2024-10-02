@@ -10,16 +10,10 @@ import (
 	"github.com/google/go-github/v31/github"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
-
-const gitServerTokenField = "token"
 
 type EventProcessor struct {
 	ksClient     ctrlClient.Reader
@@ -103,7 +97,7 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}
 
-	gitServerToken, err := p.getGitServerToken(ctx, codebase)
+	gitServerToken, err := event_processor.GetGitServerToken(ctx, p.ksClient, codebase)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get git server token for GitHub PullRequestEvent: %w", err)
 	}
@@ -156,7 +150,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}
 
-	gitServerToken, err := p.getGitServerToken(ctx, codebase)
+	gitServerToken, err := event_processor.GetGitServerToken(ctx, p.ksClient, codebase)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get git server token for GitHub IssueCommentEvent: %w", err)
 	}
@@ -238,26 +232,6 @@ func (*EventProcessor) getCommitMessage(
 	}
 
 	return *m, nil
-}
-
-func (p *EventProcessor) getGitServerToken(ctx context.Context, codebase *codebaseApi.Codebase) (string, error) {
-	gitServer := &codebaseApi.GitServer{}
-	if err := p.ksClient.Get(ctx, types.NamespacedName{Namespace: codebase.Namespace, Name: codebase.Spec.GitServer}, gitServer); err != nil {
-		return "", fmt.Errorf("failed to get GitServer: %w", err)
-	}
-
-	gitServerSecret := &corev1.Secret{}
-	if err := p.ksClient.Get(ctx, types.NamespacedName{Namespace: codebase.Namespace, Name: gitServer.Spec.NameSshKeySecret}, gitServerSecret); err != nil {
-		return "", fmt.Errorf("failed to get GitServer secret: %w", err)
-	}
-
-	token := string(gitServerSecret.Data[gitServerTokenField])
-
-	if token == "" {
-		return "", errors.New("token is empty in GitServer secret")
-	}
-
-	return token, nil
 }
 
 func createEventInfoWithoutRecheck() *event_processor.EventInfo {

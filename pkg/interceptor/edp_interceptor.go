@@ -125,7 +125,7 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 	codebaseBranch := codebaseApi.CodebaseBranch{}
 	if err = i.client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: codebaseBranchName}, &codebaseBranch); err != nil {
 		if !k8serrors.IsNotFound(err) {
-			return interceptors.Fail(codes.Internal, err.Error())
+			return interceptors.Fail(codes.Internal, fmt.Errorf("failed to get CodebaseBranch: %w", err).Error())
 		}
 
 		trigger = false

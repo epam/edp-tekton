@@ -5,11 +5,12 @@ go 1.22
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20240815102143-adcb430456fc
 	github.com/epam/edp-common v0.0.0-20230710145648-344bbce4120e
+	github.com/go-resty/resty/v2 v2.6.0
 	github.com/google/go-github/v31 v31.0.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tektoncd/triggers v0.27.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.20.0
 	google.golang.org/grpc v1.63.2
 	k8s.io/api v0.28.9
 	k8s.io/apimachinery v0.29.0
@@ -82,7 +83,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	google.golang.org/protobuf v1.33.0 // indirect

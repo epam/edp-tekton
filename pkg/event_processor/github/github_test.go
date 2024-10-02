@@ -128,7 +128,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -244,7 +244,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -360,7 +360,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -446,7 +446,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -536,7 +536,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -619,7 +619,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -683,7 +683,7 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -1050,7 +1050,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -1140,7 +1140,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},
@@ -1385,7 +1385,7 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 						Namespace: "default",
 					},
 					Data: map[string][]byte{
-						gitServerTokenField: []byte("ssh-privatekey"),
+						event_processor.GitServerTokenField: []byte("ssh-privatekey"),
 					},
 				},
 			},

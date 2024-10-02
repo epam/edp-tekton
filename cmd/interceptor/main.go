@@ -103,7 +103,7 @@ func main() {
 				github.NewEventProcessor(client, &github.EventProcessorOptions{Logger: logger}),
 				gitlab.NewEventProcessor(client, logger),
 				gerrit.NewEventProcessor(client, logger),
-				bitbucket.NewEventProcessor(client, logger),
+				bitbucket.NewEventProcessor(client, &bitbucket.EventProcessorOptions{Logger: logger}),
 				logger,
 			),
 			Logger: logger,

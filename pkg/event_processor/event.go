@@ -55,7 +55,6 @@ type GitLabComment struct {
 type BitbucketEvent struct {
 	Repository  BitbucketRepository  `json:"repository"`
 	PullRequest BitbucketPullRequest `json:"pullrequest"`
-	Actor       BitbucketActor       `json:"actor"`
 }
 
 type BitbucketCommentEvent struct {
@@ -99,10 +98,6 @@ type BitbucketCommentContent struct {
 
 type BitbucketCommit struct {
 	Hash string `json:"hash"`
-}
-
-type BitbucketActor struct {
-	DisplayName string `json:"display_name"`
 }
 
 const (

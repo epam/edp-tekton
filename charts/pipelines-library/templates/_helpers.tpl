@@ -46,7 +46,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Validate values of gitProviders
 */}}
 {{- define "edp-tekton.validateGitProviders" -}}
-{{- $allowedProviders := list "github" "gitlab" "gerrit" -}}
+{{- $allowedProviders := list "github" "gitlab" "gerrit" "bitbucket" -}}
 {{- range .Values.global.gitProviders }}
   {{- if not (has . $allowedProviders) }}
     {{- printf "Error: Invalid gitProvider %s. The gitProvider must be one of: %s" . (join ", " $allowedProviders) | fail }}

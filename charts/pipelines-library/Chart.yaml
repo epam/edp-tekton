@@ -19,6 +19,7 @@ keywords:
   - gerrit
   - github
   - gitlab
+  - bitbucket
 maintainers:
   - name: epmd-edp
     email: SupportEPMD-EDP@epam.com

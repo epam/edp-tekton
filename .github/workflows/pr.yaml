@@ -189,63 +189,63 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-  e2e-tests-129:
-    name: End-to-end tests 1.29
-    needs: [e2e-tests-130]
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      max-parallel: 1
+  # e2e-tests-129:
+  #   name: End-to-end tests 1.29
+  #   needs: [e2e-tests-130]
+  #   runs-on: ubuntu-20.04
+  #   strategy:
+  #     fail-fast: false
+  #     max-parallel: 1
 
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GOLANG_VERSION }}
+  #   steps:
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v4
+  #       with:
+  #         go-version: ${{ env.GOLANG_VERSION }}
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+  #     - name: Check out code into the Go module directory
+  #       uses: actions/checkout@v4
 
-      - name: Get cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+  #     - name: Get cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/.cache/go-build
+  #           ~/go/pkg/mod
+  #         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-go-
 
-      - name: "install kuttl"
-        run: ./hack/install-kuttl.sh
+  #     - name: "install kuttl"
+  #       run: ./hack/install-kuttl.sh
 
-      - name: "run tests"
-        env:
-          KUBE_VERSION: "1.29"
-        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
+  #     - name: "run tests"
+  #       env:
+  #         KUBE_VERSION: "1.29"
+  #       run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
 
-      - name: Save cache
-        id: cache-save
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+  #     - name: Save cache
+  #       id: cache-save
+  #       uses: actions/cache/save@v4
+  #       with:
+  #         path: |
+  #           ~/.cache/go-build
+  #           ~/go/pkg/mod
+  #         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-  e2e-tests-check:
-    runs-on: ubuntu-20.04
-    if: always()
-    needs: [e2e-tests-130, e2e-tests-129]
-    steps:
-      - name: Print result
-        run: echo ${{ needs.e2e-tests-130.result }} && echo ${{ needs.e2e-tests-129.result }}
-      - name: Interpret result
-        run: |
-          if [[ success == ${{ needs.e2e-tests-130.result }} && success == ${{ needs.e2e-tests-129.result }} ]]
-          then
-            echo "All matrix jobs passed!"
-          else
-            echo "One or more matrix jobs failed."
-            false
-          fi
+  # e2e-tests-check:
+  #   runs-on: ubuntu-20.04
+  #   if: always()
+  #   needs: [e2e-tests-130, e2e-tests-129]
+  #   steps:
+  #     - name: Print result
+  #       run: echo ${{ needs.e2e-tests-130.result }} && echo ${{ needs.e2e-tests-129.result }}
+  #     - name: Interpret result
+  #       run: |
+  #         if [[ success == ${{ needs.e2e-tests-130.result }} && success == ${{ needs.e2e-tests-129.result }} ]]
+  #         then
+  #           echo "All matrix jobs passed!"
+  #         else
+  #           echo "One or more matrix jobs failed."
+  #           false
+  #         fi

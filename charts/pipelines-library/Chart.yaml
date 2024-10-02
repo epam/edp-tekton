@@ -38,7 +38,7 @@ annotations:
 # we use templates from common library
 dependencies:
   - name: edp-tekton-common-library
-    version: 0.3.3
+    version: 0.3.4
     repository: "file://../common-library"
   - name: tekton-cache
     version: 0.3.2

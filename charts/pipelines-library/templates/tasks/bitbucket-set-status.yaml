@@ -1,0 +1,172 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: bitbucket-set-status
+  labels:
+    app.kubernetes.io/version: "0.4"
+  annotations:
+    tekton.dev/categories: Git
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: bitbucket
+    tekton.dev/displayName: "set bitbucket status"
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+spec:
+  description: >-
+    This task will set the status of the CI job to the specified value along
+    with a link to the specified target URL where developers can follow the
+    progress of the CI job.
+
+    The `bitbucket-set-status` task allows external services to mark Bitbucket commits
+    with an `INPROGRESS`, `SUCCESSFUL`, or `FAILED` state, which is then
+    reflected in pull requests involving those commits. Statuses include a
+    `description` and a `target_url` to give users information about the CI
+    statuses or a direct link to the full log.
+  volumes:
+    - name: bitbuckettoken
+      secret:
+        secretName: $(params.BITBUCKET_TOKEN_SECRET_NAME)
+  params:
+    - name: BITBUCKET_HOST_URL
+      description: |
+        The Bitbucket host, adjust this if you run a Bitbucket server.
+      default: "api.bitbucket.org"
+      type: string
+    - name: API_PATH_PREFIX
+      description: |
+        The API path prefix, Bitbucket may have a prefix for certain versions.
+      default: "https://api.bitbucket.org/2.0/repositories/"
+      type: string
+    - name: REPO_FULL_NAME
+      description: |
+        The Bitbucket repository full name, e.g.: myorg/myrepo
+      type: string
+    - name: BITBUCKET_TOKEN_SECRET_NAME
+      description: |
+        The name of the kubernetes secret that contains the Bitbucket token, default: bitbucket
+      type: string
+      default: ci-bitbucket
+    - name: BITBUCKET_TOKEN_SECRET_KEY
+      description: |
+        The key within the kubernetes secret that contains the Bitbucket token, default: token
+      type: string
+      default: token
+    - name: SHA
+      description: |
+        Commit SHA to set the status for.
+      type: string
+    - name: TARGET_URL
+      description: |
+        The target URL to associate with this status. This URL will be linked
+        from the Bitbucket UI to allow users to easily see the source of the
+        status.
+      type: string
+    - name: DESCRIPTION
+      description: |
+        A short description of the status.
+      type: string
+    - name: STATE
+      description: |
+        The state of the status. Can be one of the following `INPROGRESS`,
+        `SUCCESSFUL`, or `FAILED`.
+      type: string
+    - name: AUTH_TYPE
+      description: |
+        The type of authentication to use. You could use the less secure "Basic" for example.
+      type: string
+      default: Bearer
+    - name: IMAGE
+      description: |
+        Image providing the python binary which this task uses.
+      type: string
+      default: python:3.10.1-alpine3.15
+    - name: SHEBANG
+      description: |
+        Python path. Depends on the image.
+      type: string
+      default: /usr/bin/env python
+  steps:
+    - name: set-status
+      volumeMounts:
+        - name: bitbuckettoken
+          mountPath: /etc/bitbucket-set-status
+      env:
+        - name: BITBUCKET_HOST_URL
+          value: $(params.BITBUCKET_HOST_URL)
+        - name: API_PATH_PREFIX
+          value: $(params.API_PATH_PREFIX)
+        - name: REPO_FULL_NAME
+          value: $(params.REPO_FULL_NAME)
+        - name: BITBUCKET_TOKEN_SECRET_NAME
+          value: $(params.BITBUCKET_TOKEN_SECRET_NAME)
+        - name: BITBUCKET_TOKEN_SECRET_KEY
+          value: $(params.BITBUCKET_TOKEN_SECRET_KEY)
+        - name: SHA
+          value: $(params.SHA)
+        - name: TARGET_URL
+          value: $(params.TARGET_URL)
+        - name: DESCRIPTION
+          value: $(params.DESCRIPTION)
+        - name: STATE
+          value: $(params.STATE)
+        - name: AUTH_TYPE
+          value: $(params.AUTH_TYPE)
+        - name: SHEBANG
+          value: $(params.SHEBANG)
+
+      image: $(params.IMAGE)
+      script: |
+        #!$(params.SHEBANG)
+
+        """This script will set the CI status on Bitbucket PR with enhanced debugging"""
+
+        import json
+        import os
+        import sys
+        import http.client
+
+        # Load the token
+        bitbucket_token_filename = "/etc/bitbucket-set-status/" + \
+            os.getenv("BITBUCKET_TOKEN_SECRET_KEY")
+        bitbucket_token = open(bitbucket_token_filename, "r").read().strip()
+
+        # Form the status URL
+        status_url = os.getenv("API_PATH_PREFIX") + os.getenv("REPO_FULL_NAME") + "/commit/" + os.getenv("SHA") + "/statuses/build"
+
+        # Prepare the data
+        data = {
+            "state": os.getenv("STATE"),
+            "url": os.getenv("TARGET_URL"),
+            "description": os.getenv("DESCRIPTION"),
+            "key": "build"
+        }
+
+        authHeader = os.getenv("AUTH_TYPE") + " " + bitbucket_token
+        headers = {
+            "User-Agent": "TektonCD, the peaceful cat",
+            "Authorization": authHeader,
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+
+        # This is for our fake bitbucket server
+        if "$(params.BITBUCKET_HOST_URL)".startswith("http://"):
+            conn = http.client.HTTPConnection("$(params.BITBUCKET_HOST_URL)".replace("http://", ""))
+        else:
+            conn = http.client.HTTPSConnection("$(params.BITBUCKET_HOST_URL)")
+
+        # Send the request
+        conn.request("POST", status_url, body=json.dumps(data), headers=headers)
+
+        resp = conn.getresponse()
+
+        response_body = resp.read()
+
+        if not str(resp.status).startswith("2"):
+            print("Error: %d" % (resp.status))
+            print(response_body)
+            sys.exit(1)
+        else:
+            print("Bitbucket status '{state}' has been set on {repo}#{sha}".format(
+                state=os.getenv("STATE"),
+                repo=os.getenv("REPO_FULL_NAME"),
+                sha=os.getenv("SHA")))

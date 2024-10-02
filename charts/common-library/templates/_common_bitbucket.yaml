@@ -1,0 +1,75 @@
+# The init section for bitbucket code-review pipeline
+{{- define "bitbucket-review-start" -}}
+- name: bitbucket-set-pending-status
+  taskRef:
+    kind: Task
+    name: bitbucket-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.REPO_FULL_NAME)
+    - name: SHA
+      value: "$(params.git-source-revision)"
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
+    - name: DESCRIPTION
+      value: "Managed by KubeRocketCI. Run with Tekton"
+    - name: STATE
+      value: "INPROGRESS"
+    - name: BITBUCKET_TOKEN_SECRET_NAME
+      value: ci-bitbucket
+    - name: BITBUCKET_TOKEN_SECRET_KEY
+      value: token
+{{- end -}}
+
+
+# final section for bitbucket codereview pipelines
+{{- define "bitbucket-review-vote" -}}
+finally:
+  - name: bitbucket-set-success-status
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Succeeded"]
+    taskRef:
+      kind: Task
+      name: bitbucket-set-status
+    params:
+      - name: REPO_FULL_NAME
+        value: $(params.REPO_FULL_NAME)
+      - name: SHA
+        value: "$(params.git-source-revision)"
+      - name: TARGET_URL
+        value: $(params.pipelineUrl)
+      - name: DESCRIPTION
+        value: "Build was successful"
+      - name: STATE
+        value: "SUCCESSFUL"
+      - name: BITBUCKET_TOKEN_SECRET_NAME
+        value: ci-bitbucket
+      - name: BITBUCKET_TOKEN_SECRET_KEY
+        value: token
+
+  - name: bitbucket-set-failure-status
+    when:
+      - input: "$(tasks.status)"
+        operator: in
+        values: ["Failed"]
+    taskRef:
+      kind: Task
+      name: bitbucket-set-status
+    params:
+    - name: REPO_FULL_NAME
+      value: $(params.REPO_FULL_NAME)
+    - name: SHA
+      value: "$(params.git-source-revision)"
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
+    - name: DESCRIPTION
+      value: "Build has failed"
+    - name: STATE
+      value: "FAILED"
+    - name: BITBUCKET_TOKEN_SECRET_NAME
+      value: ci-bitbucket
+    - name: BITBUCKET_TOKEN_SECRET_KEY
+      value: token
+{{- end -}}

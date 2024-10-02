@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-interceptor
+status:
+  readyReplicas: 1
+
+# EventListener
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: el-edp-my-bitbucket
+status:
+  readyReplicas: 1

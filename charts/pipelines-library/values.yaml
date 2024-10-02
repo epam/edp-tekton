@@ -10,9 +10,10 @@ global:
   # Pipelines, EventListener, Tasks, etc.
   # -- Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default)
   gitProviders:
+    - bitbucket
+    - gerrit
     - github
     - gitlab
-    - gerrit
 
   # -- Gerrit SSH node port, must be specified if gerrit is enabled
   # gerritSSHPort: "30003"

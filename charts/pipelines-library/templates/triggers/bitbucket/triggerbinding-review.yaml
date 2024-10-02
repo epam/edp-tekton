@@ -1,0 +1,33 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: bitbucket-binding-review
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: "$(extensions.pullRequest.headSha)"
+    - name: gitrepositoryurl
+      value: "$(body.repository.links.html.href)"
+    - name: gitrepositoryname
+      value: "$(body.repository.name)"
+    - name: gitfullrepositoryname
+      value: "$(body.repository.full_name)"
+    - name: targetBranch
+      value: "$(extensions.targetBranch)"
+    - name: changeNumber
+      value: "$(extensions.pullRequest.changeNumber)"
+    - name: commitMessagePattern
+      value: "$(extensions.spec.commitMessagePattern)"
+    - name: commitMessage
+      value: "$(extensions.pullRequest.lastCommitMessage)"
+    - name: codebase
+      value: "$(extensions.codebase)"
+    - name: codebasebranch
+      value: "$(extensions.codebasebranch)"
+    # get the pipeline name from the codebasebranch spec
+    - name: pipelineName
+      value: $(extensions.pipelines.review)
+{{ end }}

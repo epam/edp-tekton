@@ -7,6 +7,8 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
@@ -44,6 +46,8 @@ spec:
         pipelineRef:
           name: $(tt.params.pipelineName)
         params:
+          - name: git-refspec
+            value: $(tt.params.git-refspec)
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
           - name: git-source-revision

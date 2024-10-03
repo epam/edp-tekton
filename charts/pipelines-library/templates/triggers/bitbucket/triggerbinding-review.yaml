@@ -10,7 +10,7 @@ spec:
     - name: gitrevision
       value: "$(extensions.pullRequest.headSha)"
     - name: gitrepositoryurl
-      value: "$(body.repository.links.html.href)"
+      value: "ssh://git@bitbucket.org:22/$(body.repository.full_name).git"
     - name: gitrepositoryname
       value: "$(body.repository.name)"
     - name: gitfullrepositoryname
@@ -30,4 +30,6 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.review)
+    - name: git-refspec
+      value: "$(extensions.pullRequest.headRef)"
 {{ end }}

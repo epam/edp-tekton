@@ -3,6 +3,10 @@
 
 ### Features
 
+- Add Support for BitBucket as GitServer ([#317](https://github.com/epam/edp-tekton/issues/317))
+- Add bitbucket-set-status task for tekton pipelines ([#315](https://github.com/epam/edp-tekton/issues/315))
+- Add Tekton config to support for BitBucket Cloud ([#311](https://github.com/epam/edp-tekton/issues/311))
+- Add support for BitBucket Cloud ([#311](https://github.com/epam/edp-tekton/issues/311))
 - Add maven-rpm pipelines ([#282](https://github.com/epam/edp-tekton/issues/282))
 - Add deploy pipeline with approve task([#279](https://github.com/epam/edp-tekton/issues/279))
 - Implement rpm build functionality ([#272](https://github.com/epam/edp-tekton/issues/272))
@@ -28,6 +32,11 @@
 
 ### Routine
 
+- Update e2e tests for GH, switch to stable version of Tekton ([#311](https://github.com/epam/edp-tekton/issues/311))
+- Remove kaniko cache usage ([#309](https://github.com/epam/edp-tekton/issues/309))
+- Align tasks field in test ([#290](https://github.com/epam/edp-tekton/issues/290))
+- Validate 'type' field for QuickLink resources ([#304](https://github.com/epam/edp-tekton/issues/304))
+- Format Tekton Tasks and Pipelines According to Pre-defined Structure ([#290](https://github.com/epam/edp-tekton/issues/290))
 - Remove config.yaml from validation script ([#290](https://github.com/epam/edp-tekton/issues/290))
 - Add description to the approval promote procedure ([#279](https://github.com/epam/edp-tekton/issues/279))
 - Update save-cache and get-cache tasks ([#294](https://github.com/epam/edp-tekton/issues/294))
@@ -60,6 +69,7 @@
 
 ### Documentation
 
+- Update CHANGELOG md ([#302](https://github.com/epam/edp-tekton/issues/302))
 - Replace EDP with KubeRocketCI in README md ([#268](https://github.com/epam/edp-tekton/issues/268))
 
 

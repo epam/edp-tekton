@@ -8,11 +8,11 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.object_attributes.target_branch)
+      value: $(extensions.targetBranch)
     - name: gitrepositoryurl
-      value: $(body.project.git_ssh_url)
+      value: "ssh://git@bitbucket.org:22/$(body.repository.full_name).git"
     - name: gitrepositoryname
-      value: $(body.project.name)
+      value: $(body.repository.name)
     - name: codebase
       value: "$(extensions.codebase)"
     - name: codebasebranch
@@ -21,7 +21,7 @@ spec:
       value: "$(extensions.pullRequest.changeNumber)"
     # commitMessage is used for 'push-to-jira' Task
     - name: commitMessage
-      value: "$(body.object_attributes.title)"
+      value: "$(extensions.pullRequest.lastCommitMessage)"
     # commitMessagePattern is used for 'commit-validate' Tasks
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"

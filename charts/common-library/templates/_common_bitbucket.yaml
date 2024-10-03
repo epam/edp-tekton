@@ -6,7 +6,7 @@
     name: bitbucket-set-status
   params:
     - name: REPO_FULL_NAME
-      value: $(params.REPO_FULL_NAME)
+      value: $(params.gitfullrepositoryname)
     - name: SHA
       value: "$(params.git-source-revision)"
     - name: TARGET_URL
@@ -19,6 +19,39 @@
       value: ci-bitbucket
     - name: BITBUCKET_TOKEN_SECRET_KEY
       value: token
+
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  runAfter:
+    - bitbucket-set-pending-status
+  params:
+    - name: url
+      value: "$(params.git-source-url)"
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: refspec
+      value: $(params.git-refspec)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
 {{- end -}}
 
 
@@ -35,7 +68,7 @@ finally:
       name: bitbucket-set-status
     params:
       - name: REPO_FULL_NAME
-        value: $(params.REPO_FULL_NAME)
+        value: $(params.gitfullrepositoryname)
       - name: SHA
         value: "$(params.git-source-revision)"
       - name: TARGET_URL
@@ -59,7 +92,7 @@ finally:
       name: bitbucket-set-status
     params:
     - name: REPO_FULL_NAME
-      value: $(params.REPO_FULL_NAME)
+      value: $(params.gitfullrepositoryname)
     - name: SHA
       value: "$(params.git-source-revision)"
     - name: TARGET_URL
@@ -72,4 +105,36 @@ finally:
       value: ci-bitbucket
     - name: BITBUCKET_TOKEN_SECRET_KEY
       value: token
+{{- end -}}
+
+# The init section for bitbucket build pipeline
+{{- define "bitbucket-build-start" -}}
+- name: fetch-repository
+  taskRef:
+    kind: Task
+    name: git-clone
+  params:
+    - name: url
+      value: $(params.git-source-url)
+    - name: revision
+      value: $(params.git-source-revision)
+    - name: subdirectory
+      value: source
+  workspaces:
+    - name: output
+      workspace: shared-workspace
+    - name: ssh-directory
+      workspace: ssh-creds
+
+- name: init-values
+  taskRef:
+    kind: Task
+    name: init-values
+  runAfter:
+    - fetch-repository
+  params:
+    - name: CODEBASE_NAME
+      value: $(params.CODEBASE_NAME)
+    - name: BRANCH_NAME
+      value: $(params.git-source-revision)
 {{- end -}}

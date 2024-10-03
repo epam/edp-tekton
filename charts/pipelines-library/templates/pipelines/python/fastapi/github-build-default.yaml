@@ -95,6 +95,7 @@ spec:
         kind: Task
         name: python
       runAfter:
+        - update-build-number
         - get-cache
       params:
         - name: EXTRA_COMMANDS

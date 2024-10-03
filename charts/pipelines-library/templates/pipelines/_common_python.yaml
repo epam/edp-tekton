@@ -4,6 +4,7 @@
     kind: Task
     name: python
   runAfter:
+    - update-build-number
     - get-cache
   params:
     - name: BASE_IMAGE

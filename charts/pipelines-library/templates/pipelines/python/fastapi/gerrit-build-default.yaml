@@ -92,6 +92,7 @@ spec:
         name: python
       runAfter:
         - get-cache
+        - update-build-number
       params:
         - name: EXTRA_COMMANDS
           value: |

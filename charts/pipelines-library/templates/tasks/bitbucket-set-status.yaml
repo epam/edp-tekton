@@ -73,7 +73,7 @@ spec:
       description: |
         The type of authentication to use. You could use the less secure "Basic" for example.
       type: string
-      default: Bearer
+      default: Basic
     - name: IMAGE
       description: |
         Image providing the python binary which this task uses.

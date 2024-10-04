@@ -1,0 +1,130 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "java8" "maven:3.9.0-eclipse-temurin-8" "java11" "maven:3.9.0-eclipse-temurin-11" "java17" "maven:3.9.0-eclipse-temurin-17" -}}
+{{- range $k, $v := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-maven-{{ $k }}-aut-build-default
+  labels:
+    app.edp.epam.com/pipelinetype: build
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Build pipeline for building {{ $k }} automation tests with Maven (default versioning)"
+
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+
+  params:
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-maven'
+      description: "Project name"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
+    - name: image
+      default: '{{ $v }}'
+      description: "maven image version"
+      type: string
+    - name: sonar_image
+      default: "maven:3.9.0-eclipse-temurin-17"
+      description: "sonar image version"
+      type: string
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "bitbucket-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-maven
+      runAfter:
+        - get-version
+      params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: MAVEN_IMAGE
+          value: $(params.sonar_image)
+        - name: EXTRA_COMMANDS
+          value:
+            - -B
+            - '-Dsonar.projectKey=$(params.CODEBASE_NAME)'
+            - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
+            - '-Dsonar.branch.name=$(params.git-source-revision)'
+            - '-Dsonar.qualitygate.wait=true'
+            - verify
+            - sonar:sonar
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: maven
+      runAfter:
+        - sonar
+      params:
+        - name: MAVEN_IMAGE
+          value: $(params.image)
+        - name: GOALS
+          value:
+            - -B
+            - versions:set
+            - versions:commit
+            - '-DnewVersion=$(tasks.get-version.results.VERSION)'
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: git-tag
+      taskRef:
+        kind: Task
+        name: git-cli
+      runAfter:
+        - update-build-number
+      params:
+        - name: GIT_USER_EMAIL
+          value: edp-ci@edp.ci-user
+        - name: GIT_USER_NAME
+          value: edp-ci
+        - name: GIT_SCRIPT
+          value: |
+            git tag -a "$(tasks.get-version.results.VCS_TAG)" -m "Tag is added automatically by CI user"
+            git push --tags
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+        - name: ssh-directory
+          workspace: ssh-creds
+---
+{{ end }}
+{{ end }}

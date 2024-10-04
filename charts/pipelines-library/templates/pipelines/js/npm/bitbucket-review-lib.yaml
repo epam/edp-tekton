@@ -1,0 +1,100 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
+{{- range $k := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-npm-{{ $k }}-lib-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Review pipeline for building {{ $k }} library with NPM"
+
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-npm-edp-version'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: 'docker.io/library/node:18.20.3-alpine3.20'
+      description: "npm image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+
+  tasks:
+
+{{- include "bitbucket-review-start" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: edp-npm
+      runAfter:
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-general
+      runAfter:
+        - build
+      params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "bitbucket-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

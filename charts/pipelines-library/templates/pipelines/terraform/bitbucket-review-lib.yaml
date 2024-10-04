@@ -1,0 +1,50 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-terraform-terraform-lib-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: "The Review pipeline for building Terraform library"
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/hcl-terraform-terraform"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: 'terraform-terraform'
+      description: "Project name"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: terraform_default_version
+      type: string
+      default: "1.4.5"
+      description: The default terraform version used if the `.terraform-version` file does not exist in the repository.
+
+  tasks:
+
+{{- include "bitbucket-review-start" . | nindent 4 }}
+
+{{- include "terraform-check-review-common" . | nindent 4 }}
+
+{{ include "bitbucket-review-vote" . | nindent 2 }}
+
+{{ end }}

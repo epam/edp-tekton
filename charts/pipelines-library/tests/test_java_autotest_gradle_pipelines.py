@@ -114,7 +114,7 @@ global:
 
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java11', 'java8']:
+        for framework in ['java17', 'java11', 'java8']:
             for cbtype in ['aut']:
 
                 gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -145,6 +145,56 @@ global:
 
                 # build with edp versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
+                assert "fetch-repository" in btedp[0]["name"]
+                assert "init-values" in btedp[1]["name"]
+                assert "get-version" in btedp[2]["name"]
+                assert "get-version-edp" == btedp[2]["taskRef"]["name"]
+                assert "sonar" in btedp[3]["name"]
+                assert "git-tag" in btedp[4]["name"]
+
+def test_java_pipelines_bitbucket():
+    config = """
+global:
+  gitProviders:
+    - bitbucket
+    """
+
+    r = helm_template(config)
+    vcs = "bitbucket"
+
+    # ensure pipelines have proper steps
+    for buildtool in ['gradle']:
+        for framework in ['java17', 'java11', 'java8']:
+            for cbtype in ['aut']:
+
+                bitbucket_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
+                bitbucket_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
+                bitbucket_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+
+                assert bitbucket_review_pipeline in r["pipeline"]
+                assert bitbucket_build_pipeline_def in r["pipeline"]
+                assert bitbucket_build_pipeline_edp in r["pipeline"]
+
+                rt = r["pipeline"][bitbucket_review_pipeline]["spec"]["tasks"]
+                assert "bitbucket-set-pending-status" in rt[0]["name"]
+                assert "fetch-repository" in rt[1]["name"]
+                assert "init-values" in rt[2]["name"]
+                assert "sonar" in rt[3]["name"]
+                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][0]["name"]
+                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][1]["name"]
+
+                # build with default versioning
+                btd = r["pipeline"][bitbucket_build_pipeline_def]["spec"]["tasks"]
+                assert "fetch-repository" in btd[0]["name"]
+                assert "init-values" in btd[1]["name"]
+                assert "get-version" in btd[2]["name"]
+                assert f"get-version-default" == btd[2]["taskRef"]["name"]
+                assert "update-build-number" in btd[3]["name"]
+                assert "sonar" in btd[4]["name"]
+                assert "git-tag" in btd[5]["name"]
+
+                # build with edp versioning
+                btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
                 assert "fetch-repository" in btedp[0]["name"]
                 assert "init-values" in btedp[1]["name"]
                 assert "get-version" in btedp[2]["name"]

@@ -1,0 +1,107 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- $altResourceMapping := dict "java8" "gradle:7.5.1-jdk11" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- range $k, $v := $resourceMapping }}
+{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-gradle-{{ $k }}-app-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Review pipeline for building {{ $k }} application with Gradle"
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: CODEBASE_NAME
+      default: '{{ $k }}-maven'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: '{{ $v }}'
+      description: "gradle image version"
+      type: string
+    - name: sonar_image
+      default: '{{ $valueFromAlt }}'
+      description: "sonar image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+  tasks:
+
+{{- include "bitbucket-review-start" $ | nindent 4 }}
+
+{{- include "helm-docs" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+{{ include "java-gradle-review-common" . | nindent 4 }}
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "dockerbuild-verify-gradle" $ | nindent 4 }}
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "bitbucket-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

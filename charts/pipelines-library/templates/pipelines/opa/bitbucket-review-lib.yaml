@@ -1,0 +1,100 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-opa-opa-lib-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: "The Review pipeline for building OPA library"
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/rego-opa-opa"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: image
+      default: 'openpolicyagent/opa:0.45.0-debug'
+      description: "opa image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+  tasks:
+
+    - name: bitbucket-set-pending-status
+      taskRef:
+        kind: Task
+        name: bitbucket-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: SHA
+          value: "$(params.git-source-revision)"
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+        - name: DESCRIPTION
+          value: "Managed by KubeRocketCI. Run with Tekton"
+        - name: STATE
+          value: "INPROGRESS"
+        - name: BITBUCKET_TOKEN_SECRET_NAME
+          value: ci-bitbucket
+        - name: BITBUCKET_TOKEN_SECRET_KEY
+          value: token
+
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      runAfter:
+        - bitbucket-set-pending-status
+      params:
+        - name: url
+          value: "$(params.git-source-url)"
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+        - name: subdirectory
+          value: source
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: test
+      taskRef:
+        kind: Task
+        name: opa
+      runAfter:
+        - fetch-repository
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: EXTRA_COMMANDS
+          value: |
+            python "${JUNIT_SCRIPT}" "${OPA_RESULTS}" > testReport.xml
+            cat testReport.xml
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "bitbucket-review-vote" . | nindent 2 }}
+
+{{ end }}

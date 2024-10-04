@@ -1,0 +1,112 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{- $resourceMapping := dict "dotnet-3.1" "mcr.microsoft.com/dotnet/sdk:3.1.423-alpine3.16" "dotnet-6.0" "mcr.microsoft.com/dotnet/sdk:6.0.407-alpine3.17" -}}
+{{- range $k, $v := $resourceMapping }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-dotnet-{{ $k }}-lib-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Review pipeline for building {{ $k }} with Dotnet"
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/csharp-dotnet-{{ $k }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: CODEBASE_NAME
+      default: 'csharp-dotnet-{{ $k }}'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: image
+      default: "{{ $v }}"
+      description: "dotnet-sdk image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+  tasks:
+
+{{- include "bitbucket-review-start" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: edp-dotnet
+      runAfter:
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: sonar
+      taskRef:
+        kind: Task
+        name: sonarqube-dotnet
+      runAfter:
+        - build
+      params:
+        - name: SONAR_PROJECT_KEY
+          value: $(params.CODEBASE_NAME)
+        - name: SONAR_PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: target-branch
+          value: $(params.targetBranch)
+        - name: source-branch
+          value: $(params.git-source-revision)
+        - name: key-id
+          value: $(params.changeNumber)
+        - name: BASE_IMAGE
+          value: 'epamedp/tekton-dotnet:6.0.2'
+        - name: EXTRA_COMMANDS
+          value: |
+            slnFilename=$(ls *.sln)
+            dotnet sonarscanner begin \
+              /d:sonar.host.url=${SONAR_HOST_URL} \
+              /d:sonar.qualitygate.wait=true \
+              /d:sonar.login=${SONAR_TOKEN} \
+              /k:${SONAR_PROJECT_KEY} \
+              /n:${SONAR_PROJECT_NAME} \
+              /d:sonar.pullrequest.key=${KEY_ID} \
+              /d:sonar.pullrequest.branch=${SOURCE_BRANCH} \
+              /d:sonar.pullrequest.base=${TARGET_BRANCH}
+            dotnet build ${sln_filename}
+            dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "bitbucket-review-vote" $ | nindent 2 }}
+---
+{{ end }}
+{{ end }}

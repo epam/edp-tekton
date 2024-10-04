@@ -158,7 +158,7 @@ func (p *EventProcessor) getPRLatestCommitMessage(
 	r, err := p.restyClient.R().
 		SetContext(ctx).
 		ForceContentType("application/json").
-		SetAuthToken(gitServerToken).
+		SetHeader("Authorization", fmt.Sprintf("Basic %s", gitServerToken)).
 		SetResult(&commits).
 		Get(fmt.Sprintf("/repositories/%s/pullrequests/%d/commits?fields=values.message&pagelen=1", repoFullName, prID))
 

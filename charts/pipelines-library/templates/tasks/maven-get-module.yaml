@@ -11,7 +11,7 @@ spec:
   params:
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "alpine:3.18.6"
+      default: "alpine:3.18.9"
   results:
     - name: DEPLOYABLE_MODULE_DIR
       description: Maven deployable multimodule directory.

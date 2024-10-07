@@ -148,7 +148,7 @@ spec:
           mountPath: /kaniko/.custom-certs
       {{- end }}
 {{- include "resources" . | nindent 6 }}
-    - image: alpine:3.18.6
+    - image: alpine:3.18.9
       name: write-url
       env:
         - name: CODEBASE_NAME

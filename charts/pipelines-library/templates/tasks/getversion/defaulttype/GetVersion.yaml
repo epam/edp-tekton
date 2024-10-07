@@ -23,7 +23,7 @@ spec:
       description: Normalized version
   steps:
     - name: get-timestamp
-      image: alpine:3.18.6
+      image: alpine:3.18.9
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         nts=$(date "+%Y%m%d.%H%M%S")
@@ -33,7 +33,7 @@ spec:
         echo ${nts} | tr -d "\n" | tee $(results.NORMALIZED_VERSION.path)
 
     - name: get-version
-      image: alpine:3.18.6
+      image: alpine:3.18.9
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"

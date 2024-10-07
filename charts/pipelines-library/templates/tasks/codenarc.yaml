@@ -78,7 +78,7 @@ spec:
               name: $(params.ci-nexus)
               key: url
     - name: codenarc-report
-      image: alpine:3.18.6
+      image: alpine:3.18.9
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         cat /workspace/source/build/reports/codenarc/main.html

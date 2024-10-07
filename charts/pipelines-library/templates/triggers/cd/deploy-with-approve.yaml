@@ -32,7 +32,7 @@ spec:
         taskRunTemplate:
           serviceAccountName: tekton
         pipelineRef:
-          name: deploy-with-approve
+          name: deploy-with-promote-approval
         params:
           - name: APPLICATIONS_PAYLOAD
             value: $(tt.params.APPLICATIONS_PAYLOAD)

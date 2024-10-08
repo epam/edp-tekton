@@ -32,7 +32,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: 'python:3.8-alpine3.16'
+      default: 'python:3.8-slim'
       description: "python image version"
       type: string
     - name: targetBranch

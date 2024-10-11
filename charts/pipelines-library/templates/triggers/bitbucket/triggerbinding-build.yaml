@@ -10,7 +10,7 @@ spec:
     - name: gitrevision
       value: $(extensions.targetBranch)
     - name: gitrepositoryurl
-      value: "ssh://git@bitbucket.org:22/$(body.repository.full_name).git"
+      value: "git@bitbucket.org:$(body.repository.full_name).git"
     - name: gitrepositoryname
       value: $(body.repository.name)
     - name: codebase

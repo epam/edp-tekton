@@ -82,8 +82,10 @@ spec:
             match = re.match(r"git@(.*?):(.*?)/(.*?)\.git", ssh_url)
             if match:
                 domain, user, repo = match.groups()
+                # Use /commits/ for BitBucket, /commit/ for other domains
+                commit_path = "commits" if "bitbucket.org" in domain else "commit"
                 # Construct the HTTPS address with the commit_id at the end
-                https_url = f"https://{domain}/{user}/{repo}/commit/{commit_id}"
+                https_url = f"https://{domain}/{user}/{repo}/{commit_path}/{commit_id}"
                 return https_url
             else:
                 # If it doesn't match the SSH pattern, return the original URL

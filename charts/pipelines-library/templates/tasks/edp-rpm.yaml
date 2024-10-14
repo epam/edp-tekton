@@ -36,9 +36,6 @@ spec:
       type: string
       description: Current build version of application
       default: "1"
-    - name: CACHE_DIR
-      default: "/workspace/source/cache"
-      description: The path to the cache directory.
     - name: EXTRA_LINT_COMMAND
       type: string
       description: Run rpm lint command

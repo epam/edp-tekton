@@ -97,7 +97,7 @@ spec:
                         "-i", inventory_path,
                         ansible_group,
                         "-m", "yum",
-                        "-a", f"name={codebase} state=present allow_downgrade=true",
+                        "-a", f"name={codebase}-{image_tag} state=present allow_downgrade=true",
                         "-b",
                         "--become"
                     ]

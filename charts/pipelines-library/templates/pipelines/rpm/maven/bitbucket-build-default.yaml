@@ -73,7 +73,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-default
+        name: get-version-rpm
       runAfter:
         - init-values
       params:
@@ -81,6 +81,10 @@ spec:
           value: $(params.git-source-revision)
         - name: BASE_IMAGE
           value: $(params.image)
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
 
 {{- include "get-cache" $ | nindent 4 }}
 

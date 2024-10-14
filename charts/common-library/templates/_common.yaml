@@ -202,9 +202,8 @@
     - name: CBIS_NAME
       value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
     - name: IMAGE_TAG
-      value: $(tasks.get-version.results.IS_TAG)
+      value: "$(tasks.get-version.results.IS_TAG)"
 {{- end -}}
-
 # final section for gerrit codereview pipelines
 {{- define "gerrit-review-vote" -}}
 finally:

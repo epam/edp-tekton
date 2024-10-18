@@ -42,6 +42,6 @@ dependencies:
     version: 0.3.6
     repository: "file://../common-library"
   - name: tekton-cache
-    version: 0.3.2
+    version: 0.4.0
     repository: "@epamedp"
     condition: tekton-cache.enabled

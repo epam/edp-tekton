@@ -1,8 +1,17 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.13.0"></a>
+## [v0.13.0] - 2024-10-18
 ### Features
 
+- Pass env vars from ConfigMap for deploy task ([#307](https://github.com/epam/edp-tekton/issues/307))
+- Create pipelines with VCS Bitbucket for all codebases ([#325](https://github.com/epam/edp-tekton/issues/325))
+- Add support Bitbucket VSC for Go pipelines ([#315](https://github.com/epam/edp-tekton/issues/315))
+- Add resources for deploy rpm([#275](https://github.com/epam/edp-tekton/issues/275))
+- Add Tekton resources for deploy RPM Package via AWX ([#277](https://github.com/epam/edp-tekton/issues/277))
+- Add last commit message to interceptor response for BitBucket ([#311](https://github.com/epam/edp-tekton/issues/311))
 - Add Support for BitBucket as GitServer ([#317](https://github.com/epam/edp-tekton/issues/317))
 - Add bitbucket-set-status task for tekton pipelines ([#315](https://github.com/epam/edp-tekton/issues/315))
 - Add Tekton config to support for BitBucket Cloud ([#311](https://github.com/epam/edp-tekton/issues/311))
@@ -21,6 +30,13 @@
 
 ### Bug Fixes
 
+- Update rpm default versioning ([#339](https://github.com/epam/edp-tekton/issues/339))
+- Fix BitBucket commit url for Jira integration ([#317](https://github.com/epam/edp-tekton/issues/317))
+- Fix git link for the bitbucket TriggerBinding ([#336](https://github.com/epam/edp-tekton/issues/336))
+- Update image for python pipelines ([#334](https://github.com/epam/edp-tekton/issues/334))
+- Fix TriggerTemplate for deploy-with-approval flow ([#329](https://github.com/epam/edp-tekton/issues/329))
+- Use basic auth for Bitbucket Api request ([#311](https://github.com/epam/edp-tekton/issues/311))
+- Align dependency between build tasks python([#323](https://github.com/epam/edp-tekton/issues/323))
 - Fix c lang pipelines ([#290](https://github.com/epam/edp-tekton/issues/290))
 - Fix TriggerTemplate for deploy with approve step ([#279](https://github.com/epam/edp-tekton/issues/279))
 - Align rpm-build argo diff  ([#272](https://github.com/epam/edp-tekton/issues/272))
@@ -32,6 +48,11 @@
 
 ### Routine
 
+- Align tekton-cache version ([#341](https://github.com/epam/edp-tekton/issues/341))
+- Update RBAC for autotests ([#60](https://github.com/epam/edp-tekton/issues/60))
+- Update alpine base image to v3.18.9 ([#331](https://github.com/epam/edp-tekton/issues/331))
+- Update auth type for set-status task ([#315](https://github.com/epam/edp-tekton/issues/315))
+- Update sonar scanner config ([#311](https://github.com/epam/edp-tekton/issues/311))
 - Update e2e tests for GH, switch to stable version of Tekton ([#311](https://github.com/epam/edp-tekton/issues/311))
 - Remove kaniko cache usage ([#309](https://github.com/epam/edp-tekton/issues/309))
 - Align tasks field in test ([#290](https://github.com/epam/edp-tekton/issues/290))
@@ -69,6 +90,7 @@
 
 ### Documentation
 
+- Update changelog file for release notes ([#302](https://github.com/epam/edp-tekton/issues/302))
 - Update CHANGELOG md ([#302](https://github.com/epam/edp-tekton/issues/302))
 - Replace EDP with KubeRocketCI in README md ([#268](https://github.com/epam/edp-tekton/issues/268))
 
@@ -506,7 +528,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.13.0...HEAD
+[v0.13.0]: https://github.com/epam/edp-tekton/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/epam/edp-tekton/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/epam/edp-tekton/compare/v0.10.2...v0.11.0
 [v0.10.2]: https://github.com/epam/edp-tekton/compare/v0.10.1...v0.10.2

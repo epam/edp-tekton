@@ -1,6 +1,11 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Update default terraform version to 1.5.7 (#)
+- Update current development version ([#341](https://github.com/epam/edp-tekton/issues/341))
+
 
 <a name="v0.13.0"></a>
 ## [v0.13.0] - 2024-10-18

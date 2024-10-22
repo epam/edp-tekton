@@ -36,7 +36,7 @@ spec:
       type: string
     - name: terraform_default_version
       type: string
-      default: "1.4.5"
+      default: "1.5.7"
       description: The default terraform version used if the `.terraform-version` file does not exist in the repository.
 
   tasks:

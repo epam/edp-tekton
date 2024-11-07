@@ -84,7 +84,7 @@ spec:
           kind: Task
           name: init-autotest
       runAfter:
-         - post-deploy
+        - post-deploy
       params:
         - name: stage-name
           value: $(params.CDSTAGE)
@@ -106,7 +106,7 @@ spec:
           kind: Task
           name: wait-for-autotests
       runAfter:
-         - init-autotest
+        - init-autotest
       params:
         - name: AUTOTEST_PIPELINES
           value: $(params.autotes-pipeline)

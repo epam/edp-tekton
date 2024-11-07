@@ -12,6 +12,8 @@ spec:
     - name: CDSTAGE
       description: |
         EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+    - name: KUBECONFIG_SECRET_NAME
+      description: The name of secret with Kubeconfig to connect to the remote cluster
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -33,5 +35,7 @@ spec:
             value: $(tt.params.CDSTAGE)
           - name: CDPIPELINE
             value: $(tt.params.CDPIPELINE)
+          - name: KUBECONFIG_SECRET_NAME
+            value: $(tt.params.KUBECONFIG_SECRET_NAME)
         timeouts:
           pipeline: 1h00m0s

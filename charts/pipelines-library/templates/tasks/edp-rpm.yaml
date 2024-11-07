@@ -22,7 +22,7 @@ spec:
       description: The path to the context.
     - name: BASE_IMAGE
       type: string
-      default: "docker.io/epamedp/tekton-rpm:0.1.4"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-rpm:0.1.4"
       description: The rpm image. Should contain all necessary tools to build rpm.
     - name: ci-nexus
       type: string

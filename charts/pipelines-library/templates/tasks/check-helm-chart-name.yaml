@@ -21,7 +21,7 @@ spec:
           value: $(params.codebase_name)
         - name: CHART_DIR
           value: $(params.chart_dir)
-      image: alpine:3.18.9
+      image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
       script: |
         #!/bin/sh
         # Extract the chart name from the Chart.yaml

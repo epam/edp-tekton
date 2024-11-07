@@ -21,7 +21,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       description: "Base image"
-      default: "epamedp/tekton-autotest:0.1.6"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
       type: string
   steps:
     - name: save-cache

@@ -23,7 +23,7 @@ spec:
       default: edp-config
   steps:
     - name: init-repository
-      image: amazon/aws-cli:2.7.35
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
       {{ if ne .Values.global.platform "openshift" }}
       env:
         - name: REPO_NAME

@@ -17,7 +17,7 @@ spec:
       description: "Version"
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "node:18.9.0"
+      default: "{{ include "edp-tekton.registry" . }}/node:18.9.0"
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)

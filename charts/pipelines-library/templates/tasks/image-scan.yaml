@@ -21,13 +21,13 @@ spec:
       description: Name (reference) of the image tar package.
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "aquasec/trivy:0.41.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.41.0"
     - name: BASE_IMAGE_GRYPE
       type: string
       default: "anchore/grype:v0.62.1-debug"
     - name: BASE_IMAGE_CURL
       type: string
-      default: "alpine/curl:3.14"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:3.14"
     - name: PATH_CONTEXT
       description: The build context used by Trivy.
       default: "."

@@ -24,7 +24,7 @@ spec:
       default: "."
   steps:
     - name: init-repository
-      image: amazon/aws-cli:2.7.35
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
       workingDir: $(workspaces.source.path)
       env:
         - name: AWS_DEFAULT_REGION
@@ -54,7 +54,7 @@ spec:
           fi
 
     - name: push-helm-chart
-      image: alpine/k8s:1.25.15
+      image: {{ include "edp-tekton.registry" . }}/alpine/k8s:1.25.15
       workingDir: $(workspaces.source.path)
       env:
         - name: IMAGE_TAG

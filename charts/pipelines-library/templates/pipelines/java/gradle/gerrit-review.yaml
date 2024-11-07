@@ -1,6 +1,15 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{- $resourceMapping := dict "java8" "gradle:7.5.1-jdk8" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
-{{- $altResourceMapping := dict "java8" "gradle:7.5.1-jdk11" "java11" "gradle:7.5.1-jdk11" "java17" "gradle:7.5.1-jdk17" -}}
+{{- $registry := include "edp-tekton.registry" . -}}
+{{- $resourceMapping := dict
+      "java8" (printf "%s/gradle:7.5.1-jdk8" $registry)
+      "java11" (printf "%s/gradle:7.5.1-jdk11" $registry)
+      "java17" (printf "%s/gradle:7.5.1-jdk17" $registry)
+   -}}
+{{- $altResourceMapping := dict
+      "java8" (printf "%s/gradle:7.5.1-jdk11" $registry)
+      "java11" (printf "%s/gradle:7.5.1-jdk11" $registry)
+      "java17" (printf "%s/gradle:7.5.1-jdk17" $registry)
+   -}}
 {{- range $k, $v := $resourceMapping }}
 {{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
 apiVersion: tekton.dev/v1

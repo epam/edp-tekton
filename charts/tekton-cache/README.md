@@ -31,6 +31,7 @@ It leverages the power of Kubernetes/Tekton to cache dependencies and build outp
 | cacheSize | string | `"5Gi"` | Defines size of the Persistent Volume that is used for cache. |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` | Defines the policy with which pod will request its image. |
+| image.registry | string | `"docker.io"` | Set the image registry, default to Docker Hub; can be customized to use an alternative provider |
 | image.repository | string | `"epamedp/tekton-cache"` | Tekton-cache container image. |
 | image.tag | string | `"0.1.2"` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | Specifies secrets for pulling Docker images. |

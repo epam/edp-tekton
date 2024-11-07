@@ -5,6 +5,11 @@
 nameOverride: ""
 fullnameOverride: ""
 
+pipelines:
+  image:
+    # -- Registry for tekton pipelines images. Default: docker.io
+    registry: "docker.io"
+
 global:
   # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
   # Pipelines, EventListener, Tasks, etc.
@@ -143,9 +148,9 @@ tekton:
       cpu: "500m"
       memory: "1Gi"
 
-# Deploy EDP Tekton Interceptor along with pipelines library
+# Deploy KubeRocketCI Tekton Interceptor along with pipelines library
 interceptor:
-  # -- Deploy EDP interceptor as a part of pipeline library when true. Default: true
+  # -- Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true
   enabled: true
 
   nameOverride: "tekton-interceptor"
@@ -341,7 +346,7 @@ dashboard:
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
-    #      - tekton-edp.example.com
+    #      - tekton-krci.example.com
 
   # -- Node labels for pod assignment
   nodeSelector: {}

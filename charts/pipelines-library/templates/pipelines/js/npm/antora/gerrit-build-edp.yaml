@@ -1,5 +1,6 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{- $resourceMapping := dict "antora" "antora/antora:3.1.4" -}}
+{{- $registry := include "edp-tekton.registry" . -}}
+{{- $resourceMapping := dict "antora" (printf "%s/%s" $registry "antora/antora:3.1.4") -}}
 {{- range $k, $v := $resourceMapping }}
 apiVersion: tekton.dev/v1
 kind: Pipeline

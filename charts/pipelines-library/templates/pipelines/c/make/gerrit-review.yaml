@@ -32,7 +32,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: 'epamedp/tekton-python-make:0.1.7'
+      default: '{{ include "edp-tekton.registry" . }}/epamedp/tekton-python-make:0.1.7'
       description: "go image version"
       type: string
     - name: targetBranch

@@ -31,7 +31,7 @@ spec:
       type: string
   steps:
     - name: push-to-jira
-      image: epamedp/tekton-autotest:0.1.3
+      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.3
       env:
         - name: GIT_URL
           value: $(params.GIT_URL)

@@ -109,7 +109,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | grafana.enabled | bool | `false` |  |
 | grafana.serviceMonitor.prometheusReleaseLabels.release | string | `"prom"` |  |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
-| interceptor.enabled | bool | `true` | Deploy EDP interceptor as a part of pipeline library when true. Default: true |
+| interceptor.enabled | bool | `true` | Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
 | interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
@@ -133,6 +133,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
+| pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
 | tekton.configs.gradleConfigMap | string | `"custom-gradle-settings"` | Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables. |

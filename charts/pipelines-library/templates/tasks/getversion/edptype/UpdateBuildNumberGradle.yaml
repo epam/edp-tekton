@@ -19,7 +19,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       description: "The base image for the task"
-      default: "alpine:3.18.9"
+      default: "{{ include "edp-tekton.registry" . }}/alpine:3.18.9"
   steps:
     - name: update-build-number
       image: $(params.BASE_IMAGE)

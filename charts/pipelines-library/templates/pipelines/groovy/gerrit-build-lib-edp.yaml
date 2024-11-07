@@ -1,4 +1,5 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
+{{- $registry := include "edp-tekton.registry" . -}}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -31,7 +32,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'gradle:7.5.1-jdk11'
+      default: '{{ $registry }}/gradle:7.5.1-jdk11'
       description: "gradle image version"
       type: string
     - name: changeNumber

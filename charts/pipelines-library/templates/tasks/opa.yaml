@@ -29,7 +29,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: "openpolicyagent/opa:0.45.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/openpolicyagent/opa:0.45.0-debug"
       description: The opa image.
   steps:
     - name: opa-results-json
@@ -43,7 +43,7 @@ spec:
         set -e
         opa test --bundle ./ --format json > "${OPA_RESULTS}"
         cat "${OPA_RESULTS}"
-    - image: curlimages/curl:7.85.0
+    - image: {{ include "edp-tekton.registry" . }}/curlimages/curl:7.85.0
       name: download-converter
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       env:
@@ -55,7 +55,7 @@ spec:
             -o "${JUNIT_SCRIPT}"
         cat "${JUNIT_SCRIPT}"
     - name: convert-to-xml
-      image: 'python:3.10.8-alpine3.16'
+      image: '{{ include "edp-tekton.registry" . }}/python:3.10.8-alpine3.16'
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       env:
         - name: OPA_RESULTS

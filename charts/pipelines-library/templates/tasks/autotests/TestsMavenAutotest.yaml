@@ -27,7 +27,7 @@ spec:
       type: string
   steps:
     - name: check-run-json-file
-      image: "python:3.9.14-alpine3.16"
+      image: "{{ include "edp-tekton.registry" . }}/python:3.9.14-alpine3.16"
       workingDir: $(workspaces.source.path)
       script: |
         set -ex
@@ -40,7 +40,7 @@ spec:
         fi
 
     - name: get-command
-      image: "python:3.10.1-alpine3.15"
+      image: "{{ include "edp-tekton.registry" . }}/python:3.10.1-alpine3.15"
       workingDir: $(workspaces.source.path)
       env:
         - name: RESULT_COMMAND_FILE_PATH

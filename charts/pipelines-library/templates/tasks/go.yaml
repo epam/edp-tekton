@@ -50,7 +50,7 @@ spec:
       default: ""
     - name: BASE_IMAGE
       description: "Base image"
-      default: "golang:1.22-bookworm"
+      default: "{{ include "edp-tekton.registry" . }}/golang:1.22-bookworm"
       type: string
     - name: GOPROXY
       description: "Go proxy server"

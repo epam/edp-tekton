@@ -23,7 +23,7 @@ spec:
       description: The directory containing source code.
     - name: BASE_IMAGE
       type: string
-      default: "epamedp/tekton-python-make:0.1.7"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-python-make:0.1.7"
       description: C base image
     - name: EXTRA_COMMANDS_BUILD
       type: string

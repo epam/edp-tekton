@@ -21,7 +21,7 @@ spec:
       default: "."
     - name: helm_docs_image
       description: "Specify a specific helm-docs image"
-      default: "jnorwood/helm-docs:v1.13.1"
+      default: "{{ include "edp-tekton.registry" . }}/jnorwood/helm-docs:v1.13.1"
     - name: user_home
       description: |
         Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user

@@ -23,7 +23,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: epamedp/tekton-pre-commit:0.1.7
+      default: {{ include "edp-tekton.registry" . }}/epamedp/tekton-pre-commit:0.1.7
       description: The terraform-check image.
   steps:
     - name: terraform

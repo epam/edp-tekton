@@ -23,7 +23,7 @@ spec:
       description: "CodebaseImageStream tag"
   steps:
     - name: get-version
-      image: linuxserver/yq
+      image: {{ include "edp-tekton.registry" . }}/linuxserver/yq
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"

@@ -21,13 +21,45 @@ spec:
       description: |
         EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
+    - name: KUBECONFIG_SECRET_NAME
+      description: The name of secret with Kubeconfig to connect to the remote cluster
   tasks:
+    - name: pre-clean
+      taskRef:
+        kind: Task
+        name: run-clean-gate
+      params:
+        - name: KUBECONFIG_SECRET_NAME
+          value: $(params.KUBECONFIG_SECRET_NAME)
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"
+
     - name: clean
       taskRef:
         kind: Task
         name: clean
+      runAfter:
+        - pre-clean
       params:
         - name: PIPELINE
           value: $(params.CDPIPELINE)
         - name: STAGE
           value: $(params.CDSTAGE)
+
+    - name: post-clean
+      taskRef:
+        kind: Task
+        name: run-clean-gate
+      runAfter:
+        - clean
+      params:
+        - name: KUBECONFIG_SECRET_NAME
+          value: $(params.KUBECONFIG_SECRET_NAME)
+        - name: BASE_IMAGE
+          value: "bitnami/kubectl:1.25.4"
+        - name: EXTRA_COMMANDS
+          value:
+            echo "Hello World"

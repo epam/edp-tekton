@@ -17,7 +17,7 @@ spec:
       description: "Pattern to validate a commit message"
     - name: BASE_IMAGE
       description: "The base image for the task."
-      default: "python:3.10.1-alpine3.15"
+      default: "{{ include "edp-tekton.registry" . }}/python:3.10.1-alpine3.15"
     - name: MAX_LINE_LENGTH
       description: "Maximum length of each line in the commit message."
       default: "80"

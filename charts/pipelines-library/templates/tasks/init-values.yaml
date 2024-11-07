@@ -17,7 +17,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: bitnami/kubectl:1.25.2
+      default: {{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.2
   results:
     - name: TENANT_NAME
       description: "edp name"

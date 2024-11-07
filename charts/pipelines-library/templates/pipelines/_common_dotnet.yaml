@@ -56,8 +56,8 @@
         else
             ARTIFACT_REPOSITORY_SOURCE="nugetStorageReleases"
         fi
-        
-        # Note: The api-key is only used as a placeholder. 
+
+        # Note: The api-key is only used as a placeholder.
         # Ref: https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages
         dotnet nuget push ${nugetPackagesPath} --source ${ARTIFACT_REPOSITORY_SOURCE} --api-key key
   workspaces:

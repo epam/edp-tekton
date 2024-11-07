@@ -21,7 +21,7 @@ spec:
 
   steps:
     - name: run-ansible-script
-      image: epamedp/tekton-ansible:0.1.1
+      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-ansible:0.1.1
       env:
         - name: APPLICATIONS_PAYLOAD
           value: "$(params.APPLICATIONS_PAYLOAD)"

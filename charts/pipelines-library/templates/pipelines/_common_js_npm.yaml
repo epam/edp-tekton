@@ -47,7 +47,7 @@
         versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')
 
         export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
-        
+
         if [[ "$versionLowerCase" == *"snapshot"* ]]; then
             export npm_config_userconfig=/var/configmap/.npmrc-publish-snapshots
         else

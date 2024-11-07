@@ -32,7 +32,7 @@ spec:
         name: run-quality-gate
       params:
         - name: BASE_IMAGE
-          value: "bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"
@@ -59,7 +59,7 @@ spec:
         - deploy-app
       params:
         - name: BASE_IMAGE
-          value: "bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"

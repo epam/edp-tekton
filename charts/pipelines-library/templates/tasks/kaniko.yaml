@@ -51,7 +51,7 @@ spec:
       default: ./
     - name: builder-image
       description: The image on which builds will run
-      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
+      default: {{ .Values.kaniko.image.repository }}:{{ .Values.tag }}-debug
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
@@ -59,7 +59,7 @@ spec:
       description: URL of the image just built.
   steps:
     - name: init-repository
-      image: amazon/aws-cli:2.7.35
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
       env:
         - name: CODEBASE_NAME
           value: "$(params.codebase-name)"
@@ -148,7 +148,7 @@ spec:
           mountPath: /kaniko/.custom-certs
       {{- end }}
 {{- include "resources" . | nindent 6 }}
-    - image: alpine:3.18.9
+    - image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
       name: write-url
       env:
         - name: CODEBASE_NAME

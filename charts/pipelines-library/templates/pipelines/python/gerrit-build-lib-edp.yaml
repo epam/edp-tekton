@@ -31,7 +31,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
       description: "python image version"
       type: string
     - name: changeNumber

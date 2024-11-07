@@ -40,7 +40,7 @@ spec:
       description: this configmap holds aws_region parameter
       default: edp-config
   steps:
-    - image: amazon/aws-cli:2.7.35
+    - image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
       name: get-ecr-pass
       computeResources: {}
       env:

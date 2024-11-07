@@ -4,6 +4,8 @@
 
 # Tekton-cache container image configurations.
 image:
+  # -- Set the image registry, default to Docker Hub; can be customized to use an alternative provider
+  registry: "docker.io"
   # -- Tekton-cache container image.
   repository: epamedp/tekton-cache
   # -- Defines the policy with which pod will request its image.

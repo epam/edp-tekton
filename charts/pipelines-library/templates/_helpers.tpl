@@ -53,3 +53,10 @@ Validate values of gitProviders
   {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define registry for pipelines images
+*/}}
+{{- define "edp-tekton.registry" -}}
+{{- .Values.pipelines.image.registry -}}
+{{- end -}}

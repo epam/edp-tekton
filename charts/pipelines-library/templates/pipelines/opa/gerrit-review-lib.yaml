@@ -32,7 +32,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: 'openpolicyagent/opa:0.45.0-debug'
+      default: '{{ include "edp-tekton.registry" . }}/openpolicyagent/opa:0.45.0-debug'
       description: "opa image version"
       type: string
     - name: targetBranch

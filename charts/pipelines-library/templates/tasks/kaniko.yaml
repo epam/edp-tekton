@@ -51,7 +51,7 @@ spec:
       default: ./
     - name: builder-image
       description: The image on which builds will run
-      default: {{ .Values.kaniko.image.repository }}:{{ .Values.tag }}-debug
+      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.

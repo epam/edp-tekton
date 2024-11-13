@@ -20,7 +20,7 @@ spec:
         name: "cel"
       params:
         - name: "filter"
-          value: "body.object_attributes.action in ['open', 'reopen', 'update'] || (body.object_kind == 'note' && has(body.merge_request))"
+          value: "body.object_attributes.action in ['open', 'reopen', 'update'] && !(has(body.changes.assignees) || has(body.changes.reviewers)) || (body.object_kind == 'note' && has(body.merge_request))"
     - ref:
         name: "edp"
         kind: NamespacedInterceptor

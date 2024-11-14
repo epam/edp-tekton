@@ -36,6 +36,10 @@ spec:
         kind: Task
         name: run-quality-gate
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
         - name: BASE_IMAGE

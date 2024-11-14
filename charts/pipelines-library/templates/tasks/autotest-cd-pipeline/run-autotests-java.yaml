@@ -19,6 +19,8 @@ spec:
     - name: source
       description: A workspace that contains the repository.
   params:
+    - name: cd-pipeline-name
+      type: string
     - name: stage-name
       type: string
     - name: base-image
@@ -30,6 +32,11 @@ spec:
       env:
         - name: STAGE_NAME
           value: $(params.stage-name)
+        - name: CD_PIPELINE_NAME
+          value: $(params.cd-pipeline-name)
+      envFrom:
+        - configMapRef:
+            name: $(params.cd-pipeline-name)-$(params.stage-name)
       script: |
         #!/bin/bash
 

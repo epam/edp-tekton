@@ -29,6 +29,9 @@ spec:
             secretKeyRef:
               name: ci-argocd
               key: token
+      envFrom:
+        - configMapRef:
+            name: $(params.PIPELINE)-$(params.STAGE)
       script: |
         set -ex
 

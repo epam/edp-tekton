@@ -35,6 +35,10 @@ spec:
         kind: Task
         name: run-quality-gate
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: BASE_IMAGE
           value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
@@ -62,6 +66,10 @@ spec:
       runAfter:
         - deploy-app
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: BASE_IMAGE
           value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
@@ -75,6 +83,10 @@ spec:
       runAfter:
         - post-deploy
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)
         - name: CDPIPELINE_STAGE

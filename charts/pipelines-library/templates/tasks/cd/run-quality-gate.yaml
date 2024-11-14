@@ -1,16 +1,26 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: run-clean-gate
+  name: run-quality-gate
 spec:
   description: >-
-    This task runs a clean gate. It can use a Kubeconfig secret to connect to a remote Kubernetes cluster.
+    This task runs a quality gate. It can use a Kubeconfig secret to connect to a remote Kubernetes cluster.
   volumes:
     - name: kubeconfig
       secret:
         secretName: $(params.KUBECONFIG_SECRET_NAME)
         optional: true
   params:
+    - description: >
+        EDP kind:CDPipeline name used for deployment. For example: mypipe,
+        myfeature
+      name: PIPELINE
+      type: string
+    - description: >
+        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
+        values. For example: dev, test, prod
+      name: STAGE
+      type: string
     - name: BASE_IMAGE
       description: The base image for the task (different for buildtools).
       type: string
@@ -29,6 +39,9 @@ spec:
       volumeMounts:
         - name: kubeconfig
           mountPath: /workspace/source/kube
+      envFrom:
+        - configMapRef:
+            name: $(params.PIPELINE)-$(params.STAGE)
       script: |
         set -ex
         export KUBECONFIG="workspace/source/kube/config"

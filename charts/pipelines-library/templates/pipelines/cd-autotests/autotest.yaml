@@ -21,6 +21,8 @@ spec:
       default: "master"
     - name: stage-name
       default: "dev"
+    - name: cd-pipeline-name
+      default: "dev"
     - name: base-image
       default: ""
   tasks:
@@ -48,6 +50,8 @@ spec:
       params:
         - name: base-image
           value: "$(params.base-image)"
+        - name: cd-pipeline-name
+          value: "$(params.cd-pipeline-name)"
         - name: stage-name
           value: "$(params.stage-name)"
       workspaces:

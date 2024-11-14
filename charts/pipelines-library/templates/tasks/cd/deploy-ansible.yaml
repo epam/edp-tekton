@@ -44,6 +44,9 @@ spec:
             secretKeyRef:
               name: ci-nexus
               key: password
+      envFrom:
+        - configMapRef:
+            name: $(params.PIPELINE)-$(params.STAGE)
       script: |
         #!/usr/bin/env python
         import os

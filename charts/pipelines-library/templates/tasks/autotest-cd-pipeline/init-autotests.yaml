@@ -46,7 +46,9 @@ spec:
           value: $(params.cd-pipeline-name)
         - name: PARENT_PIPELINE_NAME
           value: $(params.parent-pipeline-name)
-
+      envFrom:
+        - configMapRef:
+            name: $(params.cd-pipeline-name)-$(params.stage-name)
       script: |
         #!/usr/bin/env python
 
@@ -103,6 +105,7 @@ spec:
             -p git-source-url=" + gitAutotesUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
             -p stage-name=" + stage +" \
+            -p cd-pipeline-name=" + cdPipelineName +" \
             -p base-image=" + frameworks[autotestBuildTool[count] + "-" + autotestFramework[count]] + " \
             --labels app.edp.epam.com/pipeline=" + cdPipelineName + " \
             --labels app.edp.epam.com/stage=" + stage + " \

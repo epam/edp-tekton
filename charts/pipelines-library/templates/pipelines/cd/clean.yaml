@@ -29,10 +29,14 @@ spec:
         kind: Task
         name: run-clean-gate
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
         - name: BASE_IMAGE
-          value: "bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"
@@ -56,10 +60,14 @@ spec:
       runAfter:
         - clean
       params:
+        - name: PIPELINE
+          value: $(params.CDPIPELINE)
+        - name: STAGE
+          value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
         - name: BASE_IMAGE
-          value: "bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"

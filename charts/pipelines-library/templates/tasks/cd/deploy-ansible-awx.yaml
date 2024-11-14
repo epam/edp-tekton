@@ -49,12 +49,15 @@ spec:
             secretKeyRef:
               name: ci-awx
               key: password
+      envFrom:
+        - configMapRef:
+            name: $(params.PIPELINE)-$(params.STAGE)
       script: |
         #!/usr/bin/env sh
 
         set -eu
         tower-cli config host ${AWX_HOST}
-        tower-cli config username ${AWX_USERNAME} 
+        tower-cli config username ${AWX_USERNAME}
         tower-cli config password ${AWX_PASSWORD}
         tower-cli config verify_ssl false
 

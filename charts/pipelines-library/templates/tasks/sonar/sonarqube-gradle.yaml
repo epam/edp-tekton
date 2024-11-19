@@ -90,13 +90,24 @@ spec:
       script: |
         set -e
 
+        # Check if SonarQube is available
+        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+
+        if [[ "$SONAR_STATUS" != "200" ]]; then
+          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
+          exit 1
+        fi
+
+        # Check if project exists
         SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
 
+        # Check token is valid
         if [[ -z "$SONAR_RESPONSE" ]]; then
           echo "Token isn't valid or not defined"
           exit 1
         fi
 
+        # Create project if it doesn't exist of skip if it does
         if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
           default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
           echo "Create project ${SONAR_PROJECT_KEY}"

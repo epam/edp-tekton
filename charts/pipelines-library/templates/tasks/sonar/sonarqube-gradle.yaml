@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -173,3 +174,4 @@ spec:
               name: $(params.ci-nexus)
               key: url
 {{- include "resources" . | nindent 6 }}
+{{ end }}

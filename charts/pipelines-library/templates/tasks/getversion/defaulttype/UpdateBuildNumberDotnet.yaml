@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -62,3 +63,4 @@ spec:
         DEPLOYABLE_MODULE_DIR="."
 
         printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"
+{{ end }}

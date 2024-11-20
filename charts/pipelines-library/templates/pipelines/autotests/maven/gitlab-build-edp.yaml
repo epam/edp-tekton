@@ -1,20 +1,18 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
-{{- $registry := include "edp-tekton.registry" . -}}
-{{- $resourceMapping := dict
-      "java8" (printf "%s/maven:3.9.0-eclipse-temurin-8" $registry)
-      "java11" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry)
-      "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry)
-   -}}
-{{- range $k, $v := $resourceMapping }}
+{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 )}}
+{{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
+{{- $rawSonar := include "edp-tekton.resourceMapping.mavenSonar" . | fromYaml -}}
+{{- range $framework, $image := $raw }}
+{{- $sonarImage := pluck $framework $rawSonar | first -}}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gitlab-maven-{{ $k }}-aut-build-edp
+  name: gitlab-maven-{{ $framework }}-aut-build-edp
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $k }} automation tests with Maven (EDP versioning)"
+  description: "The Build pipeline for building {{ $framework }} automation tests with Maven (EDP versioning)"
 
   workspaces:
     - name: shared-workspace
@@ -30,7 +28,7 @@ spec:
       default: "edp"
       type: string
     - name: CODEBASE_NAME
-      default: '{{ $k }}-maven'
+      default: '{{ $framework }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
@@ -41,7 +39,7 @@ spec:
       default: ""
       type: string
     - name: sonar_image
-      default: "maven:3.9.0-eclipse-temurin-17"
+      default: '{{ $sonarImage }}'
       description: "sonar image version"
       type: string
 
@@ -109,5 +107,6 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 ---
+{{ end }}
 {{ end }}
 {{ end }}

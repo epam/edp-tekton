@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -32,3 +33,4 @@ spec:
         set -ex
 
         sed -i "s/^version: .*$/version: ${VERSION}/" ${CHART_DIR}/Chart.yaml
+{{ end }}

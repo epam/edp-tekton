@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -236,3 +237,4 @@ spec:
         fi
         printf "%s" "${RESULT_SHA}" > "$(results.commit.path)"
         printf "%s" "${PARAM_URL}" > "$(results.url.path)"
+{{ end }}

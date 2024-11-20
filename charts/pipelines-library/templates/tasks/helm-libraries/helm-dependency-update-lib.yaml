@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -50,3 +51,4 @@ spec:
         do
             helm dependency update $i ${EXTRA_PARAMS}
         done
+{{ end }}

@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -145,3 +146,4 @@ spec:
             secretKeyRef:
               name: $(params.GITLAB_TOKEN_SECRET_NAME)
               key: $(params.GITLAB_TOKEN_SECRET_KEY)
+{{ end }}

@@ -133,6 +133,10 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
+| pipelines.deployableResources | object | `{"c":{"cmake":true,"make":true},"cs":{"dotnet3.1":false,"dotnet6.0":false},"deploy":true,"docker":true,"go":{"beego":true,"gin":true,"operatorsdk":true},"groovy":true,"helm":true,"helm-pipeline":true,"infrastructure":true,"java":{"java11":true,"java17":true,"java8":false},"js":{"angular":true,"antora":true,"express":true,"next":true,"react":true,"vue":true},"opa":false,"python":{"ansible":true,"fastapi":true,"flask":true,"python3.8":false},"tasks":true,"terraform":true}` | This section contains the list of pipelines and tasks that will be installed. |
+| pipelines.deployableResources.c | object | `{"cmake":true,"make":true}` | This section control the installation of the review and build pipelines. |
+| pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
+| pipelines.deployableResources.tasks | bool | `true` | This flag control the installation of the tasks. |
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |

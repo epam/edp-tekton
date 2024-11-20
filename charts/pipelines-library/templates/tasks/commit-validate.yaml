@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -73,3 +74,4 @@ spec:
             if len(line) > max_line_length:
                 print(f"[TEKTON] A line in the commit message is too long. Each line should be no longer than {max_line_length} characters.")
                 sys.exit(1)
+{{ end }}

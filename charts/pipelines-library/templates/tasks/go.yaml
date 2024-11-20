@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -82,3 +83,4 @@ spec:
         - name: GOPROXY
           value: "$(params.GOPROXY)"
 {{- include "resources" . | nindent 6 }}
+{{ end }}

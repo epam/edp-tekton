@@ -6,6 +6,9 @@ def test_opa_pipelines_gerrit():
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    opa: true
     """
 
     r = helm_template(config)
@@ -63,6 +66,9 @@ def test_opa_pipelines_github():
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    opa: true
     """
 
     r = helm_template(config)
@@ -117,6 +123,9 @@ def test_opa_pipelines_gitlab():
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    opa: true
     """
 
     r = helm_template(config)
@@ -171,6 +180,9 @@ def test_opa_pipelines_bitbucket():
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    opa: true
     """
 
     r = helm_template(config)

@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.deploy }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -92,3 +93,4 @@ spec:
           value: $(params.CDSTAGE)
         - name: CDPIPELINE_CR
           value: $(params.CDPIPELINE)
+{{ end }}

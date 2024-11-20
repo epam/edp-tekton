@@ -7,6 +7,10 @@ def test_python_common_pipelines_harbor_gerrit():
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -110,6 +114,10 @@ def test_python_common_pipelines_harbor_github():
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -211,6 +219,10 @@ def test_python_common_pipelines_harbor_gitlab():
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -311,6 +323,10 @@ def test_python_common_pipelines_harbor_bitbucket():
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -413,6 +429,10 @@ def test_python_pipelines_harbor_gerrit(framework):
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     ht = helm_template(config)
@@ -495,6 +515,10 @@ def test_python_pipelines_harbor_gitlab(framework):
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     ht = helm_template(config)
@@ -574,6 +598,10 @@ def test_python_pipelines_harbor_bitbucket(framework):
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     ht = helm_template(config)
@@ -654,6 +682,10 @@ def test_python_pipelines_harbor_github(framework):
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     ht = helm_template(config)
@@ -735,6 +767,10 @@ def test_ansible_pipelines_gerrit():
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -793,6 +829,10 @@ def test_ansible_pipelines_github():
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -850,6 +890,10 @@ def test_ansible_pipelines_gitlab():
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)
@@ -907,6 +951,10 @@ def test_ansible_pipelines_bitbucket():
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    python:
+      python3.8: true
     """
 
     r = helm_template(config)

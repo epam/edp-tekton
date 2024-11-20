@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -82,3 +83,4 @@ spec:
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         cat /workspace/source/build/reports/codenarc/main.html
+{{ end }}

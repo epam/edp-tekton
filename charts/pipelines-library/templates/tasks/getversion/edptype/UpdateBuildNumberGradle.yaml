@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -37,3 +38,4 @@ spec:
         else
             sed -i "s/^version = .*/version = \'${BRANCH_VERSION}\'/" build.gradle
         fi
+{{ end }}

@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -104,3 +105,4 @@ spec:
             crane cp "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" "${DOCKERHUB_IMAGE_TAGGED}"
         fi
 {{- include "resources" . | nindent 6 }}
+{{ end }}

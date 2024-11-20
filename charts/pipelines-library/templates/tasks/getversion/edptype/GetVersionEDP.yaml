@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -89,3 +90,4 @@ spec:
         printf "%s" "${DEPLOYABLE_MODULE_DIR}" > "$(results.DEPLOYABLE_MODULE_DIR.path)"
         printf "%s" "${NUMERIC_VERSION}" > "$(results.NUMERIC_VERSION.path)"
         printf "%s" "${SUFFIX}" > "$(results.SUFFIX.path)"
+{{ end }}

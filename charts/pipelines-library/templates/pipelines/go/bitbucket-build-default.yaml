@@ -1,16 +1,18 @@
 {{ if has "bitbucket" .Values.global.gitProviders }}
+{{ if or ( .Values.pipelines.deployableResources.go.beego ) ( .Values.pipelines.deployableResources.go.gin ) ( .Values.pipelines.deployableResources.go.operatorsdk )}}
 {{- $registry := include "edp-tekton.registry" . -}}
-{{- $resourceMapping := list "beego" "gin" "operator-sdk" -}}
-{{- range $k := $resourceMapping }}
+{{- $raw := include "edp-tekton.resourceMapping.go" . | trimAll "[]" -}}
+{{- $resources := $raw | split " " -}}
+{{- range $framework := $resources }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: bitbucket-go-{{ $k }}-app-build-default
+  name: bitbucket-go-{{ $framework }}-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $k }} application (default versioning)"
+  description: "The Build pipeline for building {{ $framework }} application (default versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -19,7 +21,7 @@ spec:
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/go-go-{{ $k }}"
+      default: "https://github.com/epmd-edp/go-go-{{ $framework }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -27,7 +29,7 @@ spec:
       default: "master"
       type: string
     - name: CODEBASE_NAME
-      default: "{{ $k }}-go"
+      default: "{{ $framework }}-go"
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
@@ -88,5 +90,6 @@ spec:
 {{ include "finally-block-default" . | nindent 2 }}
 
 ---
+{{ end }}
 {{ end }}
 {{ end }}

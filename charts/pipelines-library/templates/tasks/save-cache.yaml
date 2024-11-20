@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -68,3 +69,4 @@ spec:
         requests:
           cpu: 100m
           memory: 1Gi
+{{ end }}

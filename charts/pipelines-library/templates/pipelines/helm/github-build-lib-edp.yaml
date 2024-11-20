@@ -1,4 +1,5 @@
 {{ if has "github" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.helm }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -111,4 +112,5 @@ spec:
 
 {{ include "finally-block-edp" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

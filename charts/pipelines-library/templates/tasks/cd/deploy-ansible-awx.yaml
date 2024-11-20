@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -64,3 +65,4 @@ spec:
         tower-cli job launch --job-template=package-install \
           --extra-vars="{\"APPLICATIONS_PAYLOAD\":${APPLICATIONS_PAYLOAD},\"STAGE\":\"${STAGE}\",\"PIPELINE\":\"${PIPELINE}\"}" \
           --inventory=${PIPELINE} --wait --limit=${PIPELINE}_${STAGE}
+{{ end }}

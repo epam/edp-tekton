@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -46,3 +47,4 @@ spec:
         set -ex
         export KUBECONFIG="workspace/source/kube/config"
         $(params.EXTRA_COMMANDS)
+{{ end }}

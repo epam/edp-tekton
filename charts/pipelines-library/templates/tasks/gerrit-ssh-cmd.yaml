@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -79,3 +80,4 @@ spec:
         fi
 
         ssh -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${USERNAME}@${GERRIT_HOST} gerrit ${SSH_GERRIT_COMMAND} || exit ${ERR_EXIT_CODE}
+{{ end }}

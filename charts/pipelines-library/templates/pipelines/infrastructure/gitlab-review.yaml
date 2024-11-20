@@ -1,4 +1,5 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.infrastructure }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -51,4 +52,5 @@ spec:
 
 {{ include "gitlab-review-vote" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

@@ -1,4 +1,5 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.docker }}
 {{- $registry := .Values.pipelines.image.registry | default "ghcr.io" -}} 
 apiVersion: tekton.dev/v1
 kind: Pipeline
@@ -90,4 +91,5 @@ spec:
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.deploy }}
 {{- $resourceMapping := list "maven" "gradle" -}}
 {{- range $k := $resourceMapping }}
 apiVersion: tekton.dev/v1
@@ -59,4 +60,5 @@ spec:
           workspace: shared-workspace
 
 ---
+{{ end }}
 {{ end }}

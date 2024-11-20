@@ -1,17 +1,16 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{- $registry := include "edp-tekton.registry" . -}}
-{{- $resourceMapping := dict "antora" (printf "%s/%s" $registry "antora/antora:3.1.4") -}}
-{{- range $k, $v := $resourceMapping }}
+{{ if .Values.pipelines.deployableResources.js.antora }}
 {{- $gerritSSHPort  := $.Values.global.gerritSSHPort  -}}
+
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-npm-{{ $k }}-app-review
+  name: gerrit-npm-antora-app-review
   labels:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Review pipeline for building {{ $k }} application with NPM"
+  description: "The Review pipeline for building antora application with NPM"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -20,7 +19,7 @@ spec:
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
+      default: "https://github.com/epmd-edp/javascript-npm-antora"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -32,11 +31,11 @@ spec:
       default: ""
       type: string
     - name: CODEBASE_NAME
-      default: '{{ $k }}-npm-edp-version'
+      default: 'antora-npm-edp-version'
       description: "Project name"
       type: string
     - name: image
-      default: '{{ $v }}'
+      default: '{{ include "edp-tekton.registry" . }}/antora/antora:3.1.4'
       description: "npm image version"
       type: string
     - name: targetBranch

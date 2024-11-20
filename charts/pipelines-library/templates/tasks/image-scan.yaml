@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -126,3 +127,4 @@ spec:
                   -H  "Authorization: bearer ${RP_TOKEN}" \
                   -F "file=@${REPORT_ARCHIVE_NAME};type=application/x-zip-compressed"
         done
+{{ end }}

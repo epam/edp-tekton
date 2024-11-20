@@ -1,4 +1,5 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
+{{ if ( index .Values.pipelines.deployableResources "helm-pipeline" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -169,4 +170,5 @@ spec:
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

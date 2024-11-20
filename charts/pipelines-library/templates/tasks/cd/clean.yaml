@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -45,3 +46,4 @@ spec:
         selector="app.edp.epam.com/stage=$(params.STAGE),app.edp.epam.com/pipeline=$(params.PIPELINE)"
 
         argocd app delete -l $selector -y
+{{ end }}

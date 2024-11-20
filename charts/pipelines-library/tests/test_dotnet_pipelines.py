@@ -6,6 +6,11 @@ def test_dotnet_pipelines_harbor_gerrit():
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    cs:
+      dotnet3.1: true
+      dotnet6.0: true
     """
 
     ht = helm_template(config)
@@ -106,6 +111,11 @@ def test_dotnet_pipelines_harbor_gitlab():
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    cs:
+      dotnet3.1: true
+      dotnet6.0: true
     """
 
     ht = helm_template(config)
@@ -204,6 +214,11 @@ def test_dotnet_pipelines_harbor_github():
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    cs:
+      dotnet3.1: true
+      dotnet6.0: true
     """
 
     ht = helm_template(config)
@@ -301,6 +316,11 @@ def test_dotnet_pipelines_harbor_bitbucket():
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    cs:
+      dotnet3.1: true
+      dotnet6.0: true
     """
 
     ht = helm_template(config)

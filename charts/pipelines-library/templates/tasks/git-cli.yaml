@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -141,3 +142,4 @@ spec:
         fi
         # Make sure we don't add a trailing newline to the result!
         printf "%s" "$RESULT_SHA" > "$(results.commit.path)"
+{{ end }}

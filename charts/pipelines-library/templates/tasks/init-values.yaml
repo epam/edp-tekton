@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -45,3 +46,4 @@ spec:
 
         resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
         printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"
+{{ end }}

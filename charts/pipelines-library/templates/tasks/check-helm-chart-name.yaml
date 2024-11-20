@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -36,4 +37,4 @@ spec:
         fi
 
       workingDir: $(workspaces.source.path)
-
+{{ end }}

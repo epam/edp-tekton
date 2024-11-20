@@ -1,4 +1,5 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.c.make }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -81,4 +82,5 @@ spec:
 {{ include "finally-block-edp" . | nindent 2 }}
 
 ---
+{{ end }}
 {{ end }}

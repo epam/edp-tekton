@@ -1,4 +1,5 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.infrastructure }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -71,4 +72,5 @@ spec:
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

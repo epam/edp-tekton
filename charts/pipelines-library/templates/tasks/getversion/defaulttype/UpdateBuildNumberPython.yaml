@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -28,3 +29,4 @@ spec:
 
         sed -i 's/\(__version__\s*=\s*\).*/\1'\"${VERSION}\"'/' version/__init__.py
         cat version/__init__.py
+{{ end }}

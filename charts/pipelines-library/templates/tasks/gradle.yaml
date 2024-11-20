@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -109,3 +110,4 @@ spec:
               key: RELEASES_REPO_PATH
               optional: true
 {{- include "resources" . | nindent 6 }}
+{{ end }}

@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -61,3 +62,4 @@ spec:
 
         git config --global --add safe.directory $(pwd)
         git diff -s --exit-code ${CHART_DIR}/README.md || (echo "Run 'helm-docs' to address the issue." && git diff && exit 1)
+{{ end }}

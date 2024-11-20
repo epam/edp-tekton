@@ -66,6 +66,9 @@ spec:
 
         kubectl patch applicationset $pipeline --type=merge -p "$patch"
 
+        # Delay to ensure the Argo CD Application controller has enough time to process the updated ApplicationSet resource.
+        sleep 5
+
         argocd app list -l $selector
 
         argocd app sync -l $selector --prune --timeout 300

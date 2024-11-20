@@ -6,6 +6,10 @@ def test_java_maven_pipelines_harbor_gerrit():
 global:
   gitProviders:
     - gerrit
+pipelines:
+  deployableResources:
+    java:
+      java8: true
     """
 
     r = helm_template(config)
@@ -143,6 +147,10 @@ def test_java_maven_pipelines_harbor_github():
 global:
   gitProviders:
     - github
+pipelines:
+  deployableResources:
+    java:
+      java8: true
     """
 
     r = helm_template(config)
@@ -277,6 +285,10 @@ def test_java_maven_pipelines_harbor_gitlab():
 global:
   gitProviders:
     - gitlab
+pipelines:
+  deployableResources:
+    java:
+      java8: true
     """
 
     r = helm_template(config)
@@ -410,6 +422,10 @@ def test_java_maven_pipelines_harbor_bitbucket():
 global:
   gitProviders:
     - bitbucket
+pipelines:
+  deployableResources:
+    java:
+      java8: true
     """
 
     r = helm_template(config)

@@ -1,4 +1,5 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.docker }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -85,4 +86,5 @@ spec:
 
 {{ include "finally-block-default" . | nindent 2 }}
 
+{{ end }}
 {{ end }}

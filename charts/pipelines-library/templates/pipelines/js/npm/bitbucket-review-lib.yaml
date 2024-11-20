@@ -1,16 +1,18 @@
 {{ if has "bitbucket" .Values.global.gitProviders }}
+{{ if or ( .Values.pipelines.deployableResources.js.angular ) ( .Values.pipelines.deployableResources.js.express ) ( .Values.pipelines.deployableResources.js.next ) ( .Values.pipelines.deployableResources.js.react ) ( .Values.pipelines.deployableResources.js.vue )}}
 {{- $registry := include "edp-tekton.registry" . -}}
-{{- $resourceMapping := list "react" "angular" "vue" "express" "next" -}}
-{{- range $k := $resourceMapping }}
+{{- $raw := include "edp-tekton.resourceMapping.js" . | trimAll "[]" -}}
+{{- $resources := $raw | split " " -}}
+{{- range $framework := $resources }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: bitbucket-npm-{{ $k }}-lib-review
+  name: bitbucket-npm-{{ $framework }}-lib-review
   labels:
     app.edp.epam.com/pipelinetype: review
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Review pipeline for building {{ $k }} library with NPM"
+  description: "The Review pipeline for building {{ $framework }} library with NPM"
 
   workspaces:
     - name: shared-workspace
@@ -21,7 +23,7 @@ spec:
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/javascript-npm-{{ $k }}"
+      default: "https://github.com/epmd-edp/javascript-npm-{{ $framework }}"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -37,7 +39,7 @@ spec:
     - name: changeNumber
       description: Change number from Merge Request
     - name: CODEBASE_NAME
-      default: '{{ $k }}-npm-edp-version'
+      default: '{{ $framework }}-npm-edp-version'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
@@ -97,5 +99,6 @@ spec:
 {{ include "bitbucket-review-vote" $ | nindent 2 }}
 
 ---
+{{ end }}
 {{ end }}
 {{ end }}

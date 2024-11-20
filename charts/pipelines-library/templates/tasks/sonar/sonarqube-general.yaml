@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -185,3 +186,4 @@ spec:
       command:
         - sonar-scanner
 {{- include "resources" . | nindent 6 }}
+{{ end }}

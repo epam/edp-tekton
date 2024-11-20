@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -70,3 +71,4 @@ spec:
         argocd app sync -l $selector --prune --timeout 300
         # TODO: we build our custom argocd-cli that has fixed issue with argocd app wait
         argocd app wait -l $selector --health --sync
+{{ end }}

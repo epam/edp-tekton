@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -59,3 +60,4 @@ spec:
             helm template ${RELEASE_NAME} ${i} ${TEMPLATE_EXTRA_PARAMS}
             $(params.extra_commands)
         done
+{{ end }}

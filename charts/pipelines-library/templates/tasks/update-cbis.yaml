@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -42,3 +43,4 @@ spec:
             echo "[TEKTON][DEBUG] ImageStream ${CBIS_NAME} doesn't contain ${IMAGE_TAG} tag ... it will be added."
             kubectl patch cbis.v2.edp.epam.com ${CBIS_NAME} --type json -p="[{\"op\": \"add\", \"path\": \"/spec/tags/-\", \"value\": ${newcbisTag} }]"
         fi
+{{ end }}

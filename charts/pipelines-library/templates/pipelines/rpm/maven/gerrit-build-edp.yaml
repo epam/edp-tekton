@@ -1,26 +1,18 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{- $registry := include "edp-tekton.registry" . -}}
-{{- $resourceMapping := dict
-      "java8" (printf "%s/maven:3.9.0-eclipse-temurin-8" $registry)
-      "java11" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry)
-      "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry)
-   -}}
-{{- $altResourceMapping := dict
-      "java8" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry)
-      "java11" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry)
-      "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry)
-   -}}
-{{- range $k, $v := $resourceMapping }}
-{{- $valueFromAlt := pluck $k $altResourceMapping | first -}}
+{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 )}}
+{{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
+{{- $rawSonar := include "edp-tekton.resourceMapping.mavenSonar" . | fromYaml -}}
+{{- range $framework, $image := $raw }}
+{{- $sonarImage := pluck $framework $rawSonar | first -}}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-maven-{{ $k }}-app-build-edp-rpm
+  name: gerrit-maven-{{ $framework  }}-app-build-edp-rpm
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $k }} application with Maven (EDP versioning)"
+  description: "The Build pipeline for building {{ $framework  }} application with Maven (EDP versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -37,18 +29,18 @@ spec:
       default: "edp"
       type: string
     - name: CODEBASE_NAME
-      default: '{{ $k }}-maven'
+      default: '{{ $framework  }}-maven'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: '{{ $v }}'
+      default: '{{ $image  }}'
       description: "maven image version"
       type: string
     - name: sonar_image
-      default: '{{ $valueFromAlt }}'
+      default: '{{ $sonarImage  }}'
       description: "sonar image version"
       type: string
     - name: changeNumber
@@ -124,5 +116,6 @@ spec:
 {{ include "finally-block-edp" . | nindent 2 }}
 
 ---
+{{ end }}
 {{ end }}
 {{ end }}

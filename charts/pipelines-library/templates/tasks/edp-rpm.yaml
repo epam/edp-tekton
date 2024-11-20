@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -96,3 +97,4 @@ spec:
         $(params.EXTRA_PUSH_COMMAND)
 
 {{- include "resources" . | nindent 6 }}
+{{ end }}

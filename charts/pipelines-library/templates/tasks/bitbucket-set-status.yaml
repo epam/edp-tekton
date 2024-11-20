@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -170,3 +171,4 @@ spec:
                 state=os.getenv("STATE"),
                 repo=os.getenv("REPO_FULL_NAME"),
                 sha=os.getenv("SHA")))
+{{ end }}

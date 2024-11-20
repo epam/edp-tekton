@@ -1,3 +1,4 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -45,3 +46,4 @@ spec:
       script: |
         set -e
         hadolint "$DOCKERFILE" -f "$OFORMAT"
+{{ end }}

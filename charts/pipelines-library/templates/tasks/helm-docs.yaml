@@ -23,6 +23,9 @@ spec:
     - name: helm_docs_image
       description: "Specify a specific helm-docs image"
       default: "{{ include "edp-tekton.registry" . }}/jnorwood/helm-docs:v1.13.1"
+    - name: git_image
+      description: "Specify a specific git image"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/git:v2.26.2"
     - name: user_home
       description: |
         Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user
@@ -50,7 +53,7 @@ spec:
 
         helm-docs --chart-search-root ${CHART_DIR}
     - name: validate-helm-docs
-      image: {{ include "edp-tekton.registry" . }}/bitnami/git:2.41.0
+      image: $(params.git_image)
       workingDir: $(workspaces.source.path)
       env:
         - name: CHART_DIR

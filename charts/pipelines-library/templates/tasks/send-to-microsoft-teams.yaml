@@ -19,9 +19,13 @@ spec:
   - name: message
     type: string
     description: The message to notify about
+  - name: base_image
+    type: string
+    description: The image to use as a base for the task
+    default: "{{ include "edp-tekton.registry" . }}/alpine/curl:3.14"
   steps:
   - name: post
-    image: {{ include "edp-tekton.registry" . }}/curlimages/curl:7.70.0 #@sha256:031df77a11e5edded840bc761a845eab6e3c2edee22669fb8ad6d59484b6a1c4
+    image: $(params.base_image)
     script: |
       #!/usr/bin/env sh
       MESSAGE=$(echo "${MESSAGE}" | sed -e 's/\"/\\\\"/g')

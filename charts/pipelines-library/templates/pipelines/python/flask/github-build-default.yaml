@@ -39,10 +39,6 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
-    - name: image
-      default: '{{ $registry }}/python:3.8-alpine3.16'
-      description: "python image version"
-      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""

@@ -61,8 +61,11 @@ spec:
       default: "."
     - name: EXTRA_COMMANDS
       type: string
+    - name: step_prepare_project_image
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
   steps:
-    - image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.3
+    - image: $(params.step_prepare_project_image)
       name: prepare-project
       workingDir: $(workspaces.source.path)
       env:

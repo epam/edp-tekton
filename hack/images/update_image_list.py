@@ -5,6 +5,9 @@ HELM_RELEASE_NAME = "edp-tekton"  # Specify your Helm release name
 HELM_CHART_PATH = "charts/pipelines-library"   # Specify the path to your Helm chart
 IMAGES_FILE_PATH = "images.txt"          # Output file for unique images
 
+# This script generate a list of unique images used in the Helm chart based on enabled pipelines
+# that defined into the charts/pipeline-library/values.yaml in section .Values.pipelines.deployableResources
+
 def run_helm_template():
     """Run 'helm template' and return the output as a string."""
     command = f"helm template {HELM_RELEASE_NAME} {HELM_CHART_PATH}"

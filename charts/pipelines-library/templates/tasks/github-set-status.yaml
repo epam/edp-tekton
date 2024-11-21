@@ -85,7 +85,7 @@ spec:
       description: |
         Image providing the python binary which this task uses.
       type: string
-      default: {{ include "edp-tekton.registry" . }}/python:3.10.1-alpine3.15
+      default: {{ include "edp-tekton.registry" . }}/python:3.10.8-alpine3.16
     - name: SHEBANG
       description: |
         Python path. Depends on the image.

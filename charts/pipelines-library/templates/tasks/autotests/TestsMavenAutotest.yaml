@@ -23,12 +23,18 @@ spec:
       default: ci-nexus
     - name: BASE_IMAGE
       description: "The base image for the task"
+    - name: step_get_command_image
+      description: "The command to run autotests"
+      default: '{{ include "edp-tekton.registry" . }}/python:3.10.8-alpine3.16'
+    - name: step_check_run_json_file_image
+      description: "The image to check the presence of the run.json file"
+      default: '{{ include "edp-tekton.registry" . }}/python:3.10.8-alpine3.16'
   results:
     - name: COMMAND
       type: string
   steps:
     - name: check-run-json-file
-      image: "{{ include "edp-tekton.registry" . }}/python:3.9.14-alpine3.16"
+      image: $(params.step_check_run_json_file_image)
       workingDir: $(workspaces.source.path)
       script: |
         set -ex
@@ -41,7 +47,7 @@ spec:
         fi
 
     - name: get-command
-      image: "{{ include "edp-tekton.registry" . }}/python:3.10.1-alpine3.15"
+      image: $(params.step_get_command_image)
       workingDir: $(workspaces.source.path)
       env:
         - name: RESULT_COMMAND_FILE_PATH

@@ -24,6 +24,9 @@ spec:
       default: 'codebase_tags'
     - name: parent-pipeline-name
       default: ''
+    - name: step_init_autotest_image
+      description: "The base image for the task."
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
   results:
     - name: AUTOTEST_PIPELINES
       type: string
@@ -31,7 +34,7 @@ spec:
       type: string
   steps:
     - name: init-autotest
-      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.3
+      image: $(params.step_init_autotest_image)
       workingDir: $(workspaces.source.path)
       volumeMounts:
         - name: autotests-workspace-template

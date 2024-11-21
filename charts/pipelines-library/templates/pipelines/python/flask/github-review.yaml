@@ -47,10 +47,6 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: image
-      default: '{{ $registry }}/python:3.8-alpine3.16'
-      description: "python image version"
-      type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string

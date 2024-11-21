@@ -30,9 +30,13 @@ spec:
     - name: GIT_URL
       description: Repository URL to clone from.
       type: string
+    - name: step_push_to_jira_image
+      description: "The base image for the task."
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
+      type: string
   steps:
     - name: push-to-jira
-      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.3
+      image: $(params.step_push_to_jira_image)
       env:
         - name: GIT_URL
           value: $(params.GIT_URL)

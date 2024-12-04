@@ -33,7 +33,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: '{{ $registry }}/gradle:7.5.1-jdk11'
+      default: '{{ $registry }}/gradle:7.6.1-jdk11'
       description: "gradle image version"
       type: string
     - name: changeNumber

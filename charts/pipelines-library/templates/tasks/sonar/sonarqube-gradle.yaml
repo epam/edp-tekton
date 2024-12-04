@@ -62,7 +62,7 @@ spec:
     - name: BASE_IMAGE
       description: Gradle base image.
       type: string
-      default: {{ include "edp-tekton.registry" . }}/gradle:7.5.1-jdk11
+      default: {{ include "edp-tekton.registry" . }}/gradle:7.6.1-jdk11
     - name: PROJECT_DIR
       description: The directory containing build.gradle
       type: string

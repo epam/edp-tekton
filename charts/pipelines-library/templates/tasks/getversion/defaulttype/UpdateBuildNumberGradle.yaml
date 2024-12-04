@@ -26,5 +26,5 @@ spec:
       script: |
         set -ex
 
-        sed -i "s/version = .*/version = \'${VERSION}\'/" build.gradle
+        sed -i "s/version = .*/version = \"${VERSION}\"/" build.gradle
 {{ end }}

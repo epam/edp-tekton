@@ -102,13 +102,13 @@ Define registry for pipelines images
 {{- $gradleVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java8 }}
-    {{- $gradleVersions = set $gradleVersions "java8" (printf "%s/gradle:7.5.1-jdk8" $registry)  }}
+    {{- $gradleVersions = set $gradleVersions "java8" (printf "%s/gradle:7.6.1-jdk8" $registry)  }}
   {{- end }}
   {{- if .java11 }}
-    {{- $gradleVersions = set $gradleVersions "java11" (printf "%s/gradle:7.5.1-jdk11" $registry)  }}
+    {{- $gradleVersions = set $gradleVersions "java11" (printf "%s/gradle:7.6.1-jdk11" $registry)  }}
   {{- end }}
   {{- if .java17 }}
-    {{- $gradleVersions = set $gradleVersions "java17" (printf "%s/gradle:7.5.1-jdk17" $registry)  }}
+    {{- $gradleVersions = set $gradleVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry)  }}
   {{- end }}
 {{- end }}
 {{- $gradleVersions | toYaml -}}
@@ -119,13 +119,13 @@ Define registry for pipelines images
 {{- $sonarVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java8 }}
-    {{- $sonarVersions = set $sonarVersions "java8" (printf "%s/gradle:7.5.1-jdk11" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java8" (printf "%s/gradle:7.6.1-jdk11" $registry) }}
   {{- end }}
   {{- if .java11 }}
-    {{- $sonarVersions = set $sonarVersions "java11" (printf "%sgradle:7.5.1-jdk11" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java11" (printf "%sgradle:7.6.1-jdk11" $registry) }}
   {{- end }}
   {{- if .java17 }}
-    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.5.1-jdk17" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry) }}
   {{- end }}
 {{- end }}
 {{- $sonarVersions | toYaml -}}

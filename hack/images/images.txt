@@ -18,9 +18,9 @@ docker.io/epamedp/tekton-python-make:0.1.7
 docker.io/epamedp/tekton-rpm:0.1.4
 docker.io/epamedp/tekton-tfenv:0.1.4
 docker.io/golang:1.22-bookworm
-docker.io/gradle:7.5.1-jdk11
-docker.io/gradle:7.5.1-jdk17
-docker.io/gradle:7.5.1-jdk8
+docker.io/gradle:7.6.1-jdk11
+docker.io/gradle:7.6.1-jdk17
+docker.io/gradle:7.6.1-jdk8
 docker.io/hadolint/hadolint:v2.10.0-alpine
 docker.io/jnorwood/helm-docs:v1.13.1
 docker.io/library/node:18.20.3-alpine3.20

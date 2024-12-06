@@ -23,7 +23,7 @@ spec:
 
   steps:
     - name: wait-for-deploy
-      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-cd-pipeline:0.1.2
+      image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-cd-pipeline:0.1.4
       env:
         - name: ARGOCD_URL
           valueFrom:

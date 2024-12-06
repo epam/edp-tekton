@@ -9,7 +9,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: {{ include "edp-tekton.registry" . }}/epamedp/tekton-cd-pipeline:0.1.2
+      default: {{ include "edp-tekton.registry" . }}/epamedp/tekton-cd-pipeline:0.1.4
     - name: APPLICATIONS_PAYLOAD
       description: |
         Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}

@@ -122,7 +122,7 @@ Define registry for pipelines images
     {{- $sonarVersions = set $sonarVersions "java8" (printf "%s/gradle:7.6.1-jdk11" $registry) }}
   {{- end }}
   {{- if .java11 }}
-    {{- $sonarVersions = set $sonarVersions "java11" (printf "%sgradle:7.6.1-jdk11" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java11" (printf "%s/gradle:7.6.1-jdk11" $registry) }}
   {{- end }}
   {{- if .java17 }}
     {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry) }}

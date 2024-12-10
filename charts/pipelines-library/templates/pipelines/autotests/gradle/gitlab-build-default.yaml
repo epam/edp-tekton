@@ -1,7 +1,7 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
 {{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 )}}
 {{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
-{{- $rawSonar := include "edp-tekton.resourceMapping.mavenSonar" . | fromYaml -}}
+{{- $rawSonar := include "edp-tekton.resourceMapping.gradleSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}
 {{- $sonarImage := pluck $framework $rawSonar | first -}}
 apiVersion: tekton.dev/v1

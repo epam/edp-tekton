@@ -3,8 +3,8 @@ name: tekton-cache
 home: https://docs.kuberocketci.io
 description: A Helm chart for KubeRocketCI Tekton Cache
 type: application
-version: 0.4.0
-appVersion: 0.4.0
+version: 0.4.1
+appVersion: 0.4.1
 icon: https://docs.kuberocketci.io/img/logo.svg
 maintainers:
   - name: epmd-edp

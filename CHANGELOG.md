@@ -2,6 +2,41 @@
 ## [Unreleased]
 
 
+<a name="v0.14.0"></a>
+## [v0.14.0] - 2024-12-12
+### Features
+
+- Enable configuration to disable pipeline by codebses ([#365](https://github.com/epam/edp-tekton/issues/365))
+- Add support kubeconfig in clean pipeline([#350](https://github.com/epam/edp-tekton/issues/350))
+- Implement parameter to set image repository ([#348](https://github.com/epam/edp-tekton/issues/348))
+
+### Bug Fixes
+
+- Sonar image name resource mapping in pipelines([#375](https://github.com/epam/edp-tekton/issues/375))
+- Align resourceMapping for gradle sonar([#375](https://github.com/epam/edp-tekton/issues/375))
+- Fix NaN sync error in deployment process ([#363](https://github.com/epam/edp-tekton/issues/363))
+- Add handler to check sonar availability ([#356](https://github.com/epam/edp-tekton/issues/356))
+- Set correct repository for chart-testing task ([#348](https://github.com/epam/edp-tekton/issues/348))
+
+### Routine
+
+- Bump tekton-cache version ([#379](https://github.com/epam/edp-tekton/issues/379))
+- Bumo tekton-cache version ([#379](https://github.com/epam/edp-tekton/issues/379))
+- Update tekton-cd-pipeline image version ([#373](https://github.com/epam/edp-tekton/issues/373))
+- Bump gradle image version([#369](https://github.com/epam/edp-tekton/issues/369))
+- Align quotation marks regex patterns gradle([#370](https://github.com/epam/edp-tekton/issues/370))
+- Standardize Tekton Agents Image Versions ([#367](https://github.com/epam/edp-tekton/issues/367))
+- Enable deployment env variables in CD pipelines([#360](https://github.com/epam/edp-tekton/issues/360))
+- Update sonar project creation logic ([#356](https://github.com/epam/edp-tekton/issues/356))
+- Disable GitLab trigger on reviewer change ([#358](https://github.com/epam/edp-tekton/issues/358))
+- Add scripts to transfer images to ECR ([#348](https://github.com/epam/edp-tekton/issues/348))
+- Set correct image tag for kaniko task ([#348](https://github.com/epam/edp-tekton/issues/348))
+- Increase resources for get-cache task ([#348](https://github.com/epam/edp-tekton/issues/348))
+- Update Pull Request Template ([#56](https://github.com/epam/edp-tekton/issues/56))
+- Update default terraform version to 1.5.7 ([#345](https://github.com/epam/edp-tekton/issues/345))
+- Update current development version ([#341](https://github.com/epam/edp-tekton/issues/341))
+
+
 <a name="v0.13.0"></a>
 ## [v0.13.0] - 2024-10-18
 ### Features
@@ -528,7 +563,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.14.0...HEAD
+[v0.14.0]: https://github.com/epam/edp-tekton/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/epam/edp-tekton/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/epam/edp-tekton/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/epam/edp-tekton/compare/v0.10.2...v0.11.0

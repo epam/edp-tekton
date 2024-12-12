@@ -4,6 +4,6 @@ dependencies:
   version: 0.3.6
 - name: tekton-cache
   repository: https://epam.github.io/edp-helm-charts/stable
-  version: 0.4.0
-digest: sha256:3ab598cef71bf7f8aee1446f6a8c9b31fd094423dc11932e76bd8585d4a97967
-generated: "2024-10-18T14:51:33.276619+03:00"
+  version: 0.4.1
+digest: sha256:bb2558c760c5405a5d34666f3f081cacce8570e30158b037c1c7859ba76c8d75
+generated: "2024-12-12T20:43:05.08774+02:00"

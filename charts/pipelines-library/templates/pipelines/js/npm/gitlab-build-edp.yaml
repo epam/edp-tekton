@@ -42,7 +42,7 @@ spec:
       default: ""
       type: string
     - name: image
-      default: '{{ $registry }}}/library/node:18.20.3-alpine3.20'
+      default: '{{ $registry }}/library/node:18.20.3-alpine3.20'
       description: "npm image version"
       type: string
     - name: TICKET_NAME_PATTERN

@@ -72,7 +72,7 @@ data:
                 <!--This sends everything else to /public -->
                 <id>nexus</id>
                 <mirrorOf>*</mirrorOf>
-                <url>http://nexus.nexus:8081/repository/edp-maven-group</url>
+                <url>http://nexus.nexus:8081/repository/krci-maven-group</url>
             </mirror>
         </mirrors>
 
@@ -95,8 +95,8 @@ data:
             <profile>
                 <id>nexus</id>
                 <properties>
-                    <altSnapshotDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-snapshots</altSnapshotDeploymentRepository>
-                    <altReleaseDeploymentRepository>nexus::http://nexus.nexus:8081/repository/edp-maven-releases</altReleaseDeploymentRepository>
+                    <altSnapshotDeploymentRepository>nexus::http://nexus.nexus:8081/repository/krci-maven-snapshots</altSnapshotDeploymentRepository>
+                    <altReleaseDeploymentRepository>nexus::http://nexus.nexus:8081/repository/krci-maven-releases</altReleaseDeploymentRepository>
                 </properties>
             </profile>
             <!-- GitLab registry profile for managing artifacts within GitLab. -->

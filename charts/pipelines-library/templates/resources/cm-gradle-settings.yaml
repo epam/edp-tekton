@@ -10,8 +10,8 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 data:
-  SNAPSHOTS_REPO_PATH: "/repository/edp-maven-snapshots"
-  RELEASES_REPO_PATH: "/repository/edp-maven-releases"
+  SNAPSHOTS_REPO_PATH: "/repository/krci-maven-snapshots"
+  RELEASES_REPO_PATH: "/repository/krci-maven-releases"
   init.gradle: |
     // Copyright 2024 EPAM Systems.
     //
@@ -52,7 +52,7 @@ data:
                     username = System.getenv("CI_USERNAME")
                     password = System.getenv("CI_PASSWORD")
                 }
-                url = System.getenv("NEXUS_HOST_URL") + "/repository/edp-maven-group"
+                url = System.getenv("NEXUS_HOST_URL") + "/repository/krci-maven-group"
                 allowInsecureProtocol = true
             }
             maven {

@@ -12,21 +12,21 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 data:
   # Private repo index path PIP searches through. It is used by 'pip search' command.
-  # e.g. '/repository/edp-python-group/pypi'
-  PIP_INDEX_PATH: "/repository/edp-python-group/pypi"
+  # e.g. '/repository/krci-python-group/pypi'
+  PIP_INDEX_PATH: "/repository/krci-python-group/pypi"
 
   # Repo index path from wich PIP downloads private packages and public packages via proxy.
   # PIP_INDEX_URL can have only one URL while PIP_EXTRA_INDEX_URL can hold
   # multiple URLs if passed with spaces. It is used by 'pip install' command.
   # To access index via web, add slash at the end of 'simple/'.
-  # e.g. '/repository/edp-python-group/simple'
-  PIP_INDEX_URL_PATH: "/repository/edp-python-group/simple"
+  # e.g. '/repository/krci-python-group/simple'
+  PIP_INDEX_URL_PATH: "/repository/krci-python-group/simple"
 
   # Path for the snapshots repository in artifact storage.
-  REPOSITORY_SNAPSHOTS_PATH: "/repository/edp-python-snapshots/"
+  REPOSITORY_SNAPSHOTS_PATH: "/repository/krci-python-snapshots/"
 
   # Path for the releases repository in artifact storage
-  REPOSITORY_RELEASES_PATH: "/repository/edp-python-releases/"
+  REPOSITORY_RELEASES_PATH: "/repository/krci-python-releases/"
 
   # Example for pushing a snapshot and a release packages package to GitLab
   # Ref: https://docs.gitlab.com/ee/user/packages/pypi_repository/

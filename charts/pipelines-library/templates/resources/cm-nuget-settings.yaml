@@ -14,8 +14,8 @@ data:
     <?xml version="1.0" encoding="utf-8"?>
     <configuration>
         <packageSources>
-            <add key="nugetStorageSnapshots" value="%NEXUS_HOST_URL%/repository/edp-dotnet-snapshots" />
-            <add key="nugetStorageReleases" value="%NEXUS_HOST_URL%/repository/edp-dotnet-releases" />
+            <add key="nugetStorageSnapshots" value="%NEXUS_HOST_URL%/repository/krci-dotnet-snapshots" />
+            <add key="nugetStorageReleases" value="%NEXUS_HOST_URL%/repository/krci-dotnet-releases" />
         </packageSources>
         <packageSourceCredentials>
             <nugetStorageSnapshots>

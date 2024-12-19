@@ -13,6 +13,10 @@ spec:
       value: "$(body.repository.ssh_url)"
     - name: gitrepositoryname
       value: "$(body.repository.name)"
+    - name: gitsha
+      value: $(extensions.pullRequest.headSha)
+    - name: gitfullrepositoryname
+      value: $(body.repository.full_name)
     - name: codebase
       value: "$(extensions.codebase)"
     - name: codebasebranch

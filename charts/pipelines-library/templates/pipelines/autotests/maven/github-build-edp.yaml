@@ -17,6 +17,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
@@ -35,6 +38,12 @@ spec:
     - name: changeNumber
       description: Change number from Merge Request
       default: ""
+      type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
       type: string
     - name: sonar_image
       default: '{{ $sonarImage }}'
@@ -104,6 +113,10 @@ spec:
           subPath: source
         - name: ssh-directory
           workspace: ssh-creds
+
+  finally:
+
+{{ include "github-build-vote" . | nindent 4 }}
 ---
 {{ end }}
 {{ end }}

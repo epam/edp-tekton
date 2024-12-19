@@ -39,6 +39,12 @@ spec:
       default: '{{ include "edp-tekton.registry" . }}/gradle:7.6.1-jdk11'
       description: "gradle image version"
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -171,6 +177,8 @@ spec:
           value: $(tasks.get-version.results.IS_TAG)
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "github-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

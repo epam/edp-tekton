@@ -31,6 +31,9 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: CODEBASE_NAME
       default: '{{ $framework }}-maven'
       description: "Project name"
@@ -118,6 +121,7 @@ spec:
 
 {{ include "finally-block-edp" . | nindent 2 }}
 
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 ---
 {{ end }}
 {{ end }}

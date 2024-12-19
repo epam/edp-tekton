@@ -35,6 +35,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: image
       default: '{{ include "edp-tekton.registry" . }}/gradle:7.6.1-jdk11'
       description: "gradle image version"
@@ -171,6 +174,8 @@ spec:
           value: $(tasks.get-version.results.IS_TAG)
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

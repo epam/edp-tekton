@@ -10,6 +10,7 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: gitfullrepositoryname
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
@@ -56,6 +57,8 @@ spec:
             value: $(tt.params.codebasebranch)
           - name: changeNumber
             value: $(tt.params.changeNumber)
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
           - name: TICKET_NAME_PATTERN
             value: $(tt.params.ticketNamePattern)
           - name: COMMIT_MESSAGE_PATTERN

@@ -31,6 +31,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -56,6 +59,30 @@ spec:
 {{- include "build-result" . | nindent 2 }}
 
   tasks:
+
+    - name: bitbucket-set-pending-status
+      taskRef:
+        kind: Task
+        name: bitbucket-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: SHA
+          value: "$(params.git-source-revision)"
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
+        - name: DESCRIPTION
+          value: "Review Pipeline"
+        - name: STATE
+          value: "INPROGRESS"
+        - name: BITBUCKET_TOKEN_SECRET_NAME
+          value: ci-bitbucket
+        - name: BITBUCKET_TOKEN_SECRET_KEY
+          value: token
+        - name: KEY
+          value: "Review"
+        - name: NAME
+          value: "Pipeline"
 
     - name: fetch-repository
       taskRef:
@@ -153,6 +180,8 @@ spec:
           workspace: ssh-creds
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

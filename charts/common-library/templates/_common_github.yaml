@@ -1,5 +1,29 @@
 # The init section for github build pipeline
 {{- define "github-build-start" -}}
+- name: github-set-pending-status
+  taskRef:
+    kind: Task
+    name: github-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.gitfullrepositoryname)
+    - name: DESCRIPTION
+      value: "Pipeline (IN PROGRESS)"
+    - name: STATE
+      value: "pending"
+    - name: CONTEXT
+      value: "Build Pipeline"
+    - name: AUTH_TYPE
+      value: Token
+    - name: GITHUB_TOKEN_SECRET_NAME
+      value: ci-github
+    - name: GITHUB_TOKEN_SECRET_KEY
+      value: token
+    - name: SHA
+      value: $(params.gitsha)
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
+
 - name: fetch-repository
   taskRef:
     kind: Task
@@ -40,9 +64,11 @@
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)
     - name: DESCRIPTION
-      value: "Build has started"
+      value: "Pipeline (IN PROGRESS)"
     - name: STATE
       value: "pending"
+    - name: CONTEXT
+      value: "Review Pipeline"
     - name: AUTH_TYPE
       value: Token
     - name: GITHUB_TOKEN_SECRET_NAME
@@ -103,9 +129,11 @@ finally:
       - name: REPO_FULL_NAME
         value: $(params.gitfullrepositoryname)
       - name: DESCRIPTION
-        value: "Build was successful"
+        value: "Pipeline (PASSED)"
       - name: STATE
         value: "success"
+      - name: CONTEXT
+        value: "Review Pipeline"
       - name: AUTH_TYPE
         value: Token
       - name: GITHUB_TOKEN_SECRET_NAME
@@ -129,9 +157,11 @@ finally:
       - name: REPO_FULL_NAME
         value: $(params.gitfullrepositoryname)
       - name: DESCRIPTION
-        value: "Build has failed"
+        value: "Pipeline (FAILED)"
       - name: STATE
         value: "failure"
+      - name: CONTEXT
+        value: "Review Pipeline"
       - name: AUTH_TYPE
         value: Token
       - name: GITHUB_TOKEN_SECRET_NAME
@@ -142,4 +172,68 @@ finally:
         value: $(params.gitsha)
       - name: TARGET_URL
         value: $(params.pipelineUrl)
+{{- end -}}
+
+{{- define "github-build-vote" -}}
+- name: github-set-success-status
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Succeeded"]
+    - input: $(params.gitsha)
+      operator: notin
+      values: ["$(tt.params.gitsha)"]
+  taskRef:
+    kind: Task
+    name: github-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.gitfullrepositoryname)
+    - name: DESCRIPTION
+      value: "Pipeline (PASSED)"
+    - name: STATE
+      value: "success"
+    - name: CONTEXT
+      value: "Build Pipeline"
+    - name: AUTH_TYPE
+      value: Token
+    - name: GITHUB_TOKEN_SECRET_NAME
+      value: ci-github
+    - name: GITHUB_TOKEN_SECRET_KEY
+      value: token
+    - name: SHA
+      value: $(params.gitsha)
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
+
+- name: github-set-failure-status
+  when:
+    - input: "$(tasks.status)"
+      operator: in
+      values: ["Failed"]
+    - input: $(params.gitsha)
+      operator: notin
+      values: ["$(tt.params.gitsha)"]
+  taskRef:
+    kind: Task
+    name: github-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.gitfullrepositoryname)
+    - name: DESCRIPTION
+      value: "Pipeline (FAILED)"
+    - name: STATE
+      value: "failure"
+    - name: CONTEXT
+      value: "Build Pipeline"
+    - name: AUTH_TYPE
+      value: Token
+    - name: GITHUB_TOKEN_SECRET_NAME
+      value: ci-github
+    - name: GITHUB_TOKEN_SECRET_KEY
+      value: token
+    - name: SHA
+      value: $(params.gitsha)
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
 {{- end -}}

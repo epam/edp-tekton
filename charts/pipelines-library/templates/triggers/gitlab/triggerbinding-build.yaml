@@ -17,6 +17,8 @@ spec:
       value: "$(extensions.codebase)"
     - name: codebasebranch
       value: "$(extensions.codebasebranch)"
+    - name: gitfullrepositoryname
+      value: $(body.object_attributes.target.path_with_namespace)
     - name: changeNumber
       value: "$(extensions.pullRequest.changeNumber)"
     # commitMessage is used for 'push-to-jira' Task

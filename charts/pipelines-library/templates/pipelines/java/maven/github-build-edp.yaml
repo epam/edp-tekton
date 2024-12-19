@@ -44,6 +44,12 @@ spec:
       default: '{{ $image }}'
       description: "maven image version"
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: sonar_image
       default: '{{ $sonarImage }}'
       description: "sonar image version"
@@ -116,6 +122,7 @@ spec:
 
 {{ include "finally-block-edp" . | nindent 2 }}
 
+{{ include "github-build-vote" . | nindent 4 }}
 ---
 {{ end }}
 {{ end }}

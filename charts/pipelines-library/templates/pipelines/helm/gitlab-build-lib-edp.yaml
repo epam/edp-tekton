@@ -13,6 +13,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: pipelineUrl
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
@@ -111,6 +114,8 @@ spec:
           workspace: ssh-creds
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "gitlab-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

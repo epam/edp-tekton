@@ -13,6 +13,8 @@ spec:
       value: "git@bitbucket.org:$(body.repository.full_name).git"
     - name: gitrepositoryname
       value: $(body.repository.name)
+    - name: gitfullrepositoryname
+      value: "$(body.repository.full_name)"
     - name: codebase
       value: "$(extensions.codebase)"
     - name: codebasebranch

@@ -41,6 +41,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: image
       default: '{{ $registry }}/library/node:18.20.3-alpine3.20'
       description: "npm image version"
@@ -108,6 +111,8 @@ spec:
 {{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 ---
 {{ end }}

@@ -41,6 +41,12 @@ spec:
       default: "{{ $image }}"
       description: "dotnet-sdk image version"
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -103,6 +109,8 @@ spec:
 {{ include "finally-block-default" . | nindent 2 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "github-build-vote" . | nindent 4 }}
 ---
 {{ end }}
 {{ end }}

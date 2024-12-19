@@ -34,6 +34,12 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -59,6 +65,29 @@ spec:
 {{- include "build-result" . | nindent 2 }}
 
   tasks:
+    - name: github-set-pending-status
+      taskRef:
+        kind: Task
+        name: github-set-status
+      params:
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+        - name: DESCRIPTION
+          value: "Pipeline (IN PROGRESS)"
+        - name: STATE
+          value: "pending"
+        - name: CONTEXT
+          value: "Build Pipeline"
+        - name: AUTH_TYPE
+          value: Token
+        - name: GITHUB_TOKEN_SECRET_NAME
+          value: ci-github
+        - name: GITHUB_TOKEN_SECRET_KEY
+          value: token
+        - name: SHA
+          value: $(params.gitsha)
+        - name: TARGET_URL
+          value: $(params.pipelineUrl)
 
     - name: fetch-repository
       taskRef:
@@ -172,6 +201,8 @@ spec:
           workspace: ssh-creds
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "github-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

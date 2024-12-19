@@ -31,6 +31,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -187,6 +190,8 @@ spec:
           value: $(tasks.get-version.results.VCS_TAG)
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

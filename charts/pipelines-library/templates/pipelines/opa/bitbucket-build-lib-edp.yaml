@@ -35,6 +35,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: image
       default: '{{ include "edp-tekton.registry" . }}/openpolicyagent/opa:0.45.0-debug'
       description: "opa image version"
@@ -74,6 +77,8 @@ spec:
 {{- include "opa-build-common" . | nindent 4 }}
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

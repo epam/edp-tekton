@@ -35,6 +35,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: image
       default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
       description: "python image version"
@@ -98,6 +101,8 @@ spec:
 {{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" $ | nindent 4 }}
 
 {{ end }}
 {{ end }}

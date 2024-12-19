@@ -85,6 +85,14 @@ spec:
         Python path. Depends on the image.
       type: string
       default: /usr/bin/env python
+    - name: KEY
+      description: |
+        The key that holds the status, e.g., build, review, deploy.
+      type: string
+    - name: NAME
+      description: |
+        If the name field is present, it'll be displayed to users in the UI.
+      type: string
   steps:
     - name: set-status
       volumeMounts:
@@ -113,6 +121,10 @@ spec:
           value: $(params.AUTH_TYPE)
         - name: SHEBANG
           value: $(params.SHEBANG)
+        - name: KEY
+          value: $(params.KEY)
+        - name: NAME
+          value: $(params.NAME)
 
       image: $(params.IMAGE)
       script: |
@@ -138,7 +150,8 @@ spec:
             "state": os.getenv("STATE"),
             "url": os.getenv("TARGET_URL"),
             "description": os.getenv("DESCRIPTION"),
-            "key": "build"
+            "key": os.getenv("KEY"),
+            "name": os.getenv("NAME")
         }
 
         authHeader = os.getenv("AUTH_TYPE") + " " + bitbucket_token
@@ -170,5 +183,8 @@ spec:
             print("Bitbucket status '{state}' has been set on {repo}#{sha}".format(
                 state=os.getenv("STATE"),
                 repo=os.getenv("REPO_FULL_NAME"),
-                sha=os.getenv("SHA")))
+                sha=os.getenv("SHA"),
+                key=os.getenv("KEY"),
+                name=os.getenv("NAME"),)
+            )
 {{ end }}

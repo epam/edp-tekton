@@ -39,6 +39,12 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -169,6 +175,8 @@ spec:
 {{ include "build-pipeline-end" $ | nindent 4 }}
 
 {{ include "finally-block-default" $ | nindent 2 }}
+
+{{ include "github-build-vote" . | nindent 4 }}
 
 ---
 {{- end }}

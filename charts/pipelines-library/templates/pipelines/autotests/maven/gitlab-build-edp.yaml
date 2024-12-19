@@ -19,6 +19,12 @@ spec:
     - name: ssh-creds
 
   params:
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
     - name: git-source-url
       default: "https://github.com/sergk/spring-petclinic"
       description: git url to clone
@@ -105,7 +111,11 @@ spec:
           workspace: shared-workspace
           subPath: source
         - name: ssh-directory
-          workspace: ssh-creds
+          workspace: ssh-creds  
+          
+  finally:
+
+{{ include "gitlab-build-vote" . | nindent 4 }}
 ---
 {{ end }}
 {{ end }}

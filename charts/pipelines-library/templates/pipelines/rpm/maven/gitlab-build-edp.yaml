@@ -19,6 +19,9 @@ spec:
     - name: ssh-creds
 
   params:
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: pipelineUrl
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
@@ -116,6 +119,8 @@ spec:
 {{ include "build-pipeline-rpm-end" . | nindent 4 }}
 
 {{ include "finally-block-edp" . | nindent 2 }}
+
+{{ include "gitlab-build-vote" . | nindent 4 }}
 
 ---
 {{ end }}

@@ -13,6 +13,9 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: pipelineUrl
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
@@ -57,6 +60,30 @@ spec:
 
   tasks:
 
+    - name: report-pipeline-start-to-gitlab
+      taskRef:
+        kind: Task
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "pending"
+        - name: "GITLAB_HOST_URL"
+          value: "$(params.git-source-url)"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: ci-gitlab
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: token
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "Build Pipeline"
+        - name: "DESCRIPTION"
+          value: "IN PROGRESS"
+          
     - name: fetch-repository
       taskRef:
         kind: Task
@@ -153,6 +180,8 @@ spec:
           workspace: ssh-creds
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "gitlab-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

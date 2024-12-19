@@ -10,6 +10,8 @@ spec:
     - name: gitrevision
     - name: gitrepositoryurl
     - name: gitrepositoryname
+    - name: gitfullrepositoryname
+      description: Full Repo name. Used in "bitbucket-set-status" step as REPO_PATH_ONLY
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
@@ -50,6 +52,8 @@ spec:
             value: $(tt.params.gitrepositoryurl)
           - name: git-source-revision
             value: $(tt.params.gitrevision)
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
           - name: CODEBASE_NAME
             value: $(tt.params.codebase)
           - name: CODEBASEBRANCH_NAME

@@ -11,6 +11,8 @@ spec:
     - name: gitrepositoryurl
     - name: gitrepositoryname
     - name: codebase
+    - name: gitsha
+    - name: gitfullrepositoryname
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
@@ -56,6 +58,10 @@ spec:
             value: $(tt.params.codebasebranch)
           - name: changeNumber
             value: $(tt.params.changeNumber)
+          - name: gitsha
+            value: $(tt.params.gitsha)
+          - name: gitfullrepositoryname
+            value: $(tt.params.gitfullrepositoryname)
           - name: TICKET_NAME_PATTERN
             value: $(tt.params.ticketNamePattern)
           - name: COMMIT_MESSAGE_PATTERN

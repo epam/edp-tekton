@@ -40,6 +40,9 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: image
       default: '{{ $image  }}'
       description: "gradle image version"
@@ -109,6 +112,8 @@ spec:
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
 
 ---
 {{ end }}

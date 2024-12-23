@@ -4,6 +4,10 @@
   taskRef:
     kind: Task
     name: github-set-status
+  when:
+    - input: $(params.gitsha)
+      operator: notin
+      values: ["$(tt.params.gitsha)"]
   params:
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)

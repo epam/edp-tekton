@@ -77,8 +77,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | ctLint.validateMaintainers | bool | `false` |  |
 | dashboard.affinity | object | `{}` | Affinity settings for pod assignment |
 | dashboard.enabled | bool | `false` | Deploy KubeRocketCI Dashboard as a part of pipeline library when true. Default: false |
-| dashboard.image.repository | string | `"gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"` | Define tekton dashboard docker image name |
-| dashboard.image.tag | string | `"v0.50.0"` | Define tekton dashboard docker image tag |
+| dashboard.image.repository | string | `"ghcr.io/tektoncd/dashboard/dashboard-9623576a202fe86c8b7d1bc489905f86"` | Define tekton dashboard docker image name |
+| dashboard.image.tag | string | `"v0.52.0"` | Define tekton dashboard docker image tag |
 | dashboard.ingress.annotations | object | `{}` | Annotations for Ingress resource |
 | dashboard.ingress.enabled | bool | `true` | Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }} |
 | dashboard.ingress.host | string | `""` | If not defined the will create by pattern "tekton-[namespace].[global DNS wildcard]" |

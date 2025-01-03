@@ -367,9 +367,9 @@ dashboard:
 
   image:
     # -- Define tekton dashboard docker image name
-    repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+    repository: ghcr.io/tektoncd/dashboard/dashboard-9623576a202fe86c8b7d1bc489905f86
     # -- Define tekton dashboard docker image tag
-    tag: v0.50.0
+    tag: v0.52.0
 
   ingress:
     # -- Enable external endpoint access. Default Ingress/Route host pattern: tekton-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}

@@ -20,7 +20,7 @@
     - name: BITBUCKET_TOKEN_SECRET_KEY
       value: token
     - name: KEY
-      value: "Review"
+      value: "review"
     - name: NAME
       value: "Pipeline"
 
@@ -85,7 +85,7 @@
     - name: BITBUCKET_TOKEN_SECRET_KEY
       value: token
     - name: KEY
-      value: "Build"
+      value: "build"
     - name: NAME
       value: "Pipeline (PASSED)"
 
@@ -113,7 +113,7 @@
   - name: BITBUCKET_TOKEN_SECRET_KEY
     value: token
   - name: KEY
-    value: "Build"
+    value: "build"
   - name: NAME
     value: "Pipeline (FAILED)"
 {{- end -}}
@@ -146,7 +146,7 @@ finally:
       - name: BITBUCKET_TOKEN_SECRET_KEY
         value: token
       - name: KEY
-        value: "Review"
+        value: "review"
       - name: NAME
         value: "Pipeline (PASSED)"
 
@@ -174,7 +174,7 @@ finally:
       - name: BITBUCKET_TOKEN_SECRET_KEY
         value: token
       - name: KEY
-        value: "Review"
+        value: "review"
       - name: NAME
         value: "Pipeline (FAILED)"
 {{- end -}}
@@ -201,7 +201,7 @@ finally:
     - name: BITBUCKET_TOKEN_SECRET_KEY
       value: token
     - name: KEY
-      value: "Build"
+      value: "build"
     - name: NAME
       value: "Pipeline"
 

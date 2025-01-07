@@ -74,6 +74,10 @@ spec:
           value: ci-bitbucket
         - name: BITBUCKET_TOKEN_SECRET_KEY
           value: token
+        - name: KEY
+          value: "review"
+        - name: NAME
+          value: "Pipeline"
 
     - name: fetch-repository
       taskRef:

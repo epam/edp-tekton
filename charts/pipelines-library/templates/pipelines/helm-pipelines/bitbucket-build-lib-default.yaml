@@ -80,7 +80,7 @@ spec:
         - name: BITBUCKET_TOKEN_SECRET_KEY
           value: token
         - name: KEY
-          value: "Review"
+          value: "build"
         - name: NAME
           value: "Pipeline"
 

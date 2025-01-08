@@ -66,6 +66,9 @@
     - input: "$(tasks.status)"
       operator: in
       values: ["Succeeded"]
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   taskRef:
     kind: Task
     name: bitbucket-set-status
@@ -94,6 +97,9 @@
     - input: "$(tasks.status)"
       operator: in
       values: ["Failed"]
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   taskRef:
     kind: Task
     name: bitbucket-set-status
@@ -182,6 +188,10 @@ finally:
 # The init section for bitbucket build pipeline
 {{- define "bitbucket-build-start" -}}
 - name: bitbucket-set-pending-status
+  when:
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   taskRef:
     kind: Task
     name: bitbucket-set-status

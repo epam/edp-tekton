@@ -64,6 +64,10 @@ spec:
   tasks:
 
     - name: bitbucket-set-pending-status
+      when:
+        - input: $(params.COMMIT_MESSAGE)
+          operator: notin
+          values: [""]
       taskRef:
         kind: Task
         name: bitbucket-set-status

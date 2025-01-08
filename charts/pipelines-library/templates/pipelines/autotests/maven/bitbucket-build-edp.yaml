@@ -48,6 +48,9 @@ spec:
       default: '{{ $sonarImage }}'
       description: "sonar image version"
       type: string
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
 
 {{- include "build-result" $ | nindent 2 }}
 

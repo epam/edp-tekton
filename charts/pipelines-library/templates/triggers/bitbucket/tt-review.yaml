@@ -43,6 +43,9 @@ spec:
       spec:
         taskRunTemplate:
           serviceAccountName: tekton
+          {{ if .Values.pipelines.podTemplate }}
+          podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
+          {{ end }}
         pipelineRef:
           name: $(tt.params.pipelineName)
         params:

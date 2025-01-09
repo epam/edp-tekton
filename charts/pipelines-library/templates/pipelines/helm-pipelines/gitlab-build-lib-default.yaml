@@ -64,6 +64,10 @@ spec:
       taskRef:
         kind: Task
         name: gitlab-set-status
+      when:
+        - input: $(params.COMMIT_MESSAGE)
+          operator: notin
+          values: [""]
       params:
         - name: "STATE"
           value: "pending"

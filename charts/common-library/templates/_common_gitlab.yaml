@@ -4,6 +4,10 @@
   taskRef:
     kind: Task
     name: gitlab-set-status
+  when:
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   params:
     - name: "STATE"
       value: "pending"
@@ -182,6 +186,9 @@ finally:
     - input: "$(tasks.status)"
       operator: in
       values: ["Succeeded"]
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   taskRef:
     kind: Task
     name: gitlab-set-status
@@ -210,6 +217,9 @@ finally:
     - input: "$(tasks.status)"
       operator: in
       values: ["Failed"]
+    - input: $(params.COMMIT_MESSAGE)
+      operator: notin
+      values: [""]
   taskRef:
     kind: Task
     name: gitlab-set-status

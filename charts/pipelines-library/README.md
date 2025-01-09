@@ -138,6 +138,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
 | pipelines.deployableResources.tasks | bool | `true` | This flag control the installation of the tasks. |
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
+| pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
 | tekton.configs.gradleConfigMap | string | `"custom-gradle-settings"` | Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables. |

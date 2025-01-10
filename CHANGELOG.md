@@ -2,6 +2,28 @@
 ## [Unreleased]
 
 
+<a name="v0.15.0"></a>
+## [v0.15.0] - 2025-01-10
+### Features
+
+- Enable node selector for tekton pipelines ([#397](https://github.com/epam/edp-tekton/issues/397))
+- Implement CI Voting Feature in Build Pipelines ([#385](https://github.com/epam/edp-tekton/issues/385))
+
+### Bug Fixes
+
+- Update gitlab set-status task condition ([#395](https://github.com/epam/edp-tekton/issues/395))
+- Update bitbucket set-status task condition ([#395](https://github.com/epam/edp-tekton/issues/395))
+- Update bitbucket vote parameters ([#393](https://github.com/epam/edp-tekton/issues/393))
+- Disable github voting for null sha ([#385](https://github.com/epam/edp-tekton/issues/385))
+- Align resource mapping([#375](https://github.com/epam/edp-tekton/issues/375))
+
+### Routine
+
+- Update Tekton Dashboard version ([#391](https://github.com/epam/edp-tekton/issues/391))
+- Update Naming Convention for Nexus-Operator Resources ([#384](https://github.com/epam/edp-tekton/issues/384))
+- Update current development version ([#379](https://github.com/epam/edp-tekton/issues/379))
+
+
 <a name="v0.14.0"></a>
 ## [v0.14.0] - 2024-12-12
 ### Features
@@ -563,7 +585,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.15.0...HEAD
+[v0.15.0]: https://github.com/epam/edp-tekton/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/epam/edp-tekton/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/epam/edp-tekton/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/epam/edp-tekton/compare/v0.11.0...v0.12.0

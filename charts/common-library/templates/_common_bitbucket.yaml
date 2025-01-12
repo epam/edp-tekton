@@ -203,7 +203,7 @@ finally:
     - name: TARGET_URL
       value: $(params.pipelineUrl)
     - name: DESCRIPTION
-      value: "Review Pipeline"
+      value: "Build Pipeline"
     - name: STATE
       value: "INPROGRESS"
     - name: BITBUCKET_TOKEN_SECRET_NAME

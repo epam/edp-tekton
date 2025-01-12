@@ -68,7 +68,7 @@ spec:
         - name: TARGET_URL
           value: $(params.pipelineUrl)
         - name: DESCRIPTION
-          value: "Managed by KubeRocketCI. Run with Tekton"
+          value: "Review Pipeline"
         - name: STATE
           value: "INPROGRESS"
         - name: BITBUCKET_TOKEN_SECRET_NAME

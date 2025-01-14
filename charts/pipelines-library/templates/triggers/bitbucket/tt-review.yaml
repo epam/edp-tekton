@@ -32,7 +32,7 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: $(tt.params.codebasebranch)-review-
+        generateName: review-$(tt.params.codebasebranch)-
         labels:
           # used by UI to sort pipelines for codebasebranches
           app.edp.epam.com/codebasebranch: $(tt.params.codebasebranch)

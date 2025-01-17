@@ -11,6 +11,8 @@ gitServers:
   my-bitbucket:
     gitProvider: bitbucket
     host: bitbucket.com
+    quickLink:
+      enabled: true
     webhook:
       url: https://my-custom-ingress-name.example.com
       skipWebhookSSLVerification: false

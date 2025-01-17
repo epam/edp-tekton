@@ -31,6 +31,7 @@ gitServers:
     nameSshKeySecret: gerrit-ciuser-sshkey
     sshPort: 30100
     quickLink:
+      enabled: true
       host: gerrit-external.com
     webhook:
       skipWebhookSSLVerification: false

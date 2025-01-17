@@ -32,6 +32,8 @@ gitServers:
   my-gitlab:
     gitProvider: gitlab
     host: gitlab.com
+    quickLink:
+      enabled: true
     webhook:
       skipWebhookSSLVerification: false
     eventListener:
@@ -79,6 +81,8 @@ gitServers:
   my-github:
     gitProvider: github
     host: github.com
+    quickLink:
+      enabled: true
     webhook:
       skipWebhookSSLVerification: false
     eventListener:
@@ -126,6 +130,8 @@ gitServers:
   my-gerrit:
     gitProvider: gerrit
     host: gerrit.com
+    quickLink:
+      enabled: true
     webhook:
       skipWebhookSSLVerification: false
     eventListener:

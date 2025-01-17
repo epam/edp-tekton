@@ -428,6 +428,8 @@ gitServers: {}
 #   my-github:
 #     gitProvider: github
 #     host: github.com
+#     quickLink:
+#       enabled: false
 #     webhook:
 #       skipWebhookSSLVerification: false
 #     eventListener:
@@ -459,6 +461,8 @@ gitServers: {}
 #   my-gitlab:
 #     gitProvider: gitlab
 #     host: gitlab.com
+#     quickLink:
+#       enabled: false
 #     webhook:
 #       # codebase operator will use this URL to create webhooks in GitLab, if it is not defined
 #       # the operator will use the Ingress value
@@ -493,6 +497,8 @@ gitServers: {}
 #   my-gerrit:
 #     gitProvider: gerrit
 #     host: gerrit.example.com
+#     quickLink:
+#       enabled: false
 #     gitUser: ci-user
 #     httpsPort: 443
 #     nameSshKeySecret: gerrit-ciuser-sshkey

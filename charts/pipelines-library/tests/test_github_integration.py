@@ -11,6 +11,8 @@ gitServers:
   my-github:
     gitProvider: github
     host: github.com
+    quickLink:
+      enabled: true
     webhook:
       skipWebhookSSLVerification: false
     eventListener:

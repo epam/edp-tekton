@@ -1,4 +1,5 @@
 {{- range $name, $server := .Values.gitServers }}
+{{- if $server.quickLink.enabled }}
 {{- if has $server.gitProvider $.Values.global.gitProviders }}
 apiVersion: v2.edp.epam.com/v1
 kind: QuickLink
@@ -19,6 +20,7 @@ spec:
   {{- else if eq $server.gitProvider "gerrit" }}
   icon: "PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQo8cmVjdCByeT0iNCIgcng9IjQiIGhlaWdodD0iNDAiIHdpZHRoPSI0MCIgeT0iMCIgeD0iMCIgZmlsbD0iI2ZmYWFhYSIvPg0KPHJlY3Qgcnk9IjQiIHJ4PSI0IiBoZWlnaHQ9IjQwIiB3aWR0aD0iNDAiIHk9IjEyIiB4PSIxMiIgZmlsbD0iI2FhZmZhYSIvPg0KPHBhdGggZD0ibTE4LDIybDEyLDBsMCw0bC0xMiwwbDAsLTR6IiBmaWxsPSIjZmYwMDAwIi8+DQo8cGF0aCBkPSJtMzQsMjJsMTIsMGwwLDRsLTEyLDBsMCwtNHoiIGZpbGw9IiNmZjAwMDAiLz4NCjxwYXRoIGQ9Im0xOCwzNmw0LDBsMCwtNGw0LDBsMCw0bDQsMGwwLDRsLTQsMGwwLDRsLTQsMGwwLC00bC00LDBsMCwtNHoiIGZpbGw9IiMwMDgwMDAiLz4NCjxwYXRoIGQ9Im0zNCwzNmw0LDBsMCwtNGw0LDBsMCw0bDQsMGwwLDRsLTQsMGwwLDRsLTQsMGwwLC00bC00LDBsMCwtNHoiIGZpbGw9IiMwMDgwMDAiLz4NCjwvc3ZnPg=="
   {{- end }}
+{{- end }}
 {{- end }}
 ---
 {{- end }}

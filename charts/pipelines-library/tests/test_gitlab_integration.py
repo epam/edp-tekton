@@ -11,6 +11,8 @@ gitServers:
   my-gitlab:
     gitProvider: gitlab
     host: gitlab.com
+    quickLink:
+      enabled: true
     webhook:
       url: https://my-custom-ingress-name.example.com
       skipWebhookSSLVerification: false

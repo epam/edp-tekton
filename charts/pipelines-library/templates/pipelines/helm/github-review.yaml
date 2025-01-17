@@ -56,9 +56,11 @@ spec:
         - name: REPO_FULL_NAME
           value: $(params.gitfullrepositoryname)
         - name: DESCRIPTION
-          value: "Build has started"
+          value: "Pipeline (IN PROGRESS)"
         - name: STATE
           value: "pending"
+        - name: CONTEXT
+          value: "Build Pipeline"
         - name: AUTH_TYPE
           value: Token
         - name: GITHUB_TOKEN_SECRET_NAME

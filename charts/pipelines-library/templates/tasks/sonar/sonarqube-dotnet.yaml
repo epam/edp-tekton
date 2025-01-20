@@ -54,7 +54,7 @@ spec:
     - name: BASE_IMAGE
       description: DotNet base image.
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-dotnet:6.0.2"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-dotnet:6.0.3"
     - name: PROJECT_DIR
       description: The directory containing build.gradle
       type: string

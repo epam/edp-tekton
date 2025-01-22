@@ -26,6 +26,11 @@ spec:
       description: |
         Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
       type: string
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
+      value: $(tasks.deploy-app.results.APPLICATIONS_PAYLOAD)
   tasks:
     - name: pre-deploy
       taskRef:

@@ -25,12 +25,20 @@ spec:
         values. For example: dev, test, prod
       name: STAGE
       type: string
+    - name: APPLICATIONS_PAYLOAD_FILE
+      default: 'applications_payload'
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
   steps:
     - name: deploy-ansible-awx
       image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-ansible:0.1.1
       env:
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)
+        - name: APPLICATIONS_PAYLOAD_FILE
+          value: "$(params.APPLICATIONS_PAYLOAD_FILE)"
         - name: PIPELINE
           value: $(params.PIPELINE)
         - name: STAGE
@@ -65,4 +73,9 @@ spec:
         tower-cli job launch --job-template=package-install \
           --extra-vars="{\"APPLICATIONS_PAYLOAD\":${APPLICATIONS_PAYLOAD},\"STAGE\":\"${STAGE}\",\"PIPELINE\":\"${PIPELINE}\"}" \
           --inventory=${PIPELINE} --wait --limit=${PIPELINE}_${STAGE}
+
+        # Write results to the output
+        result_file = os.getenv("APPLICATIONS_PAYLOAD_FILE")
+          with open(result_file, "w") as outfile:
+              outfile.write(payload)
 {{ end }}

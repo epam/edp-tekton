@@ -20,7 +20,10 @@ spec:
       description: |
         EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
-
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
   steps:
     - name: wait-for-deploy
       image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-cd-pipeline:0.1.4
@@ -74,4 +77,6 @@ spec:
         argocd app sync -l $selector --prune --timeout 300
         # TODO: we build our custom argocd-cli that has fixed issue with argocd app wait
         argocd app wait -l $selector --health --sync
+
+        printf "%s" "${new_tags}" > "$(results.APPLICATIONS_PAYLOAD.path)"
 {{ end }}

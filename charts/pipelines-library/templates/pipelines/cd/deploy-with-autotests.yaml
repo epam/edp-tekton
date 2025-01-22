@@ -37,6 +37,11 @@ spec:
       default: "codebase_tags"
     - name: parent-pipeline-name
       default: $(context.pipelineRun.name)
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
+      value: $(tasks.deploy-app.results.APPLICATIONS_PAYLOAD)
   tasks:
     - name: pre-deploy
       taskRef:

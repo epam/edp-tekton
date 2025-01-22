@@ -24,6 +24,7 @@ pipelines:
       dotnet3.1: false
       dotnet6.0: false
     docker: true
+    gitops: true
     groovy: true
     go:
       beego: true

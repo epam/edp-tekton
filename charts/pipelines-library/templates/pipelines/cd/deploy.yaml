@@ -29,6 +29,11 @@ spec:
     - name: KUBECONFIG_SECRET_NAME
       description: The name of secret with Kubeconfig to connect to the remote cluster
       type: string
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
+      value: $(tasks.deploy-app.results.APPLICATIONS_PAYLOAD)
   tasks:
     - name: pre-deploy
       taskRef:

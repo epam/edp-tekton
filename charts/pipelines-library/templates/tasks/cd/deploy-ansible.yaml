@@ -19,13 +19,20 @@ spec:
       description: |
         EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
-
+    - name: APPLICATIONS_PAYLOAD_FILE
+      default: 'applications_payload'
+  results:
+    - description: APPLICATIONS_PAYLOAD
+      name: APPLICATIONS_PAYLOAD
+      type: string
   steps:
     - name: run-ansible-script
       image: {{ include "edp-tekton.registry" . }}/epamedp/tekton-ansible:0.1.1
       env:
         - name: APPLICATIONS_PAYLOAD
           value: "$(params.APPLICATIONS_PAYLOAD)"
+        - name: APPLICATIONS_PAYLOAD_FILE
+          value: "$(params.APPLICATIONS_PAYLOAD_FILE)"
         - name: PIPELINE
           value: "$(params.PIPELINE)"
         - name: STAGE
@@ -164,6 +171,11 @@ spec:
 
             # Run deployment playbooks
             run_ansible_deployment(repo_dir, payload, ansible_group, pipeline, stage)
+
+            # Write results to the output
+            result_file = os.getenv("APPLICATIONS_PAYLOAD_FILE")
+              with open(result_file, "w") as outfile:
+                  outfile.write(payload)
 
         if __name__ == "__main__":
             main()

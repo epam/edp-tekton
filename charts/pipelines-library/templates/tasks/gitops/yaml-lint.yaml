@@ -1,0 +1,34 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: yaml-lint
+spec:
+  description: >-
+    This Task is used to lint the YAML manifests in the GitOps system repository.
+  workspaces:
+    - name: source
+  params:
+    - name: BASE_IMAGE
+      description: "Base image containing yamllint and its configuration"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.7"
+      type: string
+    - name: CONFIG_PATH
+      description: "Path to yamllint configuration file"
+      default: "/config"
+      type: string
+  steps:
+    - name: yaml-lint
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/usr/bin/env bash
+        set -e
+
+        echo "Linting YAML manifests..."
+
+        yamllint -c $(params.CONFIG_PATH) .
+
+        echo "YAML manifests linted successfully."
+
+{{ end }}

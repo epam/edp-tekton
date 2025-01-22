@@ -1,0 +1,59 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.gitops }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-helm-gitops-sys-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: The Review pipeline for linting and validating manifests in the GitOps system repository
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/sergk/spring-petclinic"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "main"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: edp-gitops
+      description: "Project name"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+  tasks:
+
+{{- include "bitbucket-review-start" $ | nindent 4 }}
+
+    - name: yaml-lint
+      runAfter:
+        - init-values
+      taskRef:
+        kind: Task
+        name: yaml-lint
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
+
+{{ include "bitbucket-review-vote" . | nindent 2 }}
+
+{{ end }}
+{{ end }}

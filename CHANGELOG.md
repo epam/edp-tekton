@@ -2,6 +2,30 @@
 ## [Unreleased]
 
 
+<a name="v0.16.0"></a>
+## [v0.16.0] - 2025-01-24
+### Features
+
+- Add APPLICATIONS_PAYLOAD results to deploy tasks ([#413](https://github.com/epam/edp-tekton/issues/413))
+
+### Bug Fixes
+
+- Update voting tasks ([#386](https://github.com/epam/edp-tekton/issues/386))
+- Fix pipeline status report ([#385](https://github.com/epam/edp-tekton/issues/385))
+- Update Naming Convention for gradle cm ([#384](https://github.com/epam/edp-tekton/issues/384))
+
+### Routine
+
+- Update current development version ([#419](https://github.com/epam/edp-tekton/issues/419))
+- Rename parameter edp-gitops to krci-gitops ([#417](https://github.com/epam/edp-tekton/issues/417))
+- Make QuickLink installation optional ([#409](https://github.com/epam/edp-tekton/issues/409))
+- Migrate Tekton Dashboard to cluster add-ons repo ([#406](https://github.com/epam/edp-tekton/issues/406))
+- Add Build and Review pipelines for GitOps repo ([#415](https://github.com/epam/edp-tekton/issues/415))
+- Bump dotnet sonar image version for report push([#411](https://github.com/epam/edp-tekton/issues/411))
+- Align pipelineRun name patterns ([#404](https://github.com/epam/edp-tekton/issues/404))
+- Update current development version ([#400](https://github.com/epam/edp-tekton/issues/400))
+
+
 <a name="v0.15.0"></a>
 ## [v0.15.0] - 2025-01-10
 ### Features
@@ -585,7 +609,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.16.0...HEAD
+[v0.16.0]: https://github.com/epam/edp-tekton/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/epam/edp-tekton/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/epam/edp-tekton/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/epam/edp-tekton/compare/v0.12.0...v0.13.0

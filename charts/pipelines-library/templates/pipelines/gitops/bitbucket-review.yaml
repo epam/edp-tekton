@@ -29,7 +29,7 @@ spec:
       default: ""
       type: string
     - name: CODEBASE_NAME
-      default: edp-gitops
+      default: krci-gitops
       description: "Project name"
       type: string
     - name: changeNumber

@@ -37,6 +37,7 @@ pipelines:
       java8: false
       java11: true
       java17: true
+      java21: true
     js:
       angular: true
       antora: true

@@ -1,5 +1,5 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
-{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 )}}
+{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 ) ( .Values.pipelines.deployableResources.java.java21 )}}
 {{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
 {{- $rawSonar := include "edp-tekton.resourceMapping.mavenSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}

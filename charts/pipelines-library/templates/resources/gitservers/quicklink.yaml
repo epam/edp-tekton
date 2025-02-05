@@ -1,5 +1,5 @@
 {{- range $name, $server := .Values.gitServers }}
-{{- if $server.quickLink.enabled }}
+{{- if and $server.quickLink (hasKey $server.quickLink "enabled") $server.quickLink.enabled }}
 {{- if has $server.gitProvider $.Values.global.gitProviders }}
 apiVersion: v2.edp.epam.com/v1
 kind: QuickLink

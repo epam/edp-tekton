@@ -135,7 +135,7 @@ spec:
         fi
 
         if [ "$custom_certs" == "true" ]; then
-          command='$command $CONTAINER_REGISTRY_URL"=/kaniko/.custom-certs/ca.crt "';
+          command="$command --registry-certificate $CONTAINER_REGISTRY_URL=/kaniko/.custom-certs/ca.crt";
         fi
 
         $command

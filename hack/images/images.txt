@@ -32,5 +32,5 @@ docker.io/openpolicyagent/opa:0.45.0-debug
 docker.io/pipelinecomponents/ansible-lint:0.72.0
 docker.io/python:3.10.8-alpine3.16
 docker.io/python:3.8-slim
-docker.io/returntocorp/semgrep:1.58.0
+docker.io/returntocorp/semgrep:1.109.0
 docker.io/sonarsource/sonar-scanner-cli:5.0.1

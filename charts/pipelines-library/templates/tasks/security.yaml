@@ -20,7 +20,7 @@ spec:
     - name: BASE_IMAGE
       type: string
       description: Semgrep image
-      default: {{ include "edp-tekton.registry" . }}/returntocorp/semgrep:1.58.0
+      default: {{ include "edp-tekton.registry" . }}/returntocorp/semgrep:1.109.0
     - name: ci-defectdojo
       type: string
       description: name of the secret holding the DefectDojo CI integration data
@@ -55,7 +55,7 @@ spec:
         set -e
         # The .docker/config.json file contained sensitive information, so it was added to the ignorelist.
         echo ".docker/config.json" >> .semgrepignore
-        semgrep --jobs 1 --config=p/r2c-ci . --json --output $(params.reportDataPath) --disable-version-check
+        semgrep --jobs 1 --config=auto . --json --output $(params.reportDataPath) --disable-version-check
 
         if [ -z "$DD_HOST_URL" ]
         then
@@ -128,7 +128,7 @@ spec:
         - name: PROJECT_BRANCH
           value: $(params.PROJECT_BRANCH)
       image: >-
-        ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
+        ghcr.io/cyclonedx/cdxgen:v11.1.10@sha256:f600e2a51c8bf1f50cca8c8dd89e838daca62e2b94b7c6caf14595451f247e7c
       name: cdxgen
       computeResources: {}
       script: >
@@ -138,6 +138,6 @@ spec:
 
         set +x
 
-        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME --project-version=$PROJECT_BRANCH
+        /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME --project-version=$PROJECT_BRANCH --print
       workingDir: $(workspaces.source.path)
 {{ end }}

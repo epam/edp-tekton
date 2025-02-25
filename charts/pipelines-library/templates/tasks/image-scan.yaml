@@ -16,115 +16,105 @@ spec:
   workspaces:
     - name: source
   params:
-    - name: IMAGE
-      description: Name (reference) of the image.
     - name: IMAGE_TAR
+      type: string
       description: Name (reference) of the image tar package.
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.41.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.59.1"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "anchore/grype:v0.62.1-debug"
+      default: "anchore/grype:v0.87.0-debug"
     - name: BASE_IMAGE_CURL
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:3.14"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"
     - name: PATH_CONTEXT
       description: The build context used by Trivy.
       default: "."
-    - name: JUNIT_REPORT
-      type: string
-      description: "This configmap contains Trivy JUnit XML Go template"
-      default: report-junit
-    - name: TRIVY_REPORT
-      type: string
-      description: "Trivy report name"
-      default: trivy-junit.tpl
-    - name: GRYPE_REPORT
-      type: string
-      description: "Grype report name"
-      default: grype-junit.tpl
-    - name: RP_PROPERTIES
-      type: string
-      description: "This secret contains ReportPortal credentials"
-      default: reportportal-properties
     - name: TRIVY_SCAN_REPORT
       type: string
-      description: "This name of the scan report"
-      default: "image-scan-trivy-report.xml"
+      description: The name of the Trivy scan report
+      default: image-scan-trivy-report.json
     - name: GRYPE_SCAN_REPORT
       type: string
-      description: "This name of the scan report"
-      default: "image-scan-grype-report.xml"
+      description: The name of the Grype scan report
+      default: image-scan-grype-report.json
+    - name: DD_PRODUCT_NAME
+      type: string
+    - name: DD_ENGAGEMENT_NAME
+      type: string
+    - name: ci-defectdojo
+      type: string
+      description: name of the secret holding the DefectDojo CI integration data
+      default: ci-defectdojo
   steps:
     - name: trivy
       image: $(params.BASE_IMAGE_TRIVY)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
-      env:
-        - name: JUNIT_REPORT
-          valueFrom:
-            configMapKeyRef:
-              name: $(params.JUNIT_REPORT)
-              key: $(params.TRIVY_REPORT)
       script: |
         #!/usr/bin/env sh
         set -e
 
-        echo "${JUNIT_REPORT}" > "$(params.TRIVY_REPORT)"
-        trivy image --format template --template "@$(params.TRIVY_REPORT)" \
+        trivy image --format json \
             -o $(params.TRIVY_SCAN_REPORT) --input $(params.IMAGE_TAR).tar
+
         cat $(params.TRIVY_SCAN_REPORT)
 
     - name: grype
       image: $(params.BASE_IMAGE_GRYPE)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
-      env:
-        - name: JUNIT_REPORT
-          valueFrom:
-            configMapKeyRef:
-              name: $(params.JUNIT_REPORT)
-              key: $(params.GRYPE_REPORT)
       script: |
         #!/busybox/sh
         set -e
 
-        echo "${JUNIT_REPORT}" > "$(params.GRYPE_REPORT)"
-        /grype $(params.IMAGE_TAR).tar -o template \
-            -t $(params.GRYPE_REPORT) > $(params.GRYPE_SCAN_REPORT)
+        /grype $(params.IMAGE_TAR).tar -o json > $(params.GRYPE_SCAN_REPORT)
+
         cat $(params.GRYPE_SCAN_REPORT)
 
     - name: upload-report
       image: $(params.BASE_IMAGE_CURL)
       workingDir: $(workspaces.source.path)/$(params.PATH_CONTEXT)
       env:
-        - name: RP_ENDPOINT
+        - name: DD_TOKEN
           valueFrom:
             secretKeyRef:
-              name: $(params.RP_PROPERTIES)
-              key: rp.endpoint
-        - name: RP_PROJECT
+              key: token
+              name: $(params.ci-defectdojo)
+        - name: DD_HOST_URL
           valueFrom:
             secretKeyRef:
-              name: $(params.RP_PROPERTIES)
-              key: rp.project
-        - name: RP_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.RP_PROPERTIES)
-              key: rp.token
+              key: url
+              name: $(params.ci-defectdojo)
       script: |
         #!/usr/bin/env sh
         set -e
-        apk add zip
 
         for REPORT_NAME in $(params.TRIVY_SCAN_REPORT) $(params.GRYPE_SCAN_REPORT)
         do
-            REPORT_ARCHIVE_NAME="${REPORT_NAME}_$(params.IMAGE_TAR).zip"
-            zip -r ${REPORT_ARCHIVE_NAME} ${REPORT_NAME}
-            curl -X POST "https://${RP_ENDPOINT}/api/v1/${RP_PROJECT}/launch/import" \
-                  -H  "accept: */*" \
-                  -H  "Content-Type: multipart/form-data" \
-                  -H  "Authorization: bearer ${RP_TOKEN}" \
-                  -F "file=@${REPORT_ARCHIVE_NAME};type=application/x-zip-compressed"
+            SCAN_TYPE=""
+            if [ "$REPORT_NAME" = "$(params.TRIVY_SCAN_REPORT)" ]; then
+                SCAN_TYPE="Trivy Scan"
+            elif [ "$REPORT_NAME" = "$(params.GRYPE_SCAN_REPORT)" ]; then
+                SCAN_TYPE="Anchore Grype"
+            fi
+
+            curl -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
+                -H "accept: application/json" \
+                -H "Authorization: Token ${DD_TOKEN}" \
+                -H "Content-Type: multipart/form-data" \
+                -F "scan_date=$(date +%Y-%m-%d)" \
+                -F "minimum_severity=Info" \
+                -F "active=true" \
+                -F "verified=false" \
+                -F "scan_type=${SCAN_TYPE}" \
+                -F "file=@${REPORT_NAME};type=application/json" \
+                -F "product_type_name=Tenant" \
+                -F "product_name=$(params.DD_PRODUCT_NAME)" \
+                -F "engagement_name=$(params.DD_ENGAGEMENT_NAME)" \
+                -F "auto_create_context=true" \
+                -F "close_old_findings=true" \
+                -F "push_to_jira=false" \
+                -F "environment=Development" \
+                -F "test_title=security-scan"
         done
 {{ end }}

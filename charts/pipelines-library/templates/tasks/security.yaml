@@ -74,7 +74,7 @@ spec:
         reportDataPushToJira="false"
         reportDataEnvironment="Development"
         reportDataTestTitle="security"
-        curl -X POST "${DD_HOST_URL}/api/v2/import-scan/" \
+        curl -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \
             -H "Content-Type: multipart/form-data" \

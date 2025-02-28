@@ -1,0 +1,35 @@
+{{- if .Values.pipelines.deployableResources.deploy }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: image-scan-remote
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: >-
+    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+  params:
+    - name: IMAGE_NAME
+      type: string
+      default: The full reference of the container image to be scanned, including the registry URL and tag.
+    - name: COMPONENT_NAME
+      default: java-app-main
+      description: The name of the component associated with the scanned image, used for identification in reports.
+      type: string
+  tasks:
+    - name: image-scan
+      params:
+        - name: IMAGE_NAME
+          value: $(params.IMAGE_NAME)
+        - name: COMPONENT_NAME
+          value: $(params.COMPONENT_NAME)
+      taskRef:
+        kind: Task
+        name: image-scan-remote
+      workspaces:
+        - name: source
+          subPath: source
+          workspace: shared-workspace
+  workspaces:
+    - name: shared-workspace
+{{- end }}

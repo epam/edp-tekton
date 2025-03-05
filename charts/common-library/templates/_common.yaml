@@ -72,9 +72,9 @@
   runAfter:
     - get-version
   params:
-    - name: reportDataProductName
+    - name: DD_PRODUCT_NAME
       value: $(tasks.init-values.results.TENANT_NAME)
-    - name: reportDataEngagementName
+    - name: DD_ENGAGEMENT_NAME
       value: $(params.CODEBASEBRANCH_NAME)
     - name: PROJECT_NAME
       value: $(params.CODEBASE_NAME)
@@ -94,9 +94,9 @@
   runAfter:
     - update-build-number
   params:
-    - name: reportDataProductName
+    - name: DD_PRODUCT_NAME
       value: $(tasks.init-values.results.TENANT_NAME)
-    - name: reportDataEngagementName
+    - name: DD_ENGAGEMENT_NAME
       value: $(params.CODEBASEBRANCH_NAME)
     - name: PROJECT_NAME
       value: $(params.CODEBASE_NAME)

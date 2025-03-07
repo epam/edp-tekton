@@ -3,7 +3,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: github-helm-helm-app-build-edp
+  name: github-helm-helm-app-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" . | nindent 4 }}

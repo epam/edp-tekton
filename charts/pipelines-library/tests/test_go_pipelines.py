@@ -15,11 +15,11 @@ global:
 
             assert f"gerrit-go-{framework}-app-review" in r["pipeline"]
             assert f"gerrit-go-{framework}-app-build-default" in r["pipeline"]
-            assert f"gerrit-go-{framework}-app-build-edp" in r["pipeline"]
+            assert f"gerrit-go-{framework}-app-build-semver" in r["pipeline"]
 
             gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-app-review"
             gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-app-build-default"
-            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-app-build-edp"
+            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-app-build-semver"
 
             rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
             assert "fetch-repository" in rt[0]["name"]
@@ -93,7 +93,7 @@ global:
 
             github_review_pipeline = f"{vcs}-{buildtool}-{framework}-app-review"
             github_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-app-build-default"
-            github_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-edp"
+            github_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-semver"
 
             assert github_review_pipeline in r["pipeline"]
             assert github_build_pipeline_def in r["pipeline"]
@@ -175,7 +175,7 @@ global:
 
             review_pipeline = f"{vcs}-{buildtool}-{framework}-app-review"
             build_pipeline_def = f"{vcs}-{buildtool}-{framework}-app-build-default"
-            build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-edp"
+            build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-semver"
 
             assert review_pipeline in r["pipeline"]
             assert build_pipeline_def in r["pipeline"]
@@ -256,7 +256,7 @@ global:
 
             review_pipeline = f"{vcs}-{buildtool}-{framework}-app-review"
             build_pipeline_def = f"{vcs}-{buildtool}-{framework}-app-build-default"
-            build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-edp"
+            build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-app-build-semver"
 
             assert review_pipeline in r["pipeline"]
             assert build_pipeline_def in r["pipeline"]

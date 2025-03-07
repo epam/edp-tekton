@@ -5,7 +5,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-dotnet-{{ $framework }}-app-build-edp
+  name: gerrit-dotnet-{{ $framework }}-app-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}

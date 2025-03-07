@@ -3,7 +3,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gitlab-terraform-terraform-lib-build-edp
+  name: gitlab-terraform-terraform-lib-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" . | nindent 4 }}

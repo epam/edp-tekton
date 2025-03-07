@@ -21,11 +21,11 @@ pipelines:
 
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-build-default" in r["pipeline"]
-                assert f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp" in r["pipeline"]
+                assert f"gerrit-{buildtool}-{framework}-{cbtype}-build-semver" in r["pipeline"]
 
                 gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-{cbtype}-review"
                 gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-{cbtype}-build-default"
-                gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp"
+                gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
                 if cbtype == "app":
@@ -164,7 +164,7 @@ pipelines:
 
                 github_review_pipeline = f"github-{buildtool}-{framework}-{cbtype}-review"
                 github_build_pipeline_def = f"github-{buildtool}-{framework}-{cbtype}-build-default"
-                github_build_pipeline_edp = f"github-{buildtool}-{framework}-{cbtype}-build-edp"
+                github_build_pipeline_edp = f"github-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert github_review_pipeline in r["pipeline"]
                 assert github_build_pipeline_def in r["pipeline"]
@@ -308,7 +308,7 @@ pipelines:
 
                 gitlab_review_pipeline = f"gitlab-{buildtool}-{framework}-{cbtype}-review"
                 gitlab_build_pipeline_def = f"gitlab-{buildtool}-{framework}-{cbtype}-build-default"
-                gitlab_build_pipeline_edp = f"gitlab-{buildtool}-{framework}-{cbtype}-build-edp"
+                gitlab_build_pipeline_edp = f"gitlab-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert gitlab_review_pipeline in r["pipeline"]
                 assert gitlab_build_pipeline_def in r["pipeline"]
@@ -451,7 +451,7 @@ pipelines:
 
                 bitbucket_review_pipeline = f"bitbucket-{buildtool}-{framework}-{cbtype}-review"
                 bitbucket_build_pipeline_def = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-default"
-                bitbucket_build_pipeline_edp = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-edp"
+                bitbucket_build_pipeline_edp = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert bitbucket_review_pipeline in r["pipeline"]
                 assert bitbucket_build_pipeline_def in r["pipeline"]

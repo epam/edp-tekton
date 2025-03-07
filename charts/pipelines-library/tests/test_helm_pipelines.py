@@ -18,7 +18,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -72,7 +72,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -131,7 +131,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -189,7 +189,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -252,7 +252,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -310,7 +310,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -373,7 +373,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]
@@ -431,7 +431,7 @@ global:
 
                 review = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
                 build_def = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-default"
-                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-edp"
+                build_edp = f"{vcs}-{buildtool}-{framework}-{cbtype}-build-semver"
 
                 assert review in ht["pipeline"]
                 assert build_def in ht["pipeline"]

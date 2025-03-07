@@ -12,7 +12,7 @@ global:
 
     assert "gerrit-codenarc-codenarc-lib-review" in r["pipeline"]
     assert "gerrit-codenarc-codenarc-lib-build-default" in r["pipeline"]
-    assert "gerrit-codenarc-codenarc-lib-build-edp" in r["pipeline"]
+    assert "gerrit-codenarc-codenarc-lib-build-semver" in r["pipeline"]
 
     # ensure pipelines have proper steps
     for buildtool in ['codenarc']:
@@ -20,7 +20,7 @@ global:
 
             gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-lib-review"
             gerrit_build_pipeline_def = f"gerrit-{buildtool}-{framework}-lib-build-default"
-            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-lib-build-edp"
+            gerrit_build_pipeline_edp = f"gerrit-{buildtool}-{framework}-lib-build-semver"
 
             rt = r["pipeline"][gerrit_review_pipeline]["spec"]["tasks"]
             assert "fetch-repository" in rt[0]["name"]
@@ -81,7 +81,7 @@ global:
 
             github_review_pipeline = f"{vcs}-{buildtool}-{framework}-lib-review"
             github_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-lib-build-default"
-            github_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-edp"
+            github_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-semver"
 
             assert github_review_pipeline in r["pipeline"]
             assert github_build_pipeline_def in r["pipeline"]
@@ -151,7 +151,7 @@ global:
 
             gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-lib-review"
             gitlab_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-lib-build-default"
-            gitlab_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-edp"
+            gitlab_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-semver"
 
             assert gitlab_review_pipeline in r["pipeline"]
             assert gitlab_build_pipeline_def in r["pipeline"]
@@ -221,7 +221,7 @@ global:
 
             bitbucket_review_pipeline = f"{vcs}-{buildtool}-{framework}-lib-review"
             bitbucket_build_pipeline_def = f"{vcs}-{buildtool}-{framework}-lib-build-default"
-            bitbucket_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-edp"
+            bitbucket_build_pipeline_edp = f"{vcs}-{buildtool}-{framework}-lib-build-semver"
 
             assert bitbucket_review_pipeline in r["pipeline"]
             assert bitbucket_build_pipeline_def in r["pipeline"]

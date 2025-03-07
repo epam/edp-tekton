@@ -7,7 +7,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gitlab-maven-{{ $framework  }}-app-build-edp-rpm
+  name: gitlab-maven-{{ $framework  }}-app-build-semver-rpm
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}

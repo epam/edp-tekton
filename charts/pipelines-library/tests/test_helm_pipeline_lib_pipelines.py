@@ -12,7 +12,7 @@ global:
 
     review = f"{vcs}-helm-pipeline-lib-review"
     build_def = f"{vcs}-helm-pipeline-lib-build-default"
-    build_edp = f"{vcs}-helm-pipeline-lib-build-edp"
+    build_edp = f"{vcs}-helm-pipeline-lib-build-semver"
 
     assert review in ht["pipeline"]
     assert build_def in ht["pipeline"]
@@ -62,7 +62,7 @@ global:
 
     review = f"{vcs}-helm-pipeline-lib-review"
     build_def = f"{vcs}-helm-pipeline-lib-build-default"
-    build_edp = f"{vcs}-helm-pipeline-lib-build-edp"
+    build_edp = f"{vcs}-helm-pipeline-lib-build-semver"
 
     assert review in ht["pipeline"]
     assert build_def in ht["pipeline"]
@@ -116,7 +116,7 @@ global:
 
     review = f"{vcs}-helm-pipeline-lib-review"
     build_def = f"{vcs}-helm-pipeline-lib-build-default"
-    build_edp = f"{vcs}-helm-pipeline-lib-build-edp"
+    build_edp = f"{vcs}-helm-pipeline-lib-build-semver"
 
     assert review in ht["pipeline"]
     assert build_def in ht["pipeline"]
@@ -170,7 +170,7 @@ global:
 
     review = f"{vcs}-helm-pipeline-lib-review"
     build_def = f"{vcs}-helm-pipeline-lib-build-default"
-    build_edp = f"{vcs}-helm-pipeline-lib-build-edp"
+    build_edp = f"{vcs}-helm-pipeline-lib-build-semver"
 
     assert review in ht["pipeline"]
     assert build_def in ht["pipeline"]

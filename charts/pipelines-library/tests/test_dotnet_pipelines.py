@@ -22,7 +22,7 @@ pipelines:
 
             review = f"gerrit-{buildtool}-{framework}-{cbtype}-review"
             build_default = f"gerrit-{buildtool}-{framework}-{cbtype}-build-default"
-            build_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-edp"
+            build_edp = f"gerrit-{buildtool}-{framework}-{cbtype}-build-semver"
 
             assert review in ht["pipeline"]
             assert build_default in ht["pipeline"]
@@ -127,7 +127,7 @@ pipelines:
 
             review = f"gitlab-{buildtool}-{framework}-{cbtype}-review"
             build_default = f"gitlab-{buildtool}-{framework}-{cbtype}-build-default"
-            build_edp = f"gitlab-{buildtool}-{framework}-{cbtype}-build-edp"
+            build_edp = f"gitlab-{buildtool}-{framework}-{cbtype}-build-semver"
 
             assert review in ht["pipeline"]
             assert build_default in ht["pipeline"]
@@ -236,7 +236,7 @@ pipelines:
 
             review = f"github-{buildtool}-{framework}-{cbtype}-review"
             build_default = f"github-{buildtool}-{framework}-{cbtype}-build-default"
-            build_edp = f"github-{buildtool}-{framework}-{cbtype}-build-edp"
+            build_edp = f"github-{buildtool}-{framework}-{cbtype}-build-semver"
 
             assert review in ht["pipeline"]
             assert build_default in ht["pipeline"]
@@ -344,7 +344,7 @@ pipelines:
 
             review = f"bitbucket-{buildtool}-{framework}-{cbtype}-review"
             build_default = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-default"
-            build_edp = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-edp"
+            build_edp = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-semver"
 
             assert review in ht["pipeline"]
             assert build_default in ht["pipeline"]

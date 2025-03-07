@@ -8,7 +8,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: bitbucket-maven-{{ $framework }}-lib-build-edp
+  name: bitbucket-maven-{{ $framework }}-lib-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
     {{- include "edp-tekton.labels" $ | nindent 4 }}

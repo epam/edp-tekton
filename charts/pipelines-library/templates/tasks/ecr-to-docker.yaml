@@ -36,10 +36,10 @@ spec:
       type: string
       description: secret holding dockerhub login token
       default: dockerhub-credentials
-    - name: edp-config
+    - name: krci-config
       type: string
       description: this configmap holds aws_region parameter
-      default: edp-config
+      default: krci-config
   steps:
     - image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
       name: get-ecr-pass
@@ -50,7 +50,7 @@ spec:
         - name: AWS_REGION
           valueFrom:
             configMapKeyRef:
-              name: "$(params.edp-config)"
+              name: "$(params.krci-config)"
               key: 'aws_region'
       script: |
         aws ecr get-login-password --region "${AWS_REGION}" > "${ECR_LOGIN}"
@@ -85,12 +85,12 @@ spec:
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_host
         - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
       image: gcr.io/go-containerregistry/crane/debug:c195f151efe3369874c72662cd69ad43ee485128
       script: |

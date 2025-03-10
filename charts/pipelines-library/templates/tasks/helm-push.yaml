@@ -31,7 +31,7 @@ spec:
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: aws_region
               optional: true
         - name: CHART_DIR
@@ -39,12 +39,12 @@ spec:
         - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_type
       script: |
           if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
@@ -65,29 +65,29 @@ spec:
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: aws_region
               optional: true
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_type
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_host
         - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
         - name: PLATFORM
           valueFrom:
             configMapKeyRef:
               key: platform
-              name: edp-config
+              name: krci-config
       script: |
         #!/bin/bash
 

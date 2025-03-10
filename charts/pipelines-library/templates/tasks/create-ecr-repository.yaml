@@ -18,10 +18,10 @@ spec:
   params:
     - name: REPO_NAME
       description: "The name of the ecr repository where we are going to push the image"
-    - name: edp-config
+    - name: krci-config
       type: string
       description: "This configmap holds aws_region parameter"
-      default: edp-config
+      default: krci-config
   steps:
     - name: init-repository
       image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
@@ -32,7 +32,7 @@ spec:
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
-              name: "$(params.edp-config)"
+              name: "$(params.krci-config)"
               key: 'aws_region'
       command: ["/bin/sh"]
       args:

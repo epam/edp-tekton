@@ -64,12 +64,12 @@ spec:
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_host
         - name: CONTAINER_REGISTRY_GROUP
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
       script: |
         /kaniko/executor \

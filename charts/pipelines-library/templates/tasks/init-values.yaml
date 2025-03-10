@@ -38,7 +38,7 @@ spec:
         #!/usr/bin/env bash
         set -e
 
-        tenantName=$(kubectl get cm edp-config -o jsonpath='{.data.edp_name}')
+        tenantName=$(kubectl get cm krci-config -o jsonpath='{.data.edp_name}')
         echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
 
         normalizedBranch=$(echo ${BRANCH//[^\(?!.)a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')

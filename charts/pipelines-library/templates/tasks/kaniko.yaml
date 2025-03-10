@@ -67,18 +67,18 @@ spec:
         - name: AWS_DEFAULT_REGION
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: aws_region
               optional: true
         - name: CONTAINER_REGISTRY_GROUP
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_type
       script: |
           if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
@@ -104,17 +104,17 @@ spec:
         - name: CONTAINER_REGISTRY_URL
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_host
         - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: container_registry_space
         - name: PLATFORM
           valueFrom:
             configMapKeyRef:
-              name: edp-config
+              name: krci-config
               key: platform
       script: |
         base_command="/kaniko/executor \
@@ -160,12 +160,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: container_registry_host
-              name: edp-config
+              name: krci-config
         - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
               key: container_registry_space
-              name: edp-config
+              name: krci-config
       script: |
         set -e
         echo -n "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"

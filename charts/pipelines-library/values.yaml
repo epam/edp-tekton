@@ -10,6 +10,12 @@ pipelines:
     # -- Registry for tekton pipelines images. Default: docker.io
     registry: "docker.io"
 
+  # -- List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries.
+  # Example:
+  # imagePullSecrets:
+  #   - name: regcred
+  imagePullSecrets: []
+
   # -- This section contains the list of pipelines and tasks that will be installed.
   deployableResources:
     # -- This flag control the installation of the tasks.

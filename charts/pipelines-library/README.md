@@ -118,6 +118,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
 | pipelines.deployableResources.tasks | bool | `true` | This flag control the installation of the tasks. |
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
+| pipelines.imagePullSecrets | list | `[]` | List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries. Example: imagePullSecrets:   - name: regcred |
 | pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |

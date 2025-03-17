@@ -1,6 +1,9 @@
 import subprocess
 import os
 
+# Set the environment variable inside the script
+os.environ['DOCKER_DEFAULT_PLATFORM'] = 'linux/amd64'
+
 # AWS ECR configuration
 AWS_REGION = ''
 AWS_ACCOUNT_ID = ''

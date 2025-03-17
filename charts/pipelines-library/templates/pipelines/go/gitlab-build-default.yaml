@@ -43,7 +43,7 @@ spec:
       default: ""
       type: string
     - name: image
-      default: '{{ $registry }}/golang:1.22-bookworm'
+      default: '{{ $registry }}/golang:1.24-bookworm'
       description: "go image version"
       type: string
     - name: TICKET_NAME_PATTERN

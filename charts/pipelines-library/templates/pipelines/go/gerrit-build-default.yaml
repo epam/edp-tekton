@@ -36,7 +36,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: '{{ $registry }}/golang:1.22-bookworm'
+      default: '{{ $registry }}/golang:1.24-bookworm'
       description: "go image version"
       type: string
     - name: changeNumber

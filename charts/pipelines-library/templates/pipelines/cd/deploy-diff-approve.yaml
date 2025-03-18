@@ -5,6 +5,7 @@ metadata:
   name: deploy-diff-approve
   labels:
     app.edp.epam.com/pipelinetype: deploy
+    app.edp.epam.com/triggertemplate: deploy-diff-approve
 spec:
   description: |
     This Pipeline is used to deploy applications to the target Stage (Environment).

@@ -5,6 +5,7 @@ metadata:
   name: deploy-ansible-awx
   labels:
     app.edp.epam.com/pipelinetype: deploy
+    app.edp.epam.com/triggertemplate: deploy-ansible-awx
 spec:
   description: |
     This Pipeline is designed for deploying RPM packages

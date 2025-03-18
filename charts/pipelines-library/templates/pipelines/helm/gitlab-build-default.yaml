@@ -6,6 +6,7 @@ metadata:
   name: gitlab-helm-helm-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: gitlab-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Build pipeline for building Helm application (default versioning)"

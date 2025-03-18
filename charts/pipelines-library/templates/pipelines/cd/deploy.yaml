@@ -5,6 +5,7 @@ metadata:
   name: deploy
   labels:
     app.edp.epam.com/pipelinetype: deploy
+    app.edp.epam.com/triggertemplate: deploy
 spec:
   description: |
     This Pipeline is used to deploy applications to the target Stage (Environment).

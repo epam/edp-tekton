@@ -6,6 +6,7 @@ metadata:
   name: gitlab-python-python-3.8-lib-review
   labels:
     app.edp.epam.com/pipelinetype: review
+    app.edp.epam.com/triggertemplate: gitlab-review-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Review pipeline for building Python"

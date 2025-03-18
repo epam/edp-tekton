@@ -10,6 +10,7 @@ metadata:
   name: github-gradle-{{ $framework }}-aut-review
   labels:
     app.edp.epam.com/pipelinetype: review
+    app.edp.epam.com/triggertemplate: github-review-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   description: "The Review pipeline for building {{ $framework }} automation tests with Gradle"

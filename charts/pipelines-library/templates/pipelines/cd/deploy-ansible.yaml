@@ -5,6 +5,7 @@ metadata:
   name: deploy-ansible
   labels:
     app.edp.epam.com/pipelinetype: deploy
+    app.edp.epam.com/triggertemplate: deploy-ansible
 spec:
   description: |
     This Pipeline is responsible for deploying rpm packages to the target Stage (Environment).

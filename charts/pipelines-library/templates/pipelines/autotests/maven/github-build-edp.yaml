@@ -10,6 +10,7 @@ metadata:
   name: github-maven-{{ $framework }}-aut-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: github-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   description: "The Build pipeline for building {{ $framework }} automation tests with Maven (default version)"

@@ -11,6 +11,7 @@ metadata:
   name: gitlab-maven-{{ $framework }}-app-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: gitlab-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   description: "The Build pipeline for building {{ $framework }} application with Maven (EDP versioning)"

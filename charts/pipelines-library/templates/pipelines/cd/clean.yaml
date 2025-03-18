@@ -6,6 +6,7 @@ metadata:
   name: clean
   labels:
     app.edp.epam.com/pipelinetype: clean
+    app.edp.epam.com/triggertemplate: clean
 spec:
   description: |
     This Pipeline is used to delete Argo CD application.

@@ -6,6 +6,7 @@ metadata:
   name: bitbucket-helm-gitops-sys-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: bitbucket-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: The Build pipeline for linting and validating manifests in the GitOps system repository

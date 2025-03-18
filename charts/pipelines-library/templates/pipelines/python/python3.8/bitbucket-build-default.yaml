@@ -6,6 +6,7 @@ metadata:
   name: bitbucket-python-python-3.8-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: bitbucket-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Build pipeline for building Python application (default versioning)"

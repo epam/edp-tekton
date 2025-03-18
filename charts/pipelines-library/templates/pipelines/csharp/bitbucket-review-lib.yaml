@@ -8,6 +8,7 @@ metadata:
   name: bitbucket-dotnet-{{ $framework }}-lib-review
   labels:
     app.edp.epam.com/pipelinetype: review
+    app.edp.epam.com/triggertemplate: bitbucket-review-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
   description: "The Review pipeline for building {{ $framework }} with Dotnet"

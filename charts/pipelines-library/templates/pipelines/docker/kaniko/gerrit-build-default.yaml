@@ -1,12 +1,13 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
 {{ if .Values.pipelines.deployableResources.docker }}
-{{- $registry := .Values.pipelines.image.registry | default "ghcr.io" -}} 
+{{- $registry := .Values.pipelines.image.registry | default "ghcr.io" -}}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gerrit-kaniko-docker-lib-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: gerrit-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Build pipeline for building Docker application (default versioning)"

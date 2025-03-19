@@ -63,7 +63,7 @@ spec:
       type: string
     - name: step_prepare_project_image
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
   steps:
     - image: $(params.step_prepare_project_image)
       name: prepare-project

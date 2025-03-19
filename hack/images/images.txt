@@ -11,8 +11,7 @@ docker.io/aquasec/trivy:0.41.0
 docker.io/aquasec/trivy:0.59.1
 docker.io/bitnami/kubectl:1.25.4
 docker.io/epamedp/tekton-ansible:0.1.1
-docker.io/epamedp/tekton-autotest:0.1.6
-docker.io/epamedp/tekton-autotest:0.1.7
+docker.io/epamedp/tekton-autotest:0.1.8
 docker.io/epamedp/tekton-cd-pipeline:0.1.4
 docker.io/epamedp/tekton-dotnet:6.0.3
 docker.io/epamedp/tekton-openssh-client:0.1.5

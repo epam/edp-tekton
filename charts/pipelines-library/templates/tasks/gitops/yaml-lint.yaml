@@ -11,11 +11,7 @@ spec:
   params:
     - name: BASE_IMAGE
       description: "Base image containing yamllint and its configuration"
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.7"
-      type: string
-    - name: CONFIG_PATH
-      description: "Path to yamllint configuration file"
-      default: "/config"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
       type: string
   steps:
     - name: yaml-lint
@@ -27,7 +23,7 @@ spec:
 
         echo "Linting YAML manifests..."
 
-        yamllint -c $(params.CONFIG_PATH) .
+        yamllint .
 
         echo "YAML manifests linted successfully."
 

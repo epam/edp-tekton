@@ -32,7 +32,7 @@ spec:
       type: string
     - name: step_push_to_jira_image
       description: "The base image for the task."
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.6"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
       type: string
   steps:
     - name: push-to-jira

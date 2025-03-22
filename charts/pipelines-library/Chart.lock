@@ -1,9 +1,9 @@
 dependencies:
 - name: edp-tekton-common-library
   repository: file://../common-library
-  version: 0.3.12
+  version: 0.3.13
 - name: tekton-cache
   repository: https://epam.github.io/edp-helm-charts/stable
   version: 0.4.1
-digest: sha256:b61a545b749139039f589d26f373ebb269eb3ce2a8653856522f2de8356fbe94
-generated: "2025-01-24T16:11:07.952191+02:00"
+digest: sha256:2658e3ad3cd27a0f67976f256a635ddd3633324ee3c9da1816ebf513afd79536
+generated: "2025-03-22T16:12:23.300089+02:00"

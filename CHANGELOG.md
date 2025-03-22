@@ -2,6 +2,32 @@
 ## [Unreleased]
 
 
+<a name="v0.17.0"></a>
+## [v0.17.0] - 2025-03-22
+### Features
+
+- Enable pipeline reference to trigger templates
+- Create migration script for Nexus registry integration
+- Enhance Deployment Pipeline for Approval Process ([#424](https://github.com/epam/edp-tekton/issues/424))
+- Add Java 21 pipelines support ([#422](https://github.com/epam/edp-tekton/issues/422))
+
+### Bug Fixes
+
+- Fix kaniko execution for registry with custom certificates ([#427](https://github.com/epam/edp-tekton/issues/427))
+
+### Routine
+
+- Update current development version ([#452](https://github.com/epam/edp-tekton/issues/452))
+- Add imagePullSecrets field to Tekton Service Account ([#442](https://github.com/epam/edp-tekton/issues/442))
+- Update Go image version to 1.24 ([#444](https://github.com/epam/edp-tekton/issues/444))
+- Change versioning type for build pipeline names ([#437](https://github.com/epam/edp-tekton/issues/437))
+- Integrate Gitleaks support for secret scanning ([#435](https://github.com/epam/edp-tekton/issues/435))
+- Add image-scan task for remote registries ([#433](https://github.com/epam/edp-tekton/issues/433))
+- Upgrade Image Scan Task ([#431](https://github.com/epam/edp-tekton/issues/431))
+- Update security task images ([#429](https://github.com/epam/edp-tekton/issues/429))
+- Update current development version ([#419](https://github.com/epam/edp-tekton/issues/419))
+
+
 <a name="v0.16.0"></a>
 ## [v0.16.0] - 2025-01-24
 ### Features
@@ -609,7 +635,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.17.0...HEAD
+[v0.17.0]: https://github.com/epam/edp-tekton/compare/v0.16.0...v0.17.0
 [v0.16.0]: https://github.com/epam/edp-tekton/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/epam/edp-tekton/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/epam/edp-tekton/compare/v0.13.0...v0.14.0

@@ -15,6 +15,9 @@ spec:
       backoffLimit: {{ default (int 3) .Values.tekton.pruner.backoffLimit }}
       template:
         spec:
+          {{- if .Values.tekton.pruner.imagePullSecrets }}
+          imagePullSecrets: {{ toYaml .Values.tekton.pruner.imagePullSecrets | nindent 12 }}
+          {{- end }}
           volumes:
             - name: scripts
               configMap:

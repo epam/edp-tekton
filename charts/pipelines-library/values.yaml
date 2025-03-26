@@ -111,6 +111,11 @@ tekton-cache:
   # -- Defines the URL to the tekton-cache. Default: http://tekton-cache:8080
   url: "http://tekton-cache:8080"
 
+  # -- Optional array of imagePullSecrets containing private registry credentials
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry
+  # imagePullSecrets: []
+  # - name: regcred
+
 # Kaniko configuration section
 kaniko:
   # -- AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME>
@@ -187,6 +192,8 @@ tekton:
     schedule: "0 10 */1 * *"
     # -- Docker image to run the pruner, expected to have kubectl and jq
     image: bitnami/kubectl:1.25
+    # -- List of ImagePullSecrets to be used by the pruner CronJob
+    imagePullSecrets: []
     # -- Pod resources for Tekton pruner job
     resources:
       limits:

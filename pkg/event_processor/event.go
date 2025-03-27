@@ -143,5 +143,5 @@ func (e *EventInfo) IsReviewCommentEvent() bool {
 }
 
 func ContainsPipelineRecheck(s string) bool {
-	return strings.Contains(s, RecheckComment) || strings.Contains(s, OkToTestComment)
+	return strings.HasPrefix(s, RecheckComment) || strings.HasPrefix(s, OkToTestComment)
 }

@@ -92,7 +92,7 @@ spec:
             configMapKeyRef:
               name: edp-config
               key: container_registry_space
-      image: gcr.io/go-containerregistry/crane/debug:v0.11.0
+      image: gcr.io/go-containerregistry/crane/debug:c195f151efe3369874c72662cd69ad43ee485128
       script: |
         #!/busybox/sh
         DOCKERHUB_IMAGE_TAGGED="${DOCKERHUB_HOST}/${DOCKERHUB_ACCOUNT}/${CODEBASE_NAME}:${IMAGE_TAG}"

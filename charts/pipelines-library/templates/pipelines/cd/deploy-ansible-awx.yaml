@@ -18,7 +18,7 @@ spec:
       description: |
         URL of the pipeline run in Tekton Dashboard.
       type: string
-      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
     - name: CDPIPELINE
       description: |
         EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature

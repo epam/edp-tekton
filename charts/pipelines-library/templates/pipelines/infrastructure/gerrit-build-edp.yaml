@@ -15,7 +15,7 @@ spec:
     - name: ssh-creds
   params:
     - name: pipelineUrl
-      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
       default: "https://github.com/epmd-edp/terraform-terraform-aws"

@@ -1,6 +1,34 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Code Refactoring
+
+- We expect `/recheck` at the beginning of the comment text ([#458](https://github.com/epam/edp-tekton/issues/458))
+
+### Routine
+
+- Correct pipelineUrl param for review and build pipelines ([#460](https://github.com/epam/edp-tekton/issues/460))
+- Rename ConfigMap from 'edp-config' to 'krci-config'
+- Update crane image tag version ([#455](https://github.com/epam/edp-tekton/issues/455))
+- Add ImagePullSecrets field support ([#455](https://github.com/epam/edp-tekton/issues/455))
+- Allow custom yamllint configuration for GitOps pipelines ([#450](https://github.com/epam/edp-tekton/issues/450))
+- Update current development version ([#452](https://github.com/epam/edp-tekton/issues/452))
+
+
+<a name="v0.17.1"></a>
+## [v0.17.1] - 2025-03-31
+### Code Refactoring
+
+- We expect `/recheck` at the beginning of the comment text ([#458](https://github.com/epam/edp-tekton/issues/458))
+
+### Routine
+
+- Correct pipelineUrl param for review and build pipelines ([#460](https://github.com/epam/edp-tekton/issues/460))
+- Rename ConfigMap from 'edp-config' to 'krci-config'
+- Update crane image tag version ([#455](https://github.com/epam/edp-tekton/issues/455))
+- Add ImagePullSecrets field support ([#455](https://github.com/epam/edp-tekton/issues/455))
+- Allow custom yamllint configuration for GitOps pipelines ([#450](https://github.com/epam/edp-tekton/issues/450))
+
 
 <a name="v0.17.0"></a>
 ## [v0.17.0] - 2025-03-22
@@ -635,7 +663,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.17.1...HEAD
+[v0.17.1]: https://github.com/epam/edp-tekton/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/epam/edp-tekton/compare/v0.16.0...v0.17.0
 [v0.16.0]: https://github.com/epam/edp-tekton/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/epam/edp-tekton/compare/v0.14.0...v0.15.0

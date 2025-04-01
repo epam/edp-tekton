@@ -116,7 +116,6 @@ spec:
 
 {{- include "java-maven-get-module" . | nindent 4 }}
 
-{{ include "security-edp" . | nindent 4 }}
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 

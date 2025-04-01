@@ -87,8 +87,6 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-{{ include "security"  $ | nindent 4 }}
-
     - name: build
       taskRef:
         kind: Task

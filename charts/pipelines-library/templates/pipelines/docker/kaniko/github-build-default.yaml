@@ -74,7 +74,6 @@ spec:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)
 
-{{ include "security" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

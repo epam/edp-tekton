@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: github-security-scan
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+    app.edp.epam.com/triggertemplate: github-security-template
+spec:
+  description: >-
+    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "main"
+      type: string
+    - name: git-source-url
+      description: 'url to checkout'
+      default: "https://github.com/Rolika4/springboot.git"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'gradle'
+      description: "Project name"
+      type: string
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: subdirectory
+          value: source
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: init-values
+      taskRef:
+        kind: Task
+        name: init-values
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+
+    - name: security
+      taskRef:
+        kind: Task
+        name: security
+      runAfter:
+        - init-values
+      params:
+        - name: DD_PRODUCT_NAME
+          value: $(tasks.init-values.results.TENANT_NAME)
+        - name: DD_ENGAGEMENT_NAME
+          value: "$(params.CODEBASE_NAME)-$(params.git-source-revision)"
+        - name: PROJECT_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: PROJECT_BRANCH
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source

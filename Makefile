@@ -13,7 +13,7 @@ HOST_ARCH?=$(shell go env GOARCH)
 # Use kind cluster for testing
 START_KIND_CLUSTER?=true
 KIND_CLUSTER_NAME?="tekton"
-KUBE_VERSION?=1.28
+KUBE_VERSION?=1.31
 KIND_CONFIG?=./hack/kind-$(KUBE_VERSION).yaml
 
 CONTAINER_REGISTRY_URL?="repo"
@@ -63,18 +63,8 @@ endif
 helm-docs: helmdocs	## generate helm docs
 	$(HELMDOCS)
 
-HELMDOCS = ${CURRENT_DIR}/bin/helm-docs
-.PHONY: helmdocs
-helmdocs: ## Download helm-docs locally if necessary.
-	$(call go-get-tool,$(HELMDOCS),github.com/norwoodj/helm-docs/cmd/helm-docs,v1.11.0)
-
-GITCHGLOG = ${CURRENT_DIR}/bin/git-chglog
-.PHONY: git-chglog
-git-chglog: ## Download git-chglog locally if necessary.
-	$(call go-get-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,v0.15.4)
-
 .PHONY: build
-build: clean ## build interceptor binary
+build: clean clean fmt vet ## build interceptor binary
 	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpinterceptor ./cmd/interceptor/main.go
 
 .PHONY: clean
@@ -87,9 +77,21 @@ test: test-chart test-go
 test-go:
 	go test ./... -coverprofile=coverage.out `go list ./...`
 
+.PHONY: fmt
+fmt:  ## Run go fmt
+	go fmt ./...
+
+.PHONY: vet
+vet:  ## Run go vet
+	go vet ./...
+
 .PHONY: lint
 lint: golangci-lint ## Run go lint
-	${GOLANGCILINT} run
+	$(GOLANGCI_LINT) run -v -c .golangci.yaml ./...
+
+.PHONY: lint-fix
+lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
+	$(GOLANGCI_LINT) run --fix -v -c .golangci.yaml ./...
 
 test-chart: ${CURRENT_DIR}/.venv/bin/activate
 	( \
@@ -109,28 +111,49 @@ e2e: build
 	kind load --name $(KIND_CLUSTER_NAME) docker-image ${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${E2E_IMAGE_REPOSITORY}:${E2E_IMAGE_TAG}
 	E2E_IMAGE_REPOSITORY=${E2E_IMAGE_REPOSITORY} CONTAINER_REGISTRY_URL=${CONTAINER_REGISTRY_URL} CONTAINER_REGISTRY_SPACE=${CONTAINER_REGISTRY_SPACE} E2E_IMAGE_TAG=${E2E_IMAGE_TAG} kubectl-kuttl test
 
-GOLANGCILINT = ${CURRENT_DIR}/bin/golangci-lint
-.PHONY: golangci-lint
-golangci-lint: ## Download golangci-lint locally if necessary.
-	$(call go-get-tool,$(GOLANGCILINT),github.com/golangci/golangci-lint/cmd/golangci-lint,v1.58.1)
-
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-go get -d $(2)@$(3) ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
-
 .PHONY: start-kind
 start-kind:     ## Start kind cluster
 ifeq (true,$(START_KIND_CLUSTER))
 	kind create cluster --name $(KIND_CLUSTER_NAME) --config $(KIND_CONFIG) --wait 1m
 endif
+
+## Location to install dependencies to
+LOCALBIN ?= ${CURRENT_DIR}/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+# Tools version
+GOLANGCI_LINT_VERSION ?=v1.64.7
+HELMDOCS_VERSION ?= v1.14.2
+GITCHGLOG_VERSION ?= v0.15.4
+
+HELMDOCS = $(LOCALBIN)/helm-docs
+.PHONY: helmdocs
+helmdocs: ## Download helm-docs locally if necessary.
+	$(call go-install-tool,$(HELMDOCS),github.com/norwoodj/helm-docs/cmd/helm-docs,$(HELMDOCS_VERSION))
+
+GITCHGLOG = $(LOCALBIN)/git-chglog
+.PHONY: git-chglog
+git-chglog: ## Download git-chglog locally if necessary.
+	$(call go-install-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,$(GITCHGLOG_VERSION))
+
+GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
+.PHONY: golangci-lint
+golangci-lint: ## Download golangci-lint locally if necessary.
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+
+# go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
+# $1 - target path with name of binary
+# $2 - package url which can be installed
+# $3 - specific version of package
+define go-install-tool
+@[ -f "$(1)-$(3)" ] || { \
+set -e; \
+package=$(2)@$(3) ;\
+echo "Downloading $${package}" ;\
+rm -f $(1) || true ;\
+GOBIN=$(LOCALBIN) go install $${package} ;\
+mv $(1) $(1)-$(3) ;\
+} ;\
+ln -sf $(1)-$(3) $(1)
+endef

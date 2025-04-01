@@ -287,7 +287,6 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -299,7 +298,7 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				&EventProcessorOptions{
 					Logger:      zap.NewNop().Sugar(),
-					RestyClient: resty.New().SetHostURL(server.URL),
+					RestyClient: resty.New().SetBaseURL(server.URL),
 				},
 			)
 			got, err := p.processCommentEvent(context.Background(), body, "default")
@@ -676,7 +675,6 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -688,7 +686,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 				fake.NewClientBuilder().WithScheme(scheme).WithObjects(tt.kubeObjects...).Build(),
 				&EventProcessorOptions{
 					Logger:      zap.NewNop().Sugar(),
-					RestyClient: resty.New().SetHostURL(server.URL),
+					RestyClient: resty.New().SetBaseURL(server.URL),
 				},
 			)
 			got, err := p.processMergeEvent(context.Background(), body, "default")

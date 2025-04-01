@@ -1,0 +1,51 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: gitlab-security-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+    - name: codebase
+    - name: gitrepositoryurl
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: gitlab-security-scan-
+        labels:
+          # used by UI to sort pipelines for codebasebranches
+          app.edp.epam.com/pipelinetype: build
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        taskRunTemplate:
+          serviceAccountName: tekton
+          {{ if .Values.pipelines.podTemplate }}
+          podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
+          {{ end }}
+        pipelineRef:
+          name: gitlab-security-scan
+        params:
+          - name: git-source-url
+            value: $(tt.params.gitrepositoryurl)
+          - name: git-source-revision
+            value: $(tt.params.gitrevision)
+          - name: CODEBASE_NAME
+            value: $(tt.params.codebase)
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: {{ .Values.tekton.workspaceSize }}
+            subPath: codebase
+          - name: ssh-creds
+            secret:
+              secretName: ci-gitlab
+{{ end }}

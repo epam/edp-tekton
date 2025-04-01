@@ -106,7 +106,6 @@ spec:
           workspace: shared-workspace
           subPath: source
 
-{{ include "security-edp" . | nindent 4 }}
 
 {{ include "java-gradle-build-common" . | nindent 4 }}
 

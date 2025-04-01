@@ -36,7 +36,7 @@ func NewEventProcessor(ksClient ctrlClient.Reader, options *EventProcessorOption
 	}
 
 	if options.RestyClient == nil {
-		options.RestyClient = resty.New().SetHostURL("https://api.bitbucket.org/2.0")
+		options.RestyClient = resty.New().SetBaseURL("https://api.bitbucket.org/2.0")
 	}
 
 	return &EventProcessor{

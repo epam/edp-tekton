@@ -7,6 +7,8 @@
 
 ### Routine
 
+- Update Go version from 1.22 to 1.24 ([#466](https://github.com/epam/edp-tekton/issues/466))
+- Update current development version ([#462](https://github.com/epam/edp-tekton/issues/462))
 - Correct pipelineUrl param for review and build pipelines ([#460](https://github.com/epam/edp-tekton/issues/460))
 - Rename ConfigMap from 'edp-config' to 'krci-config'
 - Update crane image tag version ([#455](https://github.com/epam/edp-tekton/issues/455))

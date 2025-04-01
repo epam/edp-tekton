@@ -111,7 +111,6 @@ spec:
         - name: source
           workspace: shared-workspace
 
-{{ include "security-edp" . | nindent 4 }}
 
 {{- include "java-maven-build-common" . | nindent 4 }}
 

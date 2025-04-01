@@ -75,7 +75,6 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
-{{ include "security" . | nindent 4 }}
 
 {{- include "c-cmake-build-common" $ | nindent 4 }}
 

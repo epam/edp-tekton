@@ -72,7 +72,6 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
-{{ include "security" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

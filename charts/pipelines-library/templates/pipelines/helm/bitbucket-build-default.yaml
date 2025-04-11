@@ -28,6 +28,9 @@ spec:
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
     - name: changeNumber
       description: Change number from Merge Request
       default: ""
@@ -185,8 +188,8 @@ spec:
       runAfter:
         - git-tag
       params:
-        - name: CBIS_NAME
-          value: $(tasks.init-values.results.RESULT_IMAGE_NAME)
+        - name: CODEBASEBRANCH_NAME
+          value: $(params.CODEBASEBRANCH_NAME)
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.VCS_TAG)
 

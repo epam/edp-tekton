@@ -24,8 +24,6 @@ spec:
       description: "edp name"
     - name: NORMALIZED_BRANCH
       description: "Branch name without '/' symbols and lowercase"
-    - name: RESULT_IMAGE_NAME
-      description: "Codebase name with only letters and dashes"
   steps:
     - name: get-values
       image: $(params.BASE_IMAGE)
@@ -43,7 +41,4 @@ spec:
 
         normalizedBranch=$(echo ${BRANCH//[^\(?!.)a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')
         printf "%s" "${normalizedBranch}" > "$(results.NORMALIZED_BRANCH.path)"
-
-        resultImageName="${CODEBASE}-$(echo ${BRANCH//[^a-zA-Z0-9]/-} | tr '[:upper:]' '[:lower:]')"
-        printf "%s" "${resultImageName}" > "$(results.RESULT_IMAGE_NAME.path)"
 {{ end }}

@@ -8,9 +8,9 @@ spec:
     This task updates a Codebase ImageStream (CBIS) with a new image tag. It checks for the presence of tags in the specified CBIS and adds the new tag if it doesn't already exist.
     The task utilizes kubectl commands and is customizable with parameters for CBIS
   params:
-    - name: CBIS_NAME
+    - name: CODEBASEBRANCH_NAME
       type: string
-      description: "Codebase name with only letters and dashes"
+      description: "CodebaseBranch name with only letters and dashes"
     - name: IMAGE_TAG
       type: string
     - name: BASE_IMAGE
@@ -21,26 +21,32 @@ spec:
     - name: update-cbis
       image: $(params.BASE_IMAGE)
       env:
-        - name: CBIS_NAME
-          value: "$(params.CBIS_NAME)"
+        - name: CODEBASEBRANCH_NAME
+          value: "$(params.CODEBASEBRANCH_NAME)"
         - name: IMAGE_TAG
           value: "$(params.IMAGE_TAG)"
       script: |
         #!/usr/bin/env bash
         set -e
 
-        cbisCrTags=$(kubectl get cbis.v2.edp.epam.com ${CBIS_NAME} --output=jsonpath={.spec.tags})
+        cbisName=$(kubectl get cbis.v2.edp.epam.com -l app.edp.epam.com/cbis-codebasebranch="${CODEBASEBRANCH_NAME}" -o jsonpath='{.items[0].metadata.name}')
+        if [ -z "${cbisName}" ]; then
+            echo "[TEKTON][ERROR] No CBIS found with label app.edp.epam.com/cbis-codebasebranch=${CODEBASEBRANCH_NAME}"
+            exit 1
+        fi
+
+        cbisCrTags=$(kubectl get cbis.v2.edp.epam.com ${cbisName} --output=jsonpath={.spec.tags})
         dateFormat=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
         newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\"}"
 
         if [ "${cbisCrTags}" = "" ] ; then
-            echo "[TEKTON][DEBUG] There're no tags in imageStream ${CBIS_NAME} ... the first one will be added."
-            kubectl patch cbis.v2.edp.epam.com ${CBIS_NAME} --type=merge -p "{\"spec\":{\"tags\":[${newcbisTag}]}}"
+            echo "[TEKTON][DEBUG] There're no tags in imageStream ${cbisName} ... the first one will be added."
+            kubectl patch cbis.v2.edp.epam.com ${cbisName} --type=merge -p "{\"spec\":{\"tags\":[${newcbisTag}]}}"
         fi
 
-        cbisTagsList=$(kubectl get cbis.v2.edp.epam.com ${CBIS_NAME} --output=jsonpath={.spec.tags[*].name})
+        cbisTagsList=$(kubectl get cbis.v2.edp.epam.com ${cbisName} --output=jsonpath={.spec.tags[*].name})
         if [[ ! ${cbisTagsList} == *"${IMAGE_TAG}"* ]]; then
-            echo "[TEKTON][DEBUG] ImageStream ${CBIS_NAME} doesn't contain ${IMAGE_TAG} tag ... it will be added."
-            kubectl patch cbis.v2.edp.epam.com ${CBIS_NAME} --type json -p="[{\"op\": \"add\", \"path\": \"/spec/tags/-\", \"value\": ${newcbisTag} }]"
+            echo "[TEKTON][DEBUG] ImageStream ${cbisName} doesn't contain ${IMAGE_TAG} tag ... it will be added."
+            kubectl patch cbis.v2.edp.epam.com ${cbisName} --type json -p="[{\"op\": \"add\", \"path\": \"/spec/tags/-\", \"value\": ${newcbisTag} }]"
         fi
 {{ end }}

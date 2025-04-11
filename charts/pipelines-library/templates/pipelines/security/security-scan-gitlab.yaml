@@ -1,3 +1,4 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -76,3 +77,4 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+{{ end }}

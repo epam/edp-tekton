@@ -3,8 +3,8 @@ description: A Helm chart library with common components for KubeRocketCI Tekton
 home: https://docs.kuberocketci.io
 name: edp-tekton-common-library
 type: library
-version: 0.3.13
-appVersion: 0.3.13
+version: 0.3.14
+appVersion: 0.3.14
 icon: https://docs.kuberocketci.io/img/logo.svg
 keywords:
   - edp

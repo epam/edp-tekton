@@ -1,12 +1,17 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.18.0"></a>
+## [v0.18.0] - 2025-04-11
 ### Code Refactoring
 
 - We expect `/recheck` at the beginning of the comment text ([#458](https://github.com/epam/edp-tekton/issues/458))
 
 ### Routine
 
+- Update current development version ([#468](https://github.com/epam/edp-tekton/issues/468))
+- Move security step to separate pipelines ([#464](https://github.com/epam/edp-tekton/issues/464))
 - Update Go version from 1.22 to 1.24 ([#466](https://github.com/epam/edp-tekton/issues/466))
 - Update current development version ([#462](https://github.com/epam/edp-tekton/issues/462))
 - Correct pipelineUrl param for review and build pipelines ([#460](https://github.com/epam/edp-tekton/issues/460))
@@ -665,7 +670,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.17.1...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.18.0...HEAD
+[v0.18.0]: https://github.com/epam/edp-tekton/compare/v0.17.1...v0.18.0
 [v0.17.1]: https://github.com/epam/edp-tekton/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/epam/edp-tekton/compare/v0.16.0...v0.17.0
 [v0.16.0]: https://github.com/epam/edp-tekton/compare/v0.15.0...v0.16.0

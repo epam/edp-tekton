@@ -1,6 +1,6 @@
 # edp-tekton
 
-![Version: 0.18.0-SNAPSHOT](https://img.shields.io/badge/Version-0.18.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.18.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.18.0--SNAPSHOT-informational?style=flat-square)
+![Version: 0.19.0-SNAPSHOT](https://img.shields.io/badge/Version-0.19.0--SNAPSHOT-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.19.0-SNAPSHOT](https://img.shields.io/badge/AppVersion-0.19.0--SNAPSHOT-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
 A Helm chart for KubeRocketCI Tekton Pipelines
@@ -66,7 +66,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | Repository | Name | Version |
 |------------|------|---------|
 | @epamedp | tekton-cache | 0.4.1 |
-| file://../common-library | edp-tekton-common-library | 0.3.13 |
+| file://../common-library | edp-tekton-common-library | 0.3.14 |
 
 ## Values
 

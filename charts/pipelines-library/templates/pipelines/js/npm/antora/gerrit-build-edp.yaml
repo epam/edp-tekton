@@ -111,6 +111,7 @@ spec:
             export npm_config_userconfig=/var/configmap/.npmrc-ci
             export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
             export NPM_CACHE_DIR=/workspace/source/cache
+            npm cache verify --cache $NPM_CACHE_DIR
             npm ci
             npm run build:prod
       workspaces:

@@ -82,6 +82,7 @@ spec:
         export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
         export npm_config_userconfig=/var/configmap/.npmrc-ci
         export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
+        npm cache verify --cache $NPM_CACHE_DIR
         npm ci
 
     - name: build

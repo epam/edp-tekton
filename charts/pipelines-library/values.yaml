@@ -57,6 +57,7 @@ pipelines:
       flask: true
       fastapi: true
       python3.8: false
+    security: true
     terraform: true
 
   # -- This section allows to determine on which nodes to run tekton pipelines

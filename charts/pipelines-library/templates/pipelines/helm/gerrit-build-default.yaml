@@ -6,7 +6,7 @@ metadata:
   name: gerrit-helm-helm-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
-    app.edp.epam.com/triggertemplate: bitbucket-build-template
+    app.edp.epam.com/triggertemplate: gerrit-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Build pipeline for building Helm application (default versioning)"

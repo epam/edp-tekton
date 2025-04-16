@@ -1,4 +1,4 @@
-{{- if .Values.pipelines.deployableResources.deploy }}
+{{- if .Values.pipelines.deployableResources.security }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:

@@ -1,4 +1,4 @@
-{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if and (has "gerrit" .Values.global.gitProviders) .Values.pipelines.deployableResources.security }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:

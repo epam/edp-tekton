@@ -29,9 +29,9 @@ spec:
         #!/usr/bin/env bash
         set -e
 
-        cbisName=$(kubectl get cbis.v2.edp.epam.com -l app.edp.epam.com/cbis-codebasebranch="${CODEBASEBRANCH_NAME}" -o jsonpath='{.items[0].metadata.name}')
+        cbisName=$(kubectl get cbis.v2.edp.epam.com -l app.edp.epam.com/codebasebranch="${CODEBASEBRANCH_NAME}" -o jsonpath='{.items[0].metadata.name}')
         if [ -z "${cbisName}" ]; then
-            echo "[TEKTON][ERROR] No CBIS found with label app.edp.epam.com/cbis-codebasebranch=${CODEBASEBRANCH_NAME}"
+            echo "[TEKTON][ERROR] No CBIS found with label app.edp.epam.com/codebasebranch=${CODEBASEBRANCH_NAME}"
             exit 1
         fi
 

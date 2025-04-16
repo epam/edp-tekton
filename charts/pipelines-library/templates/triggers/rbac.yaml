@@ -1,3 +1,4 @@
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -5,7 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
+{{- end }}
 ---
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -21,7 +24,9 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: tekton-triggers-eventlistener-roles
+{{- end }}
 ---
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -36,3 +41,4 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: tekton-triggers-eventlistener-clusterroles
+{{- end }}

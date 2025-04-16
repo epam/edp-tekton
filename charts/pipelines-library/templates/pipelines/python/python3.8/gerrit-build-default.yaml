@@ -1,4 +1,4 @@
-{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if and (has "gerrit" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline

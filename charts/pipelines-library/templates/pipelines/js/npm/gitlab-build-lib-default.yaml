@@ -1,4 +1,4 @@
-{{ if has "gitlab" .Values.global.gitProviders }}
+{{ if and (has "gitlab" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if or ( .Values.pipelines.deployableResources.js.angular ) ( .Values.pipelines.deployableResources.js.express ) ( .Values.pipelines.deployableResources.js.next ) ( .Values.pipelines.deployableResources.js.react ) ( .Values.pipelines.deployableResources.js.vue )}}
 {{- $registry := include "edp-tekton.registry" . -}}
 {{- $raw := include "edp-tekton.resourceMapping.js" . | trimAll "[]" -}}

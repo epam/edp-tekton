@@ -1,4 +1,4 @@
-{{ if has "github" .Values.global.gitProviders }}
+{{ if and (has "github" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if .Values.pipelines.deployableResources.helm }}
 apiVersion: tekton.dev/v1
 kind: Pipeline

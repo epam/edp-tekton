@@ -1,4 +1,4 @@
-{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if and (has "gerrit" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if .Values.pipelines.deployableResources.docker }}
 {{- $registry := .Values.pipelines.image.registry | default "ghcr.io" -}}
 apiVersion: tekton.dev/v1

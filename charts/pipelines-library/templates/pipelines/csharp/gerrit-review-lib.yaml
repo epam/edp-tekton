@@ -1,4 +1,4 @@
-{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if and (has "gerrit" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if or ( index .Values.pipelines.deployableResources.cs "dotnet3.1" ) ( index .Values.pipelines.deployableResources.cs "dotnet6.0" ) }}
 {{- $raw := include "edp-tekton.resourceMapping.cs" . | fromYaml -}}
 {{- range $framework, $image:= $raw }}

@@ -20,9 +20,18 @@ pipelines:
   deployableResources:
     # -- This flag control the installation of the tasks.
     tasks: true
+    # -- This flag control the installation of the Build, Review and other pipelines.
+    pipelines: true
     # -- This flag control the installation of the Deploy pipelines.
     deploy: true
+    # -- This flag control the installation of the Triggers resources.
+    triggers: true
+    # -- This section control the installation of the tekton resources.
+    resources:
+      # -- This flag control the installation of the tekton RBAC resources.
+      rbac: true
     # -- This section control the installation of the review and build pipelines.
+    # If `pipelines` is set to `false`, this section will be ignored.
     c:
       cmake: true
       make: true
@@ -57,6 +66,7 @@ pipelines:
       flask: true
       fastapi: true
       python3.8: false
+    security: true
     terraform: true
 
   # -- This section allows to determine on which nodes to run tekton pipelines

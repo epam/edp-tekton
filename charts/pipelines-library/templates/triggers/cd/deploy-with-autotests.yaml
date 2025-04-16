@@ -1,3 +1,4 @@
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
@@ -57,3 +58,4 @@ spec:
                   requests:
                     storage: "1Gi"
             subPath: codebase
+{{- end }}

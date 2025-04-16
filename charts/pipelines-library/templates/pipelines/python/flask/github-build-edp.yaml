@@ -1,4 +1,4 @@
-{{ if has "github" .Values.global.gitProviders }}
+{{ if and (has "github" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if or ( .Values.pipelines.deployableResources.python.flask ) ( .Values.pipelines.deployableResources.python.fastapi ) }}
 {{- $raw := include "edp-tekton.resourceMapping.python" . | trimAll "[]" -}}
 {{- $resources := $raw | split " " -}}

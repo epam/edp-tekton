@@ -113,10 +113,14 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
-| pipelines.deployableResources | object | `{"c":{"cmake":true,"make":true},"cs":{"dotnet3.1":false,"dotnet6.0":false},"deploy":true,"docker":true,"gitops":true,"go":{"beego":true,"gin":true,"operatorsdk":true},"groovy":true,"helm":true,"helm-pipeline":true,"infrastructure":true,"java":{"java11":true,"java17":true,"java21":true,"java8":false},"js":{"angular":true,"antora":true,"express":true,"next":true,"react":true,"vue":true},"opa":false,"python":{"ansible":true,"fastapi":true,"flask":true,"python3.8":false},"tasks":true,"terraform":true}` | This section contains the list of pipelines and tasks that will be installed. |
-| pipelines.deployableResources.c | object | `{"cmake":true,"make":true}` | This section control the installation of the review and build pipelines. |
+| pipelines.deployableResources | object | `{"c":{"cmake":true,"make":true},"cs":{"dotnet3.1":false,"dotnet6.0":false},"deploy":true,"docker":true,"gitops":true,"go":{"beego":true,"gin":true,"operatorsdk":true},"groovy":true,"helm":true,"helm-pipeline":true,"infrastructure":true,"java":{"java11":true,"java17":true,"java21":true,"java8":false},"js":{"angular":true,"antora":true,"express":true,"next":true,"react":true,"vue":true},"opa":false,"pipelines":true,"python":{"ansible":true,"fastapi":true,"flask":true,"python3.8":false},"resources":{"rbac":true},"security":true,"tasks":true,"terraform":true,"triggers":true}` | This section contains the list of pipelines and tasks that will be installed. |
+| pipelines.deployableResources.c | object | `{"cmake":true,"make":true}` | This section control the installation of the review and build pipelines. If `pipelines` is set to `false`, this section will be ignored. |
 | pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
+| pipelines.deployableResources.pipelines | bool | `true` | This flag control the installation of the Build, Review and other pipelines. |
+| pipelines.deployableResources.resources | object | `{"rbac":true}` | This section control the installation of the tekton resources. |
+| pipelines.deployableResources.resources.rbac | bool | `true` | This flag control the installation of the tekton RBAC resources. |
 | pipelines.deployableResources.tasks | bool | `true` | This flag control the installation of the tasks. |
+| pipelines.deployableResources.triggers | bool | `true` | This flag control the installation of the Triggers resources. |
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | pipelines.imagePullSecrets | list | `[]` | List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries. Example: imagePullSecrets:   - name: regcred |
 | pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |

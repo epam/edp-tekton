@@ -1,4 +1,4 @@
-{{ if has "bitbucket" .Values.global.gitProviders }}
+{{ if and (has "bitbucket" .Values.global.gitProviders) .Values.pipelines.deployableResources.security }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:

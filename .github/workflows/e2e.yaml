@@ -14,7 +14,7 @@ env:
 jobs:
   e2e-tests-131:
     name: End-to-end tests 1.31
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -58,7 +58,7 @@ jobs:
   e2e-tests-132:
     name: End-to-end tests 1.32
     needs: [e2e-tests-131]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -100,7 +100,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
   e2e-tests-check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: always()
     needs: [e2e-tests-131, e2e-tests-132]
     steps:

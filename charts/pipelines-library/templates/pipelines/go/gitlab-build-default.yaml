@@ -1,4 +1,4 @@
-{{ if has "gitlab" .Values.global.gitProviders }}
+{{ if and (has "gitlab" .Values.global.gitProviders) .Values.pipelines.deployableResources.pipelines }}
 {{ if or ( .Values.pipelines.deployableResources.go.beego ) ( .Values.pipelines.deployableResources.go.gin ) ( .Values.pipelines.deployableResources.go.operatorsdk )}}
 {{- $registry := include "edp-tekton.registry" . -}}
 {{- $raw := include "edp-tekton.resourceMapping.go" . | trimAll "[]" -}}

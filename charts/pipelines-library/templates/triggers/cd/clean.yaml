@@ -1,3 +1,4 @@
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
@@ -42,3 +43,4 @@ spec:
             value: $(tt.params.KUBECONFIG_SECRET_NAME)
         timeouts:
           pipeline: 1h00m0s
+{{- end }}

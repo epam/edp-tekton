@@ -1,3 +1,4 @@
+{{- if .Values.pipelines.deployableResources.triggers }}
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
@@ -51,3 +52,4 @@ spec:
           - name: ssh-workspace
             secret:
               secretName: ssh-key-secret
+{{- end }}

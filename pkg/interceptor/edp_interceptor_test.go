@@ -37,8 +37,12 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "demo-master",
+			Labels: map[string]string{
+				codebaseApi.CodebaseLabel: "demo",
+			},
 		},
 		Spec: codebaseApi.CodebaseBranchSpec{
+			BranchName: "master",
 			Pipelines: map[string]string{
 				"review": "review-pipeline",
 				"build":  "build-pipeline",
@@ -215,8 +219,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
 							Name:      "demo-master",
+							Labels: map[string]string{
+								codebaseApi.CodebaseLabel: "demo",
+							},
 						},
 						Spec: codebaseApi.CodebaseBranchSpec{
+							BranchName: "master",
 							Pipelines: map[string]string{
 								"review": "review-pipeline",
 								"build":  "build-pipeline",
@@ -320,8 +328,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
 							Name:      "demo-master",
+							Labels: map[string]string{
+								codebaseApi.CodebaseLabel: "demo",
+							},
 						},
 						Spec: codebaseApi.CodebaseBranchSpec{
+							BranchName: "master",
 							Pipelines: map[string]string{
 								"review": "review-pipeline",
 								"build":  "build-pipeline",
@@ -420,8 +432,12 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						ObjectMeta: metav1.ObjectMeta{
 							Namespace: "default",
 							Name:      "demo-master",
+							Labels: map[string]string{
+								codebaseApi.CodebaseLabel: "demo",
+							},
 						},
 						Spec: codebaseApi.CodebaseBranchSpec{
+							BranchName: "master",
 							Pipelines: map[string]string{
 								"review": "review-pipeline",
 								"build":  "build-pipeline",
@@ -539,7 +555,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						JiraServer:           ptr.To(""),
 					},
 					"codebase":       "demo",
-					"codebasebranch": "demo-master",
+					"codebasebranch": "",
 					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
 					"pipelines":      codebaseApi.CodebaseBranchSpec{}.Pipelines,

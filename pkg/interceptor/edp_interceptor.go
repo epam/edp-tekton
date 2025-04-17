@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/tektoncd/triggers/pkg/interceptors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/utils/ptr"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -118,21 +118,20 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 
 	prepareCodebase(event.Codebase)
 
-	codebaseBranchName := convertBranchToCadebaseBranchName(event.TargetBranch, event.Codebase.Name)
 	trigger := true
 	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
-	codebaseBranch := codebaseApi.CodebaseBranch{}
-	if err = i.client.Get(ctx, ctrlClient.ObjectKey{Namespace: ns, Name: codebaseBranchName}, &codebaseBranch); err != nil {
-		if !k8serrors.IsNotFound(err) {
-			return interceptors.Fail(codes.Internal, fmt.Errorf("failed to get CodebaseBranch: %w", err).Error())
+	codebaseBranch, err := i.getCodebaseBranch(ctx, event.Codebase.Name, event.TargetBranch, ns)
+	if err != nil {
+		if !errors.Is(err, ErrCodebasesBranchNotFound) {
+			return interceptors.Fail(codes.Internal, err.Error())
 		}
 
 		trigger = false
 
-		i.logger.Infof("Codebasebranch with the name %s is not found, skipping pipeline triggering. "+
+		i.logger.Infof("CodebaseBranch with the git branch %s not found, skipping pipeline triggering. "+
 			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
-			codebaseBranchName,
+			event.TargetBranch,
 			event.TargetBranch,
 			event.Codebase.Name,
 		)
@@ -140,13 +139,13 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 
 	return &triggersv1.InterceptorResponse{
 		Continue: trigger,
-		Extensions: map[string]interface{}{
+		Extensions: map[string]any{
 			"spec":           event.Codebase.Spec,
 			"codebase":       event.Codebase.Name,
-			"codebasebranch": codebaseBranchName,
 			"targetBranch":   event.TargetBranch,
 			"pullRequest":    event.PullRequest,
-			"pipelines":      codebaseBranch.Spec.Pipelines,
+			"codebasebranch": getCodebaseBranchNameOrEmpty(codebaseBranch),
+			"pipelines":      getCodeBaseBranchPipelinesOrEmpty(codebaseBranch),
 		},
 	}
 }
@@ -193,6 +192,28 @@ func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.Interce
 	return event, nil
 }
 
+func (i *EDPInterceptor) getCodebaseBranch(ctx context.Context, codebaseName, gitBranch, namespace string) (*codebaseApi.CodebaseBranch, error) {
+	codebaseBranchList := &codebaseApi.CodebaseBranchList{}
+	if err := i.client.List(
+		ctx,
+		codebaseBranchList,
+		ctrlClient.MatchingLabels{
+			codebaseApi.CodebaseLabel: codebaseName,
+		},
+		ctrlClient.InNamespace(namespace),
+	); err != nil {
+		return nil, fmt.Errorf("failed to get CodebaseBranch for codebase %s and branch %s: %w", codebaseName, gitBranch, err)
+	}
+
+	for _, codebaseBranch := range codebaseBranchList.Items {
+		if codebaseBranch.Spec.BranchName == gitBranch {
+			return &codebaseBranch, nil
+		}
+	}
+
+	return nil, fmt.Errorf("%w for codebase %s and branch %s", ErrCodebasesBranchNotFound, codebaseName, gitBranch)
+}
+
 // getEventTypeFromHeader returns event type from header.
 func getEventTypeFromHeader(headerData []string) string {
 	if len(headerData) == 0 {
@@ -205,7 +226,6 @@ func getEventTypeFromHeader(headerData []string) string {
 // prepareCodebase prepares codebase for interceptor response.
 func prepareCodebase(codebase *codebaseApi.Codebase) {
 	codebase.Spec.Framework = strings.ToLower(codebase.Spec.Framework)
-
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
 	if codebase.Spec.CommitMessagePattern == nil {
@@ -217,9 +237,17 @@ func prepareCodebase(codebase *codebaseApi.Codebase) {
 	}
 }
 
-// convertBranchToCadebaseBranchName converts branch name to CodebaseBranch CR name.
-func convertBranchToCadebaseBranchName(branch, codebaseName string) string {
-	r := strings.NewReplacer("/", "-")
+func getCodebaseBranchNameOrEmpty(codebaseBranch *codebaseApi.CodebaseBranch) string {
+	if codebaseBranch == nil {
+		return ""
+	}
 
-	return fmt.Sprintf("%s-%s", codebaseName, r.Replace(branch))
+	return codebaseBranch.Name
+}
+func getCodeBaseBranchPipelinesOrEmpty(codebaseBranch *codebaseApi.CodebaseBranch) map[string]string {
+	if codebaseBranch == nil {
+		return nil
+	}
+
+	return codebaseBranch.Spec.Pipelines
 }

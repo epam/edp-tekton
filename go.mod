@@ -3,11 +3,11 @@ module github.com/epam/edp-tekton
 go 1.24
 
 require (
-	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20240815102143-adcb430456fc
+	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20250416091448-fa2374e0bcdd
 	github.com/epam/edp-common v0.0.0-20230710145648-344bbce4120e
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/google/go-github/v31 v31.0.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tektoncd/triggers v0.27.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.21.0
@@ -74,7 +74,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect

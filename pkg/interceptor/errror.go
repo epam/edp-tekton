@@ -1,6 +1,7 @@
 package interceptor
 
 import (
+	"errors"
 	"net/http"
 )
 
@@ -34,3 +35,5 @@ func badRequest(err error) HTTPError {
 func internal(err error) HTTPError {
 	return HTTPError{Code: http.StatusInternalServerError, Err: err}
 }
+
+var ErrCodebasesBranchNotFound = errors.New("CodebasesBranch not found")

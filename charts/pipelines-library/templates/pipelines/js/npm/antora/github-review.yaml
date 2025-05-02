@@ -126,7 +126,7 @@ spec:
             export NPM_CACHE_DIR=/workspace/source/cache
             npm cache verify --cache $NPM_CACHE_DIR
             npm ci
-            npm run build:prod
+            npm run build
       workspaces:
         - name: source
           workspace: shared-workspace

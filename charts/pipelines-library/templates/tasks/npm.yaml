@@ -30,7 +30,7 @@ spec:
       type: string
     - name: BASE_IMAGE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/library/node:18.20.3-alpine3.20"
+      default: "{{ include "edp-tekton.registry" . }}/library/node:22.15.0-alpine3.21"
       description: The node image you want to use.
     - name: ci-nexus
       type: string

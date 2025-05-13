@@ -11,7 +11,7 @@ image:
   # -- Defines the policy with which pod will request its image.
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.2"
+  tag: "0.1.3"
 
 # InitContainer configurations.
 initContainers:

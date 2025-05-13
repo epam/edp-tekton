@@ -33,7 +33,7 @@ It leverages the power of Kubernetes/Tekton to cache dependencies and build outp
 | image.pullPolicy | string | `"IfNotPresent"` | Defines the policy with which pod will request its image. |
 | image.registry | string | `"docker.io"` | Set the image registry, default to Docker Hub; can be customized to use an alternative provider |
 | image.repository | string | `"epamedp/tekton-cache"` | Tekton-cache container image. |
-| image.tag | string | `"0.1.2"` | Overrides the image tag whose default is the chart appVersion. |
+| image.tag | string | `"0.1.3"` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | Specifies secrets for pulling Docker images. |
 | initContainers.repository | string | `"busybox"` | Defines the repository. |
 | initContainers.tag | string | `"1.36.1"` | InitContainer image. |

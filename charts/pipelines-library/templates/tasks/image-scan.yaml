@@ -24,7 +24,7 @@ spec:
       default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.59.1"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "anchore/grype:v0.87.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.87.0-debug"
     - name: BASE_IMAGE_CURL
       type: string
       default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"

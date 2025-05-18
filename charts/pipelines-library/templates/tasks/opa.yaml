@@ -28,7 +28,7 @@ spec:
       default: '/workspace/opa_test_to_junit.py'
     - name: step_download_image
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:3.14"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"
       description: The opa image.
     - name: step_convert_image
       type: string

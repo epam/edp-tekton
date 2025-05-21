@@ -5,6 +5,8 @@ metadata:
   name: image-scan-remote
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
+    app.edp.epam.com/pipelinetype: security
+    app.edp.epam.com/triggertemplate: image-scan-remote
 spec:
   description: >-
     A pipeline for scanning container images for vulnerabilities using security analysis tools.

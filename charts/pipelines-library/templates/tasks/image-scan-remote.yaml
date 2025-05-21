@@ -12,6 +12,13 @@ spec:
   workspaces:
     - name: source
   params:
+    - name: ECR_LOGIN
+      type: string
+      default: '/workspace/ecr_login_pass'
+    - name: krci-config
+      type: string
+      description: this configmap holds aws_region parameter
+      default: krci-config
     - name: IMAGE_NAME
       type: string
       description: The full reference of the container image to be scanned, including the registry URL and tag.
@@ -41,6 +48,28 @@ spec:
       description: Name of the secret holding the DefectDojo CI integration data
       default: ci-defectdojo
   steps:
+    - name: get-ecr-pass
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
+      env:
+        - name: ECR_LOGIN
+          value: "$(params.ECR_LOGIN)"
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.krci-config)"
+              key: aws_region
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: "$(params.krci-config)"
+              key: container_registry_type
+      script: |
+        if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
+          aws ecr get-login-password --region "${AWS_REGION}" > "${ECR_LOGIN}"
+        else
+          echo 'Registry not ECR, stage skipped';
+        fi
+
     - name: trivy
       image: $(params.BASE_IMAGE_TRIVY)
       workingDir: $(workspaces.source.path)
@@ -55,11 +84,23 @@ spec:
     - name: grype
       image: $(params.BASE_IMAGE_GRYPE)
       workingDir: $(workspaces.source.path)
+      env:
+        - name: ECR_LOGIN
+          value: "$(params.ECR_LOGIN)"
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              key: container_registry_type
+              name: "$(params.krci-config)"
       script: |
         #!/busybox/sh
         set -e
 
-        /grype $(params.IMAGE_NAME) -o json > $(params.GRYPE_SCAN_REPORT)
+        if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
+          GRYPE_REGISTRY_AUTH_USERNAME=AWS GRYPE_REGISTRY_AUTH_PASSWORD=$(cat "${ECR_LOGIN}") /grype $(params.IMAGE_NAME) -o json > $(params.GRYPE_SCAN_REPORT)
+        else
+          /grype $(params.IMAGE_NAME) -o json > $(params.GRYPE_SCAN_REPORT)
+        fi
 
         cat $(params.GRYPE_SCAN_REPORT)
 

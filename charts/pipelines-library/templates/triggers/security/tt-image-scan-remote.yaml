@@ -1,0 +1,41 @@
+{{- if .Values.pipelines.deployableResources.security }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  name: image-scan-remote
+spec:
+  params:
+    - name: IMAGE_NAME
+    - name: COMPONENT_NAME
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+        generateName: image-scan-remote-
+        labels:
+          app.edp.epam.com/pipelinetype: security
+      spec:
+        params:
+          - name: IMAGE_NAME
+            value: registry.example.com/krci/java-app:0.1.0-SNAPSHOT.1
+          - name: COMPONENT_NAME
+            value: java-app
+        pipelineRef:
+          name: image-scan-remote
+        taskRunTemplate:
+          serviceAccountName: tekton
+        workspaces:
+          - name: shared-workspace
+            subPath: codebase
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 5Gi
+{{- end }}

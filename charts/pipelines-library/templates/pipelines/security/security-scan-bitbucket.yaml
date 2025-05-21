@@ -6,6 +6,7 @@ metadata:
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
     app.edp.epam.com/triggertemplate: bitbucket-security-template
+    app.edp.epam.com/pipelinetype: security
 spec:
   description: >-
     A pipeline for scanning container images for vulnerabilities using security analysis tools.

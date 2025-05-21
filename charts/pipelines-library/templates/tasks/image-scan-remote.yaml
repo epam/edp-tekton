@@ -58,6 +58,7 @@ spec:
             configMapKeyRef:
               name: "$(params.krci-config)"
               key: aws_region
+              optional: true
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:

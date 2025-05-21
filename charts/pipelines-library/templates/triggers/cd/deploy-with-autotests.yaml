@@ -3,6 +3,7 @@ kind: TriggerTemplate
 metadata:
   name: deploy-with-autotests
   labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
     app.edp.epam.com/pipelinetype: deploy
 spec:
   params:

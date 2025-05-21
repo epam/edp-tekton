@@ -16,8 +16,7 @@ spec:
       metadata:
         generateName: github-security-scan-
         labels:
-          # used by UI to sort pipelines for codebasebranches
-          app.edp.epam.com/pipelinetype: build
+          app.edp.epam.com/pipelinetype: security
         annotations:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:

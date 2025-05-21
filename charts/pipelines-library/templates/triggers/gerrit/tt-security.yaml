@@ -3,6 +3,8 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
   name: gerrit-security-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
     - name: gitrevision
@@ -16,7 +18,7 @@ spec:
       metadata:
         generateName: gerrit-security-scan-
         labels:
-          app.edp.epam.com/pipelinetype: build
+          app.edp.epam.com/pipelinetype: security
         annotations:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:

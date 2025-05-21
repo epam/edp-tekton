@@ -3,6 +3,8 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
   name: gerrit-build-template
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   params:
     - name: gitrevision

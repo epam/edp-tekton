@@ -9,7 +9,10 @@ metadata:
     app.edp.epam.com/pipelinetype: security
 spec:
   description: >-
-    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+    A pipeline designed for GitHub repositories that performs comprehensive security scanning
+    using gitleaks to detect secrets and sensitive data, cdxgen to generate SBOM,
+    and semgrep for advanced code analysis. All findings are seamlessly integrated into DefectDojo
+    for security tracking and remediation.
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

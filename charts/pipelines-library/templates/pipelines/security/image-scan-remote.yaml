@@ -9,7 +9,9 @@ metadata:
     app.edp.epam.com/triggertemplate: image-scan-remote
 spec:
   description: >-
-    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+    The 'image-scan-remote' Tekton pipeline is used for scanning container images as part of the CI/CD process.
+    To streamline and standardize its usage, a dedicated TriggerTemplate must be created
+    with the necessary parameters for basic scan operations.
   params:
     - name: IMAGE_NAME
       type: string
@@ -18,6 +20,11 @@ spec:
       default: java-app-main
       description: The name of the component associated with the scanned image, used for identification in reports.
       type: string
+  results:
+    - description: DefectDojo URL with the generated vulnerability scan reports
+      name: SCAN_REPORT_URL
+      type: string
+      value: $(tasks.image-scan.results.SCAN_REPORT_URL)
   tasks:
     - name: image-scan
       params:

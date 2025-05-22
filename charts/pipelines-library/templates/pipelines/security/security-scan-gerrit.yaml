@@ -9,7 +9,9 @@ metadata:
     app.edp.epam.com/pipelinetype: security
 spec:
   description: >-
-    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+    A pipeline for performing security analysis of Gerrit-hosted projects using gitleaks for secrets scanning,
+    cdxgen for Software Bill of Materials (SBOM) generation, and semgrep for static code analysis.
+    Results are automatically reported to DefectDojo for centralized vulnerability management.
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

@@ -32,9 +32,9 @@ spec:
     - name: BASE_IMAGE_GRYPE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.87.0-debug"
-    - name: BASE_IMAGE_CURL
+    - name: BASE_IMAGE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
     - name: TRIVY_SCAN_REPORT
       type: string
       description: The name of the Trivy scan report
@@ -47,6 +47,9 @@ spec:
       type: string
       description: Name of the secret holding the DefectDojo CI integration data
       default: ci-defectdojo
+  results:
+    - name: SCAN_REPORT_URL
+      description: URL to the scan report in DefectDojo after uploading Trivy and Grype results.
   steps:
     - name: get-ecr-pass
       image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
@@ -106,7 +109,7 @@ spec:
         cat $(params.GRYPE_SCAN_REPORT)
 
     - name: upload-report
-      image: $(params.BASE_IMAGE_CURL)
+      image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)
       env:
         - name: DD_TOKEN
@@ -156,4 +159,14 @@ spec:
                 -F "test_title=image-scan" \
                 -F "tags=${SCAN_TYPE},$(params.IMAGE_NAME)"
         done
+
+        # Get the DefectDojo Engagement ID to generate the scan report URL
+        ENGAGEMENT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/engagements/?product_name=${DD_PRODUCT_NAME}&name=$(params.COMPONENT_NAME)" \
+          -H "accept: application/json" \
+          -H "Authorization: Token ${DD_TOKEN}" | jq -r '.results[0].id')
+
+        # Generate the scan report URL
+        SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
+
+        printf "%s" "${SCAN_REPORT_URL}" > "$(results.SCAN_REPORT_URL.path)"
 {{- end }}

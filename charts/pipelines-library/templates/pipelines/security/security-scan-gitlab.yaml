@@ -9,7 +9,10 @@ metadata:
     app.edp.epam.com/pipelinetype: security
 spec:
   description: >-
-    A pipeline for scanning container images for vulnerabilities using security analysis tools.
+    A specialized pipeline for GitLab projects that executes a trio of security tools:
+    gitleaks for detecting credential exposure, cdxgen for dependency analysis and SBOM creation,
+    and semgrep for identifying code vulnerabilities. Security findings are automatically
+    synchronized with DefectDojo for comprehensive vulnerability lifecycle management.
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

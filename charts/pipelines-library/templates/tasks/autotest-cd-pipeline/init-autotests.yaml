@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: init-autotest
+  name: init-autotests
 spec:
   description: >-
     This task initializes and triggers autotests for a specified CD pipeline and stage by dynamically generating Tekton PipelineRun commands based on autotest configurations.
@@ -33,7 +33,7 @@ spec:
     - name: codebase_tags
       type: string
   steps:
-    - name: init-autotest
+    - name: init-autotests
       image: $(params.step_init_autotest_image)
       workingDir: $(workspaces.source.path)
       volumeMounts:

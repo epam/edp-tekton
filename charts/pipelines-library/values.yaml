@@ -59,6 +59,7 @@ pipelines:
       python3.8: false
     security: true
     terraform: true
+    autotests: true
 
   # -- This section allows to determine on which nodes to run tekton pipelines
   podTemplate: []

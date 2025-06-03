@@ -31,9 +31,7 @@ pipelines:
                 assert "fetch-repository" in rt[0]["name"]
                 assert "gerrit-notify" in rt[1]["name"]
                 assert "init-values" in rt[2]["name"]
-                assert "test" in rt[3]["name"]
-                assert "run-tests-for-autotests" == rt[3]["taskRef"]["name"]
-                assert "sonar" in rt[4]["name"]
+                assert "sonar" in rt[3]["name"]
                 assert "gerrit-vote-success" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gerrit-vote-failure" in r["pipeline"][gerrit_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -88,9 +86,7 @@ pipelines:
                 assert "github-set-pending-status" in rt[0]["name"]
                 assert "fetch-repository" in rt[1]["name"]
                 assert "init-values" in rt[2]["name"]
-                assert "test" in rt[3]["name"]
-                assert "run-tests-for-autotests" == rt[3]["taskRef"]["name"]
-                assert "sonar" in rt[4]["name"]
+                assert "sonar" in rt[3]["name"]
                 assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -149,9 +145,7 @@ pipelines:
                 assert "report-pipeline-start-to-gitlab" in rt[0]["name"]
                 assert "fetch-repository" in rt[1]["name"]
                 assert "init-values" in rt[2]["name"]
-                assert "test" in rt[3]["name"]
-                assert "run-tests-for-autotests" == rt[3]["taskRef"]["name"]
-                assert "sonar" in rt[4]["name"]
+                assert "sonar" in rt[3]["name"]
                 assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]
 
@@ -210,9 +204,7 @@ pipelines:
                 assert "bitbucket-set-pending-status" in rt[0]["name"]
                 assert "fetch-repository" in rt[1]["name"]
                 assert "init-values" in rt[2]["name"]
-                assert "test" in rt[3]["name"]
-                assert "run-tests-for-autotests" == rt[3]["taskRef"]["name"]
-                assert "sonar" in rt[4]["name"]
+                assert "sonar" in rt[3]["name"]
                 assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][0]["name"]
                 assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][1]["name"]
 

@@ -94,10 +94,10 @@ spec:
           value:
             echo "Hello World"
 
-    - name: init-autotest
+    - name: init-autotests
       taskRef:
           kind: Task
-          name: init-autotest
+          name: init-autotests
       runAfter:
         - post-deploy
       params:
@@ -121,7 +121,7 @@ spec:
           kind: Task
           name: wait-for-autotests
       runAfter:
-        - init-autotest
+        - init-autotests
       params:
         - name: AUTOTEST_PIPELINES
           value: $(params.autotes-pipeline)

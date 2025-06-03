@@ -42,7 +42,7 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-    - name: run-autotest
+    - name: run-autotests
       taskRef:
         kind: Task
         name: run-autotests-{{ $k }}

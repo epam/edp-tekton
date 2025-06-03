@@ -1,0 +1,45 @@
+{{ if and (has "gerrit" .Values.global.gitProviders) .Values.pipelines.deployableResources.autotests }}
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+  name: gerrit-run-autotests
+spec:
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+        generateName: run-autotests-
+        labels:
+          app.edp.epam.com/pipelinetype: tests
+      spec:
+        params:
+          - name: git-source-url
+            value: "ssh://edp-ci@gerrit.krci:30020/autotests"
+          - name: git-source-revision
+            value: "main"
+          - name: makefile-target
+            value: "dev"
+          - name: base-image
+            value: "maven:3.9.9-eclipse-temurin-21"
+        pipelineRef:
+          name: gerrit-run-autotests
+        taskRunTemplate:
+          serviceAccountName: tekton
+        workspaces:
+          - name: shared-workspace
+            subPath: codebase
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: {{ .Values.tekton.workspaceSize }}
+          - name: ssh-creds
+            secret:
+              secretName: gerrit-ciuser-sshkey
+{{- end }}

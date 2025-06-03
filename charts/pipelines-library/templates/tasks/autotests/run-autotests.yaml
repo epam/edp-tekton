@@ -1,0 +1,30 @@
+{{- if and .Values.pipelines.deployableResources.tasks .Values.pipelines.deployableResources.autotests }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: run-autotests
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: >-
+    This task is intended for executing autotests using a specified Makefile target.
+  workspaces:
+    - name: source
+      description: A workspace that contains the repository.
+  params:
+    - name: makefile-target
+      type: string
+    - name: base-image
+      type: string
+  steps:
+    - name: run-autotests
+      image: "$(params.base-image)"
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+
+        set -exo pipefail
+
+        make $(params.makefile-target)
+
+{{- end }}

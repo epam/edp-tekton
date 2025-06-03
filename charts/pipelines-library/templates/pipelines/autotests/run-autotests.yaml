@@ -1,0 +1,65 @@
+{{- if .Values.pipelines.deployableResources.autotests }}
+{{- range $provider := .Values.global.gitProviders }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: {{ $provider }}-run-autotests
+  labels:
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+    app.edp.epam.com/triggertemplate: {{ $provider }}-run-autotests
+    app.edp.epam.com/pipelinetype: tests
+spec:
+  description: >-
+    Pipeline for running autotests from {{ $provider }} Git provider repositories.
+    This pipeline clones the autotests repository from {{ $provider }} and executes the specified Makefile target.
+    It supports custom base images and configurable Makefile targets for flexible test execution.
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: git-source-url
+      default: "https://github.com/SergK/autotests.git"
+      description: "URL of the repository containing the autotests to run."
+    - name: git-source-revision
+      default: "main"
+      description: "Branch or commit SHA to checkout from the autotests repository."
+    - name: makefile-target
+      default: "dev"
+      description: "Makefile target to execute for running autotests."
+    - name: base-image
+      default: "maven:3.9.9-eclipse-temurin-21"
+      description: "Docker image that must include all required tools for running autotests and the 'make' command."
+  tasks:
+    - name: fetch-repository
+      taskRef:
+          kind: Task
+          name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+    - name: run-autotests
+      taskRef:
+        kind: Task
+        name: run-autotests
+      runAfter:
+        - fetch-repository
+      params:
+        - name: makefile-target
+          value: "$(params.makefile-target)"
+        - name: base-image
+          value: "$(params.base-image)"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+---
+{{- end }}
+{{- end }}

@@ -60,26 +60,12 @@ spec:
 
 {{- include "bitbucket-review-start" $ | nindent 4 }}
 
-    - name: test
-      taskRef:
-        kind: Task
-        name: run-tests-for-autotests
-      runAfter:
-        - init-values
-      params:
-        - name: BASE_IMAGE
-          value: $(params.image)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
     - name: sonar
       taskRef:
         kind: Task
         name: sonarqube-maven
       runAfter:
-        - test
+        - init-values
       params:
         - name: SONAR_PROJECT_KEY
           value: $(params.CODEBASE_NAME)

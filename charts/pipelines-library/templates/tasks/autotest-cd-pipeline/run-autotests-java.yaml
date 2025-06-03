@@ -27,7 +27,7 @@ spec:
     - name: base-image
       type: string
   steps:
-    - name: run-autotest
+    - name: run-autotests
       image: "$(params.base-image)"
       workingDir: $(workspaces.source.path)
       env:

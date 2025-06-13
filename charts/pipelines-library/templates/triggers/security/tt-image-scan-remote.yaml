@@ -28,6 +28,9 @@ spec:
           name: image-scan-remote
         taskRunTemplate:
           serviceAccountName: tekton
+          {{- if .Values.pipelines.podTemplate }}
+          podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
+          {{- end }}
         workspaces:
           - name: shared-workspace
             subPath: codebase

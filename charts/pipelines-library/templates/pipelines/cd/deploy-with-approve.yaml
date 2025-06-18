@@ -18,11 +18,11 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
     - name: CDPIPELINE
       description: |
-        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+        KRCI kind:CDPipeline name used for deployment. For example: mypipe, myfeature
       type: string
     - name: CDSTAGE
       description: |
-        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+        KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
     - name: APPLICATIONS_PAYLOAD
       description: |

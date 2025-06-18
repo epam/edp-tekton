@@ -5,7 +5,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   name: tekton-pipeline-role
 rules:
-  # allow to get configs for EDP from configmap
+  # allow to get configs for KRCI from configmap
   - apiGroups:
       - ""
     resources:

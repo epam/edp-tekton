@@ -198,7 +198,7 @@ finally:
         workspace: ssh-creds
 {{- end -}}
 
-# final section for all build pipelines that use edp versioning
+# final section for all build pipelines that use semver versioning
 {{- define "update-cbb" -}}
 finally:
   - name: update-cbb
@@ -288,7 +288,7 @@ finally:
 
 {{- end -}}
 
-# final section for all build pipelines that use edp versioning
+# final section for all build pipelines that use semver versioning
 {{- define "finally-block-edp" -}}
 finally:
 {{ include "update-codebasebranch" . | nindent 2 }}

@@ -16,12 +16,12 @@ spec:
       name: APPLICATIONS_PAYLOAD
       type: string
     - description: >
-        EDP kind:CDPipeline name used for deployment. For example: mypipe,
+        KRCI kind:CDPipeline name used for deployment. For example: mypipe,
         myfeature
       name: PIPELINE
       type: string
     - description: >
-        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
+        KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
         values. For example: dev, test, prod
       name: STAGE
       type: string

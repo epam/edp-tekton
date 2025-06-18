@@ -25,7 +25,7 @@ spec:
   params:
     - name: GITLAB_HOST_URL
       description: |
-        The GitLab host, adjust this if you run a GitLab enterprise. In EDP we use git_ssh_url
+        The GitLab host, adjust this if you run a GitLab enterprise. In KRCI we use git_ssh_url
         value from the event payload, format: "git@example.com:mike/diaspora.git"
       default: "gitlab.com"
       type: string
@@ -114,7 +114,7 @@ spec:
 
         api_url = f"{API_PATH_PREFIX}/projects/{URLENCODED_REPO_NAME}/statuses/{SHA}?{encoded_params}"
 
-        # we need to adapt to EDP approach and extract the host from the git_ssh_url
+        # we need to adapt to KRCI approach and extract the host from the git_ssh_url
         # which is in the format: git@example.com:mike/diaspora.git
         GITLAB_HOST_URL = urllib.parse.urlparse(GITLAB_HOST_URL).hostname
 

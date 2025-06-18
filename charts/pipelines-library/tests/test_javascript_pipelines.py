@@ -74,7 +74,7 @@ global:
                     assert "git-tag" in btd[10]["name"]
                 assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
-                # build with edp versioning
+                # build with semver versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
                 assert "fetch-repository" in btedp[0]["name"]
                 assert "gerrit-notify" in btedp[1]["name"]
@@ -179,7 +179,7 @@ global:
                 assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
                 assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][2]["name"]
 
-                # build with edp versioning
+                # build with semver versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
                 assert "github-set-pending-status" in btedp[0]["name"]
                 assert "fetch-repository" in btedp[1]["name"]
@@ -284,7 +284,7 @@ global:
                 assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
                 assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][2]["name"]
 
-                # build with edp versioning
+                # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
                 assert "report-pipeline-start-to-gitlab" in btedp[0]["name"]
                 assert "fetch-repository" in btedp[1]["name"]
@@ -389,7 +389,7 @@ global:
                 assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
                 assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][2]["name"]
 
-                # build with edp versioning
+                # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
                 assert "bitbucket-set-pending-status" in btedp[0]["name"]
                 assert "fetch-repository" in btedp[1]["name"]

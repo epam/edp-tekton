@@ -13,7 +13,7 @@ metadata:
     app.edp.epam.com/triggertemplate: bitbucket-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $framework }} application with NPM (EDP versioning)"
+  description: "The Build pipeline for building {{ $framework }} application with NPM (semver versioning)"
 
   workspaces:
     - name: shared-workspace

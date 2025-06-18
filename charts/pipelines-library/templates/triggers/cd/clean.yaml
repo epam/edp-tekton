@@ -9,10 +9,10 @@ spec:
   params:
     - name: CDPIPELINE
       description: |
-        EDP kind:CDPipeline name used for deployment. For example: mypipe, myfeature
+        KRCI kind:CDPipeline name used for deployment. For example: mypipe, myfeature
     - name: CDSTAGE
       description: |
-        EDP kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
+        KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
     - name: KUBECONFIG_SECRET_NAME
       description: The name of secret with Kubeconfig to connect to the remote cluster
   resourcetemplates:

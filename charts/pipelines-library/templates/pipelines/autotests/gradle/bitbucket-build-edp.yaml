@@ -13,7 +13,7 @@ metadata:
     app.edp.epam.com/triggertemplate: bitbucket-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $framework }} automation tests with Gradle (EDP version)"
+  description: "The Build pipeline for building {{ $framework }} automation tests with Gradle (semver versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

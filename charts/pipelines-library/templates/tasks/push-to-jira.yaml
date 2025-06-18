@@ -157,7 +157,7 @@ spec:
             "EDP_SEM_VERSION": re.sub("(-RC|-SNAPSHOT)\.\d+", "", version),
             "EDP_GITTAG": vcs_tag
         }
-        print("[TEKTON] EDP predefined variables:\n{}".format(json.dumps(values, indent = 4)))
+        print("[TEKTON] KRCI predefined variables:\n{}".format(json.dumps(values, indent = 4)))
 
         payload = json.loads(jira_issue_metadata_payload)
         print("[TEKTON] JiraIssueMetadataPayload of {0} Codebase CR has been fetched:\n{1}".format(codebase, json.dumps(values, indent = 4)))

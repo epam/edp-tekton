@@ -9,7 +9,7 @@ metadata:
     app.edp.epam.com/triggertemplate: gitlab-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building C/C++ application with Make (EDP version)"
+  description: "The Build pipeline for building C/C++ application with Make (semver versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

@@ -29,7 +29,7 @@ spec:
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
     - name: pipelineName
-      description: Pipeline to trigger. Populated by edp interceptor from codebasebranch spec
+      description: Pipeline to trigger. Populated by krci interceptor from codebasebranch spec
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun

@@ -21,7 +21,7 @@ spec:
       default: {{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4
   results:
     - name: TENANT_NAME
-      description: "edp name"
+      description: "krci name"
     - name: NORMALIZED_BRANCH
       description: "Branch name without '/' symbols and lowercase"
   steps:

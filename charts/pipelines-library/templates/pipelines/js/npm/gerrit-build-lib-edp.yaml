@@ -13,7 +13,7 @@ metadata:
     app.edp.epam.com/triggertemplate: gerrit-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $framework }} library with NPM (EDP versioning)"
+  description: "The Build pipeline for building {{ $framework }} library with NPM (semver versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds

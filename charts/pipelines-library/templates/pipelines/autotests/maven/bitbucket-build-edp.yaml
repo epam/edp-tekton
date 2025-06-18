@@ -13,7 +13,7 @@ metadata:
     app.edp.epam.com/triggertemplate: bitbucket-build-template
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:
-  description: "The Build pipeline for building {{ $framework }} automation tests with Maven (EDP versioning)"
+  description: "The Build pipeline for building {{ $framework }} automation tests with Maven (semver versioning)"
 
   workspaces:
     - name: shared-workspace

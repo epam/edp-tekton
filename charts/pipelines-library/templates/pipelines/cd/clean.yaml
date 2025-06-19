@@ -31,9 +31,9 @@ spec:
         kind: Task
         name: run-clean-gate
       params:
-        - name: PIPELINE
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
-        - name: STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
@@ -50,9 +50,9 @@ spec:
       runAfter:
         - pre-clean
       params:
-        - name: PIPELINE
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
-        - name: STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
 
     - name: post-clean
@@ -62,9 +62,9 @@ spec:
       runAfter:
         - clean
       params:
-        - name: PIPELINE
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
-        - name: STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)

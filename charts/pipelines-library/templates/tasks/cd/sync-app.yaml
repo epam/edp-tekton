@@ -5,18 +5,18 @@ metadata:
   name: sync-app
 spec:
   description: |
-    This task is used to deploy Codebases across specific Stage using ApplicationSet object.
+    This task is used to deploy Codebases across specific Environment using ApplicationSet object.
 
   params:
     - name: APPLICATIONS_PAYLOAD
       description: |
         Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
       type: string
-    - name: PIPELINE
+    - name: DEPLOYMENT_FLOW
       type: string
       description: |
         KRCI kind:CDPipeline name used for deployment. For example: mypipe, myfeature
-    - name: STAGE
+    - name: ENVIRONMENT
       description: |
         KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
@@ -40,7 +40,7 @@ spec:
               key: token
       envFrom:
         - configMapRef:
-            name: $(params.PIPELINE)-$(params.STAGE)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         set -ex
 
@@ -48,12 +48,12 @@ spec:
         # the address of the Argo CD server without https:// prefix
         export ARGOCD_SERVER=${ARGOCD_URL#*//}
 
-        pipeline=$(params.PIPELINE)
-        stage=$(params.STAGE)
+        pipeline=$(params.DEPLOYMENT_FLOW)
+        stage=$(params.ENVIRONMENT)
         # quotes are important here
         new_tags='$(params.APPLICATIONS_PAYLOAD)'
 
-        selector="app.edp.epam.com/stage=$(params.STAGE),app.edp.epam.com/pipeline=$(params.PIPELINE)"
+        selector="app.edp.epam.com/stage=$(params.ENVIRONMENT),app.edp.epam.com/pipeline=$(params.DEPLOYMENT_FLOW)"
 
         patch=$(kubectl get applicationset $pipeline -o json | jq --argjson updates "$new_tags" --arg stage $stage '
           .spec.generators[0].list.elements |= map(
@@ -84,13 +84,13 @@ spec:
           value: {{ .Release.Namespace }}
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)
-        - name: PIPELINE
-          value: $(params.PIPELINE)
-        - name: STAGE
-          value: $(params.STAGE)
+        - name: DEPLOYMENT_FLOW
+          value: $(params.DEPLOYMENT_FLOW)
+        - name: ENVIRONMENT
+          value: $(params.ENVIRONMENT)
       envFrom:
         - configMapRef:
-            name: $(params.PIPELINE)-$(params.STAGE)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         #!/usr/bin/env bash
         set -e
@@ -99,7 +99,7 @@ spec:
 
         for app in "${apps[@]}"; do
           echo "ArgoCD diff for $app application:"
-          echo "${ARGOCD_URL}/applications/${NAMESPACE}/${PIPELINE}-${STAGE}-$app"
+          echo "${ARGOCD_URL}/applications/${NAMESPACE}/${DEPLOYMENT_FLOW}-${ENVIRONMENT}-$app"
         done
 
 {{ end }}

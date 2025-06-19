@@ -5,7 +5,7 @@ metadata:
   name: init-autotests
 spec:
   description: >-
-    This task initializes and triggers autotests for a specified CD pipeline and stage by dynamically generating Tekton PipelineRun commands based on autotest configurations.
+    This task initializes and triggers autotests for a specified Deployment Flow and Environment by dynamically generating Tekton PipelineRun commands based on autotest configurations.
   workspaces:
     - name: source
       description: The workspace consisting of csharp project.
@@ -14,9 +14,9 @@ spec:
       configMap:
         name: autotests-workspace-template
   params:
-    - name: stage-name
+    - name: ENVIRONMENT
       type: string
-    - name: cd-pipeline-name
+    - name: DEPLOYMENT_FLOW
       type: string
     - name: AUTOTEST_PIPELINES
       default: 'autotes-pipeline'
@@ -44,15 +44,15 @@ spec:
           value: "$(params.codebase_tags)"
         - name: AUTOTEST_PIPELINES
           value: "$(params.AUTOTEST_PIPELINES)"
-        - name: STAGE_NAME
-          value: $(params.stage-name)
-        - name: CD_PIPELINE_NAME
-          value: $(params.cd-pipeline-name)
+        - name: ENVIRONMENT
+          value: $(params.ENVIRONMENT)
+        - name: DEPLOYMENT_FLOW
+          value: $(params.DEPLOYMENT_FLOW)
         - name: PARENT_PIPELINE_NAME
           value: $(params.parent-pipeline-name)
       envFrom:
         - configMapRef:
-            name: $(params.cd-pipeline-name)-$(params.stage-name)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         #!/usr/bin/env python
 
@@ -80,8 +80,8 @@ spec:
           "maven-java11": "maven:3.9.0-eclipse-temurin-11",
           "maven-java17": "maven:3.9.0-eclipse-temurin-17"
         }
-        cdPipelineName = os.getenv('CD_PIPELINE_NAME')
-        stage = os.getenv('STAGE_NAME')
+        cdPipelineName = os.getenv('DEPLOYMENT_FLOW')
+        stage = os.getenv('ENVIRONMENT')
         parentPipelineName = os.getenv('PARENT_PIPELINE_NAME')
         codebaseFileTags = os.getenv('CODEBASE_TAGS')
 

@@ -25,10 +25,9 @@ spec:
       type: string
       description: Gitleaks image
       default: {{ include "edp-tekton.registry" . }}/zricethezav/gitleaks:v8.24.0
-    - name: BASE_IMAGE_CURL
+    - name: BASE_IMAGE
       type: string
-      description: Curl image for uploading reports
-      default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
     - name: ci-defectdojo
       type: string
       description: name of the secret holding the DefectDojo CI integration data
@@ -57,6 +56,9 @@ spec:
       type: string
       description: Name of the secret holding the ci-dependency-track api token
       default: ci-dependency-track
+  results:
+    - name: SCAN_REPORT_URL
+      description: URL to the scan report in DefectDojo after uploading Trivy and Grype results.
   steps:
     - name: semgrep-scan
       image: $(params.BASE_IMAGE_SEMGREP)
@@ -132,7 +134,7 @@ spec:
         /opt/cdxgen/bin/cdxgen.js --api-key=$API_TOKEN --server-url=$DEPTRACK_URL --project-name=$PROJECT_NAME --project-version=$PROJECT_BRANCH --print
       workingDir: $(workspaces.source.path)
     - name: upload-report
-      image: $(params.BASE_IMAGE_CURL)
+      image: $(params.BASE_IMAGE)
       workingDir: $(workspaces.source.path)
       env:
         - name: DD_TOKEN
@@ -184,4 +186,14 @@ spec:
                 -F "environment=Development" \
                 -F "test_title=security"
         done
+
+        # Get the DefectDojo Engagement ID to generate the scan report URL
+        ENGAGEMENT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/engagements/?product_name=$(params.DD_PRODUCT_NAME)&name=$(params.DD_ENGAGEMENT_NAME)" \
+          -H "accept: application/json" \
+          -H "Authorization: Token ${DD_TOKEN}" | jq -r '.results[0].id')
+
+        # Generate the scan report URL
+        SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
+
+        printf "%s" "${SCAN_REPORT_URL}" > "$(results.SCAN_REPORT_URL.path)"
 {{ end }}

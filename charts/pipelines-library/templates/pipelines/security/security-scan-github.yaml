@@ -32,6 +32,11 @@ spec:
       default: 'gradle'
       description: "Project name"
       type: string
+  results:
+    - description: DefectDojo URL with the generated vulnerability scan reports
+      name: SCAN_REPORT_URL
+      type: string
+      value: $(tasks.security.results.SCAN_REPORT_URL)
   tasks:
     - name: fetch-repository
       taskRef:

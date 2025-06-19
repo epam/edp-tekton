@@ -42,9 +42,9 @@ spec:
         kind: Task
         name: run-quality-gate
       params:
-        - name: PIPELINE
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
-        - name: STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
@@ -61,9 +61,9 @@ spec:
       runAfter:
         - pre-deploy
       params:
-        - name: PIPELINE
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
-        - name: STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)
@@ -88,8 +88,8 @@ spec:
       params:
         - name: APPLICATIONS_PAYLOAD
           value: $(params.APPLICATIONS_PAYLOAD)
-        - name: CDPIPELINE_STAGE
+        - name: ENVIRONMENT
           value: $(params.CDSTAGE)
-        - name: CDPIPELINE_CR
+        - name: DEPLOYMENT_FLOW
           value: $(params.CDPIPELINE)
 {{ end }}

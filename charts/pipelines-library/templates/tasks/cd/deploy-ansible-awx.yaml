@@ -18,12 +18,12 @@ spec:
     - description: >
         KRCI kind:CDPipeline name used for deployment. For example: mypipe,
         myfeature
-      name: PIPELINE
+      name: DEPLOYMENT_FLOW
       type: string
     - description: >
         KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
         values. For example: dev, test, prod
-      name: STAGE
+      name: ENVIRONMENT
       type: string
     - name: APPLICATIONS_PAYLOAD_FILE
       default: 'applications_payload'
@@ -39,10 +39,10 @@ spec:
           value: $(params.APPLICATIONS_PAYLOAD)
         - name: APPLICATIONS_PAYLOAD_FILE
           value: "$(params.APPLICATIONS_PAYLOAD_FILE)"
-        - name: PIPELINE
-          value: $(params.PIPELINE)
-        - name: STAGE
-          value: $(params.STAGE)
+        - name: DEPLOYMENT_FLOW
+          value: $(params.DEPLOYMENT_FLOW)
+        - name: ENVIRONMENT
+          value: $(params.ENVIRONMENT)
         - name: AWX_HOST
           valueFrom:
             secretKeyRef:
@@ -60,7 +60,7 @@ spec:
               key: password
       envFrom:
         - configMapRef:
-            name: $(params.PIPELINE)-$(params.STAGE)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         #!/usr/bin/env sh
 
@@ -71,8 +71,8 @@ spec:
         tower-cli config verify_ssl false
 
         tower-cli job launch --job-template=package-install \
-          --extra-vars="{\"APPLICATIONS_PAYLOAD\":${APPLICATIONS_PAYLOAD},\"STAGE\":\"${STAGE}\",\"PIPELINE\":\"${PIPELINE}\"}" \
-          --inventory=${PIPELINE} --wait --limit=${PIPELINE}_${STAGE}
+          --extra-vars="{\"APPLICATIONS_PAYLOAD\":${APPLICATIONS_PAYLOAD},\"STAGE\":\"${ENVIRONMENT}\",\"PIPELINE\":\"${DEPLOYMENT_FLOW}\"}" \
+          --inventory=${DEPLOYMENT_FLOW} --wait --limit=${DEPLOYMENT_FLOW}_${ENVIRONMENT}
 
         # Write results to the output
         result_file = os.getenv("APPLICATIONS_PAYLOAD_FILE")

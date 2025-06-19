@@ -15,12 +15,12 @@ spec:
     - description: >
         KRCI kind:CDPipeline name used for deployment. For example: mypipe,
         myfeature
-      name: PIPELINE
+      name: DEPLOYMENT_FLOW
       type: string
     - description: >
         KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE
         values. For example: dev, test, prod
-      name: STAGE
+      name: ENVIRONMENT
       type: string
     - name: BASE_IMAGE
       description: The base image for the task (different for buildtools).
@@ -42,7 +42,7 @@ spec:
           mountPath: /workspace/source/kube
       envFrom:
         - configMapRef:
-            name: $(params.PIPELINE)-$(params.STAGE)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         set -ex
         export KUBECONFIG="workspace/source/kube/config"

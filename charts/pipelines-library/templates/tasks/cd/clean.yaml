@@ -5,13 +5,13 @@ metadata:
   name: clean
 spec:
   description: >-
-    This task cleans up Argo CD applications for a specified pipeline and stage by deleting the applications matching the provided labels.
+    This task cleans up Argo CD applications for a specified Deployment Flow and Environment by deleting the applications matching the provided labels.
   params:
-    - name: PIPELINE
+    - name: DEPLOYMENT_FLOW
       type: string
       description: |
         KRCI kind:CDPipeline name used for deployment. For example: mypipe, myfeature
-    - name: STAGE
+    - name: ENVIRONMENT
       description: |
         KRCI kind:Stage name of the kind:CDPipeline defined in the CDPIPELINE values. For example: dev, test, prod
       type: string
@@ -32,7 +32,7 @@ spec:
               key: token
       envFrom:
         - configMapRef:
-            name: $(params.PIPELINE)-$(params.STAGE)
+            name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
         set -ex
 
@@ -40,10 +40,10 @@ spec:
         # the address of the Argo CD server without https:// prefix
         export ARGOCD_SERVER=${ARGOCD_URL#*//}
 
-        pipeline=$(params.PIPELINE)
-        stage=$(params.STAGE)
+        pipeline=$(params.DEPLOYMENT_FLOW)
+        stage=$(params.ENVIRONMENT)
 
-        selector="app.edp.epam.com/stage=$(params.STAGE),app.edp.epam.com/pipeline=$(params.PIPELINE)"
+        selector="app.edp.epam.com/stage=$(params.ENVIRONMENT),app.edp.epam.com/pipeline=$(params.DEPLOYMENT_FLOW)"
 
         argocd app delete -l $selector -y
 {{ end }}

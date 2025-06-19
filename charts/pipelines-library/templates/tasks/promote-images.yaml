@@ -14,11 +14,11 @@ spec:
       description: |
         Applications payload in format: {"codebase1": {"imageTag": "version1", "customValues": true}, "codebase2": {"imageTag": "version2", "customValues": true}}. For example: {"demo": {"imageTag": "main-20240103-141431", "customValues": true}, "myapp": {"imageTag": "0.1.0-SNAPSHOT.1", "customValues": true}}
       type: string
-    - name: CDPIPELINE_CR
-      description: CDPipeline custom resource name
+    - name: DEPLOYMENT_FLOW
+      description: Deployment Flow name
       type: string
-    - name: CDPIPELINE_STAGE
-      description: Stage name in CD Pipeline
+    - name: ENVIRONMENT
+      description: Environment name
       type: string
     - name: CBIS_CRD
       description: CodebaseImageStream custom resource definition.
@@ -39,15 +39,15 @@ spec:
       env:
         - name: APPLICATIONS_PAYLOAD
           value: "$(params.APPLICATIONS_PAYLOAD)"
-        - name: CDPIPELINE_CR
-          value: "$(params.CDPIPELINE_CR)"
-        - name: CDPIPELINE_STAGE
-          value: "$(params.CDPIPELINE_STAGE)"
+        - name: DEPLOYMENT_FLOW
+          value: "$(params.DEPLOYMENT_FLOW)"
+        - name: ENVIRONMENT
+          value: "$(params.ENVIRONMENT)"
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
       script: |
         set -ex
-        STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
+        STAGE_CR="${DEPLOYMENT_FLOW}-${ENVIRONMENT}"
         echo ${APPLICATIONS_PAYLOAD} | jq -r 'to_entries[] |
         "\(.key)=\(.value.imageTag)"' | while IFS= read -r i; do
           kubectl annotate --overwrite "${STAGE_CRD}" "${STAGE_CR}" "app.edp.epam.com/${i}"
@@ -55,10 +55,10 @@ spec:
     - name: promote-images
       image: $(params.BASE_IMAGE)
       env:
-        - name: CDPIPELINE_CR
-          value: "$(params.CDPIPELINE_CR)"
-        - name: CDPIPELINE_STAGE
-          value: "$(params.CDPIPELINE_STAGE)"
+        - name: DEPLOYMENT_FLOW
+          value: "$(params.DEPLOYMENT_FLOW)"
+        - name: ENVIRONMENT
+          value: "$(params.ENVIRONMENT)"
         - name: CDPIPELINE_CRD
           value: "$(params.CDPIPELINE_CRD)"
         - name: CBIS_CRD
@@ -68,9 +68,9 @@ spec:
       script: |
         set -ex
 
-        APPS_PROMOTE=$(kubectl get "${CDPIPELINE_CRD}" "${CDPIPELINE_CR}" -o jsonpath='{.spec.applicationsToPromote[*]}')
+        APPS_PROMOTE=$(kubectl get "${CDPIPELINE_CRD}" "${DEPLOYMENT_FLOW}" -o jsonpath='{.spec.applicationsToPromote[*]}')
         DATE_FORMAT_RFC3339=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-        STAGE_CR="${CDPIPELINE_CR}-${CDPIPELINE_STAGE}"
+        STAGE_CR="${DEPLOYMENT_FLOW}-${ENVIRONMENT}"
 
         for APP in ${APPS_PROMOTE}; do
           VERIFIED_SBIS="${STAGE_CR}-${APP}-verified"

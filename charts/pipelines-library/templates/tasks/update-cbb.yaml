@@ -19,7 +19,7 @@ spec:
       type: string
       default: {{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4
   steps:
-    - name: update-cbis
+    - name: update-cbb-status
       image: $(params.BASE_IMAGE)
       env:
         - name: CBB_NAME

@@ -5,13 +5,13 @@
 # Tekton-cache container image configurations.
 image:
   # -- Set the image registry, default to Docker Hub; can be customized to use an alternative provider
-  registry: "docker.io"
+  registry: "ghcr.io"
   # -- Tekton-cache container image.
-  repository: epamedp/tekton-cache
+  repository: kuberocketci/krci-cache
   # -- Defines the policy with which pod will request its image.
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.2"
+  tag: "0.1.1"
 
 # InitContainer configurations.
 initContainers:

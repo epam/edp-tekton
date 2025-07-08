@@ -34,9 +34,9 @@ spec:
         - name: fix-permissions
           image: {{ .Values.initContainers.repository }}:{{ .Values.initContainers.tag }}
           command:
-            - chmod
+            - chown
             - '-R'
-            - '0775'
+            - '1001:1001'
             - /uploads
           resources: {}
           volumeMounts:
@@ -55,7 +55,7 @@ spec:
               name: cache
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: UPLOADER_HOST

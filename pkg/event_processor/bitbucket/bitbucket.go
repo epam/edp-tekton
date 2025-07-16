@@ -125,7 +125,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 		TargetBranch:       bitbucketEvent.PullRequest.Destination.Branch.Name,
 		Type:               event_processor.EventTypeReviewComment,
 		Codebase:           codebase,
-		HasPipelineRecheck: event_processor.ContainsPipelineRecheck(bitbucketEvent.Comment.Content.Raw),
+		HasPipelineRecheck: event_processor.ContainsPipelineRecheckPrefix(bitbucketEvent.Comment.Content.Raw),
 		PullRequest: &event_processor.PullRequest{
 			HeadSha:           bitbucketEvent.PullRequest.Source.Commit.Hash,
 			Title:             bitbucketEvent.PullRequest.Title,

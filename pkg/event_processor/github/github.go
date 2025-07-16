@@ -197,7 +197,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 		RepoPath:           repoPath,
 		TargetBranch:       pullReq.GetBase().GetRef(),
 		Type:               event_processor.EventTypeReviewComment,
-		HasPipelineRecheck: event_processor.ContainsPipelineRecheck(event.GetComment().GetBody()),
+		HasPipelineRecheck: event_processor.ContainsPipelineRecheckPrefix(event.GetComment().GetBody()),
 		Codebase:           codebase,
 		PullRequest: &event_processor.PullRequest{
 			HeadRef:           pullReq.GetHead().GetRef(),

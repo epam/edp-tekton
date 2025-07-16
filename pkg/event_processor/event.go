@@ -142,6 +142,13 @@ func (e *EventInfo) IsReviewCommentEvent() bool {
 	return e.Type == EventTypeReviewComment
 }
 
-func ContainsPipelineRecheck(s string) bool {
+// ContainsPipelineRecheckPrefix checks if the comment starts with the pipeline recheck or ok to test comment.
+func ContainsPipelineRecheckPrefix(s string) bool {
 	return strings.HasPrefix(s, RecheckComment) || strings.HasPrefix(s, OkToTestComment)
+}
+
+// ContainsPipelineRecheck checks if the comment contains the pipeline recheck or ok to test comment.
+// It's used for Gerrit because its comments are in the format: "Patch Set 2:\n\n/recheck".
+func ContainsPipelineRecheck(s string) bool {
+	return strings.Contains(s, RecheckComment) || strings.Contains(s, OkToTestComment)
 }

@@ -104,7 +104,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 		TargetBranch:       gitLabEvent.MergeRequest.TargetBranch,
 		Type:               event_processor.EventTypeReviewComment,
 		Codebase:           codebase,
-		HasPipelineRecheck: event_processor.ContainsPipelineRecheck(gitLabEvent.ObjectAttributes.Note),
+		HasPipelineRecheck: event_processor.ContainsPipelineRecheckPrefix(gitLabEvent.ObjectAttributes.Note),
 		PullRequest: &event_processor.PullRequest{
 			HeadSha:           gitLabEvent.MergeRequest.LastCommit.ID,
 			Title:             gitLabEvent.MergeRequest.Title,

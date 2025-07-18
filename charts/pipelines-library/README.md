@@ -65,7 +65,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| @epamedp | tekton-cache | 0.4.1 |
+| @epamedp | tekton-cache | 0.4.2 |
 | file://../common-library | edp-tekton-common-library | 0.3.15 |
 
 ## Values

@@ -203,7 +203,7 @@ spec:
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.IS_TAG)
 
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-semver" . | nindent 2 }}
 
 {{ include "bitbucket-build-vote" . | nindent 4 }}
 

@@ -50,6 +50,18 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
 
 {{- include "build-result" $ | nindent 2 }}
 
@@ -116,7 +128,7 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-  finally:
+{{ include "finally-block-semver" . | nindent 2 }}
 
 {{ include "github-build-vote" . | nindent 4 }}
 ---

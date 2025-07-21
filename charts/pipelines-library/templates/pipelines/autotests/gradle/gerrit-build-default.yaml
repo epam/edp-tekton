@@ -47,6 +47,18 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
 
 {{- include "build-result" $ | nindent 2 }}
 
@@ -130,6 +142,8 @@ spec:
           subPath: source
         - name: ssh-directory
           workspace: ssh-creds
+
+{{ include "finally-block-default" . | nindent 2 }}
 ---
 {{ end }}
 {{ end }}

@@ -44,6 +44,7 @@ pipelines:
                 assert "sonar" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -54,6 +55,8 @@ pipelines:
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
                 assert "sonar" in btedp[4]["name"]
                 assert "git-tag" in btedp[5]["name"]
+                assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_java_pipelines_github():
     config = """
@@ -99,8 +102,9 @@ pipelines:
                 assert "sonar" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][2]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -111,8 +115,10 @@ pipelines:
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
                 assert "sonar" in btedp[4]["name"]
                 assert "git-tag" in btedp[5]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][2]["name"]
+                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][3]["name"]
 
 def test_java_pipelines_gitlab():
     config = """
@@ -158,8 +164,9 @@ pipelines:
                 assert "sonar" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][2]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -170,8 +177,10 @@ pipelines:
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
                 assert "sonar" in btedp[4]["name"]
                 assert "git-tag" in btedp[5]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][2]["name"]
+                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][3]["name"]
 
 def test_java_pipelines_bitbucket():
     config = """
@@ -217,8 +226,9 @@ pipelines:
                 assert "sonar" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
+                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][2]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
@@ -229,5 +239,7 @@ pipelines:
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
                 assert "sonar" in btedp[4]["name"]
                 assert "git-tag" in btedp[5]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "update-cbb" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][0]["name"]
+                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
+                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][2]["name"]
+                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][3]["name"]

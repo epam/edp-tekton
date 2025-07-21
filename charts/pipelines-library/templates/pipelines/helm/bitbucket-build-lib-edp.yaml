@@ -114,7 +114,7 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-semver" . | nindent 2 }}
 
 {{ include "bitbucket-build-vote" . | nindent 4 }}
 

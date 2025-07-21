@@ -98,7 +98,7 @@ spec:
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 
-{{ include "finally-block-edp" . | nindent 2 }}
+{{ include "finally-block-semver" . | nindent 2 }}
 
 {{ include "gitlab-build-vote" . | nindent 4 }}
 

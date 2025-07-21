@@ -225,7 +225,10 @@ finally:
       values: ["Succeeded"]
     - input: "$(params.JIRA_SERVER)"
       operator: notin
-      values: [ "" ]
+      values: [""]
+    - input: "$(params.COMMIT_MESSAGE)"
+      operator: notin
+      values: [""]
   params:
     - name: TICKET_NAME_PATTERN
       value: "$(params.TICKET_NAME_PATTERN)"
@@ -271,7 +274,7 @@ finally:
 {{- end -}}
 
 # final section for all build pipelines that use semver versioning
-{{- define "finally-block-edp" -}}
+{{- define "finally-block-semver" -}}
 finally:
 {{ include "update-codebasebranch" . | nindent 2 }}
 

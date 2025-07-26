@@ -45,12 +45,20 @@ pipelines:
       java17: true
       java21: true
     js:
-      angular: true
-      antora: true
-      express: true
-      next: true
-      react: true
-      vue: true
+      npm:
+        angular: true
+        antora: true
+        express: true
+        next: true
+        react: true
+        vue: true
+      pnpm:
+        angular: true
+        antora: true
+        express: true
+        next: true
+        react: true
+        vue: true
     opa: false
     python:
       ansible: true

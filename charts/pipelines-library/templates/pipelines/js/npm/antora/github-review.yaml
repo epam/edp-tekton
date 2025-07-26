@@ -1,5 +1,5 @@
 {{ if has "github" .Values.global.gitProviders }}
-{{ if .Values.pipelines.deployableResources.js.antora }}
+{{ if .Values.pipelines.deployableResources.js.npm.antora }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:

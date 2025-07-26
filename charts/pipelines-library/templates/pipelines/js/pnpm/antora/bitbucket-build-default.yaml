@@ -1,0 +1,129 @@
+{{ if has "bitbucket" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.js.pnpm.antora }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: bitbucket-pnpm-antora-app-build-default
+  labels:
+    app.edp.epam.com/pipelinetype: build
+    app.edp.epam.com/triggertemplate: bitbucket-build-template
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Build pipeline for building antora application with NPM (default versioning)"
+
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-pnpm-antora"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: CODEBASE_NAME
+      default: 'antora-pnpm-edp-version'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: image
+      default: '{{ include "edp-tekton.registry" . }}/library/node:22.15.0-alpine3.21'
+      description: "npm image version"
+      type: string
+    - name: TICKET_NAME_PATTERN
+      description: "Ticket name pattern"
+      default: ""
+    - name: COMMIT_MESSAGE_PATTERN
+      description: "Pattern to validate a commit message"
+      default: ""
+    - name: COMMIT_MESSAGE
+      description: "Commit message"
+      default: ""
+    - name: JIRA_ISSUE_METADATA_PAYLOAD
+      description: "Jira Payload"
+      default: ""
+    - name: JIRA_SERVER
+      description: "Jira server name"
+      default: ""
+
+{{- include "build-result" $ | nindent 2 }}
+
+  tasks:
+
+{{- include "bitbucket-build-start" $ | nindent 4 }}
+
+    - name: get-version
+      taskRef:
+        kind: Task
+        name: get-version-default
+      runAfter:
+        - init-values
+      params:
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: update-build-number
+      taskRef:
+        kind: Task
+        name: update-build-number-pnpm-default
+      runAfter:
+        - get-version
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: VERSION
+          value: $(tasks.get-version.results.VERSION)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: edp-pnpm
+      runAfter:
+        - update-build-number
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+{{- include "build-pipeline-antora-image-build-push-common" $ | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "build-pipeline-end" . | nindent 4 }}
+
+{{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "bitbucket-build-vote" . | nindent 4 }}
+
+---
+{{ end }}
+{{ end }}

@@ -11,7 +11,7 @@ global:
     r = helm_template(config)
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['antora']:
             for cbtype in ['app']:
 
@@ -63,7 +63,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert buildtool == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "kaniko-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
@@ -82,7 +85,7 @@ global:
     vcs = "github"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['antora']:
             for cbtype in ['app']:
 
@@ -117,7 +120,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert buildtool == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "kaniko-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
@@ -136,7 +142,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert buildtool == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "kaniko-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
@@ -157,7 +166,7 @@ global:
     vcs = "gitlab"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['antora']:
             for cbtype in ['app']:
 
@@ -193,7 +202,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert buildtool == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "kaniko-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
@@ -213,7 +225,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert buildtool == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "kaniko-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
@@ -234,7 +249,7 @@ global:
     vcs = "bitbucket"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['antora']:
             for cbtype in ['app']:
 
@@ -270,7 +285,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert buildtool == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "kaniko-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
@@ -290,7 +308,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert buildtool == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "kaniko-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]

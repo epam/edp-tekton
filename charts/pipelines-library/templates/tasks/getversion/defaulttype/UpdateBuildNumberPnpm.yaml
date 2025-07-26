@@ -1,0 +1,37 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-build-number-pnpm-default
+spec:
+  description: >-
+    This task updates the version in an npm project's `package.json` file to a new build version by appending a specified version suffix.
+  workspaces:
+    - name: source
+      description: The workspace consisting of npm project.
+  params:
+    - name: VERSION
+      type: string
+      description: "Version"
+    - name: BASE_IMAGE
+      description: "The base image for the task"
+      default: "{{ include "edp-tekton.registry" . }}/library/node:22.15.0-alpine3.21"
+  steps:
+    - name: update-build-number
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: VERSION
+          value: "$(params.VERSION)"
+      script: |
+        #!/usr/bin/env sh
+        set -ex
+
+        corepack enable
+
+        NPM_VERSION=$(node -p "require('./package.json').version" | tr '[:upper:]' '[:lower:]')
+
+        BUILD_VERSION="${NPM_VERSION}-${VERSION}"
+
+        pnpm version ${BUILD_VERSION} --no-git-tag-version
+{{ end }}

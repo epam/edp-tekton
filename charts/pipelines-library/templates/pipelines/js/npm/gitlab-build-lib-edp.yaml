@@ -1,5 +1,5 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
-{{ if or ( .Values.pipelines.deployableResources.js.angular ) ( .Values.pipelines.deployableResources.js.express ) ( .Values.pipelines.deployableResources.js.next ) ( .Values.pipelines.deployableResources.js.react ) ( .Values.pipelines.deployableResources.js.vue )}}
+{{ if or ( .Values.pipelines.deployableResources.js.npm.angular ) ( .Values.pipelines.deployableResources.js.npm.express ) ( .Values.pipelines.deployableResources.js.npm.next ) ( .Values.pipelines.deployableResources.js.npm.react ) ( .Values.pipelines.deployableResources.js.npm.vue )}}
 {{- $registry := include "edp-tekton.registry" . -}}
 {{- $raw := include "edp-tekton.resourceMapping.js" . | trimAll "[]" -}}
 {{- $resources := $raw | split " " -}}

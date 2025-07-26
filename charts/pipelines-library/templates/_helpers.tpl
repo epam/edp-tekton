@@ -161,10 +161,10 @@ Define registry for pipelines images
 {{- $go  -}}
 {{- end }}
 
-# Mapping for JS pipelines
+# Mapping for JS NPM pipelines
 {{- define "edp-tekton.resourceMapping.js" -}}
 {{- $js := list -}}
-{{- with .Values.pipelines.deployableResources.js -}}
+{{- with .Values.pipelines.deployableResources.js.npm -}}
   {{- if .vue }}
     {{- $js = append $js "vue" }}
   {{- end }}
@@ -181,6 +181,29 @@ Define registry for pipelines images
     {{- $js = append $js "react" }}
   {{- end }}
 {{- end }}
+{{- $js  -}}
+{{- end }}
+
+# Mapping for JS PNPM pipelines
+{{- define "edp-tekton.resourceMapping.js.pnpm" -}}
+{{- $js := list -}}
+{{- with .Values.pipelines.deployableResources.js.pnpm -}}
+  {{- if .vue }}
+    {{- $js = append $js "vue" }}
+  {{- end }}
+  {{- if .angular }}
+    {{- $js = append $js "angular" }}
+  {{- end }}
+  {{- if .express }}
+    {{- $js = append $js "express" }}
+  {{- end }}
+  {{- if .next }}
+    {{- $js = append $js "next" }}
+  {{- end }}
+  {{- if .react }}
+    {{- $js = append $js "react" }}
+  {{- end }}
+{{- end}}
 {{- $js  -}}
 {{- end }}
 

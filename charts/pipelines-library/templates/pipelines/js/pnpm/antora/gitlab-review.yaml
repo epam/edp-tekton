@@ -1,0 +1,159 @@
+{{ if has "gitlab" .Values.global.gitProviders }}
+{{ if .Values.pipelines.deployableResources.js.pnpm.antora }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gitlab-pnpm-antora-app-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    app.edp.epam.com/triggertemplate: gitlab-review-template
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Review pipeline for building antora application with PNPM"
+
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-pnpm-antora"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: 'antora-pnpm-edp-version'
+      description: "Project name"
+      type: string
+    - name: CODEBASEBRANCH_NAME
+      description: "Codebasebranch name"
+      type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+      default: ""
+      type: string
+    - name: image
+      default: '{{ include "edp-tekton.registry" . }}/library/node:22.15.0-alpine3.21'
+      description: "npm image version"
+      type: string
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
+    - name: CHART_DIR
+      description: "Deploy templates directory for helm-lint"
+      default: "deploy-templates"
+    - name: CT_CONFIGS_DIR
+      description: "ct-configs directory for helm-lint"
+      default: "."
+
+  tasks:
+    - name: report-pipeline-start-to-gitlab
+      taskRef:
+        kind: Task
+        name: gitlab-set-status
+      params:
+        - name: "STATE"
+          value: "pending"
+        - name: "GITLAB_HOST_URL"
+          value: "$(params.git-source-url)"
+        - name: "REPO_FULL_NAME"
+          value: "$(params.gitfullrepositoryname)"
+        - name: "GITLAB_TOKEN_SECRET_NAME"
+          value: ci-gitlab
+        - name: "GITLAB_TOKEN_SECRET_KEY"
+          value: token
+        - name: "SHA"
+          value: "$(params.git-source-revision)"
+        - name: "TARGET_URL"
+          value: $(params.pipelineUrl)
+        - name: "CONTEXT"
+          value: "Review Pipeline"
+        - name: "DESCRIPTION"
+          value: "Managed by KubeRocketCI. Run with Tekton"
+
+    - name: fetch-repository
+      taskRef:
+        kind: Task
+        name: git-clone
+      runAfter:
+        - report-pipeline-start-to-gitlab
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: refspec
+          value: $(params.git-refspec)
+        - name: subdirectory
+          value: source
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: ssh-creds
+
+{{- include "helm-docs" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+    - name: build
+      taskRef:
+        kind: Task
+        name: edp-pnpm
+      runAfter:
+        - get-cache
+      params:
+        - name: BASE_IMAGE
+          value: $(params.image)
+        - name: PATH_CONTEXT
+          value: "source"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: dockerfile-lint
+      taskRef:
+        kind: Task
+        name: hadolint
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{ include "dockerbuild-verify-antora" $ | nindent 4 }}
+
+    - name: helm-lint
+      taskRef:
+        kind: Task
+        name: helm-lint
+      runAfter:
+        - fetch-repository
+      params:
+        - name: CHART_DIR
+          value: $(params.CHART_DIR)
+        - name: CT_CONFIGS_DIR
+          value: $(params.CT_CONFIGS_DIR)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "gitlab-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}

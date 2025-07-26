@@ -11,7 +11,7 @@ global:
     r = helm_template(config)
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['react', 'angular', 'vue', 'express', 'next']:
             for cbtype in ['app', 'lib']:
 
@@ -59,7 +59,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
@@ -85,7 +88,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
@@ -112,7 +118,7 @@ global:
     vcs = "github"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['react', 'angular', 'vue', 'express', 'next']:
             for cbtype in ['app', 'lib']:
 
@@ -162,7 +168,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
@@ -190,7 +199,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
@@ -219,7 +231,7 @@ global:
     vcs = "gitlab"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['react', 'angular', 'vue', 'express', 'next']:
             for cbtype in ['app', 'lib']:
 
@@ -267,7 +279,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
@@ -295,7 +310,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]
@@ -324,7 +342,7 @@ global:
     vcs = "bitbucket"
 
     # ensure pipelines have proper steps
-    for buildtool in ['npm']:
+    for buildtool in ['npm', 'pnpm']:
         for framework in ['react', 'angular', 'vue', 'express', 'next']:
             for cbtype in ['app', 'lib']:
 
@@ -372,7 +390,10 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btd[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btd[6]["taskRef"]["name"]
                 assert "sonar" in btd[7]["name"]
                 assert "sonarqube-general" == btd[7]["taskRef"]["name"]
                 assert "push" in btd[8]["name"]
@@ -400,7 +421,10 @@ global:
                 assert "update-build-number" in btedp[5]["taskRef"]["name"]
                 assert f"update-build-number-{buildtool}" == btedp[5]["taskRef"]["name"]
                 assert "build" in btedp[6]["name"]
-                assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "npm":
+                    assert "edp-npm" == btedp[6]["taskRef"]["name"]
+                if buildtool == "pnpm":
+                    assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
                 assert "sonar" in btedp[7]["name"]
                 assert "sonarqube-general" == btedp[7]["taskRef"]["name"]
                 assert "push" in btedp[8]["name"]

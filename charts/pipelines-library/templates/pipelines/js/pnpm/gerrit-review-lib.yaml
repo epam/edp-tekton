@@ -1,0 +1,65 @@
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if or ( .Values.pipelines.deployableResources.js.pnpm.angular ) ( .Values.pipelines.deployableResources.js.pnpm.express ) ( .Values.pipelines.deployableResources.js.pnpm.next ) ( .Values.pipelines.deployableResources.js.pnpm.react ) ( .Values.pipelines.deployableResources.js.pnpm.vue )}}
+{{- $registry := include "edp-tekton.registry" . -}}
+{{- $raw := include "edp-tekton.resourceMapping.js" . | trimAll "[]" -}}
+{{- $resources := $raw | split " " -}}
+{{- range $framework := $resources }}
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: gerrit-pnpm-{{ $framework }}-lib-review
+  labels:
+    app.edp.epam.com/pipelinetype: review
+    app.edp.epam.com/triggertemplate: gerrit-review-template
+    {{- include "edp-tekton.labels" $ | nindent 4 }}
+spec:
+  description: "The Review pipeline for building {{ $framework }} library with NPM"
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: pipelineUrl
+      default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+      type: string
+    - name: git-source-url
+      default: "https://github.com/epmd-edp/javascript-pnpm-{{ $framework }}"
+      description: git url to clone
+      type: string
+    - name: git-source-revision
+      description: 'git revision to checkout (branch, tag, sha, ref…)'
+      default: "edp"
+      type: string
+    - name: git-refspec
+      description: Refspec to fetch before checking out revision.
+      default: ""
+      type: string
+    - name: CODEBASE_NAME
+      default: '{{ $framework }}-pnpm-edp-version'
+      description: "Project name"
+      type: string
+    - name: image
+      default: '{{ $registry }}/library/node:22.15.0-alpine3.21'
+      description: "npm image version"
+      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
+  tasks:
+
+{{- include "gerrit-review-start" $ | nindent 4 }}
+
+{{- include "get-cache" $ | nindent 4 }}
+
+{{- include "js-pnpm-review-common" . | nindent 4 }}
+
+{{- include "save-cache" $ | nindent 4 }}
+
+{{ include "gerrit-review-vote" $ | nindent 2 }}
+
+---
+{{ end }}
+{{ end }}
+{{ end }}

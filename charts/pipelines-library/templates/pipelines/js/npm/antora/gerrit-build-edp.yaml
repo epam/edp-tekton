@@ -1,5 +1,5 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{ if .Values.pipelines.deployableResources.js.antora }}
+{{ if .Values.pipelines.deployableResources.js.npm.antora }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -26,7 +26,7 @@ spec:
       default: "edp"
       type: string
     - name: CODEBASE_NAME
-      default: 'antora-npm-edp-version'
+      default: 'antora-npm-krci-version'
       description: "Project name"
       type: string
     - name: CODEBASEBRANCH_NAME

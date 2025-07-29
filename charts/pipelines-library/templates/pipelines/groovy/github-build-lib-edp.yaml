@@ -109,7 +109,7 @@ spec:
           value: $(params.image)
         - name: EXTRA_ARGS
           value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/krci-maven-group \
             build -x test -x compileGroovy
       workspaces:
         - name: source
@@ -131,7 +131,7 @@ spec:
           value: $(params.CODEBASE_NAME)
         - name: EXTRA_COMMANDS
           value: |
-            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/edp-maven-group \
+            -PnexusMavenRepositoryUrl=${NEXUS_HOST_URL}/repository/krci-maven-group \
             -Dsonar.projectKey=$(params.CODEBASE_NAME) \
             -Dsonar.projectName=$(params.CODEBASE_NAME) \
             -Dsonar.host.url=${SONAR_HOST_URL} \

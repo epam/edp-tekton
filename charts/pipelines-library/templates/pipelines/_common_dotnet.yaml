@@ -59,7 +59,7 @@
 
         # Note: The api-key is only used as a placeholder.
         # Ref: https://learn.microsoft.com/en-us/azure/devops/artifacts/nuget/dotnet-exe?view=azure-devops#publish-packages
-        dotnet nuget push ${nugetPackagesPath} --source ${ARTIFACT_REPOSITORY_SOURCE} --api-key key
+        dotnet nuget push ${nugetPackagesPath} --source ${ARTIFACT_REPOSITORY_SOURCE}
   workspaces:
     - name: source
       workspace: shared-workspace

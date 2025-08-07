@@ -13,13 +13,15 @@ spec:
     To streamline and standardize its usage, a dedicated TriggerTemplate must be created
     with the necessary parameters for basic scan operations.
   params:
-    - name: IMAGE_NAME
-      type: string
-      default: The full reference of the container image to be scanned, including the registry URL and tag.
+    - name: IMAGE_NAMES
+      type: array
+      description: List of container images to be scanned. Each image can be in the format
+        `registry/repository/image:tag` or `registry/repository/image`.
     - name: COMPONENT_NAME
-      default: java-app-main
-      description: The name of the component associated with the scanned image, used for identification in reports.
       type: string
+      description: Name of the component to which the images belong.
+        Pipeline will use this name to create/update the appropriate
+        Engagement with scan reports in DefectDojo.
   results:
     - description: DefectDojo URL with the generated vulnerability scan reports
       name: SCAN_REPORT_URL
@@ -28,8 +30,8 @@ spec:
   tasks:
     - name: image-scan
       params:
-        - name: IMAGE_NAME
-          value: $(params.IMAGE_NAME)
+        - name: IMAGE_NAMES
+          value: $(params.IMAGE_NAMES[*])
         - name: COMPONENT_NAME
           value: $(params.COMPONENT_NAME)
       taskRef:

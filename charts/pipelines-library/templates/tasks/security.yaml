@@ -158,6 +158,11 @@ spec:
           exit 0
         fi
 
+        PRODUCT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/products/?name_exact=$(params.DD_PRODUCT_NAME)" \
+          -H "accept: application/json" \
+          -H "Authorization: Token ${DD_TOKEN}" \
+          | jq -r '.results[0].id')
+
         for REPORT_NAME in $(params.SEMGREP_SCAN_REPORT) $(params.GITLEAKS_SCAN_REPORT)
         do
             SCAN_TYPE=""
@@ -187,12 +192,11 @@ spec:
                 -F "test_title=security"
         done
 
-        # Get the DefectDojo Engagement ID to generate the scan report URL
-        ENGAGEMENT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/engagements/?product_name=$(params.DD_PRODUCT_NAME)&name=$(params.DD_ENGAGEMENT_NAME)" \
+        ENGAGEMENT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/engagements/?product=${PRODUCT_ID}&name=$(params.DD_ENGAGEMENT_NAME)" \
           -H "accept: application/json" \
-          -H "Authorization: Token ${DD_TOKEN}" | jq -r '.results[0].id')
+          -H "Authorization: Token ${DD_TOKEN}" \
+          | jq -r '.results[0].id')
 
-        # Generate the scan report URL
         SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
 
         printf "%s" "${SCAN_REPORT_URL}" > "$(results.SCAN_REPORT_URL.path)"

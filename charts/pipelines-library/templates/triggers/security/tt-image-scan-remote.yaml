@@ -7,8 +7,10 @@ metadata:
   name: image-scan-remote
 spec:
   params:
-    - name: IMAGE_NAME
+    - name: IMAGE_NAMES
+      description: Array of container images to scan.
     - name: COMPONENT_NAME
+      description: Name of the component to which the images belong. Pipeline will use this name to create/update the appropriate Engagement with scan reports in DefectDojo.
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -20,10 +22,11 @@ spec:
           app.edp.epam.com/pipelinetype: security
       spec:
         params:
-          - name: IMAGE_NAME
-            value: registry.example.com/krci/java-app:0.1.0-SNAPSHOT.1
+          - name: IMAGE_NAMES
+            value:
+              - docker.io/busybox:1.37.0
           - name: COMPONENT_NAME
-            value: java-app
+            value: busybox
         pipelineRef:
           name: image-scan-remote
         taskRunTemplate:

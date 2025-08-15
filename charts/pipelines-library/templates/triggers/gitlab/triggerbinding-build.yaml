@@ -8,7 +8,7 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.object_attributes.target_branch)
+      value: $(body.object_attributes.merge_commit_sha)
     - name: gitrepositoryurl
       value: $(body.project.git_ssh_url)
     - name: gitrepositoryname

@@ -40,8 +40,6 @@ pipelines:
     helm-pipeline: true
     infrastructure: true
     java:
-      java8: false
-      java11: true
       java17: true
       java21: true
     js:

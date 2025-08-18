@@ -6,17 +6,13 @@ def test_java_pipelines_gerrit():
 global:
   gitProviders:
     - gerrit
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java17', 'java11', 'java8']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['aut']:
 
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]
@@ -63,10 +59,6 @@ def test_java_pipelines_github():
 global:
   gitProviders:
     - github
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
@@ -74,7 +66,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java17', 'java11', 'java8']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['aut']:
 
                 github_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -125,10 +117,6 @@ def test_java_pipelines_gitlab():
 global:
   gitProviders:
     - gitlab
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
@@ -136,7 +124,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java17', 'java11', 'java8']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['aut']:
 
                 gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -187,10 +175,6 @@ def test_java_pipelines_bitbucket():
 global:
   gitProviders:
     - bitbucket
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
@@ -198,7 +182,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['maven']:
-        for framework in ['java17', 'java11', 'java8']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['aut']:
 
                 bitbucket_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"

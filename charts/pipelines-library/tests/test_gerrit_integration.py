@@ -90,8 +90,8 @@ global:
 
     gerrit_port_param = {'name': 'GERRIT_PORT', 'value': '777'}
     assert gerrit_port_param in r["pipeline"]["gerrit-go-beego-app-build-default"]["spec"]["tasks"][1]["params"]
-    assert gerrit_port_param in r["pipeline"]["gerrit-maven-java11-app-build-default"]["spec"]["tasks"][1]["params"]
-    assert gerrit_port_param in r["pipeline"]["gerrit-gradle-java11-app-review"]["spec"]["finally"][1]["params"]
+    assert gerrit_port_param in r["pipeline"]["gerrit-maven-java21-app-build-default"]["spec"]["tasks"][1]["params"]
+    assert gerrit_port_param in r["pipeline"]["gerrit-gradle-java21-app-review"]["spec"]["finally"][1]["params"]
 
     git_source_url_param = {'name': 'git-source-url', 'value': 'ssh://edp-ci@gerrit:777/$(tt.params.gerritproject)'}
     assert git_source_url_param in r["triggertemplate"]["gerrit-build-template"]["spec"]["resourcetemplates"][0]["spec"]["params"]

@@ -6,17 +6,13 @@ def test_java_gradle_pipelines_harbor_gerrit():
 global:
   gitProviders:
     - gerrit
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
 
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11', 'java17']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['app', 'lib']:
 
                 gerrit_review_pipeline = f"gerrit-{buildtool}-{framework}-{cbtype}-review"
@@ -107,17 +103,13 @@ def test_java_gradle_pipelines_harbor_github():
 global:
   gitProviders:
     - github
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
 
     r = helm_template(config)
 
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11', 'java17']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['app', 'lib']:
 
                 github_review_pipeline = f"github-{buildtool}-{framework}-{cbtype}-review"
@@ -211,15 +203,11 @@ def test_java_gradle_pipelines_harbor_gitlab():
 global:
   gitProviders:
     - gitlab
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
     r = helm_template(config)
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11', 'java17']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['app', 'lib']:
                 gitlab_review_pipeline = f"gitlab-{buildtool}-{framework}-{cbtype}-review"
                 gitlab_build_pipeline_def = f"gitlab-{buildtool}-{framework}-{cbtype}-build-default"
@@ -308,15 +296,11 @@ def test_java_gradle_pipelines_harbor_bitbucket():
 global:
   gitProviders:
     - bitbucket
-pipelines:
-  deployableResources:
-    java:
-      java8: true
     """
     r = helm_template(config)
     # ensure pipelines have proper steps
     for buildtool in ['gradle']:
-        for framework in ['java8', 'java11', 'java17']:
+        for framework in ['java17', 'java21']:
             for cbtype in ['app', 'lib']:
                 bitbucket_review_pipeline = f"bitbucket-{buildtool}-{framework}-{cbtype}-review"
                 bitbucket_build_pipeline_def = f"bitbucket-{buildtool}-{framework}-{cbtype}-build-default"

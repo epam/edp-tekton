@@ -66,12 +66,6 @@ Define registry for pipelines images
 {{- $registry := .Values.pipelines.image.registry -}}
 {{- $mavenVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
-  {{- if .java8 }}
-    {{- $mavenVersions = set $mavenVersions "java8" (printf "%s/maven:3.9.0-eclipse-temurin-8" $registry)  }}
-  {{- end }}
-  {{- if .java11 }}
-    {{- $mavenVersions = set $mavenVersions "java11" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry)  }}
-  {{- end }}
   {{- if .java17 }}
     {{- $mavenVersions = set $mavenVersions "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry)  }}
   {{- end }}
@@ -86,12 +80,6 @@ Define registry for pipelines images
 {{- $registry := .Values.pipelines.image.registry -}}
 {{- $sonarVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
-  {{- if .java8 }}
-    {{- $sonarVersions = set $sonarVersions "java8" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry) }}
-  {{- end }}
-  {{- if .java11 }}
-    {{- $sonarVersions = set $sonarVersions "java11" (printf "%s/maven:3.9.0-eclipse-temurin-11" $registry) }}
-  {{- end }}
   {{- if .java17 }}
     {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry) }}
   {{- end }}
@@ -107,12 +95,6 @@ Define registry for pipelines images
 {{- $registry := .Values.pipelines.image.registry -}}
 {{- $gradleVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
-  {{- if .java8 }}
-    {{- $gradleVersions = set $gradleVersions "java8" (printf "%s/gradle:7.6.1-jdk8" $registry)  }}
-  {{- end }}
-  {{- if .java11 }}
-    {{- $gradleVersions = set $gradleVersions "java11" (printf "%s/gradle:7.6.1-jdk11" $registry)  }}
-  {{- end }}
   {{- if .java17 }}
     {{- $gradleVersions = set $gradleVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry)  }}
   {{- end }}
@@ -127,12 +109,6 @@ Define registry for pipelines images
 {{- $registry := .Values.pipelines.image.registry -}}
 {{- $sonarVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
-  {{- if .java8 }}
-    {{- $sonarVersions = set $sonarVersions "java8" (printf "%s/gradle:7.6.1-jdk11" $registry) }}
-  {{- end }}
-  {{- if .java11 }}
-    {{- $sonarVersions = set $sonarVersions "java11" (printf "%s/gradle:7.6.1-jdk11" $registry) }}
-  {{- end }}
   {{- if .java17 }}
     {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry) }}
   {{- end }}

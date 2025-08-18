@@ -40,7 +40,7 @@ spec:
       description: "repository full name"
       type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/gradle:7.6.1-jdk11'
+      default: '{{ include "edp-tekton.registry" . }}/gradle:8.11-jdk21'
       description: "gradle image version"
       type: string
     - name: TICKET_NAME_PATTERN

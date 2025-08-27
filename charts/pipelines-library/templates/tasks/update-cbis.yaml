@@ -16,7 +16,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: {{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4
+      default: {{ include "edp-tekton.registry" . }}/bitnamilegacy/kubectl:1.25.4
   steps:
     - name: update-cbis
       image: $(params.BASE_IMAGE)

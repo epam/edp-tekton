@@ -24,7 +24,7 @@ spec:
                 name: tekton-resource-pruner-scripts
           containers:
             - name: kubectl
-              image: "{{ default "bitnami/kubectl:latest" .Values.tekton.pruner.image }}"
+              image: "{{ default "bitnamilegacy/kubectl:latest" .Values.tekton.pruner.image }}"
               env:
                 - name: NAMESPACE
                   valueFrom:

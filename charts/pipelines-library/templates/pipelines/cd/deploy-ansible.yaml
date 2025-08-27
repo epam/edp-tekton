@@ -43,7 +43,7 @@ spec:
         - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: BASE_IMAGE
-          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnamilegacy/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"
@@ -74,7 +74,7 @@ spec:
         - name: ENVIRONMENT
           value: $(params.CDSTAGE)
         - name: BASE_IMAGE
-          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnamilegacy/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"

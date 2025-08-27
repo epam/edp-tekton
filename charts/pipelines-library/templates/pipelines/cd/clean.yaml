@@ -38,7 +38,7 @@ spec:
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
         - name: BASE_IMAGE
-          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnamilegacy/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"
@@ -69,7 +69,7 @@ spec:
         - name: KUBECONFIG_SECRET_NAME
           value: $(params.KUBECONFIG_SECRET_NAME)
         - name: BASE_IMAGE
-          value: "{{ include "edp-tekton.registry" . }}/bitnami/kubectl:1.25.4"
+          value: "{{ include "edp-tekton.registry" . }}/bitnamilegacy/kubectl:1.25.4"
         - name: EXTRA_COMMANDS
           value:
             echo "Hello World"

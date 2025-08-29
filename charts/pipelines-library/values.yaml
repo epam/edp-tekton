@@ -199,7 +199,7 @@ tekton:
     # -- How often to clean up resources
     schedule: "0 10 */1 * *"
     # -- Docker image to run the pruner, expected to have kubectl and jq
-    image: bitnamilegacy/kubectl:1.25
+    image: docker.io/bitnamilegacy/kubectl:1.25.4
     # -- List of ImagePullSecrets to be used by the pruner CronJob
     imagePullSecrets: []
     # -- Pod resources for Tekton pruner job

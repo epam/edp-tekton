@@ -130,7 +130,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
-| tekton.pruner.image | string | `"bitnamilegacy/kubectl:1.25"` | Docker image to run the pruner, expected to have kubectl and jq |
+| tekton.pruner.image | string | `"docker.io/bitnamilegacy/kubectl:1.25.4"` | Docker image to run the pruner, expected to have kubectl and jq |
 | tekton.pruner.imagePullSecrets | list | `[]` | List of ImagePullSecrets to be used by the pruner CronJob |
 | tekton.pruner.resources | object | `{"limits":{"cpu":"100m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"50Mi"}}` | Pod resources for Tekton pruner job |
 | tekton.pruner.schedule | string | `"0 10 */1 * *"` | How often to clean up resources |

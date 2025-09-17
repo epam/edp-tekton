@@ -1,6 +1,70 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Update kric-ai to the latest version ([#535](https://github.com/epam/edp-tekton/issues/535))
+- Add tekton agent ([#535](https://github.com/epam/edp-tekton/issues/535))
+- Add support for pnpm build tool in tasks pipelines and tests([#525](https://github.com/epam/edp-tekton/issues/525))
+
+### Bug Fixes
+
+- Align values of pruner cron-job([#540](https://github.com/epam/edp-tekton/issues/540))
+- Rollback git-init image version ([#538](https://github.com/epam/edp-tekton/issues/538))
+- Update Gitlab gitrevision parameter ([#533](https://github.com/epam/edp-tekton/issues/533))
+- Update nexus path for components ([#527](https://github.com/epam/edp-tekton/issues/527))
+- Fix invalid image parameter in Go review pipelines ([#523](https://github.com/epam/edp-tekton/issues/523))
+
+### Routine
+
+- Migrate to bitnamilegacy image repository([#540](https://github.com/epam/edp-tekton/issues/540))
+- Remove Java8 and Java11 support ([#536](https://github.com/epam/edp-tekton/issues/536))
+- Add multi-image support to image-scan-remote pipeline ([#531](https://github.com/epam/edp-tekton/issues/531))
+- Update dotnet artifact push command ([#529](https://github.com/epam/edp-tekton/issues/529))
+- Align Autotest pipelines steps ([#521](https://github.com/epam/edp-tekton/issues/521))
+
+
+<a name="v0.19.0"></a>
+## [v0.19.0] - 2025-07-18
+### Features
+
+- Use label selector for CodebaseImageStream ([#472](https://github.com/epam/edp-tekton/issues/472))
+
+### Bug Fixes
+
+- Retrigger pipeline for the Gerrit not working ([#515](https://github.com/epam/edp-tekton/issues/515))
+
+### Code Refactoring
+
+- Update codebasebranch label to improve consistency ([#472](https://github.com/epam/edp-tekton/issues/472))
+
+### Routine
+
+- Update current development version ([#517](https://github.com/epam/edp-tekton/issues/517))
+- Update current development version ([#517](https://github.com/epam/edp-tekton/issues/517))
+- Replace deprecated git-init image ([#511](https://github.com/epam/edp-tekton/issues/511))
+- Replace deprecated tekton-cache image ([#511](https://github.com/epam/edp-tekton/issues/511))
+- Align update-cbb task trigger condition ([#509](https://github.com/epam/edp-tekton/issues/509))
+- Refactor deprecated parameters for CD pipelines ([#503](https://github.com/epam/edp-tekton/issues/503))
+- Bump Codecov version ([#507](https://github.com/epam/edp-tekton/issues/507))
+- Provide DefectDojo report link in security pipelines ([#505](https://github.com/epam/edp-tekton/issues/505))
+- Align versioning terminology ([#500](https://github.com/epam/edp-tekton/issues/500))
+- Align podTemplate usage for TriggerTemplate ([#498](https://github.com/epam/edp-tekton/issues/498))
+- Add standalone pipeline for running autotests ([#496](https://github.com/epam/edp-tekton/issues/496))
+- Add DefectDojo result link ([#494](https://github.com/epam/edp-tekton/issues/494))
+- Make aws_region configMapKeyRef optional ([#489](https://github.com/epam/edp-tekton/issues/489))
+- Define correct TriggerTemplate labels ([#491](https://github.com/epam/edp-tekton/issues/491))
+- Add TriggerTemplate for image-scan-remote pipeline ([#489](https://github.com/epam/edp-tekton/issues/489))
+- Add multi-architecture build support ([#486](https://github.com/epam/edp-tekton/issues/486))
+- Update base image versions ([#433](https://github.com/epam/edp-tekton/issues/433))
+- Update node and build script name for npm pipelines
+- Verify Chart Deployable Resources ([#478](https://github.com/epam/edp-tekton/issues/478))
+- Npm cache reuses instead of downloading dependencies again ([#734](https://github.com/epam/edp-tekton/issues/734))
+- Use labels selection for CodeBaseBranch ([#472](https://github.com/epam/edp-tekton/issues/472))
+- Bump GitHub Actions runner image to 22.04([#476](https://github.com/epam/edp-tekton/issues/476))
+- Enable security pipeline expressions ([#464](https://github.com/epam/edp-tekton/issues/464))
+- Update current development version ([#468](https://github.com/epam/edp-tekton/issues/468))
+
 
 <a name="v0.18.0"></a>
 ## [v0.18.0] - 2025-04-11
@@ -670,7 +734,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.0...HEAD
+[v0.19.0]: https://github.com/epam/edp-tekton/compare/v0.18.0...v0.19.0
 [v0.18.0]: https://github.com/epam/edp-tekton/compare/v0.17.1...v0.18.0
 [v0.17.1]: https://github.com/epam/edp-tekton/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/epam/edp-tekton/compare/v0.16.0...v0.17.0

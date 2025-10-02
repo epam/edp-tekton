@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="v0.19.0"></a>
-## v0.19.0 - 2025-07-18
+<a name="v0.19.1"></a>
+## v0.19.1 - 2025-08-27
 ### Features
 
 - Use label selector for CodebaseImageStream ([#472](https://github.com/epam/edp-tekton/issues/472))
@@ -244,6 +244,7 @@
 
 ### Routine
 
+- Migrate to bitnamilegacy image repository([#540](https://github.com/epam/edp-tekton/issues/540))
 - Update current development version ([#517](https://github.com/epam/edp-tekton/issues/517))
 - Update current development version ([#517](https://github.com/epam/edp-tekton/issues/517))
 - Replace deprecated git-init image ([#511](https://github.com/epam/edp-tekton/issues/511))
@@ -510,4 +511,4 @@ We need to change format of payload that we pass
 to CD Pipeline
 
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.1...HEAD

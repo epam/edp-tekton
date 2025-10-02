@@ -3,8 +3,8 @@ description: A Helm chart for KubeRocketCI Tekton Pipelines
 home: https://docs.kuberocketci.io
 name: edp-tekton
 type: application
-version: 0.19.0
-appVersion: 0.19.0
+version: 0.19.1
+appVersion: 0.19.1
 icon: https://docs.kuberocketci.io/img/logo.svg
 keywords:
   - edp

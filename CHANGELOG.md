@@ -17,11 +17,19 @@
 
 ### Routine
 
+- Update current development version ([#545](https://github.com/epam/edp-tekton/issues/545))
 - Migrate to bitnamilegacy image repository([#540](https://github.com/epam/edp-tekton/issues/540))
 - Remove Java8 and Java11 support ([#536](https://github.com/epam/edp-tekton/issues/536))
 - Add multi-image support to image-scan-remote pipeline ([#531](https://github.com/epam/edp-tekton/issues/531))
 - Update dotnet artifact push command ([#529](https://github.com/epam/edp-tekton/issues/529))
 - Align Autotest pipelines steps ([#521](https://github.com/epam/edp-tekton/issues/521))
+
+
+<a name="v0.19.2"></a>
+## [v0.19.2] - 2025-10-06
+### Bug Fixes
+
+- Rollback git-init image version ([#538](https://github.com/epam/edp-tekton/issues/538))
 
 
 <a name="v0.19.1"></a>
@@ -741,7 +749,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.2...HEAD
+[v0.19.2]: https://github.com/epam/edp-tekton/compare/v0.19.1...v0.19.2
 [v0.19.1]: https://github.com/epam/edp-tekton/compare/v0.19.0...v0.19.1
 [v0.19.0]: https://github.com/epam/edp-tekton/compare/v0.18.0...v0.19.0
 [v0.18.0]: https://github.com/epam/edp-tekton/compare/v0.17.1...v0.18.0

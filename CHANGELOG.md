@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="v0.19.1"></a>
-## v0.19.1 - 2025-08-27
+<a name="v0.19.2"></a>
+## v0.19.2 - 2025-08-19
 ### Features
 
 - Use label selector for CodebaseImageStream ([#472](https://github.com/epam/edp-tekton/issues/472))
@@ -102,6 +102,7 @@
 
 ### Bug Fixes
 
+- Rollback git-init image version ([#538](https://github.com/epam/edp-tekton/issues/538))
 - Retrigger pipeline for the Gerrit not working ([#515](https://github.com/epam/edp-tekton/issues/515))
 - Fix kaniko execution for registry with custom certificates ([#427](https://github.com/epam/edp-tekton/issues/427))
 - Update voting tasks ([#386](https://github.com/epam/edp-tekton/issues/386))
@@ -511,4 +512,4 @@ We need to change format of payload that we pass
 to CD Pipeline
 
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.19.2...HEAD

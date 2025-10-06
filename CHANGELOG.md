@@ -3,7 +3,7 @@
 
 
 <a name="v0.19.2"></a>
-## v0.19.2 - 2025-08-19
+## v0.19.2 - 2025-10-06
 ### Features
 
 - Use label selector for CodebaseImageStream ([#472](https://github.com/epam/edp-tekton/issues/472))

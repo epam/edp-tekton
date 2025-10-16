@@ -73,9 +73,9 @@ spec:
         gitSecret = {}
 
         frameworks = {
-          "gradle-java8": "gradle:7.6.1-jdk8",
-          "gradle-java11": "gradle:7.6.1-jdk11",
-          "gradle-java17": "gradle:7.6.1-jdk17",
+          "gradle-java8": "gradle:7.6.5-jdk8",
+          "gradle-java11": "gradle:7.6.5-jdk11",
+          "gradle-java17": "gradle:7.6.5-jdk17",
           "maven-java8": "maven:3.9.0-eclipse-temurin-8",
           "maven-java11": "maven:3.9.0-eclipse-temurin-11",
           "maven-java17": "maven:3.9.0-eclipse-temurin-17"

@@ -96,7 +96,7 @@ Define registry for pipelines images
 {{- $gradleVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java17 }}
-    {{- $gradleVersions = set $gradleVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry)  }}
+    {{- $gradleVersions = set $gradleVersions "java17" (printf "%s/gradle:7.6.5-jdk17" $registry)  }}
   {{- end }}
   {{- if .java21 }}
     {{- $gradleVersions = set $gradleVersions "java21" (printf "%s/gradle:8.11-jdk21" $registry)  }}
@@ -110,7 +110,7 @@ Define registry for pipelines images
 {{- $sonarVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java17 }}
-    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.6.1-jdk17" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/gradle:7.6.5-jdk17" $registry) }}
   {{- end }}
   {{- if .java21 }}
     {{- $sonarVersions = set $sonarVersions "java21" (printf "%s/gradle:8.11-jdk21" $registry) }}

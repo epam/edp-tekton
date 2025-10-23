@@ -289,7 +289,7 @@
 - name: dockerbuild-verify
   taskRef:
     kind: Task
-    name: dockerbuild-verify
+    name: dockerbuild-verify-{{ .Values.tekton.containerBuildTool }}
   runAfter:
     - get-maven-module
     - build
@@ -304,10 +304,10 @@
 {{- end -}}
 
 {{- define "build-pipeline-java-maven-image-build-push-common" -}}
-- name: kaniko-build
+- name: container-build
   taskRef:
     kind: Task
-    name: kaniko
+    name: {{ .Values.tekton.containerBuildTool }}
   runAfter:
     - get-maven-module
     - push

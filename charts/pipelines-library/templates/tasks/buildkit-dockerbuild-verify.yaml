@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: dockerbuild-verify-kaniko
+  name: dockerbuild-verify-buildkit
   labels:
     app.kubernetes.io/based-on: "0.6"
     {{- include "edp-tekton.labels" . | nindent 4 }}
@@ -10,18 +10,18 @@ metadata:
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/categories: Image Build
     tekton.dev/tags: image-build
-    tekton.dev/displayName: "Build container image using Kaniko"
+    tekton.dev/displayName: "Build container image using Buildkit"
     tekton.dev/platforms: "linux/amd64"
 spec:
   description: >-
-   This task builds a Docker image from a Dockerfile using Kaniko without pushing it to a registry. It outputs the image digest and stores the image as a tar file.
+   This task builds a Docker image from a Dockerfile using Buildkit without pushing it to a registry. It outputs the image digest and stores the image as a tar file.
   workspaces:
     - name: source
       description: Holds the context and Dockerfile
     - name: dockerconfig
       description: Includes a docker `config.json`
       optional: true
-      mountPath: /kaniko/.docker
+      mountPath: /root/.docker
   params:
     - name: codebase-name
       description: Name of codebase
@@ -36,11 +36,11 @@ spec:
       description: Dockerfile name.
       default: "Dockerfile"
     - name: context
-      description: The build context used by Kaniko.
+      description: The build context used by Buildkit.
       default: ./
     - name: builder-image
       description: The image on which builds will run
-      default: {{ .Values.kaniko.image.repository }}:{{ .Values.kaniko.image.tag }}-debug
+      default: epamedp/buildkit:0.1.1
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
@@ -66,23 +66,31 @@ spec:
             configMapKeyRef:
               name: krci-config
               key: container_registry_host
-        - name: CONTAINER_REGISTRY_GROUP
+        - name: CONTAINER_REGISTRY_SPACE
           valueFrom:
             configMapKeyRef:
               name: krci-config
               key: container_registry_space
       script: |
-        /kaniko/executor \
-          --dockerfile=$(workspaces.source.path)/${DOCKERFILE} \
-          --context=$(workspaces.source.path)/${CONTEXT} \
-          --destination=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}:${IMAGE_TAG} \
-          --digest-file=$(results.IMAGE_DIGEST.path) \
-          --tar-path=${IMAGE_TAR}.tar \
-          --no-push
-      # kaniko assumes it is running as root, which means this example fails on platforms
-      # that default to run containers as random uid (like OpenShift). Adding this securityContext
-      # makes it explicit that it needs to run as root.
+        #!/bin/sh
+        set -eux
+
+        CONTEXT_DIR=/workspace/source/${CONTEXT}
+        DOCKERFILE_PATH=/workspace/source/${DOCKERFILE}
+
+        export BUILDKIT_PROGRESS=plain
+
+        base_command="buildctl-daemonless.sh build \
+        --frontend=dockerfile.v0 \
+        --local context="${CONTEXT_DIR}" \
+        --local dockerfile="$(dirname "${DOCKERFILE_PATH}")" \
+        --opt filename="$(basename "${DOCKERFILE_PATH}")" \
+        --output type=oci,dest=${IMAGE_TAR}.tar \
+        --metadata-file metadata.json"
+      
+        echo "Executing: ${base_command}"
+        eval "${base_command}"
       securityContext:
-        runAsUser: 0
+        privileged: true
 {{- include "resources" . | nindent 6 }}
 {{ end }}

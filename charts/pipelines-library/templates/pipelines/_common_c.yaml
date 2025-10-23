@@ -2,7 +2,7 @@
 - name: dockerbuild-verify
   taskRef:
     kind: Task
-    name: dockerbuild-verify
+    name: dockerbuild-verify-{{ .Values.tekton.containerBuildTool }}
   runAfter:
     - dockerfile-lint
     - build
@@ -14,10 +14,10 @@
 
 {{- define "build-pipeline-c-image-build-push-common" -}}
 
-- name: kaniko-build
+- name: container-build
   taskRef:
     kind: Task
-    name: kaniko
+    name: {{ .Values.tekton.containerBuildTool }}
   runAfter:
     - get-version
     - build

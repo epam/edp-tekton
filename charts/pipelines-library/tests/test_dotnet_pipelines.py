@@ -68,7 +68,7 @@ pipelines:
             assert buildtool == bd[7]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bd[8]["name"]
-                assert "kaniko-build" in bd[9]["name"]
+                assert "container-build" in bd[9]["name"]
                 assert "save-cache" in bd[10]["name"]
                 assert "git-tag" in bd[11]["name"]
                 assert "update-cbis" in bd[12]["name"]
@@ -93,7 +93,7 @@ pipelines:
             assert buildtool == bedp[8]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bedp[9]["name"]
-                assert "kaniko-build" in bedp[10]["name"]
+                assert "container-build" in bedp[10]["name"]
                 assert "save-cache" in bedp[11]["name"]
                 assert "git-tag" in bedp[12]["name"]
                 assert "update-cbis" in bedp[13]["name"]
@@ -171,7 +171,7 @@ pipelines:
             assert buildtool == bd[7]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bd[8]["name"]
-                assert "kaniko-build" in bd[9]["name"]
+                assert "container-build" in bd[9]["name"]
                 assert "save-cache" in bd[10]["name"]
                 assert "git-tag" in bd[11]["name"]
                 assert "update-cbis" in bd[12]["name"]
@@ -198,7 +198,7 @@ pipelines:
             assert buildtool == bedp[8]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bedp[9]["name"]
-                assert "kaniko-build" in bedp[10]["name"]
+                assert "container-build" in bedp[10]["name"]
                 assert "save-cache" in bedp[11]["name"]
                 assert "git-tag" in bedp[12]["name"]
                 assert "update-cbis" in bedp[13]["name"]
@@ -278,7 +278,7 @@ pipelines:
             assert buildtool == bd[7]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bd[8]["name"]
-                assert "kaniko-build" in bd[9]["name"]
+                assert "container-build" in bd[9]["name"]
                 assert "save-cache" in bd[10]["name"]
                 assert "git-tag" in bd[11]["name"]
                 assert "update-cbis" in bd[12]["name"]
@@ -305,7 +305,7 @@ pipelines:
             assert buildtool == bedp[8]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bedp[9]["name"]
-                assert "kaniko-build" in bedp[10]["name"]
+                assert "container-build" in bedp[10]["name"]
                 assert "save-cache" in bedp[11]["name"]
                 assert "git-tag" in bedp[12]["name"]
                 assert "update-cbis" in bedp[13]["name"]
@@ -384,7 +384,7 @@ pipelines:
             assert buildtool == bd[7]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bd[8]["name"]
-                assert "kaniko-build" in bd[9]["name"]
+                assert "container-build" in bd[9]["name"]
                 assert "save-cache" in bd[10]["name"]
                 assert "git-tag" in bd[11]["name"]
                 assert "update-cbis" in bd[12]["name"]
@@ -411,7 +411,7 @@ pipelines:
             assert buildtool == bedp[8]["taskRef"]["name"]
             if cbtype == "app":
                 assert "dotnet-publish" in bedp[9]["name"]
-                assert "kaniko-build" in bedp[10]["name"]
+                assert "container-build" in bedp[10]["name"]
                 assert "save-cache" in bedp[11]["name"]
                 assert "git-tag" in bedp[12]["name"]
                 assert "update-cbis" in bedp[13]["name"]

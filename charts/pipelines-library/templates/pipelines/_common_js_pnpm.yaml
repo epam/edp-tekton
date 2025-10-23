@@ -101,10 +101,10 @@
 {{- end -}}
 
 {{- define "build-pipeline-js-image-build-push-common" -}}
-- name: kaniko-build
+- name: container-build
   taskRef:
     kind: Task
-    name: kaniko
+    name: {{ .Values.tekton.containerBuildTool }}
   runAfter:
     - push
   params:
@@ -124,7 +124,7 @@
 - name: dockerbuild-verify
   taskRef:
     kind: Task
-    name: dockerbuild-verify
+    name: dockerbuild-verify-{{ .Values.tekton.containerBuildTool }}
   runAfter:
     - sonar
     - dockerfile-lint

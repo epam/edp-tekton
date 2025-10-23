@@ -1,0 +1,188 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildkit
+  labels:
+    app.kubernetes.io/based-on: "0.6"
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: Image Build
+    tekton.dev/tags: image-build
+    tekton.dev/displayName: "Build and upload container image using buildkit"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This Task builds a simple Dockerfile with buildkit and pushes to a registry.
+    This Task stores the image name and digest as results, allowing Tekton Chains to pick up
+    that an image was built & sign it.
+  workspaces:
+    - name: source
+      description: Holds the context and Dockerfile
+  volumes:
+    - name: dockerconfig
+      secret:
+        secretName: kaniko-docker-config
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+        optional: true
+{{- if .Values.kaniko.customCert }}
+    - name: ca
+      secret:
+        items:
+          - key: ca.crt
+            path: ca.crt
+        secretName: custom-ca-certificates
+{{- end }}
+  params:
+    - name: codebase-name
+      description: Name of codebase
+    - name: image-tag
+      description: Image tag
+    - name: image-tar
+      description: Name (reference) of the image tar.
+      default: "image_tar"
+    - name: builder-image
+      description: The image on which builds will run
+      default: epamedp/buildkit:0.1.2
+    - name: dockerfile
+      description: Dockerfile name.
+      default: "Dockerfile"
+    - name: context
+      description: The build context used by Buildkit.
+      default: ./
+  results:
+    - name: IMAGE_DIGEST
+      description: Digest of the image just built.
+    - name: IMAGE_URL
+      description: URL of the image just built.
+  steps:
+    - name: init-repository
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: aws_region
+              optional: true
+        - name: CONTAINER_REGISTRY_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: container_registry_space
+        - name: CONTAINER_REGISTRY_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: container_registry_type
+      script: |
+        if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
+          aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}" || \
+          aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_GROUP}/${CODEBASE_NAME}";
+        else
+          echo 'Registry not ECR, stage skipped';
+        fi
+    
+    - name: build-and-push
+      workingDir: $(workspaces.source.path)
+      image: "$(params.builder-image)"
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: IMAGE_TAG
+          value: "$(params.image-tag)"
+        - name: IMAGE_TAR
+          value: "$(params.image-tar)"
+        - name: DOCKERFILE
+          value: "$(params.dockerfile)"
+        - name: CONTEXT
+          value: "$(params.context)"
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: container_registry_host
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: container_registry_space
+        - name: PLATFORM
+          valueFrom:
+            configMapKeyRef:
+              name: krci-config
+              key: platform
+      volumeMounts:
+        - name: dockerconfig
+          mountPath: /root/.docker
+      {{- if .Values.kaniko.customCert }}
+        - name: ca
+          mountPath: /root/.custom-certs
+      {{- end }}
+      securityContext:
+        privileged: true
+      script: |
+        #!/bin/sh
+        set -eux
+
+        CONTEXT_DIR=/workspace/source/${CONTEXT}
+        DOCKERFILE_PATH=/workspace/source/${DOCKERFILE}
+        DEST=${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}
+
+        export BUILDKIT_PROGRESS=plain
+
+        base_command="buildctl-daemonless.sh build \
+          --frontend=dockerfile.v0 \
+          --local context="${CONTEXT_DIR}" \
+          --local dockerfile="$(dirname "${DOCKERFILE_PATH}")" \
+          --opt filename="$(basename "${DOCKERFILE_PATH}")" \
+          --output type=image,name="${DEST}",push=true \
+          --metadata-file metadata.json"
+          
+        okd_skip_tls=" --tls-verify=false "
+
+        custom_certs={{- .Values.kaniko.customCert }}
+
+        command=$base_command
+
+        if [ "${PLATFORM}" = "openshift" ]; then
+          command="${command} --opt registry.insecure=true"
+        fi
+
+        if [ "${custom_certs}" = "true" ]; then
+          command="${command} --opt build-arg:SSL_CERT_FILE=/kaniko/.custom-certs/ca.crt"
+        fi
+
+        echo "Executing: ${command}"
+        eval "${command}"
+
+        jq -r '.["containerimage.digest"]' metadata.json > /tekton/results/IMAGE_DIGEST
+
+        echo "IMAGE_DIGEST - $(cat /tekton/results/IMAGE_DIGEST)"
+{{- include "resources" . | nindent 6 }}
+    - image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+      name: write-url
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.codebase-name)"
+        - name: IMAGE_TAG
+          value: "$(params.image-tag)"
+        - name: CONTAINER_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: container_registry_host
+              name: krci-config
+        - name: CONTAINER_REGISTRY_SPACE
+          valueFrom:
+            configMapKeyRef:
+              key: container_registry_space
+              name: krci-config
+      script: |
+        set -e
+        echo -n "${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}/${CODEBASE_NAME}:${IMAGE_TAG}" | tee "$(results.IMAGE_URL.path)"
+{{ end }}

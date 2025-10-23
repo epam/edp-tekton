@@ -63,7 +63,7 @@ global:
                 assert "push" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[9]["name"]
+                    assert "container-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
                     assert "update-cbis" in btd[12]["name"]
@@ -87,7 +87,7 @@ global:
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[9]["name"]
+                    assert "container-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
                     assert "update-cbis" in btedp[12]["name"]
@@ -160,7 +160,7 @@ global:
                 assert "push" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[9]["name"]
+                    assert "container-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
                     assert "update-cbis" in btd[12]["name"]
@@ -185,7 +185,7 @@ global:
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[9]["name"]
+                    assert "container-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
                     assert "update-cbis" in btedp[12]["name"]
@@ -254,7 +254,7 @@ global:
                 assert "push" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[9]["name"]
+                    assert "container-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
                     assert "update-cbis" in btd[12]["name"]
@@ -279,7 +279,7 @@ global:
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[9]["name"]
+                    assert "container-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
                     assert "update-cbis" in btedp[12]["name"]
@@ -347,7 +347,7 @@ global:
                 assert "push" in btd[8]["name"]
                 assert buildtool == btd[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btd[9]["name"]
+                    assert "container-build" in btd[9]["name"]
                     assert "save-cache" in btd[10]["name"]
                     assert "git-tag" in btd[11]["name"]
                     assert "update-cbis" in btd[12]["name"]
@@ -372,7 +372,7 @@ global:
                 assert "push" in btedp[8]["name"]
                 assert buildtool == btedp[8]["taskRef"]["name"]
                 if cbtype == "app":
-                    assert "kaniko-build" in btedp[9]["name"]
+                    assert "container-build" in btedp[9]["name"]
                     assert "save-cache" in btedp[10]["name"]
                     assert "git-tag" in btedp[11]["name"]
                     assert "update-cbis" in btedp[12]["name"]

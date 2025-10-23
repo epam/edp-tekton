@@ -1,6 +1,6 @@
 # edp-tekton-common-library
 
-![Version: 0.3.15](https://img.shields.io/badge/Version-0.3.15-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square) ![AppVersion: 0.3.15](https://img.shields.io/badge/AppVersion-0.3.15-informational?style=flat-square)
+![Version: 0.3.16](https://img.shields.io/badge/Version-0.3.16-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square) ![AppVersion: 0.3.16](https://img.shields.io/badge/AppVersion-0.3.16-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
 A Helm chart library with common components for KubeRocketCI Tekton Pipelines

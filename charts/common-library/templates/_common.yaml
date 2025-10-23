@@ -71,7 +71,7 @@
     kind: Task
     name: git-cli
   runAfter:
-    - kaniko-build
+    - container-build
   params:
     - name: GIT_USER_EMAIL
       value: edp-ci@edp.ci-user

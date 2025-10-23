@@ -123,7 +123,7 @@
 - name: dockerbuild-verify
   taskRef:
     kind: Task
-    name: dockerbuild-verify
+    name: dockerbuild-verify-{{ .Values.tekton.containerBuildTool }}
   runAfter:
     - dotnet-publish
     - dockerfile-lint
@@ -134,10 +134,10 @@
 {{- end -}}
 
 {{- define "build-pipeline-dotnet-image-build-push-common" -}}
-- name: kaniko-build
+- name: container-build
   taskRef:
     kind: Task
-    name: kaniko
+    name: {{ .Values.tekton.containerBuildTool }}
   runAfter:
     - dotnet-publish
   params:

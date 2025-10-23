@@ -15,7 +15,7 @@ metadata:
 spec:
   description: >-
     This task copies images from ECR to DockerHUB.
-    It must be used after kaniko-build task.
+    It must be used after container-build task.
     It is necessary to add a Service Account in a Pipeline for this task to run
     since it uses AWS ECR authentication.
   params:

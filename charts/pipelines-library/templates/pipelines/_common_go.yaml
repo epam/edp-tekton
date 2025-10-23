@@ -2,7 +2,7 @@
 - name: dockerbuild-verify
   taskRef:
     kind: Task
-    name: dockerbuild-verify
+    name: dockerbuild-verify-{{ .Values.tekton.containerBuildTool }}
   runAfter:
     - sonar
     - dockerfile-lint
@@ -13,10 +13,10 @@
 {{- end -}}
 
 {{- define "build-pipeline-golang-image-build-push-common" -}}
-- name: kaniko-build
+- name: container-build
   taskRef:
     kind: Task
-    name: kaniko
+    name: {{ .Values.tekton.containerBuildTool }}
   runAfter:
     - sonar
     - get-version

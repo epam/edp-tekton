@@ -66,7 +66,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | Repository | Name | Version |
 |------------|------|---------|
 | @epamedp | tekton-cache | 0.4.2 |
-| file://../common-library | edp-tekton-common-library | 0.3.15 |
+| file://../common-library | edp-tekton-common-library | 0.3.16 |
 
 ## Values
 
@@ -127,6 +127,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.configs.npmConfigMap | string | `"custom-npm-settings"` | Default configuration maps for provisioning NPM .npmrc files. To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml |
 | tekton.configs.nugetConfigMap | string | `"custom-nuget-settings"` | Default configuration maps for provisioning nuget.config file. |
 | tekton.configs.pythonConfigMap | string | `"custom-python-settings"` | Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX_PATH, PIP_INDEX_URL_PATH, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables for Python tasks. |
+| tekton.containerBuildTool | string | `"kaniko"` | Defines which image build and verification tools Tekton pipelines use. buildTool options: kaniko | buildkit |
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |

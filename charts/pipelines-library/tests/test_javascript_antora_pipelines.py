@@ -46,7 +46,7 @@ global:
                 assert "get-cache" in btd[4]["name"]
                 assert "update-build-number" in btd[5]["name"]
                 assert "build" in btd[6]["name"]
-                assert "kaniko-build" in btd[7]["name"]
+                assert "container-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
@@ -67,7 +67,7 @@ global:
                     assert "npm" == btedp[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
-                assert "kaniko-build" in btedp[7]["name"]
+                assert "container-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
@@ -124,7 +124,7 @@ global:
                     assert "npm" == btd[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btd[6]["taskRef"]["name"]
-                assert "kaniko-build" in btd[7]["name"]
+                assert "container-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
@@ -146,7 +146,7 @@ global:
                     assert "npm" == btedp[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
-                assert "kaniko-build" in btedp[7]["name"]
+                assert "container-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
@@ -206,7 +206,7 @@ global:
                     assert "npm" == btd[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btd[6]["taskRef"]["name"]
-                assert "kaniko-build" in btd[7]["name"]
+                assert "container-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
@@ -229,7 +229,7 @@ global:
                     assert "npm" == btedp[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
-                assert "kaniko-build" in btedp[7]["name"]
+                assert "container-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
@@ -289,7 +289,7 @@ global:
                     assert "npm" == btd[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btd[6]["taskRef"]["name"]
-                assert "kaniko-build" in btd[7]["name"]
+                assert "container-build" in btd[7]["name"]
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
@@ -312,7 +312,7 @@ global:
                     assert "npm" == btedp[6]["taskRef"]["name"]
                 if buildtool == "pnpm":
                     assert "edp-pnpm" == btedp[6]["taskRef"]["name"]
-                assert "kaniko-build" in btedp[7]["name"]
+                assert "container-build" in btedp[7]["name"]
                 assert "save-cache" in btedp[8]["name"]
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]

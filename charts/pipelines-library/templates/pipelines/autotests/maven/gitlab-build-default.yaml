@@ -62,7 +62,7 @@ spec:
     - name: JIRA_SERVER
       description: "Jira server name"
       default: ""
-      
+
 {{- include "build-result" $ | nindent 2 }}
 
   tasks:
@@ -101,6 +101,7 @@ spec:
             - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
             - '-Dsonar.branch.name=$(params.git-source-revision)'
             - '-Dsonar.qualitygate.wait=true'
+            - '-DskipTests'
             - verify
             - sonar:sonar
       workspaces:
@@ -147,7 +148,7 @@ spec:
           subPath: source
         - name: ssh-directory
           workspace: ssh-creds
-  
+
 {{ include "finally-block-default" . | nindent 2 }}
 
 {{ include "gitlab-build-vote" . | nindent 4 }}

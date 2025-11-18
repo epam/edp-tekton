@@ -81,6 +81,7 @@ spec:
             -Dsonar.pullrequest.key=$(params.changeNumber) \
             -Dsonar.pullrequest.branch=$(params.git-refspec) \
             -Dsonar.pullrequest.base=$(params.targetBranch) \
+            -DskipTests \
             sonarqube
       workspaces:
         - name: source

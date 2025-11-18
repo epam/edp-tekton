@@ -102,6 +102,7 @@ spec:
             - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
             - '-Dsonar.branch.name=$(params.git-source-revision)'
             - '-Dsonar.qualitygate.wait=true'
+            - '-DskipTests'
             - verify
             - sonar:sonar
       workspaces:

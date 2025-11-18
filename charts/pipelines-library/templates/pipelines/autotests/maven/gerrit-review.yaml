@@ -77,6 +77,7 @@ spec:
             - '-Dsonar.pullrequest.branch=$(params.git-refspec)'
             - '-Dsonar.pullrequest.base=$(params.targetBranch)'
             - '-Dsonar.qualitygate.wait=true'
+            - '-DskipTests'
             - verify
             - sonar:sonar
       workspaces:

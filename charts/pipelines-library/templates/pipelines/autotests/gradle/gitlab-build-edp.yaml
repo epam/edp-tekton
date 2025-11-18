@@ -59,7 +59,7 @@ spec:
     - name: JIRA_SERVER
       description: "Jira server name"
       default: ""
-      
+
 {{- include "build-result" $ | nindent 2 }}
 
   tasks:
@@ -97,6 +97,7 @@ spec:
             -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.branch.name=$(params.git-source-revision) \
             -Dsonar.qualitygate.wait=true \
+            -DskipTests \
             sonarqube
       workspaces:
         - name: source

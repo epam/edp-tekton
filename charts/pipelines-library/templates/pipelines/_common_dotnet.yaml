@@ -20,12 +20,12 @@
         dotnet sonarscanner begin \
           /d:sonar.host.url=${SONAR_HOST_URL} \
           /d:sonar.qualitygate.wait=true \
-          /d:sonar.login=${SONAR_TOKEN} \
+          /d:sonar.token=${SONAR_TOKEN} \
           /k:${SONAR_PROJECT_KEY} \
           /n:${SONAR_PROJECT_NAME} \
           /d:sonar.branch.name=${BRANCH}
         dotnet build ${sln_filename}
-        dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+        dotnet sonarscanner end /d:sonar.token=${SONAR_TOKEN}
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -105,14 +105,14 @@
         dotnet sonarscanner begin \
           /d:sonar.host.url=${SONAR_HOST_URL} \
           /d:sonar.qualitygate.wait=true \
-          /d:sonar.login=${SONAR_TOKEN} \
+          /d:sonar.token=${SONAR_TOKEN} \
           /k:${SONAR_PROJECT_KEY} \
           /n:${SONAR_PROJECT_NAME} \
           /d:sonar.pullrequest.key=${KEY_ID} \
           /d:sonar.pullrequest.branch=${SOURCE_BRANCH} \
           /d:sonar.pullrequest.base=${TARGET_BRANCH}
         dotnet build ${sln_filename}
-        dotnet sonarscanner end /d:sonar.login=${SONAR_TOKEN}
+        dotnet sonarscanner end /d:sonar.token=${SONAR_TOKEN}
   workspaces:
     - name: source
       workspace: shared-workspace

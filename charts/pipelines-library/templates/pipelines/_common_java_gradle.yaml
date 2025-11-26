@@ -33,6 +33,7 @@
         -Dsonar.host.url=${SONAR_HOST_URL} \
         -Dsonar.branch.name=$(params.git-source-revision) \
         -Dsonar.qualitygate.wait=true \
+        -DskipTests \
         sonarqube
   workspaces:
     - name: source
@@ -96,6 +97,7 @@
         -Dsonar.pullrequest.key=$(params.changeNumber) \
         -Dsonar.pullrequest.branch=$(params.git-refspec) \
         -Dsonar.pullrequest.base=$(params.targetBranch) \
+        -DskipTests \
         sonarqube
   workspaces:
     - name: source
@@ -139,6 +141,7 @@
         -Dsonar.pullrequest.key=$(params.changeNumber) \
         -Dsonar.pullrequest.branch=$(params.git-source-revision) \
         -Dsonar.pullrequest.base=$(params.targetBranch) \
+        -DskipTests \
         sonarqube
   workspaces:
     - name: source

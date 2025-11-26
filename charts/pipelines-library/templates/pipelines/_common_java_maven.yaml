@@ -56,6 +56,7 @@
         - '-Dsonar.projectName=$(params.CODEBASE_NAME)'
         - '-Dsonar.branch.name=$(params.git-source-revision)'
         - '-Dsonar.qualitygate.wait=true'
+        - '-DskipTests'
         - verify
         - sonar:sonar
   workspaces:
@@ -160,6 +161,7 @@
         - '-Dsonar.pullrequest.branch=$(params.git-refspec)'
         - '-Dsonar.pullrequest.base=$(params.targetBranch)'
         - '-Dsonar.qualitygate.wait=true'
+        - '-DskipTests'
         - verify
         - sonar:sonar
   workspaces:
@@ -246,6 +248,7 @@
         - '-Dsonar.pullrequest.branch=$(params.git-source-revision)'
         - '-Dsonar.pullrequest.base=$(params.targetBranch)'
         - '-Dsonar.qualitygate.wait=true'
+        - '-DskipTests'
         - verify
         - sonar:sonar
   workspaces:

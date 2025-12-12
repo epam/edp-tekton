@@ -76,7 +76,7 @@
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)
     - name: SHA
-      value: "$(params.git-source-revision)"
+      value: "$(params.gitsha)"
     - name: TARGET_URL
       value: $(params.pipelineUrl)
     - name: DESCRIPTION
@@ -107,7 +107,7 @@
   - name: REPO_FULL_NAME
     value: $(params.gitfullrepositoryname)
   - name: SHA
-    value: "$(params.git-source-revision)"
+    value: "$(params.gitsha)"
   - name: TARGET_URL
     value: $(params.pipelineUrl)
   - name: DESCRIPTION
@@ -199,7 +199,7 @@ finally:
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)
     - name: SHA
-      value: "$(params.git-source-revision)"
+      value: "$(params.gitsha)"
     - name: TARGET_URL
       value: $(params.pipelineUrl)
     - name: DESCRIPTION

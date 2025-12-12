@@ -9,6 +9,7 @@ spec:
   params:
     - name: gitrevision
     - name: gitrepositoryurl
+    - name: gitsha
     - name: gitrepositoryname
     - name: gitfullrepositoryname
       description: Full Repo name. Used in "bitbucket-set-status" step as REPO_PATH_ONLY
@@ -55,6 +56,8 @@ spec:
             value: $(tt.params.gitrepositoryurl)
           - name: git-source-revision
             value: $(tt.params.gitrevision)
+          - name: gitsha
+            value: $(tt.params.gitsha)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: CODEBASE_NAME

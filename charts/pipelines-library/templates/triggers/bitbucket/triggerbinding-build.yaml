@@ -9,6 +9,8 @@ spec:
   params:
     - name: gitrevision
       value: $(extensions.targetBranch)
+    - name: gitsha
+      value: $(extensions.pullRequest.headSha)
     - name: gitrepositoryurl
       value: "git@bitbucket.org:$(body.repository.full_name).git"
     - name: gitrepositoryname

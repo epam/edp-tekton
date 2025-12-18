@@ -9,6 +9,8 @@ spec:
   params:
     - name: gitrevision
       value: "$(body.change.branch)"
+    - name: targetBranch
+      value: "$(body.change.branch)"
     - name: gerritproject
       value: "$(body.change.project)"
     - name: changeNumber
@@ -37,4 +39,6 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.build)
+    - name: gitauthor
+      value: "$(body.change.owner.username)"
 {{ end }}

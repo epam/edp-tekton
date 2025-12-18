@@ -93,6 +93,8 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 			HeadRef:           bitbucketEvent.PullRequest.Source.Branch.Name,
 			ChangeNumber:      bitbucketEvent.PullRequest.ID,
 			LastCommitMessage: commitMessage,
+			Author:            bitbucketEvent.PullRequest.Author.DisplayName,
+			AuthorAvatarUrl:   bitbucketEvent.PullRequest.Author.Links.Avatar.Href,
 		},
 	}, nil
 }
@@ -132,6 +134,8 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 			HeadRef:           bitbucketEvent.PullRequest.Source.Branch.Name,
 			ChangeNumber:      bitbucketEvent.PullRequest.ID,
 			LastCommitMessage: commitMessage,
+			Author:            bitbucketEvent.PullRequest.Author.DisplayName,
+			AuthorAvatarUrl:   bitbucketEvent.PullRequest.Author.Links.Avatar.Href,
 		},
 	}, nil
 }

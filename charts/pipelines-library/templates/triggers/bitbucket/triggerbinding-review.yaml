@@ -32,4 +32,8 @@ spec:
       value: $(extensions.pipelines.review)
     - name: git-refspec
       value: "$(extensions.pullRequest.headRef)"
+    - name: gitauthor
+      value: "$(extensions.pullRequest.author)"
+    - name: gitavatar
+      value: "$(extensions.pullRequest.authorAvatarUrl)"
 {{ end }}

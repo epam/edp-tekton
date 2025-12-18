@@ -30,4 +30,6 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.review)
+    - name: gitauthor
+      value: "$(body.patchSet.uploader.username)"
 {{ end }}

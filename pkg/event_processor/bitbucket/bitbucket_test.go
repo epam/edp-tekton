@@ -89,6 +89,20 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 							LastCommit: event_processor.BitbucketCommit{
 								Hash: "123",
 							},
+							Author: event_processor.BitbucketAuthor{
+								DisplayName: "bbuser",
+								Links: struct {
+									Avatar struct {
+										Href string `json:"href"`
+									} `json:"avatar"`
+								}{
+									Avatar: struct {
+										Href string `json:"href"`
+									}{
+										Href: "https://bitbucket.org/avatar/bbuser",
+									},
+								},
+							},
 						},
 					},
 					Comment: event_processor.BitbucketComment{
@@ -152,6 +166,8 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 					Title:             "fix",
 					ChangeNumber:      1,
 					LastCommitMessage: "commit message",
+					Author:            "bbuser",
+					AuthorAvatarUrl:   "https://bitbucket.org/avatar/bbuser",
 				},
 			},
 		},
@@ -380,6 +396,20 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 						LastCommit: event_processor.BitbucketCommit{
 							Hash: "123",
 						},
+						Author: event_processor.BitbucketAuthor{
+							DisplayName: "bbmergeuser",
+							Links: struct {
+								Avatar struct {
+									Href string `json:"href"`
+								} `json:"avatar"`
+							}{
+								Avatar: struct {
+									Href string `json:"href"`
+								}{
+									Href: "https://bitbucket.org/avatar/bbmergeuser",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -436,6 +466,8 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					Title:             "fix",
 					ChangeNumber:      1,
 					LastCommitMessage: "commit message",
+					Author:            "bbmergeuser",
+					AuthorAvatarUrl:   "https://bitbucket.org/avatar/bbmergeuser",
 				},
 			},
 		},

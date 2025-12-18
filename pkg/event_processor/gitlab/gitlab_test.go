@@ -52,6 +52,10 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
 					},
+					User: event_processor.GitLabUser{
+						Username:  "gluser",
+						AvatarUrl: "https://gitlab.com/avatar/gluser",
+					},
 				},
 			},
 			kubeObjects: []client.Object{
@@ -87,6 +91,8 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 					HeadRef:           "feature1",
 					ChangeNumber:      1,
 					LastCommitMessage: "commit message",
+					Author:            "gluser",
+					AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
 				},
 			},
 		},
@@ -190,6 +196,10 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					ObjectAttributes: event_processor.GitLabComment{
 						Note: "/recheck",
 					},
+					User: event_processor.GitLabUser{
+						Username:  "glcommenter",
+						AvatarUrl: "https://gitlab.com/avatar/glcommenter",
+					},
 				},
 			},
 			kubeObjects: []client.Object{
@@ -226,6 +236,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					Title:             "fix",
 					ChangeNumber:      1,
 					LastCommitMessage: "commit message",
+					Author:            "glcommenter",
+					AuthorAvatarUrl:   "https://gitlab.com/avatar/glcommenter",
 				},
 			},
 		},

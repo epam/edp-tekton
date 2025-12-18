@@ -32,4 +32,8 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.review)
+    - name: gitauthor
+      value: "$(extensions.pullRequest.author)"
+    - name: gitavatar
+      value: "$(extensions.pullRequest.authorAvatarUrl)"
 {{ end }}

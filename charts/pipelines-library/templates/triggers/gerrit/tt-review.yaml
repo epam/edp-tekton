@@ -42,12 +42,13 @@ spec:
           app.edp.epam.com/pipelinetype: review
         annotations:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
-          app.edp.epam.com/git-branch: "$(tt.params.gitrevision)"
-          app.edp.epam.com/git-target-branch: "$(tt.params.targetBranch)"
-          app.edp.epam.com/git-change-number: "$(tt.params.changeNumber)"
-          app.edp.epam.com/git-patchset-number: "$(tt.params.patchsetNumber)"
-          app.edp.epam.com/git-refspec: "$(tt.params.gerritrefspec)"
-          app.edp.epam.com/git-repository: "$(tt.params.gerritproject)"
+          results.tekton.dev/resultAnnotations: |-
+            {"app.edp.epam.com/git-branch": "$(tt.params.gitrevision)",
+            "app.edp.epam.com/git-target-branch": "$(tt.params.targetBranch)",
+            "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
+            "app.edp.epam.com/git-patchset-number": "$(tt.params.patchsetNumber)",
+            "app.edp.epam.com/git-refspec": "$(tt.params.gerritrefspec)",
+            "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

@@ -22,10 +22,16 @@ type GerritEvent struct {
 type GitLabMergeRequestsEvent struct {
 	Project          GitLabProject      `json:"project"`
 	ObjectAttributes GitLabMergeRequest `json:"object_attributes"`
+	User             GitLabUser         `json:"user"`
 }
 
 type GitLabProject struct {
 	PathWithNamespace string `json:"path_with_namespace"`
+}
+
+type GitLabUser struct {
+	Username  string `json:"username"`
+	AvatarUrl string `json:"avatar_url"`
 }
 
 type GitLabMergeRequest struct {
@@ -46,6 +52,7 @@ type GitLabCommentEvent struct {
 	Project          GitLabProject      `json:"project"`
 	MergeRequest     GitLabMergeRequest `json:"merge_request"`
 	ObjectAttributes GitLabComment      `json:"object_attributes"`
+	User             GitLabUser         `json:"user"`
 }
 
 type GitLabComment struct {
@@ -72,6 +79,16 @@ type BitbucketPullRequest struct {
 	Source      BitbucketPullRequestSrc  `json:"source"`
 	Destination BitbucketPullRequestDest `json:"destination"`
 	LastCommit  BitbucketCommit          `json:"last_commit"`
+	Author      BitbucketAuthor          `json:"author"`
+}
+
+type BitbucketAuthor struct {
+	DisplayName string `json:"display_name"`
+	Links       struct {
+		Avatar struct {
+			Href string `json:"href"`
+		} `json:"avatar"`
+	} `json:"links"`
 }
 
 type BitbucketPullRequestSrc struct {
@@ -135,6 +152,8 @@ type PullRequest struct {
 	Title             string `json:"title"`
 	ChangeNumber      int    `json:"changeNumber"`
 	LastCommitMessage string `json:"lastCommitMessage"`
+	Author            string `json:"author"`
+	AuthorAvatarUrl   string `json:"authorAvatarUrl"`
 }
 
 // IsReviewCommentEvent returns true if the event is a review comment event.

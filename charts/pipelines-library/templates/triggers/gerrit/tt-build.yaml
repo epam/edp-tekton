@@ -10,12 +10,15 @@ spec:
     - name: gitrevision
       description: The git revision
       default: master
+    - name: targetBranch
+      description: Target branch of Change
     - name: gerritproject
       description: Gerrit project name
     - name: codebase
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
+    - name: gitauthor
     - name: changeNumber
       description: Change number from Merge Request
     - name: patchsetNumber
@@ -46,9 +49,11 @@ spec:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
           results.tekton.dev/resultAnnotations: |-
             {"app.edp.epam.com/git-branch": "$(tt.params.gitrevision)",
+            "app.edp.epam.com/git-target-branch": "$(tt.params.targetBranch)",
             "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
             "app.edp.epam.com/git-patchset-number": "$(tt.params.patchsetNumber)",
-            "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)"}
+            "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)",
+            "app.edp.epam.com/git-author": "$(tt.params.gitauthor)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

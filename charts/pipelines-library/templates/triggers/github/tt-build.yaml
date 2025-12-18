@@ -9,6 +9,10 @@ spec:
   params:
     - name: gitrevision
     - name: gitbranch
+    - name: targetBranch
+      description: Target branch of Pull Request
+    - name: gitauthor
+    - name: gitavatar
     - name: gitrepositoryurl
     - name: gitrepositoryname
     - name: codebase
@@ -46,8 +50,11 @@ spec:
           results.tekton.dev/resultAnnotations: |-
             {"app.edp.epam.com/git-commit-sha": "$(tt.params.gitsha)",
             "app.edp.epam.com/git-branch": "$(tt.params.gitbranch)",
+            "app.edp.epam.com/git-target-branch": "$(tt.params.targetBranch)",
             "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
-            "app.edp.epam.com/git-repository": "$(tt.params.gitfullrepositoryname)"}
+            "app.edp.epam.com/git-repository": "$(tt.params.gitfullrepositoryname)",
+            "app.edp.epam.com/git-author": "$(tt.params.gitauthor)",
+            "app.edp.epam.com/git-avatar": "$(tt.params.gitavatar)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

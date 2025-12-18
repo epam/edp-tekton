@@ -11,6 +11,8 @@ spec:
       value: "$(body.pull_request.base.ref)"
     - name: gitbranch
       value: "$(body.pull_request.head.ref)"
+    - name: targetBranch
+      value: "$(body.pull_request.base.ref)"
     - name: gitrepositoryurl
       value: "$(body.repository.ssh_url)"
     - name: gitrepositoryname
@@ -43,4 +45,8 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.build)
+    - name: gitauthor
+      value: "$(extensions.pullRequest.author)"
+    - name: gitavatar
+      value: "$(extensions.pullRequest.authorAvatarUrl)"
 {{ end }}

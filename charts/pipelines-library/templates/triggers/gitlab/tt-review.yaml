@@ -22,6 +22,8 @@ spec:
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
+    - name: gitauthor
+    - name: gitavatar
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
     - name: commitMessage
@@ -45,7 +47,9 @@ spec:
             "app.edp.epam.com/git-branch": "$(tt.params.gitbranch)",
             "app.edp.epam.com/git-target-branch": "$(tt.params.targetBranch)",
             "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
-            "app.edp.epam.com/git-repository": "$(tt.params.gitfullrepositoryname)"}
+            "app.edp.epam.com/git-repository": "$(tt.params.gitfullrepositoryname)",
+            "app.edp.epam.com/git-author": "$(tt.params.gitauthor)",
+            "app.edp.epam.com/git-avatar": "$(tt.params.gitavatar)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

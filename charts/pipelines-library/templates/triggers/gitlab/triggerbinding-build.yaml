@@ -11,6 +11,8 @@ spec:
       value: $(body.object_attributes.merge_commit_sha)
     - name: gitbranch
       value: "$(extensions.pullRequest.headRef)"
+    - name: targetBranch
+      value: "$(extensions.targetBranch)"
     - name: gitrepositoryurl
       value: $(body.project.git_ssh_url)
     - name: gitrepositoryname
@@ -41,4 +43,8 @@ spec:
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.build)
+    - name: gitauthor
+      value: "$(extensions.pullRequest.author)"
+    - name: gitavatar
+      value: "$(extensions.pullRequest.authorAvatarUrl)"
 {{ end }}

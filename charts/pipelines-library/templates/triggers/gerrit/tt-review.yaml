@@ -20,6 +20,7 @@ spec:
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
+    - name: gitauthor
     - name: changeNumber
       description: Change number from Merge Request
     - name: patchsetNumber
@@ -48,7 +49,8 @@ spec:
             "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
             "app.edp.epam.com/git-patchset-number": "$(tt.params.patchsetNumber)",
             "app.edp.epam.com/git-refspec": "$(tt.params.gerritrefspec)",
-            "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)"}
+            "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)",
+            "app.edp.epam.com/git-author": "$(tt.params.gitauthor)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

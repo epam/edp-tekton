@@ -40,6 +40,11 @@ spec:
           app.edp.epam.com/pipelinetype: review
         annotations:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
+          app.edp.epam.com/git-commit-sha: "$(tt.params.gitrevision)"
+          app.edp.epam.com/git-branch: "$(tt.params.git-refspec)"
+          app.edp.epam.com/git-target-branch: "$(tt.params.targetBranch)"
+          app.edp.epam.com/git-change-number: "$(tt.params.changeNumber)"
+          app.edp.epam.com/git-repository: "$(tt.params.gitfullrepositoryname)"
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

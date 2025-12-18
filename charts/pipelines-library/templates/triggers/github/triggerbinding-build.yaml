@@ -9,6 +9,8 @@ spec:
   params:
     - name: gitrevision
       value: "$(body.pull_request.base.ref)"
+    - name: gitbranch
+      value: "$(body.pull_request.head.ref)"
     - name: gitrepositoryurl
       value: "$(body.repository.ssh_url)"
     - name: gitrepositoryname

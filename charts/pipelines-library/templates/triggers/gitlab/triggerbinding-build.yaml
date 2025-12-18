@@ -9,6 +9,8 @@ spec:
   params:
     - name: gitrevision
       value: $(body.object_attributes.merge_commit_sha)
+    - name: gitbranch
+      value: "$(extensions.pullRequest.headRef)"
     - name: gitrepositoryurl
       value: $(body.project.git_ssh_url)
     - name: gitrepositoryname

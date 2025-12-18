@@ -9,6 +9,8 @@ spec:
   params:
     - name: gitrevision
       value: $(extensions.targetBranch)
+    - name: gitbranch
+      value: "$(extensions.pullRequest.headRef)"
     - name: gitsha
       value: $(extensions.pullRequest.headSha)
     - name: gitrepositoryurl

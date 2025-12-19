@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -47,9 +47,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -66,16 +66,14 @@ jobs:
      CHART_SCHEMA_FILE_PATH: "ct/chart_schema.yaml"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.12.1
+        uses: azure/setup-helm@v4.3.1
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
           check-latest: true
@@ -102,20 +100,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Get cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+        uses: actions/checkout@v5
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -125,72 +113,20 @@ jobs:
       - name: Make Lint
         run: make lint
 
-      - name: Save cache
-        id: cache-save
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
   docker-lint:
     needs: [build-and-lint]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run hadolint
         uses: hadolint/hadolint-action@v1.5.0
         with:
           dockerfile: Dockerfile
 
-  e2e-tests-131:
-    name: End-to-end tests 1.31
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GOLANG_VERSION }}
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Get cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: "install kuttl"
-        run: ./hack/install-kuttl.sh
-
-      - name: "run tests"
-        env:
-          KUBE_VERSION: "1.31"
-        run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
-
-      - name: Save cache
-        id: cache-save
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
   e2e-tests-132:
     name: End-to-end tests 1.32
-    needs: [e2e-tests-131]
+    needs: [docker-lint]
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -198,22 +134,12 @@ jobs:
 
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Get cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+        uses: actions/checkout@v5
 
       - name: "install kuttl"
         run: ./hack/install-kuttl.sh
@@ -222,29 +148,3 @@ jobs:
         env:
           KUBE_VERSION: "1.32"
         run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e
-
-      - name: Save cache
-        id: cache-save
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
-  e2e-tests-check:
-    runs-on: ubuntu-22.04
-    if: always()
-    needs: [e2e-tests-131, e2e-tests-132]
-    steps:
-      - name: Print result
-        run: echo ${{ needs.e2e-tests-131.result }} && echo ${{ needs.e2e-tests-132.result }}
-      - name: Interpret result
-        run: |
-          if [[ success == ${{ needs.e2e-tests-131.result }} && success == ${{ needs.e2e-tests-132.result }} ]]
-          then
-            echo "All matrix jobs passed!"
-          else
-            echo "One or more matrix jobs failed."
-            false
-          fi

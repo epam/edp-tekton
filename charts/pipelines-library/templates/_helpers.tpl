@@ -72,6 +72,9 @@ Define registry for pipelines images
   {{- if .java21 }}
     {{- $mavenVersions = set $mavenVersions "java21" (printf "%s/maven:3.9.9-eclipse-temurin-21" $registry)  }}
   {{- end }}
+  {{- if .java25 }}
+    {{- $mavenVersions = set $mavenVersions "java25" (printf "%s/maven:3.9.11-eclipse-temurin-25" $registry)  }}
+  {{- end }}
 {{- end }}
 {{- $mavenVersions | toYaml -}}
 {{- end }}
@@ -85,6 +88,9 @@ Define registry for pipelines images
   {{- end }}
   {{- if .java21 }}
     {{- $sonarVersions = set $sonarVersions "java21" (printf "%s/maven:3.9.9-eclipse-temurin-21" $registry) }}
+  {{- end }}
+  {{- if .java25 }}
+    {{- $sonarVersions = set $sonarVersions "java25" (printf "%s/maven:3.9.11-eclipse-temurin-25" $registry) }}
   {{- end }}
 {{- end }}
 {{- $sonarVersions | toYaml -}}
@@ -101,6 +107,9 @@ Define registry for pipelines images
   {{- if .java21 }}
     {{- $gradleVersions = set $gradleVersions "java21" (printf "%s/gradle:8.11-jdk21" $registry)  }}
   {{- end }}
+  {{- if .java25 }}
+    {{- $gradleVersions = set $gradleVersions "java25" (printf "%s/gradle:9.2.1-jdk25" $registry)  }}
+  {{- end }}
 {{- end }}
 {{- $gradleVersions | toYaml -}}
 {{- end }}
@@ -114,6 +123,9 @@ Define registry for pipelines images
   {{- end }}
   {{- if .java21 }}
     {{- $sonarVersions = set $sonarVersions "java21" (printf "%s/gradle:8.11-jdk21" $registry) }}
+  {{- end }}
+  {{- if .java25 }}
+    {{- $sonarVersions = set $sonarVersions "java25" (printf "%s/gradle:9.2.1-jdk25" $registry) }}
   {{- end }}
 {{- end }}
 {{- $sonarVersions | toYaml -}}

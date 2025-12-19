@@ -1,6 +1,12 @@
 {{ if has "bitbucket" .Values.global.gitProviders }}
 {{- $registry := include "edp-tekton.registry" . -}}
-{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 ) ( .Values.pipelines.deployableResources.java.java21 )}}
+{{ if or
+  ( .Values.pipelines.deployableResources.java.java8 )
+  ( .Values.pipelines.deployableResources.java.java11 )
+  ( .Values.pipelines.deployableResources.java.java17 )
+  ( .Values.pipelines.deployableResources.java.java21 )
+  ( .Values.pipelines.deployableResources.java.java25 )
+}}
 {{- $raw := include "edp-tekton.resourceMapping.gradle" . | fromYaml -}}
 {{- $rawSonar := include "edp-tekton.resourceMapping.gradleSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}
@@ -70,7 +76,7 @@ spec:
 
 {{- include "get-cache" $ | nindent 4 }}
 
-{{ include "java-gradle-review-common" . | nindent 4 }}
+{{ include "java-gradle-review-common" (dict "framework" $framework "java25SkipSonar" $.Values.pipelines.deployableResources.java.java25SkipSonar) | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:

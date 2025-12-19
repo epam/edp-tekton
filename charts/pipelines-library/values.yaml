@@ -42,6 +42,10 @@ pipelines:
     java:
       java17: true
       java21: true
+      java25: true
+      # -- This parameter disables the Sonar check for Java 25, as it is not currently supported.
+      # Ref: https://docs.sonarsource.com/sonarqube-community-build/analyzing-source-code/languages/java#suoported-versions
+      java25SkipSonar: true
     js:
       npm:
         angular: true

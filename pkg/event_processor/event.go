@@ -40,6 +40,7 @@ type GitLabMergeRequest struct {
 	LastCommit   GitLabCommit `json:"last_commit"`
 	SourceBranch string       `json:"source_branch"`
 	ChangeNumber int          `json:"iid"`
+	Url          string       `json:"url"`
 }
 
 type GitLabCommit struct {
@@ -80,6 +81,11 @@ type BitbucketPullRequest struct {
 	Destination BitbucketPullRequestDest `json:"destination"`
 	LastCommit  BitbucketCommit          `json:"last_commit"`
 	Author      BitbucketAuthor          `json:"author"`
+	Links       struct {
+		Html struct {
+			Href string `json:"href"`
+		} `json:"html"`
+	} `json:"links"`
 }
 
 type BitbucketAuthor struct {
@@ -154,6 +160,7 @@ type PullRequest struct {
 	LastCommitMessage string `json:"lastCommitMessage"`
 	Author            string `json:"author"`
 	AuthorAvatarUrl   string `json:"authorAvatarUrl"`
+	Url               string `json:"url"`
 }
 
 // IsReviewCommentEvent returns true if the event is a review comment event.

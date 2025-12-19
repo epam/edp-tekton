@@ -1,6 +1,12 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
 {{- $registry := include "edp-tekton.registry" . -}}
-{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 ) ( .Values.pipelines.deployableResources.java.java21 )}}
+{{ if or
+  ( .Values.pipelines.deployableResources.java.java8 )
+  ( .Values.pipelines.deployableResources.java.java11 )
+  ( .Values.pipelines.deployableResources.java.java17 )
+  ( .Values.pipelines.deployableResources.java.java21 )
+  ( .Values.pipelines.deployableResources.java.java25 )
+}}
 {{- $raw := include "edp-tekton.resourceMapping.gradle" . | fromYaml -}}
 {{- $rawSonar := include "edp-tekton.resourceMapping.gradleSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}
@@ -109,7 +115,7 @@ spec:
           subPath: source
 
 
-{{ include "java-gradle-build-common" . | nindent 4 }}
+{{ include "java-gradle-build-common" (dict "framework" $framework "java25SkipSonar" $.Values.pipelines.deployableResources.java.java25SkipSonar) | nindent 4 }}
 
 {{- include "build-pipeline-java-gradle-image-build-push-common" $ | nindent 4 }}
 

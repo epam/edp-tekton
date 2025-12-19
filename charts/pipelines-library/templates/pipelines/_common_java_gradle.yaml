@@ -13,6 +13,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -39,13 +40,18 @@
     - name: source
       workspace: shared-workspace
       subPath: source
+{{- end }}
 
 - name: push
   taskRef:
     kind: Task
     name: gradle
   runAfter:
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
     - sonar
+{{- else }}
+    - build
+{{- end }}
   params:
     - name: BASE_IMAGE
       value: $(params.image)
@@ -75,6 +81,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -104,6 +111,7 @@
       workspace: shared-workspace
       subPath: source
 {{- end -}}
+{{- end -}}
 
 {{- define "java-gradle-review-common" -}}
 - name: build
@@ -119,6 +127,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -147,6 +156,7 @@
     - name: source
       workspace: shared-workspace
       subPath: source
+{{- end -}}
 {{- end -}}
 
 {{- define "dockerbuild-verify-gradle" -}}

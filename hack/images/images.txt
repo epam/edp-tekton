@@ -27,12 +27,14 @@ docker.io/golang:1.24-bookworm
 docker.io/gradle:7.6.5-jdk11
 docker.io/gradle:7.6.5-jdk17
 docker.io/gradle:8.11-jdk21
+docker.io/gradle:9.2.1-jdk25
 docker.io/hadolint/hadolint:v2.10.0-alpine
 docker.io/jnorwood/helm-docs:v1.13.1
 docker.io/library/node:22.15.0-alpine3.21
 docker.io/maven:3.9.0-eclipse-temurin-11
 docker.io/maven:3.9.0-eclipse-temurin-17
 docker.io/maven:3.9.9-eclipse-temurin-21
+docker.io/maven:3.9.11-eclipse-temurin-25
 docker.io/openpolicyagent/opa:0.45.0-debug
 docker.io/pipelinecomponents/ansible-lint:0.72.0
 docker.io/python:3.10.8-alpine3.16

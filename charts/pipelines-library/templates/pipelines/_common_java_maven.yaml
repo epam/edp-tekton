@@ -36,6 +36,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -62,13 +63,18 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+{{- end }}
 
 - name: build
   taskRef:
     kind: Task
     name: maven
   runAfter:
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
     - sonar
+{{- else }}
+    - test
+{{- end }}
   params:
     - name: MAVEN_IMAGE
       value: $(params.image)
@@ -139,6 +145,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -167,13 +174,18 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+{{- end }}
 
 - name: build
   taskRef:
     kind: Task
     name: maven
   runAfter:
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
     - sonar
+{{- else }}
+    - test
+{{- end }}
   params:
     - name: MAVEN_IMAGE
       value: $(params.image)
@@ -226,6 +238,7 @@
     - name: source
       workspace: shared-workspace
 
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
 - name: sonar
   taskRef:
     kind: Task
@@ -254,13 +267,18 @@
   workspaces:
     - name: source
       workspace: shared-workspace
+{{- end }}
 
 - name: build
   taskRef:
     kind: Task
     name: maven
   runAfter:
+{{- if not (and (eq .framework "java25") .java25SkipSonar) }}
     - sonar
+{{- else }}
+    - test
+{{- end }}
   params:
     - name: MAVEN_IMAGE
       value: $(params.image)

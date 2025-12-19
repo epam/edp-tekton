@@ -119,7 +119,7 @@ spec:
 {{- include "java-maven-get-module" . | nindent 4 }}
 
 
-{{- include "java-maven-build-common" . | nindent 4 }}
+{{- include "java-maven-build-common" (dict "framework" $framework "java25SkipSonar" $.Values.pipelines.deployableResources.java.java25SkipSonar) | nindent 4 }}
 
 {{- include "build-pipeline-java-maven-rpm-build-push-default" $ | nindent 4 }}
 

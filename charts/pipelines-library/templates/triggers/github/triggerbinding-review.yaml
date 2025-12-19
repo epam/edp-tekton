@@ -36,4 +36,6 @@ spec:
       value: "$(extensions.pullRequest.author)"
     - name: gitavatar
       value: "$(extensions.pullRequest.authorAvatarUrl)"
+    - name: gitchangeurl
+      value: "$(extensions.pullRequest.url)"
 {{ end }}

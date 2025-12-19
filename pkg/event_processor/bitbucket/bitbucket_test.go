@@ -103,6 +103,17 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 									},
 								},
 							},
+							Links: struct {
+								Html struct {
+									Href string `json:"href"`
+								} `json:"html"`
+							}{
+								Html: struct {
+									Href string `json:"href"`
+								}{
+									Href: "https://bitbucket.org/o/r/pull-requests/1",
+								},
+							},
 						},
 					},
 					Comment: event_processor.BitbucketComment{
@@ -168,6 +179,7 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 					LastCommitMessage: "commit message",
 					Author:            "bbuser",
 					AuthorAvatarUrl:   "https://bitbucket.org/avatar/bbuser",
+					Url:               "https://bitbucket.org/o/r/pull-requests/1",
 				},
 			},
 		},
@@ -410,6 +422,17 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 								},
 							},
 						},
+						Links: struct {
+							Html struct {
+								Href string `json:"href"`
+							} `json:"html"`
+						}{
+							Html: struct {
+								Href string `json:"href"`
+							}{
+								Href: "https://bitbucket.org/o/r/pull-requests/1",
+							},
+						},
 					},
 				},
 			},
@@ -468,6 +491,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					LastCommitMessage: "commit message",
 					Author:            "bbmergeuser",
 					AuthorAvatarUrl:   "https://bitbucket.org/avatar/bbmergeuser",
+					Url:               "https://bitbucket.org/o/r/pull-requests/1",
 				},
 			},
 		},

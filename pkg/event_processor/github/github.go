@@ -129,6 +129,7 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 			LastCommitMessage: commitMessage,
 			Author:            gitHubEvent.GetPullRequest().GetUser().GetLogin(),
 			AuthorAvatarUrl:   gitHubEvent.GetPullRequest().GetUser().GetAvatarURL(),
+			Url:               gitHubEvent.GetPullRequest().GetHTMLURL(),
 		},
 	}, nil
 }
@@ -209,6 +210,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 			LastCommitMessage: commitMessage,
 			Author:            pullReq.GetUser().GetLogin(),
 			AuthorAvatarUrl:   pullReq.GetUser().GetAvatarURL(),
+			Url:               pullReq.GetHTMLURL(),
 		},
 	}, nil
 }

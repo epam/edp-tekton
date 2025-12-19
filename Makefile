@@ -74,7 +74,7 @@ clean:  ## clean up
 .PHONY: test ## Run tests
 test: test-chart test-go
 
-test-go:
+test-go: ## Run go tests only
 	go test ./... -coverprofile=coverage.out `go list ./...`
 
 .PHONY: fmt

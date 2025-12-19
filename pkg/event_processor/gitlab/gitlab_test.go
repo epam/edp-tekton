@@ -51,6 +51,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
+						Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
 					},
 					User: event_processor.GitLabUser{
 						Username:  "gluser",
@@ -93,6 +94,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 					LastCommitMessage: "commit message",
 					Author:            "gluser",
 					AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
+					Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
 				},
 			},
 		},
@@ -192,6 +194,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 						},
 						SourceBranch: "feature1",
 						ChangeNumber: 1,
+						Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
 					},
 					ObjectAttributes: event_processor.GitLabComment{
 						Note: "/recheck",
@@ -238,6 +241,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					LastCommitMessage: "commit message",
 					Author:            "glcommenter",
 					AuthorAvatarUrl:   "https://gitlab.com/avatar/glcommenter",
+					Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
 				},
 			},
 		},

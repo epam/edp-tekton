@@ -68,6 +68,7 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 			LastCommitMessage: gitLabEvent.ObjectAttributes.LastCommit.Message,
 			Author:            gitLabEvent.User.Username,
 			AuthorAvatarUrl:   gitLabEvent.User.AvatarUrl,
+			Url:               gitLabEvent.ObjectAttributes.Url,
 		},
 	}, nil
 }
@@ -115,6 +116,7 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 			LastCommitMessage: gitLabEvent.MergeRequest.LastCommit.Message,
 			Author:            gitLabEvent.User.Username,
 			AuthorAvatarUrl:   gitLabEvent.User.AvatarUrl,
+			Url:               gitLabEvent.MergeRequest.Url,
 		},
 	}, nil
 }

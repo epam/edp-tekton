@@ -13,6 +13,8 @@ spec:
       description: Target branch of Merge Request
     - name: gitauthor
     - name: gitavatar
+    - name: gitchangeurl
+      description: Pull request URL
     - name: gitrepositoryurl
     - name: gitrepositoryname
     - name: gitfullrepositoryname
@@ -53,7 +55,8 @@ spec:
             "app.edp.epam.com/git-change-number": "$(tt.params.changeNumber)",
             "app.edp.epam.com/git-repository": "$(tt.params.gitfullrepositoryname)",
             "app.edp.epam.com/git-author": "$(tt.params.gitauthor)",
-            "app.edp.epam.com/git-avatar": "$(tt.params.gitavatar)"}
+            "app.edp.epam.com/git-avatar": "$(tt.params.gitavatar)",
+            "app.edp.epam.com/git-change-url": "$(tt.params.gitchangeurl)"}
       spec:
         taskRunTemplate:
           serviceAccountName: tekton

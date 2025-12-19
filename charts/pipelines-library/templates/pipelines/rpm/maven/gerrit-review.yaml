@@ -65,7 +65,7 @@ spec:
 
 {{- include "java-maven-get-module" . | nindent 4 }}
 
-{{- include "java-maven-review-common-gerrit" . | nindent 4 }}
+{{- include "java-maven-review-common-gerrit" (dict "framework" $framework "java25SkipSonar" $.Values.pipelines.deployableResources.java.java25SkipSonar) | nindent 4 }}
 
 {{ include "build-pipeline-java-maven-rpm-review" $ | nindent 4 }}
 

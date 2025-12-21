@@ -8,7 +8,7 @@ metadata:
 spec:
   params:
     - name: gitrevision
-      value: $(body.object_attributes.merge_commit_sha)
+      value: "$(extensions.pullRequest.headSha)"
     - name: gitbranch
       value: "$(extensions.pullRequest.headRef)"
     - name: targetBranch

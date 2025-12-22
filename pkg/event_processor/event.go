@@ -35,12 +35,13 @@ type GitLabUser struct {
 }
 
 type GitLabMergeRequest struct {
-	TargetBranch string       `json:"target_branch"`
-	Title        string       `json:"title"`
-	LastCommit   GitLabCommit `json:"last_commit"`
-	SourceBranch string       `json:"source_branch"`
-	ChangeNumber int          `json:"iid"`
-	Url          string       `json:"url"`
+	TargetBranch   string       `json:"target_branch"`
+	Title          string       `json:"title"`
+	LastCommit     GitLabCommit `json:"last_commit"`
+	SourceBranch   string       `json:"source_branch"`
+	ChangeNumber   int          `json:"iid"`
+	Url            string       `json:"url"`
+	MergeCommitSha string       `json:"merge_commit_sha"`
 }
 
 type GitLabCommit struct {

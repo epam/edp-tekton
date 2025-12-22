@@ -54,6 +54,12 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}
 
+	// Use merge_commit_sha if available (regular merge), otherwise use last_commit.id (fast-forward merge)
+	headSha := gitLabEvent.ObjectAttributes.MergeCommitSha
+	if headSha == "" {
+		headSha = gitLabEvent.ObjectAttributes.LastCommit.ID
+	}
+
 	return &event_processor.EventInfo{
 		GitProvider:  event_processor.GitProviderGitLab,
 		RepoPath:     repoPath,
@@ -61,7 +67,7 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 		Type:         event_processor.EventTypeMerge,
 		Codebase:     codebase,
 		PullRequest: &event_processor.PullRequest{
-			HeadSha:           gitLabEvent.ObjectAttributes.LastCommit.ID,
+			HeadSha:           headSha,
 			Title:             gitLabEvent.ObjectAttributes.Title,
 			HeadRef:           gitLabEvent.ObjectAttributes.SourceBranch,
 			ChangeNumber:      gitLabEvent.ObjectAttributes.ChangeNumber,

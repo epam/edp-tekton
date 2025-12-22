@@ -36,15 +36,16 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		want        *event_processor.EventInfo
 	}{
 		{
-			name: "merge event process successfully",
+			name: "merge event with merge_commit_sha (regular merge)",
 			args: args{
 				body: event_processor.GitLabMergeRequestsEvent{
 					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
 					},
 					ObjectAttributes: event_processor.GitLabMergeRequest{
-						TargetBranch: "master",
-						Title:        "fix",
+						TargetBranch:   "master",
+						Title:          "fix",
+						MergeCommitSha: "merge-commit-sha-456",
 						LastCommit: event_processor.GitLabCommit{
 							ID:      "123",
 							Message: "commit message",
@@ -87,7 +88,71 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 				PullRequest: &event_processor.PullRequest{
-					HeadSha:           "123",
+					HeadSha:           "merge-commit-sha-456",
+					Title:             "fix",
+					HeadRef:           "feature1",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
+					Author:            "gluser",
+					AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
+					Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
+				},
+			},
+		},
+		{
+			name: "merge event without merge_commit_sha (fast-forward merge)",
+			args: args{
+				body: event_processor.GitLabMergeRequestsEvent{
+					Project: event_processor.GitLabProject{
+						PathWithNamespace: "/o/r",
+					},
+					ObjectAttributes: event_processor.GitLabMergeRequest{
+						TargetBranch:   "master",
+						Title:          "fix",
+						MergeCommitSha: "",
+						LastCommit: event_processor.GitLabCommit{
+							ID:      "last-commit-sha-123",
+							Message: "commit message",
+						},
+						SourceBranch: "feature1",
+						ChangeNumber: 1,
+						Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
+					},
+					User: event_processor.GitLabUser{
+						Username:  "gluser",
+						AvatarUrl: "https://gitlab.com/avatar/gluser",
+					},
+				},
+			},
+			kubeObjects: []client.Object{
+				&codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-codebase",
+						Namespace: "default",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: "/o/r",
+					},
+				},
+			},
+			wantErr: require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderGitLab,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         event_processor.EventTypeMerge,
+				Codebase: &codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "test-codebase",
+						Namespace:       "default",
+						ResourceVersion: "999",
+					},
+					Spec: codebaseApi.CodebaseSpec{
+						GitUrlPath: "/o/r",
+					},
+				},
+				PullRequest: &event_processor.PullRequest{
+					HeadSha:           "last-commit-sha-123",
 					Title:             "fix",
 					HeadRef:           "feature1",
 					ChangeNumber:      1,

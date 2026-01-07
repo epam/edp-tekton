@@ -1,5 +1,11 @@
 {{ if has "github" .Values.global.gitProviders }}
-{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 ) ( .Values.pipelines.deployableResources.java.java21 )}}
+{{ if or
+  ( .Values.pipelines.deployableResources.java.java8 )
+  ( .Values.pipelines.deployableResources.java.java11 )
+  ( .Values.pipelines.deployableResources.java.java17 )
+  ( .Values.pipelines.deployableResources.java.java21 )
+  ( .Values.pipelines.deployableResources.java.java25 )
+}}
 {{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
 {{- $rawSonar := include "edp-tekton.resourceMapping.mavenSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}
@@ -62,6 +68,7 @@ spec:
 
 {{- include "github-review-start" $ | nindent 4 }}
 
+    {{- if not (and $.Values.pipelines.deployableResources.java.java25SkipSonar (eq $framework "java25")) }}
     - name: sonar
       taskRef:
         kind: Task
@@ -90,6 +97,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+    {{- end }}
 
 {{ include "github-review-vote" $ | nindent 2 }}
 ---

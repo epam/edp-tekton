@@ -1,5 +1,11 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
-{{ if or ( .Values.pipelines.deployableResources.java.java8 ) ( .Values.pipelines.deployableResources.java.java11 ) ( .Values.pipelines.deployableResources.java.java17 ) ( .Values.pipelines.deployableResources.java.java21 )}}
+{{ if or
+  ( .Values.pipelines.deployableResources.java.java8 )
+  ( .Values.pipelines.deployableResources.java.java11 )
+  ( .Values.pipelines.deployableResources.java.java17 )
+  ( .Values.pipelines.deployableResources.java.java21 )
+  ( .Values.pipelines.deployableResources.java.java25 )
+}}
 {{- $raw := include "edp-tekton.resourceMapping.maven" . | fromYaml -}}
 {{- $rawSonar := include "edp-tekton.resourceMapping.gradleSonar" . | fromYaml -}}
 {{- range $framework, $image := $raw }}
@@ -76,6 +82,7 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)
 
+    {{- if not (and $.Values.pipelines.deployableResources.java.java25SkipSonar (eq $framework "java25")) }}
     - name: sonar
       taskRef:
         kind: Task
@@ -103,13 +110,18 @@ spec:
         - name: source
           workspace: shared-workspace
           subPath: source
+    {{- end }}
 
     - name: git-tag
       taskRef:
         kind: Task
         name: git-cli
       runAfter:
+{{- if not (and $.Values.pipelines.deployableResources.java.java25SkipSonar (eq $framework "java25")) }}
         - sonar
+{{- else }}
+        - get-version
+{{- end }}
       params:
         - name: GIT_USER_EMAIL
           value: edp-ci@edp.ci-user

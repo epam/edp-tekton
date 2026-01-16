@@ -173,6 +173,8 @@ spec:
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.pullrequest.base ${TARGET_BRANCH}
           fi
 
+          echo "sonar.working.directory=/tmp/.scannerwork" >> $(workspaces.source.path)/sonar-project.properties
+
         else
           touch sonar-project.properties
           test -z "${SONAR_HOST_URL}" || echo "sonar.host.url=${SONAR_HOST_URL}" >> sonar-project.properties
@@ -183,12 +185,13 @@ spec:
           test -z "${KEY_ID}" || echo "sonar.pullrequest.key=${KEY_ID}" >> sonar-project.properties
           test -z "${SOURCE_BRANCH}" || echo "sonar.pullrequest.branch=${SOURCE_BRANCH}" >> sonar-project.properties
           test -z "${TARGET_BRANCH}" || echo "sonar.pullrequest.base=${TARGET_BRANCH}" >> sonar-project.properties
+          echo "sonar.working.directory=/tmp/.scannerwork" >> sonar-project.properties
         fi
 
         echo "---------------------------"
         cat $(workspaces.source.path)/sonar-project.properties
 
-    - image: {{ include "edp-tekton.registry" . }}/sonarsource/sonar-scanner-cli:5.0.1
+    - image: {{ include "edp-tekton.registry" . }}/sonarsource/sonar-scanner-cli:12.0.0.3214_8.0.1
       name: sonar-scanner
       workingDir: $(workspaces.source.path)
       env:

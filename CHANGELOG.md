@@ -1,6 +1,23 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Add support for Java 25 version in autotests ([#572](https://github.com/epam/edp-tekton/issues/572))
+- Add support for Java 25 version in Tekton pipeline ([#572](https://github.com/epam/edp-tekton/issues/572))
+
+### Bug Fixes
+
+- Replacing the deprecated sonar.login
+- Use merge_commit_sha for GitLab interceptor with fallback to last_commit ([#569](https://github.com/epam/edp-tekton/issues/569))
+- Fix git-sha value for the GitLab when merge strategy doesn't create merge commit ([#569](https://github.com/epam/edp-tekton/issues/569))
+
+### Routine
+
+- Update sonar-scanner-cli version
+- Migrate tekton resources from v1beta1 to v1 ([#573](https://github.com/epam/edp-tekton/issues/573))
+- Update current development version ([#566](https://github.com/epam/edp-tekton/issues/566))
+
 
 <a name="v0.20.0"></a>
 ## [v0.20.0] - 2025-12-19

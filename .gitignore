@@ -3,6 +3,8 @@ bin/
 dist/
 coverage.out
 
+.vscode/
+
 ### Python test
 .venv
 __pycache__/

@@ -26,24 +26,73 @@ spec:
       type: string
     - name: base-image
       type: string
+    - name: step-name
+      type: string
+    - name: ci-nexus
+      type: string
+      description: name of the secret for the Nexus integration
+      default: ci-nexus
   steps:
     - name: run-autotests
       image: "$(params.base-image)"
+      volumeMounts:
+        {{- if eq $k "maven" }}
+        - name: settings-maven
+          mountPath: /var/configmap
+        {{- else if eq $k "gradle" }}
+        - name: settings-gradle
+          mountPath: /var/configmap
+        {{- end }}
       workingDir: $(workspaces.source.path)
       env:
-        - name: STAGE_NAME
-          value: $(params.stage-name)
-        - name: CD_PIPELINE_NAME
-          value: $(params.cd-pipeline-name)
+        - name: CI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: username
+        - name: CI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-nexus)
+              key: password
+        - name: STEP_NAME
+          value: $(params.step-name)
+        - name: BUILD_TOOL
+          value: {{ $k }}
       envFrom:
         - configMapRef:
             name: $(params.cd-pipeline-name)-$(params.stage-name)
       script: |
-        #!/bin/bash
+        #!/usr/bin/env bash
+        set -euo pipefail
 
-        set -exo pipefail
-        $(sed -n 's/.*"'$STAGE_NAME'": "\(.*\)",/\1/p' run.json | awk -F '"' '{print $1}')
+        CMD=$(sed -n "s/.*\"$STEP_NAME\": \"\(.*\)\".*/\1/p" run.json)
+        PARAMS=""
 
+        if [[ -z "$CMD" ]]; then
+          echo "Command for step-name '$STEP_NAME' not found in run.json"
+          exit 1
+        fi
+
+        if [[ $BUILD_TOOL == "maven" ]]; then
+          PARAMS="-s /var/configmap/settings.xml \
+            --batch-mode"
+        elif [[ "$BUILD_TOOL" == "gradle" ]]; then
+          PARAMS="-I \
+            /var/configmap/init.gradle"
+        fi
+
+        exec $CMD $PARAMS
+  volumes:
+    {{- if eq $k "maven" }}
+    - configMap:
+        name: {{ $.Values.tekton.configs.mavenConfigMap }}
+      name: settings-maven
+    {{- else if eq $k "gradle" }}
+    - configMap:
+        name: {{ $.Values.tekton.configs.gradleConfigMap }}
+      name: settings-gradle
+    {{- end }}
 ---
 {{ end }}
 {{ end }}

@@ -26,6 +26,8 @@ spec:
       default: "dev"
     - name: base-image
       default: ""
+    - name: step-name
+      default: ""
   tasks:
     - name: fetch-repository
       taskRef:
@@ -55,6 +57,8 @@ spec:
           value: "$(params.cd-pipeline-name)"
         - name: stage-name
           value: "$(params.stage-name)"
+        - name: step-name
+          value: "$(params.step-name)"
       workspaces:
         - name: source
           workspace: shared-workspace

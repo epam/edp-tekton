@@ -18,7 +18,11 @@ const (
 )
 
 // GetCodebaseByRepoPath returns codebase by repository path.
-func GetCodebaseByRepoPath(ctx context.Context, client ctrlClient.Reader, ns, repoPath string) (*codebaseApi.Codebase, error) {
+func GetCodebaseByRepoPath(
+	ctx context.Context,
+	client ctrlClient.Reader,
+	ns, repoPath string,
+) (*codebaseApi.Codebase, error) {
 	codebaseList := &codebaseApi.CodebaseList{}
 	if err := client.List(ctx, codebaseList, ctrlClient.InNamespace(ns), ctrlClient.Limit(CodebaseListLimit)); err != nil {
 		return nil, fmt.Errorf("unable to get codebase list: %w", err)
@@ -46,12 +50,20 @@ const GitServerTokenField = "token"
 
 func GetGitServerToken(ctx context.Context, client ctrlClient.Reader, codebase *codebaseApi.Codebase) (string, error) {
 	gitServer := &codebaseApi.GitServer{}
-	if err := client.Get(ctx, types.NamespacedName{Namespace: codebase.Namespace, Name: codebase.Spec.GitServer}, gitServer); err != nil {
+	if err := client.Get(
+		ctx,
+		types.NamespacedName{Namespace: codebase.Namespace, Name: codebase.Spec.GitServer},
+		gitServer,
+	); err != nil {
 		return "", fmt.Errorf("failed to get GitServer: %w", err)
 	}
 
 	gitServerSecret := &corev1.Secret{}
-	if err := client.Get(ctx, types.NamespacedName{Namespace: codebase.Namespace, Name: gitServer.Spec.NameSshKeySecret}, gitServerSecret); err != nil {
+	if err := client.Get(
+		ctx,
+		types.NamespacedName{Namespace: codebase.Namespace, Name: gitServer.Spec.NameSshKeySecret},
+		gitServerSecret,
+	); err != nil {
 		return "", fmt.Errorf("failed to get GitServer secret: %w", err)
 	}
 

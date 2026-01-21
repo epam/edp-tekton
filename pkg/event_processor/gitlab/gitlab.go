@@ -24,7 +24,11 @@ func NewEventProcessor(ksClient ctrlClient.Reader, logger *zap.SugaredLogger) *E
 	}
 }
 
-func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) Process(
+	ctx context.Context,
+	body []byte,
+	ns, eventType string,
+) (*event_processor.EventInfo, error) {
 	switch eventType {
 	case event_processor.GitLabEventTypeCommentAdded:
 		return p.processCommentEvent(ctx, body, ns)
@@ -33,7 +37,11 @@ func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType
 	}
 }
 
-func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processMergeEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	gitLabEvent := &event_processor.GitLabMergeRequestsEvent{}
 	if err := json.Unmarshal(body, gitLabEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitLab event: %w", err)
@@ -79,7 +87,11 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 	}, nil
 }
 
-func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processCommentEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	gitLabEvent := &event_processor.GitLabCommentEvent{}
 	if err := json.Unmarshal(body, gitLabEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitLab event: %w", err)

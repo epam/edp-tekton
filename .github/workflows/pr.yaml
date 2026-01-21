@@ -15,10 +15,10 @@ env:
 jobs:
 
   check-commit-message:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -44,10 +44,10 @@ jobs:
 
   helm-docs:
     needs: [check-commit-message]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -58,7 +58,7 @@ jobs:
 
   helm-lint:
     needs: [helm-docs]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
      CHART_DIR: "charts/common-library,charts/pipelines-library"
      CT_FILE_PATH: "ct/ct.yaml"
@@ -66,7 +66,7 @@ jobs:
      CHART_SCHEMA_FILE_PATH: "ct/chart_schema.yaml"
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -97,10 +97,10 @@ jobs:
 
   build-and-lint:
     needs: [helm-lint]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -115,19 +115,19 @@ jobs:
 
   docker-lint:
     needs: [build-and-lint]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run hadolint
         uses: hadolint/hadolint-action@v1.5.0
         with:
           dockerfile: Dockerfile
 
-  e2e-tests-132:
-    name: End-to-end tests 1.32
+  e2e-tests-134:
+    name: End-to-end tests 1.34
     needs: [docker-lint]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -139,12 +139,12 @@ jobs:
           go-version: ${{ env.GOLANG_VERSION }}
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "install kuttl"
         run: ./hack/install-kuttl.sh
 
       - name: "run tests"
         env:
-          KUBE_VERSION: "1.32"
+          KUBE_VERSION: "1.34"
         run: make start-kind KUBE_VERSION=$KUBE_VERSION && make e2e

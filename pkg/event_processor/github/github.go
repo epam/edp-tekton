@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v81/github"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -58,7 +58,11 @@ func NewEventProcessor(
 	}
 }
 
-func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) Process(
+	ctx context.Context,
+	body []byte,
+	ns, eventType string,
+) (*event_processor.EventInfo, error) {
 	switch eventType {
 	case event_processor.GitHubEventTypeCommentAdded:
 		return p.processCommentEvent(ctx, body, ns)
@@ -69,7 +73,11 @@ func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType
 
 // processCommentEvent processes GitHub comment event.
 // nolint:cyclop // function is not complex
-func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processMergeEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	gitHubEvent := &github.PullRequestEvent{}
 	if err := json.Unmarshal(body, gitHubEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitHub event: %w", err)
@@ -136,7 +144,11 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 
 // processCommentEvent processes GitHub comment event.
 // nolint:funlen // function is not so complex
-func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processCommentEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	event := &github.IssueCommentEvent{}
 	if err := json.Unmarshal(body, event); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal GitHub IssueCommentEvent: %w", err)

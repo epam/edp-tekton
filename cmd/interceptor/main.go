@@ -159,7 +159,6 @@ func main() {
 
 func (h *edpInterceptorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	b, err := h.EDPInterceptor.Execute(r)
-
 	if err != nil {
 		interceptorErr := &interceptor.HTTPError{}
 

@@ -19,7 +19,7 @@ spec:
     - name: DEPLOYMENT_FLOW
       type: string
     - name: AUTOTEST_PIPELINES
-      default: 'autotes-pipeline'
+      default: 'autotest-pipeline'
     - name: codebase_tags
       default: 'codebase_tags'
     - name: parent-pipeline-name
@@ -63,8 +63,9 @@ spec:
 
         autotestsList = []
         autotestBuildTool = []
-        gitAutotesUrl = []
+        gitAutotestUrl = []
         autotestsBranch = []
+        autotestsStep = []
         pipelines = ""
         applications = []
         tags = []
@@ -93,8 +94,9 @@ spec:
               gitserver = json.loads(subprocess.check_output(["kubectl", "get", "gitserver", autotestGitServer , "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
               autotestsList.append(element["autotestName"])
               autotestsBranch.append(element["branchName"])
+              autotestsStep.append(f"{cdPipelineName}-{stage}-{element['stepName']}")
               autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-              gitAutotesUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
+              gitAutotestUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
               autotestBuildTool.append(autotest["buildTool"])
               autotestFramework.append(autotest["framework"])
 
@@ -102,15 +104,18 @@ spec:
 
         for count, element in enumerate(autotestsList):
             print("[TEKTON][DEBUG]: Run autotest - autotests-" + autotestBuildTool[count])
-            print("[TEKTON][DEBUG]: Autotest URL - " + gitAutotesUrl[count])
+            print("[TEKTON][DEBUG]: Autotest URL - " + gitAutotestUrl[count])
             print("[TEKTON][DEBUG]: Autotest branch - " + autotestsBranch[count])
+            print("[TEKTON][DEBUG]: Autotest step - " + autotestsStep[count])
             command = "tkn pipeline start autotests-" + autotestBuildTool[count] + " \
             --use-param-defaults \
-            -p git-source-url=" + gitAutotesUrl[count] + " \
+            --serviceaccount tekton \
+            -p git-source-url=" + gitAutotestUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
             -p stage-name=" + stage +" \
             -p cd-pipeline-name=" + cdPipelineName +" \
             -p base-image=" + frameworks[autotestBuildTool[count] + "-" + autotestFramework[count]] + " \
+            -p step-name=" + autotestsStep[count] + " \
             --labels app.edp.epam.com/pipeline=" + cdPipelineName + " \
             --labels app.edp.epam.com/stage=" + stage + " \
             --labels app.edp.epam.com/codebase=" + autotestsList[count] + " \

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-github/v31/github"
+	"github.com/google/go-github/v81/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -59,8 +59,9 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 		wantErr         assert.ErrorAssertionFunc
 	}{
 		{
-			name:    "success",
-			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}, \"change\": {\"branch\": \"feature1\"}}", "context": {"trigger_id": "namespace/default/triggers/name"}}`,
+			name: "success",
+			reqBody: `{"body": "{\"project\": {\"name\": \"demo\"}, \"change\": {\"branch\": \"feature1\"}}", ` +
+				`"context": {"trigger_id": "namespace/default/triggers/name"}}`,
 			gerritProcessor: func(t *testing.T) event_processor.Processor {
 				m := &mocks.Processor{}
 				m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{

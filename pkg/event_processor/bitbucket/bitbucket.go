@@ -46,7 +46,11 @@ func NewEventProcessor(ksClient ctrlClient.Reader, options *EventProcessorOption
 	}
 }
 
-func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) Process(
+	ctx context.Context,
+	body []byte,
+	ns, eventType string,
+) (*event_processor.EventInfo, error) {
 	switch eventType {
 	case event_processor.BitbucketEventTypeCommentAdded:
 		return p.processCommentEvent(ctx, body, ns)
@@ -55,7 +59,11 @@ func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, eventType
 	}
 }
 
-func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processMergeEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	bitbucketEvent := &event_processor.BitbucketEvent{}
 	if err := json.Unmarshal(body, bitbucketEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal Bitbucket event: %w", err)
@@ -76,7 +84,12 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}
 
-	commitMessage, err := p.getPRLatestCommitMessage(ctx, codebase, bitbucketEvent.Repository.FullName, bitbucketEvent.PullRequest.ID)
+	commitMessage, err := p.getPRLatestCommitMessage(
+		ctx,
+		codebase,
+		bitbucketEvent.Repository.FullName,
+		bitbucketEvent.PullRequest.ID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +113,11 @@ func (p *EventProcessor) processMergeEvent(ctx context.Context, body []byte, ns 
 	}, nil
 }
 
-func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, ns string) (*event_processor.EventInfo, error) {
+func (p *EventProcessor) processCommentEvent(
+	ctx context.Context,
+	body []byte,
+	ns string,
+) (*event_processor.EventInfo, error) {
 	bitbucketEvent := &event_processor.BitbucketCommentEvent{}
 	if err := json.Unmarshal(body, bitbucketEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal Bitbucket event: %w", err)
@@ -117,7 +134,12 @@ func (p *EventProcessor) processCommentEvent(ctx context.Context, body []byte, n
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}
 
-	commitMessage, err := p.getPRLatestCommitMessage(ctx, codebase, bitbucketEvent.Repository.FullName, bitbucketEvent.PullRequest.ID)
+	commitMessage, err := p.getPRLatestCommitMessage(
+		ctx,
+		codebase,
+		bitbucketEvent.Repository.FullName,
+		bitbucketEvent.PullRequest.ID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +189,6 @@ func (p *EventProcessor) getPRLatestCommitMessage(
 		SetHeader("Authorization", fmt.Sprintf("Basic %s", gitServerToken)).
 		SetResult(&commits).
 		Get(fmt.Sprintf("/repositories/%s/pullrequests/%d/commits?fields=values.message&pagelen=1", repoFullName, prID))
-
 	if err != nil {
 		return "", fmt.Errorf("failed to get PR latest commit message: %w", err)
 	}

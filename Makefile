@@ -13,7 +13,7 @@ HOST_ARCH?=$(shell go env GOARCH)
 # Use kind cluster for testing
 START_KIND_CLUSTER?=true
 KIND_CLUSTER_NAME?="tekton"
-KUBE_VERSION?=1.31
+KUBE_VERSION?=1.34
 KIND_CONFIG?=./hack/kind-$(KUBE_VERSION).yaml
 
 CONTAINER_REGISTRY_URL?="repo"
@@ -87,11 +87,11 @@ vet:  ## Run go vet
 
 .PHONY: lint
 lint: golangci-lint ## Run go lint
-	$(GOLANGCI_LINT) run -v -c .golangci.yaml ./...
+	$(GOLANGCI_LINT) run -v ./...
 
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
-	$(GOLANGCI_LINT) run --fix -v -c .golangci.yaml ./...
+	$(GOLANGCI_LINT) run --fix -v ./...
 
 test-chart: ${CURRENT_DIR}/.venv/bin/activate
 	( \
@@ -123,7 +123,7 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 # Tools version
-GOLANGCI_LINT_VERSION ?=v1.64.7
+GOLANGCI_LINT_VERSION ?=v2.8.0
 HELMDOCS_VERSION ?= v1.14.2
 GITCHGLOG_VERSION ?= v0.15.4
 
@@ -140,7 +140,7 @@ git-chglog: ## Download git-chglog locally if necessary.
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 .PHONY: golangci-lint
 golangci-lint: ## Download golangci-lint locally if necessary.
-	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary

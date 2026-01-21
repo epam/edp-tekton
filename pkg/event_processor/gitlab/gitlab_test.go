@@ -18,154 +18,129 @@ import (
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
+// createTestCodebase creates a test codebase for GitLab testing.
+func createTestCodebase() *codebaseApi.Codebase {
+	return &codebaseApi.Codebase{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-codebase",
+			Namespace: "default",
+		},
+		Spec: codebaseApi.CodebaseSpec{
+			GitUrlPath: "/o/r",
+		},
+	}
+}
+
+// gitLabMergeTestArgs defines the args structure for GitLab merge tests.
+type gitLabMergeTestArgs struct {
+	body any
+}
+
+// createGitLabMergeTestCase creates a test case for GitLab merge event processing.
+func createGitLabMergeTestCase(
+	name string,
+	mergeCommitSha string,
+	lastCommitSha string,
+) struct {
+	name        string
+	args        gitLabMergeTestArgs
+	kubeObjects []client.Object
+	wantErr     require.ErrorAssertionFunc
+	want        *event_processor.EventInfo
+} {
+	headSha := mergeCommitSha
+	if headSha == "" {
+		headSha = lastCommitSha
+	}
+
+	return struct {
+		name        string
+		args        gitLabMergeTestArgs
+		kubeObjects []client.Object
+		wantErr     require.ErrorAssertionFunc
+		want        *event_processor.EventInfo
+	}{
+		name: name,
+		args: gitLabMergeTestArgs{
+			body: event_processor.GitLabMergeRequestsEvent{
+				Project: event_processor.GitLabProject{
+					PathWithNamespace: "/o/r",
+				},
+				ObjectAttributes: event_processor.GitLabMergeRequest{
+					TargetBranch:   "master",
+					Title:          "fix",
+					MergeCommitSha: mergeCommitSha,
+					LastCommit: event_processor.GitLabCommit{
+						ID:      lastCommitSha,
+						Message: "commit message",
+					},
+					SourceBranch: "feature1",
+					ChangeNumber: 1,
+					Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
+				},
+				User: event_processor.GitLabUser{
+					Username:  "gluser",
+					AvatarUrl: "https://gitlab.com/avatar/gluser",
+				},
+			},
+		},
+		kubeObjects: []client.Object{createTestCodebase()},
+		wantErr:     require.NoError,
+		want: &event_processor.EventInfo{
+			GitProvider:  event_processor.GitProviderGitLab,
+			RepoPath:     "/o/r",
+			TargetBranch: "master",
+			Type:         event_processor.EventTypeMerge,
+			Codebase: &codebaseApi.Codebase{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "test-codebase",
+					Namespace:       "default",
+					ResourceVersion: "999",
+				},
+				Spec: codebaseApi.CodebaseSpec{
+					GitUrlPath: "/o/r",
+				},
+			},
+			PullRequest: &event_processor.PullRequest{
+				HeadSha:           headSha,
+				Title:             "fix",
+				HeadRef:           "feature1",
+				ChangeNumber:      1,
+				LastCommitMessage: "commit message",
+				Author:            "gluser",
+				AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
+				Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
+			},
+		},
+	}
+}
+
 func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 	t.Parallel()
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
 
-	type args struct {
-		body any
-	}
-
 	tests := []struct {
 		name        string
-		args        args
+		args        gitLabMergeTestArgs
 		kubeObjects []client.Object
 		wantErr     require.ErrorAssertionFunc
 		want        *event_processor.EventInfo
 	}{
-		{
-			name: "merge event with merge_commit_sha (regular merge)",
-			args: args{
-				body: event_processor.GitLabMergeRequestsEvent{
-					Project: event_processor.GitLabProject{
-						PathWithNamespace: "/o/r",
-					},
-					ObjectAttributes: event_processor.GitLabMergeRequest{
-						TargetBranch:   "master",
-						Title:          "fix",
-						MergeCommitSha: "merge-commit-sha-456",
-						LastCommit: event_processor.GitLabCommit{
-							ID:      "123",
-							Message: "commit message",
-						},
-						SourceBranch: "feature1",
-						ChangeNumber: 1,
-						Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
-					},
-					User: event_processor.GitLabUser{
-						Username:  "gluser",
-						AvatarUrl: "https://gitlab.com/avatar/gluser",
-					},
-				},
-			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
-			want: &event_processor.EventInfo{
-				GitProvider:  event_processor.GitProviderGitLab,
-				RepoPath:     "/o/r",
-				TargetBranch: "master",
-				Type:         event_processor.EventTypeMerge,
-				Codebase: &codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:            "test-codebase",
-						Namespace:       "default",
-						ResourceVersion: "999",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-				PullRequest: &event_processor.PullRequest{
-					HeadSha:           "merge-commit-sha-456",
-					Title:             "fix",
-					HeadRef:           "feature1",
-					ChangeNumber:      1,
-					LastCommitMessage: "commit message",
-					Author:            "gluser",
-					AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
-					Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
-				},
-			},
-		},
-		{
-			name: "merge event without merge_commit_sha (fast-forward merge)",
-			args: args{
-				body: event_processor.GitLabMergeRequestsEvent{
-					Project: event_processor.GitLabProject{
-						PathWithNamespace: "/o/r",
-					},
-					ObjectAttributes: event_processor.GitLabMergeRequest{
-						TargetBranch:   "master",
-						Title:          "fix",
-						MergeCommitSha: "",
-						LastCommit: event_processor.GitLabCommit{
-							ID:      "last-commit-sha-123",
-							Message: "commit message",
-						},
-						SourceBranch: "feature1",
-						ChangeNumber: 1,
-						Url:          "https://gitlab.example.com/o/r/-/merge_requests/1",
-					},
-					User: event_processor.GitLabUser{
-						Username:  "gluser",
-						AvatarUrl: "https://gitlab.com/avatar/gluser",
-					},
-				},
-			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
-			want: &event_processor.EventInfo{
-				GitProvider:  event_processor.GitProviderGitLab,
-				RepoPath:     "/o/r",
-				TargetBranch: "master",
-				Type:         event_processor.EventTypeMerge,
-				Codebase: &codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:            "test-codebase",
-						Namespace:       "default",
-						ResourceVersion: "999",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-				PullRequest: &event_processor.PullRequest{
-					HeadSha:           "last-commit-sha-123",
-					Title:             "fix",
-					HeadRef:           "feature1",
-					ChangeNumber:      1,
-					LastCommitMessage: "commit message",
-					Author:            "gluser",
-					AuthorAvatarUrl:   "https://gitlab.com/avatar/gluser",
-					Url:               "https://gitlab.example.com/o/r/-/merge_requests/1",
-				},
-			},
-		},
+		createGitLabMergeTestCase(
+			"merge event with merge_commit_sha (regular merge)",
+			"merge-commit-sha-456",
+			"123",
+		),
+		createGitLabMergeTestCase(
+			"merge event without merge_commit_sha (fast-forward merge)",
+			"",
+			"last-commit-sha-123",
+		),
 		{
 			name: "failed to get codebase",
-			args: args{
+			args: gitLabMergeTestArgs{
 				body: event_processor.GitLabMergeRequestsEvent{
 					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
@@ -182,7 +157,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		},
 		{
 			name: "failed to get branch",
-			args: args{
+			args: gitLabMergeTestArgs{
 				body: event_processor.GitLabMergeRequestsEvent{
 					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
@@ -196,7 +171,7 @@ func TestGitLabEventProcessor_processMergeEvent(t *testing.T) {
 		},
 		{
 			name: "failed to get repository path",
-			args: args{
+			args: gitLabMergeTestArgs{
 				body: event_processor.GitLabMergeRequestsEvent{},
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
@@ -270,18 +245,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderGitLab,
 				RepoPath:           "/o/r",
@@ -332,18 +297,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderGitLab,
 				RepoPath:           "/o/r",
@@ -391,18 +346,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:  event_processor.GitProviderGitLab,
 				RepoPath:     "/o/r",
@@ -436,18 +381,8 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider: event_processor.GitProviderGitLab,
 				Type:        event_processor.EventTypeReviewComment,
@@ -546,18 +481,8 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:  event_processor.GitProviderGitLab,
 				RepoPath:     "/o/r",
@@ -605,18 +530,8 @@ func TestGitLabEventProcessor_Process(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: []client.Object{createTestCodebase()},
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderGitLab,
 				RepoPath:           "/o/r",

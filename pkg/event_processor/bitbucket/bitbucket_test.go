@@ -23,6 +23,40 @@ import (
 	"github.com/epam/edp-tekton/pkg/event_processor"
 )
 
+// createTestKubeObjects creates common Kubernetes objects for testing.
+func createTestKubeObjects() []client.Object {
+	return []client.Object{
+		&codebaseApi.Codebase{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-codebase",
+				Namespace: "default",
+			},
+			Spec: codebaseApi.CodebaseSpec{
+				GitUrlPath: "/o/r",
+				GitServer:  "test-git-server",
+			},
+		},
+		&codebaseApi.GitServer{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-git-server",
+				Namespace: "default",
+			},
+			Spec: codebaseApi.GitServerSpec{
+				NameSshKeySecret: "test-secret",
+			},
+		},
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test-secret",
+				Namespace: "default",
+			},
+			Data: map[string][]byte{
+				"token": []byte("test-token"),
+			},
+		},
+	}
+}
+
 func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 	t.Parallel()
 
@@ -123,37 +157,8 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-						GitServer:  "test-git-server",
-					},
-				},
-				&codebaseApi.GitServer{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-git-server",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.GitServerSpec{
-						NameSshKeySecret: "test-secret",
-					},
-				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-secret",
-						Namespace: "default",
-					},
-					Data: map[string][]byte{
-						"token": []byte("test-token"),
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: createTestKubeObjects(),
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderBitbucket,
 				RepoPath:           "/o/r",
@@ -222,36 +227,7 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-						GitServer:  "test-git-server",
-					},
-				},
-				&codebaseApi.GitServer{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-git-server",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.GitServerSpec{
-						NameSshKeySecret: "test-secret",
-					},
-				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-secret",
-						Namespace: "default",
-					},
-					Data: map[string][]byte{
-						"token": []byte("test-token"),
-					},
-				},
-			},
+			kubeObjects: createTestKubeObjects(),
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "pull request doesn't have commits")
@@ -436,37 +412,8 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-						GitServer:  "test-git-server",
-					},
-				},
-				&codebaseApi.GitServer{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-git-server",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.GitServerSpec{
-						NameSshKeySecret: "test-secret",
-					},
-				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-secret",
-						Namespace: "default",
-					},
-					Data: map[string][]byte{
-						"token": []byte("test-token"),
-					},
-				},
-			},
-			wantErr: require.NoError,
+			kubeObjects: createTestKubeObjects(),
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:  event_processor.GitProviderBitbucket,
 				RepoPath:     "/o/r",
@@ -527,36 +474,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-						GitServer:  "test-git-server",
-					},
-				},
-				&codebaseApi.GitServer{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-git-server",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.GitServerSpec{
-						NameSshKeySecret: "test-secret",
-					},
-				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-secret",
-						Namespace: "default",
-					},
-					Data: map[string][]byte{
-						"token": []byte("test-token"),
-					},
-				},
-			},
+			kubeObjects: createTestKubeObjects(),
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "pull request doesn't have commits")
@@ -642,36 +560,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{
-				&codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-codebase",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-						GitServer:  "test-git-server",
-					},
-				},
-				&codebaseApi.GitServer{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-git-server",
-						Namespace: "default",
-					},
-					Spec: codebaseApi.GitServerSpec{
-						NameSshKeySecret: "test-secret",
-					},
-				},
-				&corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-secret",
-						Namespace: "default",
-					},
-					Data: map[string][]byte{
-						"token": []byte("test-token"),
-					},
-				},
-			},
+			kubeObjects: createTestKubeObjects(),
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "failed to get PR latest commit message")

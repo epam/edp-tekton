@@ -118,7 +118,11 @@ func TestSecretService_CreateCertsSecret(t *testing.T) {
 			tt.wantCertData(t, gotCertData)
 
 			secret := &corev1.Secret{}
-			err = fakeClient.Get(context.Background(), client.ObjectKey{Namespace: tt.args.namespace, Name: SecretCertsName}, secret)
+			err = fakeClient.Get(
+				context.Background(),
+				client.ObjectKey{Namespace: tt.args.namespace, Name: SecretCertsName},
+				secret,
+			)
 			tt.wantGetCreatedSecretErr(t, err)
 		})
 	}
@@ -188,7 +192,11 @@ func TestSecretService_UpdateCABundle(t *testing.T) {
 			tt.wantErr(t, err)
 
 			interceptor := &triggersApi.Interceptor{}
-			err = s.client.Get(context.Background(), client.ObjectKey{Namespace: tt.args.namespace, Name: tt.args.interceptorName}, interceptor)
+			err = s.client.Get(
+				context.Background(),
+				client.ObjectKey{Namespace: tt.args.namespace, Name: tt.args.interceptorName},
+				interceptor,
+			)
 			tt.wantGetInterceptorErr(t, err)
 			assert.Equal(t, tt.wantCaBundle, interceptor.Spec.ClientConfig.CaBundle)
 		})

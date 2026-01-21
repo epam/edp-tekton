@@ -98,7 +98,10 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 }
 
 // Process processes the interceptor request.
-func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorRequest) *triggersv1.InterceptorResponse {
+func (i *EDPInterceptor) Process(
+	ctx context.Context,
+	r *triggersv1.InterceptorRequest,
+) *triggersv1.InterceptorResponse {
 	event, err := i.processEvent(ctx, r)
 	if err != nil {
 		return interceptors.Fail(codes.InvalidArgument, err.Error())
@@ -151,7 +154,10 @@ func (i *EDPInterceptor) Process(ctx context.Context, r *triggersv1.InterceptorR
 }
 
 // processEvent returns event info from interceptor request.
-func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.InterceptorRequest) (*event_processor.EventInfo, error) {
+func (i *EDPInterceptor) processEvent(
+	ctx context.Context,
+	r *triggersv1.InterceptorRequest,
+) (*event_processor.EventInfo, error) {
 	githubEventType, isGitHubEvent := r.Header["X-Github-Event"]
 	gitLabEventType, isGitLabEvent := r.Header["X-Gitlab-Event"]
 	bitbucketEventType, isBitbucketEvent := r.Header["X-Event-Key"]
@@ -192,7 +198,10 @@ func (i *EDPInterceptor) processEvent(ctx context.Context, r *triggersv1.Interce
 	return event, nil
 }
 
-func (i *EDPInterceptor) getCodebaseBranch(ctx context.Context, codebaseName, gitBranch, namespace string) (*codebaseApi.CodebaseBranch, error) {
+func (i *EDPInterceptor) getCodebaseBranch(
+	ctx context.Context,
+	codebaseName, gitBranch, namespace string,
+) (*codebaseApi.CodebaseBranch, error) {
 	codebaseBranchList := &codebaseApi.CodebaseBranchList{}
 	if err := i.client.List(
 		ctx,

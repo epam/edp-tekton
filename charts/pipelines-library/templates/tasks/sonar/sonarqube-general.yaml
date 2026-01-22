@@ -194,6 +194,8 @@ spec:
     - image: {{ include "edp-tekton.registry" . }}/sonarsource/sonar-scanner-cli:12.0.0.3214_8.0.1
       name: sonar-scanner
       workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsUser: 0
       env:
         - name: SONAR_TOKEN
           valueFrom:

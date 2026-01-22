@@ -137,4 +137,4 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.pruner.resources | object | `{"limits":{"cpu":"100m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"50Mi"}}` | Pod resources for Tekton pruner job |
 | tekton.pruner.schedule | string | `"0 10 */1 * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |
-| tekton.workspaceSize | string | `"5Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |
+| tekton.workspaceSize | string | `"7Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |

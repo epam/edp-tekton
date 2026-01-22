@@ -216,7 +216,7 @@ tekton:
         memory: "50Mi"
 
   # -- Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines
-  workspaceSize: "5Gi"
+  workspaceSize: "7Gi"
   # -- The resource limits and requests for the Tekton Tasks
   resources:
     limits:

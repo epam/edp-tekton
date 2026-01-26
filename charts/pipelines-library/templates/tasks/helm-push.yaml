@@ -89,7 +89,7 @@ spec:
               key: platform
               name: krci-config
       script: |
-        #!/bin/bash
+        #!/usr/bin/env sh
 
         set -ex
 
@@ -98,15 +98,15 @@ spec:
         helm_push_command="helm push *-${IMAGE_TAG}.tgz oci://${CONTAINER_REGISTRY_URL}/${CONTAINER_REGISTRY_SPACE}"
 
 
-        if [ $CONTAINER_REGISTRY_TYPE != "ecr" ]; then
-          helm_push_command+=" --registry-config /.config/helm/registry/config.json"
+        if [ "$CONTAINER_REGISTRY_TYPE" != "ecr" ]; then
+          helm_push_command="${helm_push_command} --registry-config /.config/helm/registry/config.json"
         fi
 
-        if [ $PLATFORM == "openshift" ]; then
-          helm_push_command+=" --insecure-skip-tls-verify"
+        if [ "$PLATFORM" = "openshift" ]; then
+          helm_push_command="${helm_push_command} --insecure-skip-tls-verify"
         fi
 
-        if [ $CONTAINER_REGISTRY_TYPE == "ecr" ]; then
+        if [ "$CONTAINER_REGISTRY_TYPE" = "ecr" ]; then
           aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | helm registry login --username AWS --password-stdin ${CONTAINER_REGISTRY_URL}
         fi
 

@@ -41,7 +41,7 @@ spec:
         set -e
 
         # replace '/' with '-'
-        CODEBASEBRANCH_NAME=${CODEBASEBRANCH_NAME//\//-}
+        CODEBASEBRANCH_NAME=$(printf '%s' "$CODEBASEBRANCH_NAME" | tr '/' '-')
         # get current BUILD ID
         BUILD_ID=$(kubectl get codebasebranches.v2.edp.epam.com ${CODEBASEBRANCH_NAME} -o txt --output=jsonpath={.status.build})
         # and increment it

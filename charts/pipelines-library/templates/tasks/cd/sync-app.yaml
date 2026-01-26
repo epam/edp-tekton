@@ -95,9 +95,7 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        apps=($(echo $APPLICATIONS_PAYLOAD | jq -r 'keys[]'))
-
-        for app in "${apps[@]}"; do
+        for app in $(echo "$APPLICATIONS_PAYLOAD" | jq -r 'keys[]'); do
           echo "ArgoCD diff for $app application:"
           echo "${ARGOCD_URL}/applications/${NAMESPACE}/${DEPLOYMENT_FLOW}-${ENVIRONMENT}-$app"
         done

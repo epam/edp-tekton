@@ -33,7 +33,7 @@ spec:
         - name: BRANCH
           value: "$(params.BRANCH_NAME)"
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -e
 
         tenantName=$(kubectl get cm krci-config -o jsonpath='{.data.edp_name}')

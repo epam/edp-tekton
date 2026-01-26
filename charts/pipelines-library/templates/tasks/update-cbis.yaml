@@ -26,7 +26,7 @@ spec:
         - name: IMAGE_TAG
           value: "$(params.IMAGE_TAG)"
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -e
 
         cbisName=$(kubectl get cbis.v2.edp.epam.com -l app.edp.epam.com/codebasebranch="${CODEBASEBRANCH_NAME}" -o jsonpath='{.items[0].metadata.name}')

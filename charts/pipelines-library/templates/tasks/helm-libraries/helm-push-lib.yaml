@@ -63,7 +63,7 @@ spec:
           fi
 
     - name: push-helm-chart
-      image: {{ include "edp-tekton.registry" . }}/alpine/k8s:1.25.15
+      image: {{ include "edp-tekton.registry" . }}/alpine/kubectl:1.34.2
       workingDir: $(workspaces.source.path)
       env:
         - name: CHART_DIR

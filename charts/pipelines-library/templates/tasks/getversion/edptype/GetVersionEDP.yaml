@@ -37,7 +37,7 @@ spec:
         - name: CODEBASEBRANCH_NAME
           value: "$(params.CODEBASEBRANCH_NAME)"
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -e
 
         # replace '/' with '-'

@@ -27,7 +27,7 @@ spec:
         - name: CURRENT_BUILD_NUMBER
           value: "$(params.CURRENT_BUILD_NUMBER)"
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -ex
 
         kubectl patch codebasebranches.v2.edp.epam.com ${CBB_NAME} \

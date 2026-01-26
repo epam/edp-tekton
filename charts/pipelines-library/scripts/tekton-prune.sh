@@ -1,11 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -o errtrace
-trap 'echo "error occurred on line ${LINENO}"; exit 1' ERR
+set -e
 
 verify() {
   echo 'Verify that kubectl is installed'
-  if ! command -v kubectl &> /dev/null; then
+  if ! command -v kubectl >/dev/null 2>&1; then
     echo "kubectl could not be found"
     exit 1
   fi
@@ -33,7 +32,7 @@ get_active_pipelineruns() {
 delete_lines_from_file() {
   file="$1"
   lines_to_delete="$2"
-  for line in ${lines_to_delete[@]}; do
+  for line in $lines_to_delete; do
     sed -i "/${line}/d" "${file}"
   done
 }
@@ -42,14 +41,18 @@ prune_resources() {
   resources_to_delete_file_path="$1"
   type="$2"
   resource_list=''
-  while IFS= read -r line || [[ -n "${line}" ]]; do
+  while IFS= read -r line || [ -n "${line}" ]; do
     if ! test -z "${line}"; then resource_list="${resource_list} ${type}${line}"; fi
   done < "$resources_to_delete_file_path"
-  if test -z "${resource_list// }"; then
-    echo 'No resources to delete'
-  else
-    kubectl delete -n "${NAMESPACE}" ${resource_list} --force --grace-period=0;
-  fi
+  # Check if resource_list contains only whitespace
+  case "${resource_list}" in
+    *[!\ ]*)
+      kubectl delete -n "${NAMESPACE}" ${resource_list} --force --grace-period=0
+      ;;
+    *)
+      echo 'No resources to delete'
+      ;;
+  esac
 }
 
 main() {

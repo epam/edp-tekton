@@ -92,7 +92,7 @@ spec:
         - configMapRef:
             name: $(params.DEPLOYMENT_FLOW)-$(params.ENVIRONMENT)
       script: |
-        #!/usr/bin/env bash
+        #!/usr/bin/env sh
         set -e
 
         apps=($(echo $APPLICATIONS_PAYLOAD | jq -r 'keys[]'))

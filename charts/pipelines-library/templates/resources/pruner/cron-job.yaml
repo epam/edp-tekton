@@ -32,7 +32,7 @@ spec:
                       apiVersion: v1
                       fieldPath: metadata.namespace
               command:
-                - bash
+                - sh
                 - /scripts/tekton-prune.sh
               volumeMounts: [{name: scripts, mountPath: /scripts}]
               resources:

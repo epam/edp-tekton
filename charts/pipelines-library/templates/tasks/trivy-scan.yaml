@@ -21,8 +21,8 @@ spec:
   params:
     - name: BASE_IMAGE
       type: string
-      description: Semgrep image
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.41.0"
+      description: Trivy image
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
     - name: targetImage
       type: string
       default: ""

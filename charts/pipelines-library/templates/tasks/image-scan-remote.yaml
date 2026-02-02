@@ -30,10 +30,10 @@ spec:
         Engagement with scan reports in DefectDojo.
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.65.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.97.1-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.107.0-debug"
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"

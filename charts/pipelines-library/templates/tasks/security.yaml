@@ -20,11 +20,11 @@ spec:
     - name: BASE_IMAGE_SEMGREP
       type: string
       description: Semgrep image
-      default: {{ include "edp-tekton.registry" . }}/returntocorp/semgrep:1.109.0
+      default: {{ include "edp-tekton.registry" . }}/returntocorp/semgrep:1.150.0
     - name: BASE_IMAGE_GITLEAKS
       type: string
       description: Gitleaks image
-      default: {{ include "edp-tekton.registry" . }}/zricethezav/gitleaks:v8.24.0
+      default: {{ include "edp-tekton.registry" . }}/zricethezav/gitleaks:v8.30.0
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"

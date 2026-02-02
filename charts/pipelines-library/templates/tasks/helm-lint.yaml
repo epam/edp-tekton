@@ -23,7 +23,7 @@ spec:
   params:
     - name: BASE_IMAGE
       description: The base image for the task.
-      default: quay.io/helmpack/chart-testing:v3.10.1
+      default: quay.io/helmpack/chart-testing:v3.14.0
     - name: EXTRA_COMMANDS
       description: Arguments to add to the helm-lint step
       default: ""

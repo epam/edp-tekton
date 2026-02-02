@@ -96,57 +96,55 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "comment event process successfully",
 			args: args{
-				body: event_processor.BitbucketCommentEvent{
-					BitbucketEvent: event_processor.BitbucketEvent{
-						Repository: event_processor.BitbucketRepository{
-							FullName: "o/r",
-						},
-						PullRequest: event_processor.BitbucketPullRequest{
-							ID:    1,
-							Title: "fix",
-							Source: event_processor.BitbucketPullRequestSrc{
-								Branch: event_processor.BitbucketBranch{
-									Name: "feature1",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "123",
-								},
+				body: event_processor.BitbucketEvent{
+					Repository: event_processor.BitbucketRepository{
+						FullName: "o/r",
+					},
+					PullRequest: event_processor.BitbucketPullRequest{
+						ID:    1,
+						Title: "fix",
+						Source: event_processor.BitbucketPullRequestSrc{
+							Branch: event_processor.BitbucketBranch{
+								Name: "feature1",
 							},
-							Destination: event_processor.BitbucketPullRequestDest{
-								Branch: event_processor.BitbucketBranch{
-									Name: "master",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "456",
-								},
-							},
-							LastCommit: event_processor.BitbucketCommit{
+							Commit: event_processor.BitbucketCommit{
 								Hash: "123",
 							},
-							Author: event_processor.BitbucketAuthor{
-								DisplayName: "bbuser",
-								Links: struct {
-									Avatar struct {
-										Href string `json:"href"`
-									} `json:"avatar"`
+						},
+						Destination: event_processor.BitbucketPullRequestDest{
+							Branch: event_processor.BitbucketBranch{
+								Name: "master",
+							},
+							Commit: event_processor.BitbucketCommit{
+								Hash: "456",
+							},
+						},
+						LastCommit: event_processor.BitbucketCommit{
+							Hash: "123",
+						},
+						Author: event_processor.BitbucketAuthor{
+							DisplayName: "bbuser",
+							Links: struct {
+								Avatar struct {
+									Href string `json:"href"`
+								} `json:"avatar"`
+							}{
+								Avatar: struct {
+									Href string `json:"href"`
 								}{
-									Avatar: struct {
-										Href string `json:"href"`
-									}{
-										Href: "https://bitbucket.org/avatar/bbuser",
-									},
+									Href: "https://bitbucket.org/avatar/bbuser",
 								},
 							},
-							Links: struct {
-								Html struct {
-									Href string `json:"href"`
-								} `json:"html"`
+						},
+						Links: struct {
+							Html struct {
+								Href string `json:"href"`
+							} `json:"html"`
+						}{
+							Html: struct {
+								Href string `json:"href"`
 							}{
-								Html: struct {
-									Href string `json:"href"`
-								}{
-									Href: "https://bitbucket.org/o/r/pull-requests/1",
-								},
+								Href: "https://bitbucket.org/o/r/pull-requests/1",
 							},
 						},
 					},
@@ -191,33 +189,31 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "pr doesn't contain commits",
 			args: args{
-				body: event_processor.BitbucketCommentEvent{
-					BitbucketEvent: event_processor.BitbucketEvent{
-						Repository: event_processor.BitbucketRepository{
-							FullName: "o/r",
-						},
-						PullRequest: event_processor.BitbucketPullRequest{
-							ID:    2,
-							Title: "fix",
-							Source: event_processor.BitbucketPullRequestSrc{
-								Branch: event_processor.BitbucketBranch{
-									Name: "feature1",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "123",
-								},
+				body: event_processor.BitbucketEvent{
+					Repository: event_processor.BitbucketRepository{
+						FullName: "o/r",
+					},
+					PullRequest: event_processor.BitbucketPullRequest{
+						ID:    2,
+						Title: "fix",
+						Source: event_processor.BitbucketPullRequestSrc{
+							Branch: event_processor.BitbucketBranch{
+								Name: "feature1",
 							},
-							Destination: event_processor.BitbucketPullRequestDest{
-								Branch: event_processor.BitbucketBranch{
-									Name: "master",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "456",
-								},
-							},
-							LastCommit: event_processor.BitbucketCommit{
+							Commit: event_processor.BitbucketCommit{
 								Hash: "123",
 							},
+						},
+						Destination: event_processor.BitbucketPullRequestDest{
+							Branch: event_processor.BitbucketBranch{
+								Name: "master",
+							},
+							Commit: event_processor.BitbucketCommit{
+								Hash: "456",
+							},
+						},
+						LastCommit: event_processor.BitbucketCommit{
+							Hash: "123",
 						},
 					},
 					Comment: event_processor.BitbucketComment{
@@ -237,7 +233,7 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "repository path empty",
 			args: args{
-				body: event_processor.BitbucketCommentEvent{},
+				body: event_processor.BitbucketEvent{},
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
@@ -247,33 +243,31 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 		{
 			name: "failed to get codebase",
 			args: args{
-				body: event_processor.BitbucketCommentEvent{
-					BitbucketEvent: event_processor.BitbucketEvent{
-						Repository: event_processor.BitbucketRepository{
-							FullName: "o/r",
-						},
-						PullRequest: event_processor.BitbucketPullRequest{
-							ID:    1,
-							Title: "fix",
-							Source: event_processor.BitbucketPullRequestSrc{
-								Branch: event_processor.BitbucketBranch{
-									Name: "feature1",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "123",
-								},
+				body: event_processor.BitbucketEvent{
+					Repository: event_processor.BitbucketRepository{
+						FullName: "o/r",
+					},
+					PullRequest: event_processor.BitbucketPullRequest{
+						ID:    1,
+						Title: "fix",
+						Source: event_processor.BitbucketPullRequestSrc{
+							Branch: event_processor.BitbucketBranch{
+								Name: "feature1",
 							},
-							Destination: event_processor.BitbucketPullRequestDest{
-								Branch: event_processor.BitbucketBranch{
-									Name: "master",
-								},
-								Commit: event_processor.BitbucketCommit{
-									Hash: "456",
-								},
-							},
-							LastCommit: event_processor.BitbucketCommit{
+							Commit: event_processor.BitbucketCommit{
 								Hash: "123",
 							},
+						},
+						Destination: event_processor.BitbucketPullRequestDest{
+							Branch: event_processor.BitbucketBranch{
+								Name: "master",
+							},
+							Commit: event_processor.BitbucketCommit{
+								Hash: "456",
+							},
+						},
+						LastCommit: event_processor.BitbucketCommit{
+							Hash: "123",
 						},
 					},
 					Comment: event_processor.BitbucketComment{
@@ -305,7 +299,7 @@ func TestBitbucketEventProcessor_processCommentEvent(t *testing.T) {
 					RestyClient: resty.New().SetBaseURL(server.URL),
 				},
 			)
-			got, err := p.processCommentEvent(context.Background(), body, "default")
+			got, err := p.Process(context.Background(), body, "default", event_processor.BitbucketEventTypeCommentAdded)
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
@@ -484,7 +478,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 		{
 			name: "repository path empty",
 			args: args{
-				body: event_processor.BitbucketCommentEvent{},
+				body: event_processor.BitbucketEvent{},
 			},
 			wantErr: func(t require.TestingT, err error, i ...interface{}) {
 				require.Error(t, err)
@@ -634,7 +628,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					RestyClient: resty.New().SetBaseURL(server.URL),
 				},
 			)
-			got, err := p.processMergeEvent(context.Background(), body, "default")
+			got, err := p.Process(context.Background(), body, "default", "")
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)

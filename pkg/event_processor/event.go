@@ -64,11 +64,7 @@ type GitLabComment struct {
 type BitbucketEvent struct {
 	Repository  BitbucketRepository  `json:"repository"`
 	PullRequest BitbucketPullRequest `json:"pullrequest"`
-}
-
-type BitbucketCommentEvent struct {
-	BitbucketEvent
-	Comment BitbucketComment `json:"comment"`
+	Comment     BitbucketComment     `json:"comment"`
 }
 
 type BitbucketRepository struct {

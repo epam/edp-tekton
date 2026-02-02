@@ -51,19 +51,6 @@ func (p *EventProcessor) Process(
 	body []byte,
 	ns, eventType string,
 ) (*event_processor.EventInfo, error) {
-	switch eventType {
-	case event_processor.BitbucketEventTypeCommentAdded:
-		return p.processCommentEvent(ctx, body, ns)
-	default:
-		return p.processMergeEvent(ctx, body, ns)
-	}
-}
-
-func (p *EventProcessor) processMergeEvent(
-	ctx context.Context,
-	body []byte,
-	ns string,
-) (*event_processor.EventInfo, error) {
 	bitbucketEvent := &event_processor.BitbucketEvent{}
 	if err := json.Unmarshal(body, bitbucketEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal Bitbucket event: %w", err)
@@ -94,7 +81,7 @@ func (p *EventProcessor) processMergeEvent(
 		return nil, err
 	}
 
-	return &event_processor.EventInfo{
+	eventInfo := &event_processor.EventInfo{
 		GitProvider:  event_processor.GitProviderBitbucket,
 		RepoPath:     repoPath,
 		TargetBranch: bitbucketEvent.PullRequest.Destination.Branch.Name,
@@ -110,58 +97,15 @@ func (p *EventProcessor) processMergeEvent(
 			AuthorAvatarUrl:   bitbucketEvent.PullRequest.Author.Links.Avatar.Href,
 			Url:               bitbucketEvent.PullRequest.Links.Html.Href,
 		},
-	}, nil
-}
-
-func (p *EventProcessor) processCommentEvent(
-	ctx context.Context,
-	body []byte,
-	ns string,
-) (*event_processor.EventInfo, error) {
-	bitbucketEvent := &event_processor.BitbucketCommentEvent{}
-	if err := json.Unmarshal(body, bitbucketEvent); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Bitbucket event: %w", err)
 	}
 
-	if bitbucketEvent.Repository.FullName == "" {
-		return nil, errors.New("bitbucket repository path empty")
+	switch eventType {
+	case event_processor.BitbucketEventTypeCommentAdded:
+		eventInfo.Type = event_processor.EventTypeReviewComment
+		eventInfo.HasPipelineRecheck = event_processor.ContainsPipelineRecheckPrefix(bitbucketEvent.Comment.Content.Raw)
 	}
 
-	repoPath := event_processor.ConvertRepositoryPath(bitbucketEvent.Repository.FullName)
-
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
-	}
-
-	commitMessage, err := p.getPRLatestCommitMessage(
-		ctx,
-		codebase,
-		bitbucketEvent.Repository.FullName,
-		bitbucketEvent.PullRequest.ID,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &event_processor.EventInfo{
-		GitProvider:        event_processor.GitProviderBitbucket,
-		RepoPath:           repoPath,
-		TargetBranch:       bitbucketEvent.PullRequest.Destination.Branch.Name,
-		Type:               event_processor.EventTypeReviewComment,
-		Codebase:           codebase,
-		HasPipelineRecheck: event_processor.ContainsPipelineRecheckPrefix(bitbucketEvent.Comment.Content.Raw),
-		PullRequest: &event_processor.PullRequest{
-			HeadSha:           bitbucketEvent.PullRequest.Source.Commit.Hash,
-			Title:             bitbucketEvent.PullRequest.Title,
-			HeadRef:           bitbucketEvent.PullRequest.Source.Branch.Name,
-			ChangeNumber:      bitbucketEvent.PullRequest.ID,
-			LastCommitMessage: commitMessage,
-			Author:            bitbucketEvent.PullRequest.Author.DisplayName,
-			AuthorAvatarUrl:   bitbucketEvent.PullRequest.Author.Links.Avatar.Href,
-			Url:               bitbucketEvent.PullRequest.Links.Html.Href,
-		},
-	}, nil
+	return eventInfo, nil
 }
 
 type getPRCommitsResp struct {

@@ -20,7 +20,7 @@ def run_helm_template():
 def extract_docker_images(manifests):
     """Extract all unique images from 'docker.io' registry in the manifests."""
     # Regex pattern to match images from docker.io
-    docker_image_pattern = re.compile(r"docker\.io/[a-zA-Z0-9._/-]+:[a-zA-Z0-9._-]+")
+    docker_image_pattern = re.compile(r"docker\.io/[a-zA-Z0-9._/-]+:[a-zA-Z0-9._-]+(?:@sha256:[a-fA-F0-9]+)?")
     images = set(docker_image_pattern.findall(manifests))  # Use a set to remove duplicates
     return sorted(images)  # Sort the images alphabetically
 

@@ -28,6 +28,10 @@ spec:
       description: Name of the component to which the images belong.
         Pipeline will use this name to create/update the appropriate
         Engagement with scan reports in DefectDojo.
+    - name: BASE_IMAGE_AWS_CLI
+      type: string
+      description: AWS CLI image
+      default: "{{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.28.3"
     - name: BASE_IMAGE_TRIVY
       type: string
       default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
@@ -54,7 +58,7 @@ spec:
       description: DefectDojo URL with the generated vulnerability scan reports
   steps:
     - name: get-ecr-pass
-      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.28.3
+      image: $(params.BASE_IMAGE_AWS_CLI)
       env:
         - name: ECR_LOGIN
           value: "$(params.ECR_LOGIN)"

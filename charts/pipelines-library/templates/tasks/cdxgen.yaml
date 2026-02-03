@@ -23,6 +23,10 @@ spec:
       type: string
       description: Name of the secret holding the ci-dependency-track api token
       default: ci-dependency-track
+    - name: BASE_IMAGE
+      type: string
+      description: CycloneDX cdxgen image
+      default: "{{ include "edp-tekton.registry" . }}/cyclonedx/cdxgen:v11.1.10@sha256:f600e2a51c8bf1f50cca8c8dd89e838daca62e2b94b7c6caf14595451f247e7c"
   steps:
     - env:
         - name: API_TOKEN
@@ -37,8 +41,7 @@ spec:
               key: url
         - name: PROJECT_NAME
           value: $(params.PROJECT_NAME)
-      image: >-
-        ghcr.io/cyclonedx/cdxgen:v9.6.0@sha256:ea01324872d2c21b024264a2224d761ab63851b9cc4722903b5e74be56ca6fa6
+      image: $(params.BASE_IMAGE)
       name: cdxgen
       computeResources: {}
       script: >

@@ -10,14 +10,14 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
-        for framework in ['python-3.8']:
+        for framework in ['python-3.13']:
             for cbtype in ['app', 'lib']:
 
                 assert f"gerrit-{buildtool}-{framework}-{cbtype}-review" in r["pipeline"]
@@ -115,7 +115,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -123,7 +123,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
-        for framework in ['python-3.8']:
+        for framework in ['python-3.13']:
             for cbtype in ['app', 'lib']:
 
                 github_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -224,7 +224,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -232,7 +232,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
-        for framework in ['python-3.8']:
+        for framework in ['python-3.13']:
             for cbtype in ['app', 'lib']:
 
                 gitlab_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -332,7 +332,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -340,7 +340,7 @@ pipelines:
 
     # ensure pipelines have proper steps
     for buildtool in ['python']:
-        for framework in ['python-3.8']:
+        for framework in ['python-3.13']:
             for cbtype in ['app', 'lib']:
 
                 bitbucket_review_pipeline = f"{vcs}-{buildtool}-{framework}-{cbtype}-review"
@@ -442,7 +442,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     ht = helm_template(config)
@@ -526,7 +526,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     ht = helm_template(config)
@@ -613,7 +613,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     ht = helm_template(config)
@@ -701,7 +701,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     ht = helm_template(config)
@@ -790,7 +790,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -852,7 +852,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -919,7 +919,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)
@@ -986,7 +986,7 @@ global:
 pipelines:
   deployableResources:
     python:
-      python3.8: true
+      python3.13: true
     """
 
     r = helm_template(config)

@@ -29,7 +29,6 @@
       value:
         - -B
         - org.jacoco:jacoco-maven-plugin:prepare-agent
-        - '-Dmaven.test.failure.ignore=true'
         - verify
         - org.jacoco:jacoco-maven-plugin:report
   workspaces:
@@ -138,7 +137,6 @@
       value:
         - -B
         - org.jacoco:jacoco-maven-plugin:prepare-agent
-        - '-Dmaven.test.failure.ignore=true'
         - verify
         - org.jacoco:jacoco-maven-plugin:report
   workspaces:
@@ -231,7 +229,6 @@
       value:
         - -B
         - org.jacoco:jacoco-maven-plugin:prepare-agent
-        - '-Dmaven.test.failure.ignore=true'
         - verify
         - org.jacoco:jacoco-maven-plugin:report
   workspaces:

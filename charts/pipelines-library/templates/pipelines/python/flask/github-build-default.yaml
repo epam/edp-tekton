@@ -22,7 +22,7 @@ spec:
       default: https://portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "python-python-python-3.8"
+      default: "python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -108,10 +108,11 @@ spec:
             # and hold cache in the /cache directory
 
             # build
-            python setup.py clean build sdist bdist_wheel
+            pip install --no-cache-dir build
+            python -m build
 
             # lint
-            pip3 install -r test-requirements.txt
+            pip install --no-cache-dir -r requirements.txt
             pylint --output-format=colorized *.py
             flake8 --exclude .local --filename=*.py
             # test
@@ -147,8 +148,9 @@ spec:
       params:
         - name: EXTRA_COMMANDS
           value: |
-            pip3 install -r test-requirements.txt
-            python setup.py sdist
+            pip install --no-cache-dir -r requirements.txt
+            pip install --upgrade build
+            python -m build
 
             # Get package version from the get-version task
             versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')

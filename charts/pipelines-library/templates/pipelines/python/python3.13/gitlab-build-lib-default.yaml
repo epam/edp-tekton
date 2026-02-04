@@ -1,15 +1,15 @@
 {{ if has "gitlab" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gitlab-python-python-3.8-app-build-default
+  name: gitlab-python-python-3.13-lib-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
     app.edp.epam.com/triggertemplate: gitlab-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  description: "The Build pipeline for building Python application (default versioning)"
+  description: "The Build pipeline for building Python library (default versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -21,7 +21,7 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "python-python-python-3.8"
+      default: "python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -44,7 +44,7 @@ spec:
       default: ""
       type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
     - name: TICKET_NAME_PATTERN
@@ -100,11 +100,9 @@ spec:
 
 {{ include "python-build-common" . | nindent 4 }}
 
-{{- include "build-pipeline-python-image-build-push-common" . | nindent 4 }}
-
 {{- include "save-cache-pyhton" $ | nindent 4 }}
 
-{{ include "build-pipeline-end" . | nindent 4 }}
+{{ include "build-pipeline-lib-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
 

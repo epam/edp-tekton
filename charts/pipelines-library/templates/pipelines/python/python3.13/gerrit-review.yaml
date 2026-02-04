@@ -1,12 +1,12 @@
-{{ if has "github" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: github-python-python-3.8-app-review
+  name: gerrit-python-python-3.13-app-review
   labels:
     app.edp.epam.com/pipelinetype: review
-    app.edp.epam.com/triggertemplate: github-review-template
+    app.edp.epam.com/triggertemplate: gerrit-review-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Review pipeline for building Python"
@@ -18,7 +18,7 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      default: "https://github.com/epmd-edp/python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -29,31 +29,20 @@ spec:
       description: Refspec to fetch before checking out revision.
       default: ""
       type: string
-    - name: changeNumber
-      description: Change number from Merge Request
-      default: ""
-      type: string
-    - name: targetBranch
-      description: Target branch of Merge Request
-      default: ""
-      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"
       type: string
-    - name: CODEBASEBRANCH_NAME
-      description: "Codebasebranch name"
-      type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
-      type: string
-    - name: gitsha
-      description: "commit sha"
-      type: string
+    - name: targetBranch
+      description: Target branch of Merge Request
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: CHART_DIR
       description: "Deploy templates directory for helm-lint"
       default: "deploy-templates"
@@ -62,13 +51,13 @@ spec:
       default: "."
   tasks:
 
-{{- include "github-review-start" . | nindent 4 }}
+{{- include "gerrit-review-start" . | nindent 4 }}
 
 {{- include "helm-docs" $ | nindent 4 }}
 
 {{- include "get-cache" $ | nindent 4 }}
 
-{{ include "python-review-common" . | nindent 4 }}
+{{ include "python-review-gerrit-common" . | nindent 4 }}
 
     - name: dockerfile-lint
       taskRef:
@@ -101,7 +90,7 @@ spec:
 
 {{- include "save-cache" $ | nindent 4 }}
 
-{{ include "github-review-vote" . | nindent 2 }}
+{{ include "gerrit-review-vote" . | nindent 2 }}
 
 {{ end }}
 {{ end }}

@@ -1,9 +1,9 @@
 {{ if has "gerrit" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-python-python-3.8-app-review
+  name: gerrit-python-python-3.13-lib-review
   labels:
     app.edp.epam.com/pipelinetype: review
     app.edp.epam.com/triggertemplate: gerrit-review-template
@@ -18,7 +18,7 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      default: "https://github.com/epmd-edp/python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -34,7 +34,7 @@ spec:
       description: "Project name"
       type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
     - name: targetBranch
@@ -43,50 +43,13 @@ spec:
       description: Change number from Merge Request
     - name: patchsetNumber
       description: Patchset number from Merge Request
-    - name: CHART_DIR
-      description: "Deploy templates directory for helm-lint"
-      default: "deploy-templates"
-    - name: CT_CONFIGS_DIR
-      description: "ct-configs directory for helm-lint"
-      default: "."
   tasks:
 
 {{- include "gerrit-review-start" . | nindent 4 }}
 
-{{- include "helm-docs" $ | nindent 4 }}
-
 {{- include "get-cache" $ | nindent 4 }}
 
 {{ include "python-review-gerrit-common" . | nindent 4 }}
-
-    - name: dockerfile-lint
-      taskRef:
-        kind: Task
-        name: hadolint
-      runAfter:
-        - fetch-repository
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
-
-{{ include "dockerbuild-verify-python" . | nindent 4 }}
-
-    - name: helm-lint
-      taskRef:
-        kind: Task
-        name: helm-lint
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CHART_DIR
-          value: $(params.CHART_DIR)
-        - name: CT_CONFIGS_DIR
-          value: $(params.CT_CONFIGS_DIR)
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-          subPath: source
 
 {{- include "save-cache" $ | nindent 4 }}
 

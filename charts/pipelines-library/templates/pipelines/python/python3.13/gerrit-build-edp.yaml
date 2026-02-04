@@ -1,15 +1,15 @@
-{{ if has "bitbucket" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if has "gerrit" .Values.global.gitProviders }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: bitbucket-python-python-3.8-lib-build-semver
+  name: gerrit-python-python-3.13-app-build-semver
   labels:
     app.edp.epam.com/pipelinetype: build
-    app.edp.epam.com/triggertemplate: bitbucket-build-template
+    app.edp.epam.com/triggertemplate: gerrit-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  description: "The Build pipeline for building Python library (semver versioning)"
+  description: "The Build pipeline for building Python application (semver versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -18,15 +18,12 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "python-python-python-3.8"
+      default: "python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
-      type: string
-    - name: gitsha
-      description: git revision to vote (sha)
       type: string
     - name: CODEBASE_NAME
       default: "python-app"
@@ -35,17 +32,14 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: changeNumber
-      description: Change number from Merge Request
-      default: ""
-      type: string
-    - name: gitfullrepositoryname
-      description: "repository full name"
-      type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
+    - name: changeNumber
+      description: Change number from Merge Request
+    - name: patchsetNumber
+      description: Patchset number from Merge Request
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -66,7 +60,7 @@ spec:
 
   tasks:
 
-{{- include "bitbucket-build-start" . | nindent 4 }}
+{{- include "gerrit-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -97,13 +91,13 @@ spec:
 
 {{ include "python-build-common" . | nindent 4 }}
 
+{{- include "build-pipeline-python-image-build-push-common" . | nindent 4 }}
+
 {{- include "save-cache-pyhton" $ | nindent 4 }}
 
-{{ include "build-pipeline-lib-end" . | nindent 4 }}
+{{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-semver" . | nindent 2 }}
-
-{{ include "bitbucket-build-vote" $ | nindent 4 }}
 
 {{ end }}
 {{ end }}

@@ -14,7 +14,8 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        python setup.py clean build install --user
+        pip install --no-cache-dir --user .
+
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -45,11 +46,12 @@
     - sonar
   params:
     - name: BASE_IMAGE
-      value: 'python:3.8-slim'
+      value: 'python:3.13-slim'
     - name: EXTRA_COMMANDS
       value: |
-        pip install -r requirements.txt
-        python setup.py sdist
+        pip install --no-cache-dir -r requirements.txt
+        pip install --upgrade build
+        python -m build
 
         # Get package version from the get-version task
         versionLowerCase=$(echo $(tasks.get-version.results.VERSION) | tr '[:upper:]' '[:lower:]')
@@ -84,10 +86,15 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        python setup.py clean build install --user
-        pip3 install .
-        [ -f run_service.py ] && python run_service.py &
-        python setup.py pytest
+        pip install --no-cache-dir -r requirements.txt
+        pip install --no-cache-dir --user .
+
+        if [ -f run_service.py ]; then
+          python run_service.py &
+        fi
+
+        pytest
+
   workspaces:
     - name: source
       workspace: shared-workspace
@@ -130,10 +137,14 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        python setup.py clean build install --user
-        pip3 install .
-        [ -f run_service.py ] && python run_service.py &
-        python setup.py pytest
+        pip install --no-cache-dir -r requirements.txt
+        pip install --no-cache-dir  --user .
+
+        if [ -f run_service.py ]; then
+          python run_service.py &
+        fi
+
+        pytest
   workspaces:
     - name: source
       workspace: shared-workspace

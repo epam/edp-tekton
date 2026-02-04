@@ -1,15 +1,15 @@
 {{ if has "github" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: github-python-python-3.8-app-build-semver
+  name: github-python-python-3.13-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
     app.edp.epam.com/triggertemplate: github-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
-  description: "The Build pipeline for building Python application (semver versioning)"
+  description: "The Build pipeline for building Python application (default versioning)"
   workspaces:
     - name: shared-workspace
     - name: ssh-creds
@@ -18,7 +18,7 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "python-python-python-3.8"
+      default: "python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -37,7 +37,7 @@ spec:
       default: ""
       type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
     - name: gitsha
@@ -71,19 +71,21 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-edp
+        name: get-version-default
       runAfter:
         - init-values
       params:
-        - name: CODEBASEBRANCH_NAME
-          value: $(params.CODEBASEBRANCH_NAME)
+        - name: BRANCH_NAME
+          value: $(params.git-source-revision)
+        - name: BASE_IMAGE
+          value: $(params.image)
 
 {{- include "get-cache" $ | nindent 4 }}
 
     - name: update-build-number
       taskRef:
         kind: Task
-        name: update-build-number-python
+        name: update-build-number-python-default
       runAfter:
         - get-version
       params:
@@ -103,7 +105,7 @@ spec:
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 
-{{ include "finally-block-semver" . | nindent 2 }}
+{{ include "finally-block-default" . | nindent 2 }}
 
 {{ include "github-build-vote" . | nindent 4 }}
 

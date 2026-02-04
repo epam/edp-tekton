@@ -28,7 +28,7 @@ spec:
     - name: BASE_IMAGE_CDXGEN
       type: string
       description: CycloneDX cdxgen image
-      default: "{{ include "edp-tekton.registry" . }}/cyclonedx/cdxgen:v11.1.10@sha256:f600e2a51c8bf1f50cca8c8dd89e838daca62e2b94b7c6caf14595451f247e7c"
+      default: "ghcr.io/cyclonedx/cdxgen:v11.1.10@sha256:f600e2a51c8bf1f50cca8c8dd89e838daca62e2b94b7c6caf14595451f247e7c"
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"

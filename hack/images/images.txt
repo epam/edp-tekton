@@ -9,7 +9,6 @@ docker.io/anchore/grype:v0.107.0-debug
 docker.io/antora/antora:3.1.4
 docker.io/aquasec/trivy:0.69.0
 docker.io/busybox:1.37.0
-docker.io/cyclonedx/cdxgen:v11.1.10@sha256:f600e2a51c8bf1f50cca8c8dd89e838daca62e2b94b7c6caf14595451f247e7c
 docker.io/epamedp/kubectl:0.1.1
 docker.io/epamedp/tekton-ansible:0.1.1
 docker.io/epamedp/tekton-autotest:0.1.8

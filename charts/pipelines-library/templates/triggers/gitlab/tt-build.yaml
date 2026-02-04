@@ -68,6 +68,8 @@ spec:
         params:
           - name: git-source-url
             value: $(tt.params.gitrepositoryurl)
+          - name: targetBranch
+            value: $(tt.params.targetBranch)
           - name: git-source-revision
             value: $(tt.params.gitrevision)
           - name: CODEBASE_NAME

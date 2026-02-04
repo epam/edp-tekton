@@ -28,6 +28,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
       type: string
+    - name: targetBranch
+      description: 'Target branch of Merge Request'
+      default: "main"
+      type: string
     - name: CODEBASE_NAME
       default: 'groovy-pipeline'
       description: "Project name"
@@ -73,7 +77,7 @@ spec:
         - init-values
       params:
         - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+          value: $(params.targetBranch)
         - name: BASE_IMAGE
           value: $(params.image)
 

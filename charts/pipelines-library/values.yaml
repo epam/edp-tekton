@@ -66,7 +66,7 @@ pipelines:
       ansible: true
       flask: true
       fastapi: true
-      python3.8: false
+      python3.13: false
     security: true
     terraform: true
     autotests: true

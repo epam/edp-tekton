@@ -102,7 +102,7 @@ BLOCK
 param_git_source_url() {
   add_param_block "$(cat <<'BLOCK'
     - name: git-source-url
-      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      default: "https://github.com/epmd-edp/python-python-python-3.13"
       description: git url to clone
       type: string
 BLOCK

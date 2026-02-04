@@ -1,12 +1,12 @@
-{{ if has "gitlab" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if has "github" .Values.global.gitProviders }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gitlab-python-python-3.8-lib-review
+  name: github-python-python-3.13-lib-review
   labels:
     app.edp.epam.com/pipelinetype: review
-    app.edp.epam.com/triggertemplate: gitlab-review-template
+    app.edp.epam.com/triggertemplate: github-review-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Review pipeline for building Python"
@@ -18,7 +18,7 @@ spec:
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "https://github.com/epmd-edp/python-python-python-3.8"
+      default: "https://github.com/epmd-edp/python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
@@ -45,15 +45,18 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
       description: "python image version"
       type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
+    - name: gitsha
+      description: "commit sha"
+      type: string
   tasks:
 
-{{- include "gitlab-review-start" . | nindent 4 }}
+{{- include "github-review-start" . | nindent 4 }}
 
 {{- include "get-cache" $ | nindent 4 }}
 
@@ -61,7 +64,7 @@ spec:
 
 {{- include "save-cache" $ | nindent 4 }}
 
-{{ include "gitlab-review-vote" . | nindent 2 }}
+{{ include "github-review-vote" . | nindent 2 }}
 
 {{ end }}
 {{ end }}

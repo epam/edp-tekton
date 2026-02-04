@@ -1,12 +1,12 @@
-{{ if has "gerrit" .Values.global.gitProviders }}
-{{ if (index .Values.pipelines.deployableResources.python "python3.8" ) }}
+{{ if has "gitlab" .Values.global.gitProviders }}
+{{ if (index .Values.pipelines.deployableResources.python "python3.13" ) }}
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: gerrit-python-python-3.8-app-build-default
+  name: gitlab-python-python-3.13-app-build-default
   labels:
     app.edp.epam.com/pipelinetype: build
-    app.edp.epam.com/triggertemplate: gerrit-build-template
+    app.edp.epam.com/triggertemplate: gitlab-build-template
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: "The Build pipeline for building Python application (default versioning)"
@@ -14,16 +14,23 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
+    - name: gitfullrepositoryname
+      description: "repository full name"
+      type: string
     - name: pipelineUrl
       default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
       type: string
     - name: git-source-url
-      default: "python-python-python-3.8"
+      default: "python-python-python-3.13"
       description: git url to clone
       type: string
     - name: git-source-revision
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
+      type: string
+    - name: targetBranch
+      description: 'Target branch of Merge Request'
+      default: "main"
       type: string
     - name: CODEBASE_NAME
       default: "python-app"
@@ -32,14 +39,14 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: image
-      default: '{{ include "edp-tekton.registry" . }}/python:3.8-slim'
-      description: "python image version"
-      type: string
     - name: changeNumber
       description: Change number from Merge Request
-    - name: patchsetNumber
-      description: Patchset number from Merge Request
+      default: ""
+      type: string
+    - name: image
+      default: '{{ include "edp-tekton.registry" . }}/python:3.13-slim'
+      description: "python image version"
+      type: string
     - name: TICKET_NAME_PATTERN
       description: "Ticket name pattern"
       default: ""
@@ -60,7 +67,7 @@ spec:
 
   tasks:
 
-{{- include "gerrit-build-start" . | nindent 4 }}
+{{- include "gitlab-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
@@ -70,7 +77,7 @@ spec:
         - init-values
       params:
         - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+          value: $(params.targetBranch)
         - name: BASE_IMAGE
           value: $(params.image)
 
@@ -100,6 +107,8 @@ spec:
 {{ include "build-pipeline-end" . | nindent 4 }}
 
 {{ include "finally-block-default" . | nindent 2 }}
+
+{{ include "gitlab-build-vote" . | nindent 4 }}
 
 {{ end }}
 {{ end }}

@@ -2,7 +2,7 @@
 - name: helm-lint
   taskRef:
     kind: Task
-    name: helm-library-lint
+    name: helm-library-lint-build
   runAfter:
     - get-version
   params:
@@ -10,8 +10,6 @@
       value: $(params.CHART_DIR)
     - name: CT_CONFIGS_DIR
       value: $(params.CT_CONFIGS_DIR)
-    - name: TARGET_BRANCH
-      value: $(params.git-source-revision)
   workspaces:
     - name: source
       workspace: shared-workspace

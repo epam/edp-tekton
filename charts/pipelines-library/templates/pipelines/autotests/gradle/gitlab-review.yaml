@@ -89,8 +89,7 @@ spec:
             -Dsonar.pullrequest.key=$(params.changeNumber) \
             -Dsonar.pullrequest.branch=$(params.git-source-revision) \
             -Dsonar.pullrequest.base=$(params.targetBranch) \
-            -DskipTests \
-            sonarqube
+            build -x test sonar
       workspaces:
         - name: source
           workspace: shared-workspace

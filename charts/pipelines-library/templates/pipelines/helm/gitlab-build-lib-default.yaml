@@ -28,6 +28,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
+    - name: targetBranch
+      description: 'Target branch of Merge Request'
+      default: "main"
+      type: string
     - name: CODEBASE_NAME
       description: "Project name"
       type: string
@@ -71,7 +75,7 @@ spec:
         - init-values
       params:
         - name: BRANCH_NAME
-          value: $(params.git-source-revision)
+          value: $(params.targetBranch)
 
 {{- include "helm-library-build-common" . | nindent 4 }}
 

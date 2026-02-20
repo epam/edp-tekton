@@ -25,9 +25,8 @@ spec:
         `repository/image:tag` or `repository/image`.
     - name: COMPONENT_NAME
       type: string
-      description: Name of the component to which the images belong.
-        Pipeline will use this name to create/update the appropriate
-        Engagement with scan reports in DefectDojo.
+      description: Name of the codebase/component to which the images belong.
+        Used as the DefectDojo product name for scan report tracking.
     - name: BASE_IMAGE_AWS_CLI
       type: string
       description: AWS CLI image
@@ -49,6 +48,22 @@ spec:
       type: string
       description: The name of the Grype scan report
       default: image-scan-grype-report.json
+    - name: DD_PRODUCT_TYPE_NAME
+      type: string
+      description: DefectDojo product type name
+      default: "KubeRocketCI"
+    - name: DD_ENGAGEMENT_NAME
+      type: string
+      description: DefectDojo engagement name
+      default: "container-security"
+    - name: DD_VERSION
+      type: string
+      description: Version that will be set on the DefectDojo Test object
+      default: ""
+    - name: DD_BRANCH_TAG
+      type: string
+      description: Branch or tag that was scanned, recorded on the DefectDojo Test object
+      default: ""
     - name: ci-defectdojo
       type: string
       description: Name of the secret holding the DefectDojo CI integration data
@@ -145,18 +160,24 @@ spec:
             secretKeyRef:
               key: url
               name: $(params.ci-defectdojo)
-        - name: DD_PRODUCT_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
       script: |
         #!/usr/bin/env sh
         set -e
 
-        PRODUCT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/products/?name_exact=${DD_PRODUCT_NAME}" \
+        PRODUCT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/products/" \
+          --data-urlencode "name_exact=$(params.COMPONENT_NAME)" \
           -H "accept: application/json" \
           -H "Authorization: Token ${DD_TOKEN}" \
           | jq -r '.results[0].id')
+
+        DD_VERSION_ARG=""
+        DD_BRANCH_TAG_ARG=""
+        if [ -n "$(params.DD_VERSION)" ]; then
+          DD_VERSION_ARG="-F version=$(params.DD_VERSION)"
+        fi
+        if [ -n "$(params.DD_BRANCH_TAG)" ]; then
+          DD_BRANCH_TAG_ARG="-F branch_tag=$(params.DD_BRANCH_TAG)"
+        fi
 
         for IMAGE in "$@"; do
           COMPONENT_NAME=$(basename "${IMAGE%%:*}")
@@ -178,19 +199,23 @@ spec:
               -F "verified=false" \
               -F "scan_type=${SCAN_TYPE}" \
               -F "file=@${REPORT_NAME};type=application/json" \
-              -F "product_type_name=Tenant" \
-              -F "product_name=${DD_PRODUCT_NAME}" \
-              -F "engagement_name=$(params.COMPONENT_NAME)" \
+              -F "product_type_name=$(params.DD_PRODUCT_TYPE_NAME)" \
+              -F "product_name=$(params.COMPONENT_NAME)" \
+              -F "engagement_name=$(params.DD_ENGAGEMENT_NAME)" \
               -F "auto_create_context=true" \
               -F "close_old_findings=true" \
               -F "push_to_jira=false" \
               -F "environment=Development" \
-              -F "test_title=${COMPONENT_NAME}" \
-              -F "tags=${IMAGE%:*}"
+              -F "test_title=${SCAN_TYPE}" \
+              -F "tags=${IMAGE%:*}" \
+              ${DD_VERSION_ARG} \
+              ${DD_BRANCH_TAG_ARG}
           done
         done
 
-        ENGAGEMENT_ID=$(curl -s -X GET "${DD_HOST_URL}/api/v2/engagements/?product=${PRODUCT_ID}&name=$(params.COMPONENT_NAME)" \
+        ENGAGEMENT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/engagements/" \
+          --data-urlencode "product=${PRODUCT_ID}" \
+          --data-urlencode "name=$(params.DD_ENGAGEMENT_NAME)" \
           -H "accept: application/json" \
           -H "Authorization: Token ${DD_TOKEN}" \
           | jq -r '.results[0].id')

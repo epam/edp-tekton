@@ -55,6 +55,11 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: password
+        - name: NEXUS_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              key: url
+              name: ci-nexus
         - name: STEP_NAME
           value: $(params.step-name)
         - name: BUILD_TOOL

@@ -11,7 +11,8 @@ spec:
   description: >-
     A specialized pipeline for GitLab projects that executes a trio of security tools:
     gitleaks for detecting credential exposure, cdxgen for dependency analysis and SBOM creation,
-    and semgrep for identifying code vulnerabilities. Security findings are automatically
+    semgrep for identifying code vulnerabilities, and container image vulnerability scanning via
+    Trivy and Grype (when a Helm chart is present). Security findings are automatically
     synchronized with DefectDojo for comprehensive vulnerability lifecycle management.
   workspaces:
     - name: shared-workspace
@@ -32,11 +33,19 @@ spec:
       default: 'gradle'
       description: "Project name"
       type: string
+    - name: IMAGE_TAG
+      description: "Version tag for helm --set image.tag= and DefectDojo version tracking. If empty, helm template uses chart defaults."
+      default: ""
+      type: string
   results:
     - description: DefectDojo URL with the generated vulnerability scan reports
       name: SCAN_REPORT_URL
       type: string
       value: $(tasks.security.results.SCAN_REPORT_URL)
+    - description: DefectDojo URL with container image vulnerability scan reports
+      name: IMAGE_SCAN_REPORT_URL
+      type: string
+      value: $(tasks.image-scan-chart.results.SCAN_REPORT_URL)
   tasks:
     - name: fetch-repository
       taskRef:
@@ -78,6 +87,24 @@ spec:
           value: $(params.CODEBASE_NAME)
         - name: CODEBASE_BRANCH
           value: $(params.git-source-revision)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+          subPath: source
+
+    - name: image-scan-chart
+      taskRef:
+        kind: Task
+        name: image-scan-chart
+      runAfter:
+        - init-values
+      params:
+        - name: CODEBASE_NAME
+          value: $(params.CODEBASE_NAME)
+        - name: CODEBASE_BRANCH
+          value: $(params.git-source-revision)
+        - name: IMAGE_TAG
+          value: $(params.IMAGE_TAG)
       workspaces:
         - name: source
           workspace: shared-workspace

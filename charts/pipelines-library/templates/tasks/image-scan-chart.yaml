@@ -1,0 +1,284 @@
+{{- if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: image-scan-chart
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: >-
+    This task renders a Helm chart from the workspace, discovers all container images,
+    scans them with Trivy and Grype, and uploads the scan reports to DefectDojo.
+    Each image gets its own engagement under the product.
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE_TAG
+      type: string
+      description: "Version tag for helm --set image.tag= and DefectDojo version tracking. If empty, helm template uses chart defaults."
+      default: ""
+    - name: CODEBASE_NAME
+      type: string
+      description: Name of the codebase. Used as the DefectDojo product name.
+    - name: CODEBASE_BRANCH
+      type: string
+      description: Git branch being scanned. Used as DefectDojo branch_tag.
+      default: ""
+    - name: CHART_DIR
+      type: string
+      description: Path to the Helm chart directory relative to workspace root
+      default: "deploy-templates"
+    - name: DD_PRODUCT_TYPE_NAME
+      type: string
+      description: DefectDojo product type name
+      default: "KubeRocketCI"
+    - name: ci-defectdojo
+      type: string
+      description: Name of the secret holding the DefectDojo CI integration data
+      default: ci-defectdojo
+    - name: TRIVY_SERVER_URL
+      type: string
+      description: Trivy server URL for client/server mode. If empty, runs standalone.
+      default: "http://trivy-service.trivy-system:4954"
+    - name: BASE_IMAGE_HELM
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:3.11.1"
+    - name: BASE_IMAGE_TRIVY
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
+    - name: BASE_IMAGE_GRYPE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.107.0-debug"
+    - name: BASE_IMAGE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
+  results:
+    - name: SCAN_REPORT_URL
+      description: DefectDojo URL with the generated vulnerability scan reports
+  steps:
+    - name: helm-template-and-extract
+      image: $(params.BASE_IMAGE_HELM)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: CHART_DIR
+          value: "$(params.CHART_DIR)"
+        - name: IMAGE_TAG
+          value: "$(params.IMAGE_TAG)"
+      script: |
+        set -e
+
+        if [ ! -d "${CHART_DIR}" ]; then
+          echo "[INFO] No Helm chart found at ${CHART_DIR}, skipping image scan"
+          : > /workspace/images.txt
+          exit 0
+        fi
+
+        HELM_SET_ARG=""
+        if [ -n "${IMAGE_TAG}" ]; then
+          HELM_SET_ARG="--set image.tag=${IMAGE_TAG}"
+          echo "[INFO] Rendering chart: ${CHART_DIR} with image.tag=${IMAGE_TAG}"
+        else
+          echo "[INFO] Rendering chart: ${CHART_DIR} with chart default values (IMAGE_TAG not provided)"
+        fi
+
+        if ! helm template image-scan "${CHART_DIR}" ${HELM_SET_ARG} \
+            > /workspace/rendered-manifests.yaml; then
+          echo "[WARN] Helm template failed, skipping image scan"
+          : > /workspace/images.txt
+          exit 0
+        fi
+
+        grep -E '^\s+image:\s*' /workspace/rendered-manifests.yaml \
+          | sed 's/.*image:\s*["'"'"']\{0,1\}\([^"'"'"']*\)["'"'"']\{0,1\}\s*$/\1/' \
+          | sed 's/^[[:space:]]*//' | sort -u | grep -v '^$' | grep -v '^{' \
+          > /workspace/images.txt || true
+
+        if [ ! -s /workspace/images.txt ]; then
+          echo "[INFO] No container images found in rendered manifests, skipping image scan"
+          exit 0
+        fi
+
+        echo "[INFO] Discovered images:"
+        cat /workspace/images.txt
+
+    - name: trivy
+      image: $(params.BASE_IMAGE_TRIVY)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: TRIVY_SERVER_URL
+          value: "$(params.TRIVY_SERVER_URL)"
+      script: |
+        #!/usr/bin/env sh
+
+        SERVER_ARG=""
+        if [ -n "${TRIVY_SERVER_URL}" ]; then
+          SERVER_ARG="--server ${TRIVY_SERVER_URL}"
+          echo "[INFO] Using Trivy server: ${TRIVY_SERVER_URL}"
+        fi
+
+        FAILED=0
+
+        while IFS= read -r IMAGE; do
+          IMAGE_NAME="${IMAGE%:*}"
+          REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
+          REPORT_FILE="trivy-report-${REPORT_KEY}.json"
+
+          echo "[INFO] Trivy scanning: ${IMAGE}"
+          if trivy image ${SERVER_ARG} --format json -o "${REPORT_FILE}" "${IMAGE}"; then
+            echo "[INFO] Trivy scan succeeded for ${IMAGE}"
+          else
+            echo "[WARN] Trivy failed to scan ${IMAGE}, skipping"
+            rm -f "${REPORT_FILE}"
+            FAILED=$((FAILED + 1))
+          fi
+        done < /workspace/images.txt
+
+        echo "[INFO] Trivy scan complete. Failures: ${FAILED}"
+
+    - name: grype
+      image: $(params.BASE_IMAGE_GRYPE)
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsUser: 0
+      script: |
+        #!/busybox/sh
+
+        FAILED=0
+
+        while IFS= read -r IMAGE; do
+          IMAGE_NAME="${IMAGE%:*}"
+          REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
+          REPORT_FILE="grype-report-${REPORT_KEY}.json"
+
+          echo "[INFO] Grype scanning: ${IMAGE}"
+          if /grype "${IMAGE}" -o json > "${REPORT_FILE}"; then
+            echo "[INFO] Grype scan succeeded for ${IMAGE}"
+          else
+            echo "[WARN] Grype failed to scan ${IMAGE}, skipping"
+            rm -f "${REPORT_FILE}"
+            FAILED=$((FAILED + 1))
+          fi
+        done < /workspace/images.txt
+
+        echo "[INFO] Grype scan complete. Failures: ${FAILED}"
+
+    - name: upload-report
+      image: $(params.BASE_IMAGE)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: DD_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: $(params.ci-defectdojo)
+              optional: true
+        - name: DD_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              key: url
+              name: $(params.ci-defectdojo)
+              optional: true
+      script: |
+        #!/usr/bin/env sh
+        set -e
+
+        if [ -z "$DD_HOST_URL" ]; then
+          echo "[INFO] DefectDojo URL not configured, skipping upload"
+          printf "" > "$(results.SCAN_REPORT_URL.path)"
+          exit 0
+        fi
+
+        if [ ! -s /workspace/images.txt ]; then
+          echo "[INFO] No images were scanned, skipping upload"
+          printf "" > "$(results.SCAN_REPORT_URL.path)"
+          exit 0
+        fi
+
+        DD_BRANCH_TAG_ARG=""
+        if [ -n "$(params.CODEBASE_BRANCH)" ]; then
+          DD_BRANCH_TAG_ARG="-F branch_tag=$(params.CODEBASE_BRANCH)"
+        fi
+
+        UPLOADED=0
+        LAST_ENGAGEMENT_NAME=""
+
+        while IFS= read -r IMAGE; do
+          IMAGE_NAME="${IMAGE%:*}"
+          IMAGE_VER="${IMAGE##*:}"
+          REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
+          ENGAGEMENT_NAME="image:${IMAGE_NAME}"
+
+          DD_VERSION_ARG=""
+          if [ "${IMAGE_VER}" != "${IMAGE}" ]; then
+            DD_VERSION_ARG="-F version=${IMAGE_VER}"
+          fi
+
+          for SCAN_TYPE in "Trivy Scan" "Anchore Grype"; do
+            if [ "$SCAN_TYPE" = "Trivy Scan" ]; then
+              REPORT_FILE="trivy-report-${REPORT_KEY}.json"
+            else
+              REPORT_FILE="grype-report-${REPORT_KEY}.json"
+            fi
+
+            if [ ! -f "${REPORT_FILE}" ]; then
+              echo "[WARN] No ${SCAN_TYPE} report for ${IMAGE}, skipping upload"
+              continue
+            fi
+
+            echo "[INFO] Uploading ${SCAN_TYPE} for: ${IMAGE} -> engagement: ${ENGAGEMENT_NAME}"
+
+            curl -s -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
+              -H "accept: application/json" \
+              -H "Authorization: Token ${DD_TOKEN}" \
+              -H "Content-Type: multipart/form-data" \
+              -F "scan_date=$(date +%Y-%m-%d)" \
+              -F "minimum_severity=Info" \
+              -F "active=true" \
+              -F "verified=false" \
+              -F "scan_type=${SCAN_TYPE}" \
+              -F "file=@${REPORT_FILE};type=application/json" \
+              -F "product_type_name=$(params.DD_PRODUCT_TYPE_NAME)" \
+              -F "product_name=$(params.CODEBASE_NAME)" \
+              -F "engagement_name=${ENGAGEMENT_NAME}" \
+              -F "auto_create_context=true" \
+              -F "close_old_findings=true" \
+              -F "push_to_jira=false" \
+              -F "environment=Development" \
+              -F "test_title=${SCAN_TYPE}" \
+              ${DD_VERSION_ARG} \
+              ${DD_BRANCH_TAG_ARG}
+
+            UPLOADED=$((UPLOADED + 1))
+            LAST_ENGAGEMENT_NAME="${ENGAGEMENT_NAME}"
+          done
+
+        done < /workspace/images.txt
+
+        if [ "${UPLOADED}" -eq 0 ]; then
+          echo "[INFO] No reports were uploaded to DefectDojo"
+          printf "" > "$(results.SCAN_REPORT_URL.path)"
+          exit 0
+        fi
+
+        # Fetch product ID after the loop — auto_create_context ensures it exists after the first reimport
+        PRODUCT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/products/" \
+          --data-urlencode "name_exact=$(params.CODEBASE_NAME)" \
+          -H "accept: application/json" \
+          -H "Authorization: Token ${DD_TOKEN}" \
+          | jq -r '.results[0].id')
+
+        IMAGE_COUNT=$(wc -l < /workspace/images.txt | tr -d ' ')
+        if [ "${IMAGE_COUNT}" -gt 1 ]; then
+          SCAN_REPORT_URL="${DD_HOST_URL}/product/${PRODUCT_ID}"
+        else
+          ENGAGEMENT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/engagements/" \
+            --data-urlencode "product=${PRODUCT_ID}" \
+            --data-urlencode "name=${LAST_ENGAGEMENT_NAME}" \
+            -H "accept: application/json" \
+            -H "Authorization: Token ${DD_TOKEN}" \
+            | jq -r '.results[0].id')
+          SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
+        fi
+
+        printf "%s" "$SCAN_REPORT_URL" > "$(results.SCAN_REPORT_URL.path)"
+{{- end }}

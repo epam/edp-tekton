@@ -21,10 +21,10 @@ spec:
       description: Name (reference) of the image tar package.
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.107.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
     - name: BASE_IMAGE_CURL
       type: string
       default: "{{ include "edp-tekton.registry" . }}/alpine/curl:8.12.0"

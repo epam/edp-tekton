@@ -25,7 +25,7 @@ spec:
       default: ""
     - name: helm_image
       description: "Specify a specific helm image"
-      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:3.11.1"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:4.1.1"
     - name: user_home
       description: |
         Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user

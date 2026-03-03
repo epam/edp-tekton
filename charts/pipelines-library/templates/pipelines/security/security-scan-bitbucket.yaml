@@ -64,24 +64,12 @@ spec:
         - name: ssh-directory
           workspace: ssh-creds
 
-    - name: init-values
-      taskRef:
-        kind: Task
-        name: init-values
-      runAfter:
-        - fetch-repository
-      params:
-        - name: CODEBASE_NAME
-          value: $(params.CODEBASE_NAME)
-        - name: BRANCH_NAME
-          value: $(params.git-source-revision)
-
     - name: security
       taskRef:
         kind: Task
         name: security
       runAfter:
-        - init-values
+        - fetch-repository
       params:
         - name: CODEBASE_NAME
           value: $(params.CODEBASE_NAME)
@@ -97,7 +85,7 @@ spec:
         kind: Task
         name: image-scan-chart
       runAfter:
-        - init-values
+        - fetch-repository
       params:
         - name: CODEBASE_NAME
           value: $(params.CODEBASE_NAME)

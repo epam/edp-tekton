@@ -42,13 +42,16 @@ spec:
       default: "http://trivy-service.trivy-system:4954"
     - name: BASE_IMAGE_HELM
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:3.11.1"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:4.1.1"
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.107.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
+    - name: BASE_IMAGE_KUBECTL
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.1"
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
@@ -56,6 +59,38 @@ spec:
     - name: SCAN_REPORT_URL
       description: DefectDojo URL with the generated vulnerability scan reports
   steps:
+    - name: discover-image-repository
+      image: $(params.BASE_IMAGE_KUBECTL)
+      env:
+        - name: CODEBASE_NAME
+          value: "$(params.CODEBASE_NAME)"
+        - name: CODEBASE_BRANCH
+          value: "$(params.CODEBASE_BRANCH)"
+      script: |
+        #!/usr/bin/env sh
+        set -e
+
+        NORMALIZED_BRANCH=$(echo "${CODEBASE_BRANCH}" | sed 's/[^a-zA-Z0-9.]/-/g' | tr '[:upper:]' '[:lower:]')
+        CIS_NAME="${CODEBASE_NAME}-${NORMALIZED_BRANCH}"
+
+        echo "[INFO] Looking up CodebaseImageStream: ${CIS_NAME}"
+
+        if ! CIS_JSON=$(kubectl get cbis.v2.edp.epam.com "${CIS_NAME}" -o json 2>/dev/null); then
+          echo "[INFO] CIS '${CIS_NAME}' not found — no prior builds, using chart defaults"
+          : > /workspace/image-repository.txt
+          : > /workspace/image-tag.txt
+          exit 0
+        fi
+
+        IMAGE_REPO=$(echo "${CIS_JSON}" | jq -r '.spec.imageName // empty')
+        LATEST_TAG=$(echo "${CIS_JSON}" | jq -r '.spec.tags[-1].name // empty')
+
+        echo "[INFO] CIS image repository: ${IMAGE_REPO:-<not set>}"
+        echo "[INFO] CIS latest tag: ${LATEST_TAG:-<not set>}"
+
+        printf "%s" "${IMAGE_REPO}" > /workspace/image-repository.txt
+        printf "%s" "${LATEST_TAG}" > /workspace/image-tag.txt
+
     - name: helm-template-and-extract
       image: $(params.BASE_IMAGE_HELM)
       workingDir: $(workspaces.source.path)
@@ -73,15 +108,34 @@ spec:
           exit 0
         fi
 
-        HELM_SET_ARG=""
-        if [ -n "${IMAGE_TAG}" ]; then
-          HELM_SET_ARG="--set image.tag=${IMAGE_TAG}"
-          echo "[INFO] Rendering chart: ${CHART_DIR} with image.tag=${IMAGE_TAG}"
-        else
-          echo "[INFO] Rendering chart: ${CHART_DIR} with chart default values (IMAGE_TAG not provided)"
+        IMAGE_REPOSITORY=""
+        if [ -f /workspace/image-repository.txt ] && [ -s /workspace/image-repository.txt ]; then
+          IMAGE_REPOSITORY=$(cat /workspace/image-repository.txt)
         fi
 
-        if ! helm template image-scan "${CHART_DIR}" ${HELM_SET_ARG} \
+        EFFECTIVE_TAG="${IMAGE_TAG}"
+        if [ -z "${EFFECTIVE_TAG}" ] && [ -f /workspace/image-tag.txt ] && [ -s /workspace/image-tag.txt ]; then
+          EFFECTIVE_TAG=$(cat /workspace/image-tag.txt)
+          echo "[INFO] IMAGE_TAG not provided, using CIS latest tag: ${EFFECTIVE_TAG}"
+        fi
+
+        HELM_SET_ARGS=""
+        if [ -n "${IMAGE_REPOSITORY}" ]; then
+          HELM_SET_ARGS="${HELM_SET_ARGS} --set image.repository=${IMAGE_REPOSITORY}"
+          echo "[INFO] Overriding image.repository=${IMAGE_REPOSITORY}"
+        fi
+        if [ -n "${EFFECTIVE_TAG}" ]; then
+          HELM_SET_ARGS="${HELM_SET_ARGS} --set image.tag=${EFFECTIVE_TAG}"
+          echo "[INFO] Overriding image.tag=${EFFECTIVE_TAG}"
+        fi
+
+        if [ -n "${HELM_SET_ARGS}" ]; then
+          echo "[INFO] Rendering chart: ${CHART_DIR} with${HELM_SET_ARGS}"
+        else
+          echo "[INFO] Rendering chart: ${CHART_DIR} with chart default values (no overrides)"
+        fi
+
+        if ! helm template image-scan "${CHART_DIR}" ${HELM_SET_ARGS} \
             > /workspace/rendered-manifests.yaml; then
           echo "[WARN] Helm template failed, skipping image scan"
           : > /workspace/images.txt

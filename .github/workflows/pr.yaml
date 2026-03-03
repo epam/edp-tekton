@@ -25,8 +25,8 @@ jobs:
       - name: Check Commit Format
         uses: gsactions/commit-message-checker@v2
         with:
-          pattern: '^(fix|feat|docs|style|refactor|test|chore){1}(\([\w\-\.]+\))?(!)?: .+( (#\d+))?$'
-          error: 'Your commit message should be in the format "type: Description (#issue)". Example: "fix: Update build (#33)"'
+          pattern: '^EPMDEDP-\d+: (fix|feat|docs|style|refactor|test|chore)(!)?: .+$'
+          error: 'Your commit message should be in the format "EPMDEDP-ID: type: Description". Example: "EPMDEDP-16058: feat: add feature"'
           excludeDescription: 'true'
           excludeTitle: 'true'
           checkAllCommitMessages: 'true'

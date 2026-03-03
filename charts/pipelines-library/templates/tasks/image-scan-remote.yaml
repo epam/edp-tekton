@@ -33,10 +33,10 @@ spec:
       default: "{{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.28.3"
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.0"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.107.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"

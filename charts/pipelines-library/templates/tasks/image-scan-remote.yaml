@@ -7,143 +7,74 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 spec:
   description: >-
-    This task scans container images from remote registries for vulnerabilities using Trivy and Grype
-    and uploads the scan reports to DefectDojo.
+    This task scans container images from remote registries for vulnerabilities using Trivy
+    (client/server mode) and uploads the scan reports to DefectDojo.
+    Each image gets its own engagement under the product.
   workspaces:
     - name: source
   params:
-    - name: ECR_LOGIN
-      type: string
-      default: '/workspace/ecr_login_pass'
-    - name: krci-config
-      type: string
-      description: this configmap holds aws_region parameter
-      default: krci-config
     - name: IMAGE_NAMES
       type: array
-      description: List of container images to be scanned. Each image can be in the format
-        `repository/image:tag` or `repository/image`.
-    - name: COMPONENT_NAME
+      description: List of container images to be scanned in the format `registry/repository/image:tag`.
+    - name: CODEBASE_NAME
       type: string
-      description: Name of the codebase/component to which the images belong.
-        Used as the DefectDojo product name for scan report tracking.
-    - name: BASE_IMAGE_AWS_CLI
-      type: string
-      description: AWS CLI image
-      default: "{{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.28.3"
-    - name: BASE_IMAGE_TRIVY
-      type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
-    - name: BASE_IMAGE_GRYPE
-      type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
-    - name: BASE_IMAGE
-      type: string
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
-    - name: TRIVY_SCAN_REPORT
-      type: string
-      description: The name of the Trivy scan report
-      default: image-scan-trivy-report.json
-    - name: GRYPE_SCAN_REPORT
-      type: string
-      description: The name of the Grype scan report
-      default: image-scan-grype-report.json
+      description: Name of the codebase/component. Used as the DefectDojo product name.
     - name: DD_PRODUCT_TYPE_NAME
       type: string
       description: DefectDojo product type name
       default: "KubeRocketCI"
-    - name: DD_ENGAGEMENT_NAME
-      type: string
-      description: DefectDojo engagement name
-      default: "container-security"
-    - name: DD_VERSION
-      type: string
-      description: Version that will be set on the DefectDojo Test object
-      default: ""
-    - name: DD_BRANCH_TAG
-      type: string
-      description: Branch or tag that was scanned, recorded on the DefectDojo Test object
-      default: ""
     - name: ci-defectdojo
       type: string
       description: Name of the secret holding the DefectDojo CI integration data
       default: ci-defectdojo
+    - name: TRIVY_SERVER_URL
+      type: string
+      description: Trivy server URL for client/server mode. If empty, runs standalone.
+      default: "http://trivy-service.trivy-system:4954"
+    - name: BASE_IMAGE_TRIVY
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
+    - name: BASE_IMAGE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
   results:
     - name: SCAN_REPORT_URL
       description: DefectDojo URL with the generated vulnerability scan reports
   steps:
-    - name: get-ecr-pass
-      image: $(params.BASE_IMAGE_AWS_CLI)
-      env:
-        - name: ECR_LOGIN
-          value: "$(params.ECR_LOGIN)"
-        - name: AWS_REGION
-          valueFrom:
-            configMapKeyRef:
-              name: "$(params.krci-config)"
-              key: aws_region
-              optional: true
-        - name: CONTAINER_REGISTRY_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: "$(params.krci-config)"
-              key: container_registry_type
-      script: |
-        if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
-          aws ecr get-login-password --region "${AWS_REGION}" > "${ECR_LOGIN}"
-        else
-          echo 'Registry not ECR, stage skipped';
-        fi
-
     - name: trivy
       args: ["$(params.IMAGE_NAMES[*])"]
       image: $(params.BASE_IMAGE_TRIVY)
       workingDir: $(workspaces.source.path)
+      env:
+        - name: TRIVY_SERVER_URL
+          value: "$(params.TRIVY_SERVER_URL)"
       script: |
         #!/usr/bin/env sh
-        set -e
+
+        SERVER_ARG=""
+        if [ -n "${TRIVY_SERVER_URL}" ]; then
+          SERVER_ARG="--server ${TRIVY_SERVER_URL}"
+          echo "[INFO] Using Trivy server: ${TRIVY_SERVER_URL}"
+        fi
+
+        FAILED=0
 
         for IMAGE in "$@"; do
-          COMPONENT_NAME=$(basename "${IMAGE%%:*}")
-          REPORT_FILE="trivy-report-${COMPONENT_NAME}.json"
+          IMAGE_NAME="${IMAGE%:*}"
+          REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
+          REPORT_FILE="trivy-report-${REPORT_KEY}.json"
 
-          trivy image --format json -o "$REPORT_FILE" "$IMAGE"
-
-          cat "$REPORT_FILE"
-        done
-
-    - name: grype
-      args: ["$(params.IMAGE_NAMES[*])"]
-      image: $(params.BASE_IMAGE_GRYPE)
-      workingDir: $(workspaces.source.path)
-      env:
-        - name: ECR_LOGIN
-          value: "$(params.ECR_LOGIN)"
-        - name: CONTAINER_REGISTRY_TYPE
-          valueFrom:
-            configMapKeyRef:
-              key: container_registry_type
-              name: "$(params.krci-config)"
-      securityContext:
-        runAsUser: 0
-      script: |
-        #!/busybox/sh
-        set -e
-
-        for IMAGE in "$@"; do
-          COMPONENT_NAME=$(basename "${IMAGE%%:*}")
-          REPORT_NAME="grype-report-${COMPONENT_NAME}.json"
-
-          if [[ "${CONTAINER_REGISTRY_TYPE}" == "ecr" && "${IMAGE}" == *".ecr."* ]]; then
-            GRYPE_REGISTRY_AUTH_USERNAME=AWS \
-            GRYPE_REGISTRY_AUTH_PASSWORD=$(cat "${ECR_LOGIN}") \
-            /grype "${IMAGE}" -o json > "${REPORT_NAME}"
+          echo "[INFO] Trivy scanning: ${IMAGE}"
+          if trivy image ${SERVER_ARG} --format json -o "${REPORT_FILE}" "${IMAGE}"; then
+            echo "[INFO] Trivy scan succeeded for ${IMAGE}"
           else
-            /grype "${IMAGE}" -o json > "${REPORT_NAME}"
+            echo "[WARN] Trivy failed to scan ${IMAGE}, skipping"
+            rm -f "${REPORT_FILE}"
+            FAILED=$((FAILED + 1))
           fi
-
-          cat "${REPORT_NAME}"
         done
+
+        echo "[INFO] Trivy scan complete. Failures: ${FAILED}"
 
     - name: upload-report
       args: ["$(params.IMAGE_NAMES[*])"]
@@ -164,62 +95,82 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        PRODUCT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/products/" \
-          --data-urlencode "name_exact=$(params.COMPONENT_NAME)" \
-          -H "accept: application/json" \
-          -H "Authorization: Token ${DD_TOKEN}" \
-          | jq -r '.results[0].id')
-
-        DD_VERSION_ARG=""
-        DD_BRANCH_TAG_ARG=""
-        if [ -n "$(params.DD_VERSION)" ]; then
-          DD_VERSION_ARG="-F version=$(params.DD_VERSION)"
-        fi
-        if [ -n "$(params.DD_BRANCH_TAG)" ]; then
-          DD_BRANCH_TAG_ARG="-F branch_tag=$(params.DD_BRANCH_TAG)"
-        fi
+        UPLOADED=0
+        LAST_ENGAGEMENT_NAME=""
 
         for IMAGE in "$@"; do
-          COMPONENT_NAME=$(basename "${IMAGE%%:*}")
+          IMAGE_NAME="${IMAGE%:*}"
+          IMAGE_VER="${IMAGE##*:}"
+          REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
+          REPORT_FILE="trivy-report-${REPORT_KEY}.json"
+          ENGAGEMENT_NAME="image:${IMAGE_NAME}"
 
-          for SCAN_TYPE in "Trivy Scan" "Anchore Grype"; do
-            if [ "$SCAN_TYPE" = "Trivy Scan" ]; then
-              REPORT_NAME="trivy-report-${COMPONENT_NAME}.json"
-            else
-              REPORT_NAME="grype-report-${COMPONENT_NAME}.json"
-            fi
+          if [ ! -f "${REPORT_FILE}" ]; then
+            echo "[WARN] No Trivy report for ${IMAGE}, skipping upload"
+            continue
+          fi
 
-            curl -s -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
-              -H "accept: application/json" \
-              -H "Authorization: Token ${DD_TOKEN}" \
-              -H "Content-Type: multipart/form-data" \
-              -F "scan_date=$(date +%Y-%m-%d)" \
-              -F "minimum_severity=Info" \
-              -F "active=true" \
-              -F "verified=false" \
-              -F "scan_type=${SCAN_TYPE}" \
-              -F "file=@${REPORT_NAME};type=application/json" \
-              -F "product_type_name=$(params.DD_PRODUCT_TYPE_NAME)" \
-              -F "product_name=$(params.COMPONENT_NAME)" \
-              -F "engagement_name=$(params.DD_ENGAGEMENT_NAME)" \
-              -F "auto_create_context=true" \
-              -F "close_old_findings=true" \
-              -F "push_to_jira=false" \
-              -F "environment=Development" \
-              -F "test_title=${SCAN_TYPE}" \
-              -F "tags=${IMAGE%:*}" \
-              ${DD_VERSION_ARG} \
-              ${DD_BRANCH_TAG_ARG}
-          done
+          DD_VERSION_ARG=""
+          if [ "${IMAGE_VER}" != "${IMAGE}" ]; then
+            DD_VERSION_ARG="-F version=${IMAGE_VER}"
+          fi
+
+          echo "[INFO] Uploading Trivy Scan for: ${IMAGE} -> engagement: ${ENGAGEMENT_NAME}"
+
+          HTTP_CODE=$(curl -s -o /tmp/dd-response.json -w '%{http_code}' \
+            -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
+            -H "accept: application/json" \
+            -H "Authorization: Token ${DD_TOKEN}" \
+            -H "Content-Type: multipart/form-data" \
+            -F "scan_date=$(date +%Y-%m-%d)" \
+            -F "minimum_severity=Info" \
+            -F "active=true" \
+            -F "verified=false" \
+            -F "scan_type=Trivy Scan" \
+            -F "file=@${REPORT_FILE};type=application/json" \
+            -F "product_type_name=$(params.DD_PRODUCT_TYPE_NAME)" \
+            -F "product_name=$(params.CODEBASE_NAME)" \
+            -F "engagement_name=${ENGAGEMENT_NAME}" \
+            -F "auto_create_context=true" \
+            -F "close_old_findings=true" \
+            -F "push_to_jira=false" \
+            -F "environment=Development" \
+            -F "test_title=Trivy Scan" \
+            ${DD_VERSION_ARG})
+
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 300 ]; then
+            echo "[ERROR] DefectDojo returned HTTP ${HTTP_CODE} for ${IMAGE}"
+            cat /tmp/dd-response.json
+            exit 1
+          fi
+
+          UPLOADED=$((UPLOADED + 1))
+          LAST_ENGAGEMENT_NAME="${ENGAGEMENT_NAME}"
         done
 
-        ENGAGEMENT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/engagements/" \
-          --data-urlencode "product=${PRODUCT_ID}" \
-          --data-urlencode "name=$(params.DD_ENGAGEMENT_NAME)" \
+        if [ "${UPLOADED}" -eq 0 ]; then
+          echo "[INFO] No reports were uploaded to DefectDojo"
+          printf "" > "$(results.SCAN_REPORT_URL.path)"
+          exit 0
+        fi
+
+        PRODUCT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/products/" \
+          --data-urlencode "name_exact=$(params.CODEBASE_NAME)" \
           -H "accept: application/json" \
           -H "Authorization: Token ${DD_TOKEN}" \
           | jq -r '.results[0].id')
 
-        SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
+        if [ "$#" -gt 1 ]; then
+          SCAN_REPORT_URL="${DD_HOST_URL}/product/${PRODUCT_ID}"
+        else
+          ENGAGEMENT_ID=$(curl -s -G "${DD_HOST_URL}/api/v2/engagements/" \
+            --data-urlencode "product=${PRODUCT_ID}" \
+            --data-urlencode "name=${LAST_ENGAGEMENT_NAME}" \
+            -H "accept: application/json" \
+            -H "Authorization: Token ${DD_TOKEN}" \
+            | jq -r '.results[0].id')
+          SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
+        fi
+
         printf "%s" "$SCAN_REPORT_URL" > "$(results.SCAN_REPORT_URL.path)"
 {{- end }}

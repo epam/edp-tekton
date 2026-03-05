@@ -9,8 +9,8 @@ spec:
   params:
     - name: IMAGE_NAMES
       description: Array of container images to scan.
-    - name: COMPONENT_NAME
-      description: Name of the component to which the images belong. Pipeline will use this name to create/update the appropriate Engagement with scan reports in DefectDojo.
+    - name: CODEBASE_NAME
+      description: Name of the codebase/component. Used as the DefectDojo product name.
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -23,10 +23,9 @@ spec:
       spec:
         params:
           - name: IMAGE_NAMES
-            value:
-              - docker.io/busybox:1.37.0
-          - name: COMPONENT_NAME
-            value: busybox
+            value: $(tt.params.IMAGE_NAMES)
+          - name: CODEBASE_NAME
+            value: $(tt.params.CODEBASE_NAME)
         pipelineRef:
           name: image-scan-remote
         taskRunTemplate:

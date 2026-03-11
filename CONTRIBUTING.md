@@ -92,6 +92,28 @@ While the prerequisites above must be satisfied prior to having your pull reques
 
 ### Git Commit Messages
 
+Commit messages **must** follow the platform format for Jira traceability and changelog generation:
+
+**Format:** `EPMDEDP-<ID>: <type>: <description>`
+
+**Example:** `EPMDEDP-16058: feat: add feature`
+
+**Allowed types:**
+
+| Type     | Purpose                    |
+|----------|----------------------------|
+| feat     | New feature                |
+| fix      | Bug fix                    |
+| docs     | Documentation changes      |
+| style    | Code style/formatting      |
+| refactor | Code refactoring           |
+| test     | Adding/updating tests      |
+| chore    | Maintenance tasks          |
+
+Use the `!` suffix after the type for breaking changes (e.g. `feat!: change API`).
+
+**Additional guidelines:**
+
 * Use the present tense ("Add feature" not "Added feature")
 * Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
 * Limit the first line to 72 characters or less

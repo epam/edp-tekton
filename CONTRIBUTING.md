@@ -114,6 +114,8 @@ Use the `!` suffix after the type for breaking changes (e.g. `feat!: change API`
 
 **Additional guidelines:**
 
+Automated dependency update commits are also allowed in the format `chore(deps): Bump <dependency> ...`.
+
 * Use the present tense ("Add feature" not "Added feature")
 * Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
 * Limit the first line to 72 characters or less

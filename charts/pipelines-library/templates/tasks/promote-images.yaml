@@ -65,6 +65,8 @@ spec:
           value: "$(params.CBIS_CRD)"
         - name: STAGE_CRD
           value: "$(params.STAGE_CRD)"
+        - name: APPLICATIONS_PAYLOAD
+          value: "$(params.APPLICATIONS_PAYLOAD)"
       script: |
         set -ex
 
@@ -78,7 +80,13 @@ spec:
 
           if [ -n "${IMAGE_TAG}" ]; then
             CBIS_TAG=$(kubectl get "${CBIS_CRD}" "${VERIFIED_SBIS}" -o jsonpath='{.spec.tags[*].name}')
-            NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT_RFC3339}\"}"
+            IMAGE_DIGEST=$(echo "${APPLICATIONS_PAYLOAD}" | jq -r --arg app "${APP}" '.[$app].imageDigest // empty')
+
+            if [ -n "${IMAGE_DIGEST}" ]; then
+              NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT_RFC3339}\",\"digest\":\"${IMAGE_DIGEST}\"}"
+            else
+              NEW_CBIS_TAG="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${DATE_FORMAT_RFC3339}\"}"
+            fi
 
             if [ -n "${CBIS_TAG}" ] && [ "${CBIS_TAG}" = "$(printf '%s' "${CBIS_TAG}" | sed 's/'"${IMAGE_TAG}"'//g')" ]; then
               echo "[TEKTON][DEBUG] ImageStream ${VERIFIED_SBIS} doesn't contain ${IMAGE_TAG} tag ... it will be added."

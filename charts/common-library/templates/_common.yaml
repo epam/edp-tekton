@@ -81,6 +81,8 @@
       value: $(params.CODEBASEBRANCH_NAME)
     - name: IMAGE_TAG
       value: $(tasks.get-version.results.IS_TAG)
+    - name: IMAGE_DIGEST
+      value: $(tasks.container-build.results.IMAGE_DIGEST)
 {{- end -}}
 
 {{- define "build-pipeline-lib-end" -}}

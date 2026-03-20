@@ -59,7 +59,7 @@ spec:
           .spec.generators[0].list.elements |= map(
             if (.stage == $stage) and (.codebase | IN($updates | keys[])) then
               .imageTag = $updates[.codebase].imageTag
-              # Update customValues field if customValues is true in payload
+              | .imageDigest = ($updates[.codebase].imageDigest // .imageDigest // "")
               | .customValues = if ($updates[.codebase].customValues == true) then true elif ($updates[.codebase].customValues == false) then false else .customValues end
             else
               .

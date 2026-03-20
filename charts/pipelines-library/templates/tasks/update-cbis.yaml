@@ -13,6 +13,10 @@ spec:
       description: "CodebaseBranch name with only letters and dashes"
     - name: IMAGE_TAG
       type: string
+    - name: IMAGE_DIGEST
+      type: string
+      description: "SHA256 digest of the container image"
+      default: ""
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
@@ -25,6 +29,8 @@ spec:
           value: "$(params.CODEBASEBRANCH_NAME)"
         - name: IMAGE_TAG
           value: "$(params.IMAGE_TAG)"
+        - name: IMAGE_DIGEST
+          value: "$(params.IMAGE_DIGEST)"
       script: |
         #!/usr/bin/env sh
         set -e
@@ -37,7 +43,11 @@ spec:
 
         cbisCrTags=$(kubectl get cbis.v2.edp.epam.com ${cbisName} --output=jsonpath={.spec.tags})
         dateFormat=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-        newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\"}"
+        if [ -n "${IMAGE_DIGEST}" ]; then
+          newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\",\"digest\":\"${IMAGE_DIGEST}\"}"
+        else
+          newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\"}"
+        fi
 
         if [ "${cbisCrTags}" = "" ] ; then
             echo "[TEKTON][DEBUG] There're no tags in imageStream ${cbisName} ... the first one will be added."

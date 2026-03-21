@@ -1,6 +1,6 @@
 module github.com/epam/edp-tekton
 
-go 1.24.0
+go 1.25.8
 
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20260116090828-b355af57b2b3
@@ -11,7 +11,7 @@ require (
 	github.com/tektoncd/triggers v0.34.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/oauth2 v0.34.0
-	google.golang.org/grpc v1.77.0
+	google.golang.org/grpc v1.79.3
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	cel.dev/expr v0.24.0 // indirect
+	cel.dev/expr v0.25.1 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
 	contrib.go.opencensus.io/exporter/prometheus v0.4.2 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/tektoncd/pipeline v1.6.0 // indirect
+	github.com/tektoncd/pipeline v1.6.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

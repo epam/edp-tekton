@@ -43,6 +43,7 @@ spec:
 
         cbisCrTags=$(kubectl get cbis.v2.edp.epam.com ${cbisName} --output=jsonpath={.spec.tags})
         dateFormat=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+        IMAGE_DIGEST=$(printf '%s' "${IMAGE_DIGEST}" | tr -d '[:space:]')
         if [ -n "${IMAGE_DIGEST}" ]; then
           newcbisTag="{\"name\":\"${IMAGE_TAG}\",\"created\":\"${dateFormat}\",\"digest\":\"${IMAGE_DIGEST}\"}"
         else

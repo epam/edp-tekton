@@ -1,19 +1,44 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.21.0"></a>
+## [v0.21.0] - 2026-03-27
 ### Features
 
+- Add support for Python 3.13.11 version in Tekton pipeline ([#597](https://github.com/epam/edp-tekton/issues/597))
 - Add support for Java 25 version in autotests ([#572](https://github.com/epam/edp-tekton/issues/572))
 - Add support for Java 25 version in Tekton pipeline ([#572](https://github.com/epam/edp-tekton/issues/572))
 
 ### Bug Fixes
 
+- update helm-lint and sonar configuration for compatibility ([#604](https://github.com/epam/edp-tekton/issues/604))
+- Add support java21/25 for Deployment autotests ([#599](https://github.com/epam/edp-tekton/issues/599))
+- Use branch name instead of SHA for tagging ([#596](https://github.com/epam/edp-tekton/issues/596))
+- correct cdxgen image registry from docker.io to ghcr.io
+- Refactor task scripts to POSIX sh for Alpine image compatibility
+- Replace bash shebang with sh for POSIX shell compatibility
 - Replacing the deprecated sonar.login
 - Use merge_commit_sha for GitLab interceptor with fallback to last_commit ([#569](https://github.com/epam/edp-tekton/issues/569))
 - Fix git-sha value for the GitLab when merge strategy doesn't create merge commit ([#569](https://github.com/epam/edp-tekton/issues/569))
 
+### Code Refactoring
+
+- parameterize DefectDojo integration with per-branch scan isolation
+- parameterize container images in security tasks for centralized management
+- consolidate Bitbucket event processing to eliminate duplication
+
 ### Routine
 
+- Add Step Name Parameter Support for Autotest Execution in Deploy Pipeline
+- Remove test ignore flag from maven ([#601](https://github.com/epam/edp-tekton/issues/601))
+- Bump security scanner versions to latest
+- Update chart-testing tool to v3.14.0 ([#588](https://github.com/epam/edp-tekton/issues/588))
+- Bump kubectl image ([#586](https://github.com/epam/edp-tekton/issues/586))
+- Add securityContext with runAsUser: 0 to sonar-scanner step ([#577](https://github.com/epam/edp-tekton/issues/577))
+- Update kubectl image to 1.34.2 from deprecated bitnami image
+- Bump version to 0.3.18 and update documentation
+- Update Go dependencies for Kubernetes 1.34 compatibility ([#580](https://github.com/epam/edp-tekton/issues/580))
 - Update sonar-scanner-cli version
 - Migrate tekton resources from v1beta1 to v1 ([#573](https://github.com/epam/edp-tekton/issues/573))
 - Update current development version ([#566](https://github.com/epam/edp-tekton/issues/566))
@@ -786,7 +811,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.21.0...HEAD
+[v0.21.0]: https://github.com/epam/edp-tekton/compare/v0.20.0...v0.21.0
 [v0.20.0]: https://github.com/epam/edp-tekton/compare/v0.19.2...v0.20.0
 [v0.19.2]: https://github.com/epam/edp-tekton/compare/v0.19.1...v0.19.2
 [v0.19.1]: https://github.com/epam/edp-tekton/compare/v0.19.0...v0.19.1

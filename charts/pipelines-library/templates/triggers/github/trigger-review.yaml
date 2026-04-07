@@ -9,6 +9,7 @@ spec:
   interceptors:
     - ref:
         name: "github"
+        kind: ClusterInterceptor
       params:
         - name: "secretRef"
           value:
@@ -28,6 +29,7 @@ spec:
 {{- end }}
     - ref:
         name: "cel"
+        kind: ClusterInterceptor
       params:
         - name: "filter"
           value: "body.action in ['opened', 'synchronize', 'created']"

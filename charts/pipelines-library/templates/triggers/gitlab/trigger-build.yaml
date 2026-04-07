@@ -9,6 +9,7 @@ spec:
   interceptors:
     - ref:
         name: "gitlab"
+        kind: ClusterInterceptor
       params:
         - name: "secretRef"
           value:
@@ -18,6 +19,7 @@ spec:
           value: ["Merge Request Hook"]
     - ref:
         name: "cel"
+        kind: ClusterInterceptor
       params:
         - name: "filter"
           value: "body.object_attributes.action in ['merge']"

@@ -2,16 +2,34 @@
 ## [Unreleased]
 
 
+<a name="v0.22.0"></a>
+## [v0.22.0] - 2026-04-08
+### Bug Fixes
+
+- add explicit kind: ClusterInterceptor to trigger interceptor refs
+
+### Routine
+
+- support Jira-prefixed CHANGELOG format
+- remove PR title length validation
+- Update current development version
+
+
 <a name="v0.21.0"></a>
 ## [v0.21.0] - 2026-03-27
 ### Features
 
+- add image digest propagation
+- implement CIS-based image discovery in image-scan-chart
 - Add support for Python 3.13.11 version in Tekton pipeline ([#597](https://github.com/epam/edp-tekton/issues/597))
 - Add support for Java 25 version in autotests ([#572](https://github.com/epam/edp-tekton/issues/572))
 - Add support for Java 25 version in Tekton pipeline ([#572](https://github.com/epam/edp-tekton/issues/572))
 
 ### Bug Fixes
 
+- add NEXUS_HOST_URL var to autotests task ([#613](https://github.com/epam/edp-tekton/issues/613))
+- Fix update-cbis step with digest update
+- align image-scan-remote with image-scan-chart approach
 - update helm-lint and sonar configuration for compatibility ([#604](https://github.com/epam/edp-tekton/issues/604))
 - Add support java21/25 for Deployment autotests ([#599](https://github.com/epam/edp-tekton/issues/599))
 - Use branch name instead of SHA for tagging ([#596](https://github.com/epam/edp-tekton/issues/596))
@@ -30,6 +48,10 @@
 
 ### Routine
 
+- bump dependencies to address vulnerabilities
+- update commit validation for Dependabot bumps
+- validate commit title length and format
+- Update commit message validation to require EPMDEDP ticket ID
 - Add Step Name Parameter Support for Autotest Execution in Deploy Pipeline
 - Remove test ignore flag from maven ([#601](https://github.com/epam/edp-tekton/issues/601))
 - Bump security scanner versions to latest
@@ -811,7 +833,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.22.0...HEAD
+[v0.22.0]: https://github.com/epam/edp-tekton/compare/v0.21.0...v0.22.0
 [v0.21.0]: https://github.com/epam/edp-tekton/compare/v0.20.0...v0.21.0
 [v0.20.0]: https://github.com/epam/edp-tekton/compare/v0.19.2...v0.20.0
 [v0.19.2]: https://github.com/epam/edp-tekton/compare/v0.19.1...v0.19.2

@@ -28,6 +28,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
       type: string
+    - name: targetBranch
+      description: 'Target branch of Merge Request'
+      default: "main"
+      type: string
     - name: CODEBASE_NAME
       default: "make-c"
       description: "Project name"

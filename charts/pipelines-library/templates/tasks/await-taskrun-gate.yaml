@@ -1,0 +1,66 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: await-taskrun-gate
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+spec:
+  description: >-
+    This task serves as a gate to ensure that a specified TaskRun is not 
+    currently in a "Pending" or "Running" state before allowing the pipeline
+    to proceed, with configurable wait times and retry limits.
+  params:
+    - name: task_name
+      description: "The name of the task we are looking for or regex to match in the TaskRun list"
+      default: "save-cache"
+      type: string
+    - name: wait_time
+      description: "Delay between search attempts"
+      default: '20'
+      type: string
+    - name: max_counter
+      description: "Maximum number of repeats"
+      default: '30'
+      type: string
+  steps:
+    - name: wait-for
+      image: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.1
+      env:
+        - name: TASK
+          value: $(params.task_name)
+        - name: WAIT_TIME
+          value: $(params.wait_time)
+        - name: MAX_COUNTER
+          value: $(params.max_counter)
+      script: |
+        #!/usr/bin/env sh
+        set -eux
+
+        COUNTER=0
+        while true; do
+          if ! raw=$(kubectl get taskrun \
+            -o=jsonpath='{range .items[?(@.status.conditions[0].status=="Unknown")]}{.metadata.name}{"\n"}{end}'); then
+            echo "kubectl get taskrun failed, exiting" >&2
+            exit 1
+          fi
+
+          taskrun_list=$(printf '%s' "${raw}" | grep -E "${TASK}" || true)
+          echo "${taskrun_list}"
+
+          if [ -n "${taskrun_list}" ]; then
+            echo "TaskRun running and contains task ${TASK}"
+            COUNTER=$((COUNTER+1))
+            if [ "${COUNTER}" -ge "${MAX_COUNTER}" ]; then
+              echo "Maximum number of retries reached, exiting script"
+              exit 1
+            fi
+            sleep "${WAIT_TIME}"
+          else
+            echo "${TASK} is not running, go to the next task"
+            break
+          fi
+        done
+
+{{- include "resources" . | nindent 6 }}
+{{ end }}

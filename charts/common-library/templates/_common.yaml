@@ -1,10 +1,19 @@
 {{- define "get-cache" -}}
+- name: wait-for-cache-uploads
+  params:
+    - name: task_name
+      value: save-cache
+  runAfter:
+    - fetch-repository
+  taskRef:
+    kind: Task
+    name: await-taskrun-gate
 - name: get-cache
   taskRef:
     kind: Task
     name: get-cache
   runAfter:
-    - fetch-repository
+    - wait-for-cache-uploads
   params:
     - name: CACHE_NAME
       value: $(params.CODEBASE_NAME)
@@ -15,12 +24,21 @@
 {{- end -}}
 
 {{- define "save-cache" -}}
+- name: wait-for-cache
+  params:
+    - name: task_name
+      value: "save-cache|get-cache"
+  runAfter:
+    - build
+  taskRef:
+    kind: Task
+    name: await-taskrun-gate
 - name: save-cache
   taskRef:
     kind: Task
     name: save-cache
   runAfter:
-    - build
+    - wait-for-cache
   params:
     - name: CACHE_NAME
       value: $(params.CODEBASE_NAME)

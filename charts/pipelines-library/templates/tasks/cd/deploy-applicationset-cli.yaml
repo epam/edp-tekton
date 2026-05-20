@@ -78,5 +78,32 @@ spec:
         # TODO: we build our custom argocd-cli that has fixed issue with argocd app wait
         argocd app wait -l $selector --health --sync
 
-        printf "%s" "${new_tags}" > "$(results.APPLICATIONS_PAYLOAD.path)"
+        # Tekton termination message limit is 4096 bytes, but the actual result content budget is lower:
+        # Tekton JSON-encodes the value (each " becomes \", ~8% overhead) and prepends internal entries
+        # (e.g. ExitCode) plus the result key/type wrapper — consuming ~600 bytes of the 4096 budget.
+        result_size_limit=3500
+
+        display_result=$(printf '%s' "${new_tags}" | jq -c --argjson limit "${result_size_limit}" '
+          to_entries | reduce .[] as $entry (
+            {r: {}, done: false};
+            if .done then .
+            else
+              (.r + {($entry.key): $entry.value}) as $cand |
+              if ($cand | tojson | length) <= $limit
+              then {r: $cand, done: false}
+              else {r: .r, done: true}
+              end
+            end
+          ) | .r
+        ')
+
+        total_apps=$(printf '%s' "${new_tags}" | jq 'keys | length')
+        display_apps=$(printf '%s' "${display_result}" | jq 'keys | length')
+        display_size=${#display_result}
+        echo "APPLICATIONS_PAYLOAD result: ${display_apps}/${total_apps} apps, ${display_size} bytes (limit ${result_size_limit})"
+        if [ "${display_apps}" -lt "${total_apps}" ]; then
+          echo "WARNING: ${total_apps} apps exceed result size limit — only first ${display_apps} apps shown in portal"
+        fi
+
+        printf '%s' "${display_result}" > "$(results.APPLICATIONS_PAYLOAD.path)"
 {{ end }}

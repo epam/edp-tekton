@@ -2,6 +2,15 @@
 ## [Unreleased]
 
 
+<a name="v0.24.0"></a>
+## [v0.24.0] - 2026-05-22
+### Routine
+
+- Align tekton-cache version
+- Align tekton-cache image
+- Update current development version
+
+
 <a name="v0.23.0"></a>
 ## [v0.23.0] - 2026-05-21
 ### Bug Fixes
@@ -847,7 +856,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.24.0...HEAD
+[v0.24.0]: https://github.com/epam/edp-tekton/compare/v0.23.0...v0.24.0
 [v0.23.0]: https://github.com/epam/edp-tekton/compare/v0.22.0...v0.23.0
 [v0.22.0]: https://github.com/epam/edp-tekton/compare/v0.21.0...v0.22.0
 [v0.21.0]: https://github.com/epam/edp-tekton/compare/v0.20.0...v0.21.0

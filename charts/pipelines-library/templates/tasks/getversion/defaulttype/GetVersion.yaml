@@ -45,8 +45,13 @@ spec:
         BUILD_ID=$(cat $(results.TIMESTAMP.path))
 
         BUILD_VERSION="${BUILD_ID}"
-        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        # Sanitize the branch name for BOTH the VCS (Git) tag and the IS (image) tag.
+        # A Git tag containing "/" cannot match the CodebaseImageStream/image tag
+        # (Docker tags forbid "/"), and Argo CD resolves the deploy targetRevision
+        # (which equals IS_TAG) against this Git tag. Keeping VCS_TAG == IS_TAG ensures
+        # branches like "feature/tt-123" resolve correctly instead of failing the deploy.
         NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
+        VCS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
         IS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
         NORMALIZED_VERSION="$(cat $(results.NORMALIZED_VERSION.path))"
 

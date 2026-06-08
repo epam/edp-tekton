@@ -34,6 +34,10 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
+    - name: targetBranch
+      description: 'Target branch of Merge Request'
+      default: "main"
+      type: string
     - name: CODEBASE_NAME
       default: '{{ $framework  }}-maven'
       description: "Project name"

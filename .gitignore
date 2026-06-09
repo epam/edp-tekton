@@ -10,3 +10,4 @@ coverage.out
 __pycache__/
 
 kubeconfig
+tmp/

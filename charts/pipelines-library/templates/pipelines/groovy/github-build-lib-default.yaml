@@ -15,9 +15,7 @@ spec:
     - name: shared-workspace
     - name: ssh-creds
   params:
-    - name: pipelineUrl
-      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
-      type: string
+    {{- include "edp-tekton.pipelineUrlParam" $ | nindent 4 }}
     - name: git-source-url
       default: "https://github.com/epmd-edp/groovy-pipeline-codenarc-codenarc"
       description: git url to clone

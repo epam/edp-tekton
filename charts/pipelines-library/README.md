@@ -78,6 +78,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | fullnameOverride | string | `""` |  |
 | gitServers | object | `{}` |  |
 | githubOwners | object | `{"checkType":"all","enabled":true}` | Enabling this feature ensures that Tekton pipelines trigger only when the repo owner creates a PR. More information: https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests |
+| global.clusterName | string | `""` | Cluster name used to construct the krci-portal pipeline URL (/c/<clusterName>/...). Must match krci-portal configEnv.DEFAULT_CLUSTER_NAME. If left empty, falls back to the first segment of dnsWildCard |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |

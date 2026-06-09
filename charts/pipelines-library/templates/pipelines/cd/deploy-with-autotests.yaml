@@ -12,11 +12,7 @@ spec:
   workspaces:
     - name: shared-workspace
   params:
-    - name: pipelineUrl
-      description: |
-        URL of the pipeline run in Tekton Dashboard.
-      type: string
-      default: https://portal-{{ .Release.Namespace }}.{{ .Values.global.dnsWildCard }}/c/main/pipelines/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+    {{- include "edp-tekton.pipelineUrlParam" $ | nindent 4 }}
     - name: CDPIPELINE
       description: |
         KRCI kind:CDPipeline name used for deployment. For example: mypipe, myfeature

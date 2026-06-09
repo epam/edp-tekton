@@ -119,7 +119,7 @@ spec:
 
 {{- include "build-pipeline-java-maven-rpm-build-push-default" $ | nindent 4 }}
 
-{{- include "save-cache" $ | nindent 4 }}
+{{- include "save-cache-maven" $ | nindent 4 }}
 
 {{ include "build-pipeline-rpm-end" . | nindent 4 }}
 

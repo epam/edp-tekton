@@ -120,7 +120,7 @@ spec:
 
 {{- include "java-maven-build-common" (dict "framework" $framework "java25SkipSonar" $.Values.pipelines.deployableResources.java.java25SkipSonar) | nindent 4 }}
 
-{{- include "save-cache" $ | nindent 4 }}
+{{- include "save-cache-maven" $ | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

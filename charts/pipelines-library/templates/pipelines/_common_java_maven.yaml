@@ -106,6 +106,22 @@
       workspace: shared-workspace
 {{- end -}}
 
+{{- define "save-cache-maven" -}}
+- name: save-cache
+  taskRef:
+    kind: Task
+    name: save-cache
+  runAfter:
+    - push
+  params:
+    - name: CACHE_NAME
+      value: $(params.CODEBASE_NAME)
+  workspaces:
+    - name: cache
+      workspace: shared-workspace
+      subPath: cache
+{{- end -}}
+
 {{- define "java-maven-review-common-gerrit" -}}
 - name: compile
   taskRef:

@@ -30,8 +30,8 @@ spec:
         nts=$(date "+%Y%m%d.%H%M%S")
         echo "Current Timestamp: ${ts}"
         echo "Current Normalized Timestamp: ${nts}"
-        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
-        echo ${nts} | tr -d "\n" | tee $(results.NORMALIZED_VERSION.path)
+        printf "%s" "${ts}"  > "$(results.TIMESTAMP.path)"
+        printf "%s" "${nts}" > "$(results.NORMALIZED_VERSION.path)"
 
     - name: get-version
       image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
@@ -41,22 +41,16 @@ spec:
       script: |
         set -e
 
-        # get current BUILD ID
-        BUILD_ID=$(cat $(results.TIMESTAMP.path))
-
-        BUILD_VERSION="${BUILD_ID}"
-        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        BUILD_VERSION=$(cat $(results.TIMESTAMP.path))
         NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
-        IS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
-        NORMALIZED_VERSION="$(cat $(results.NORMALIZED_VERSION.path))"
+        VCS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
+        IS_TAG="${VCS_TAG}"
 
         echo "Application version - ${BUILD_VERSION}"
         echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
-        echo "Normalized Version - ${NORMALIZED_VERSION}"
 
         printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
-        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
-        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
-        printf "%s" "${BUILD_ID}" > "$(results.VERSION.path)"
+        printf "%s" "${VCS_TAG}"       > "$(results.VCS_TAG.path)"
+        printf "%s" "${IS_TAG}"        > "$(results.IS_TAG.path)"
 {{ end }}

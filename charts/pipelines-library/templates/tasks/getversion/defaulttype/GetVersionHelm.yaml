@@ -8,13 +8,14 @@ spec:
     This task retrieves the version from a Helm chart's `Chart.yaml` file and generates a VCS tag and IS tag based on the branch name and chart version.
   workspaces:
     - name: source
-      description: The workspace consisting of csharp project.
+      description: The workspace consisting of helm chart project.
   params:
     - name: BRANCH_NAME
       type: string
       description: Branch name.
     - name: chart-dir
       type: string
+      description: Path to the Helm chart directory containing Chart.yaml.
   results:
     - name: VERSION
       description: "Application version"
@@ -24,7 +25,7 @@ spec:
       description: "CodebaseImageStream tag"
   steps:
     - name: get-version
-      image: {{ include "edp-tekton.registry" . }}/linuxserver/yq
+      image: {{ include "edp-tekton.registry" . }}/linuxserver/yq:3.4.3
       env:
         - name: BRANCH_NAME
           value: "$(params.BRANCH_NAME)"
@@ -34,17 +35,16 @@ spec:
       script: |
         set -e
 
-        BUILD_VERSION=$(grep -m 1 -oE 'version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)*' ${CHART_DIR}/Chart.yaml | awk '{print $2}')
-        BUILD_VERSION=$(cat ${CHART_DIR}/Chart.yaml | yq -r ".version")
-
-        VCS_TAG="${BRANCH_NAME}-${BUILD_VERSION}"
+        BUILD_VERSION=$(yq -r ".version" "${CHART_DIR}/Chart.yaml")
+        NORMALIZED_BRANCH=$(printf '%s' "${BRANCH_NAME}" | sed 's/\//-/g')
+        VCS_TAG="${NORMALIZED_BRANCH}-${BUILD_VERSION}"
         IS_TAG="${BUILD_VERSION}"
 
+        echo "VERSION tag - ${BUILD_VERSION}"
         echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
-        echo "VERSION tag - ${BUILD_VERSION}"
 
-        printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
-        printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
+        printf "%s" "${VCS_TAG}"       > "$(results.VCS_TAG.path)"
+        printf "%s" "${IS_TAG}"        > "$(results.IS_TAG.path)"
 {{ end }}

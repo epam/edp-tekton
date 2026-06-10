@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: get-version-rpm
+  name: get-version-rpm-default
 spec:
   description: |
     This task generates a version number for the application based on the current timestamp and the branch name.
@@ -29,8 +29,8 @@ spec:
         nts=$(date "+%Y%m%d.%H%M%S")
         echo "Current Timestamp: ${ts}"
         echo "Current Normalized Timestamp: ${nts}"
-        echo ${ts} | tr -d "\n" | tee $(results.TIMESTAMP.path)
-        echo ${nts} | tr -d "\n" | tee $(results.NORMALIZED_VERSION.path)
+        printf "%s" "${ts}"  > "$(results.TIMESTAMP.path)"
+        printf "%s" "${nts}" > "$(results.NORMALIZED_VERSION.path)"
 
     - name: get-version
       image: {{ include "edp-tekton.registry" . }}/alpine/make:4.2.1

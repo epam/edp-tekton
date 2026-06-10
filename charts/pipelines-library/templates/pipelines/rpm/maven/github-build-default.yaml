@@ -77,7 +77,7 @@ spec:
     - name: get-version
       taskRef:
         kind: Task
-        name: get-version-rpm
+        name: get-version-rpm-default
       runAfter:
         - init-values
       params:

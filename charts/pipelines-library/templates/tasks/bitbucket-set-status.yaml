@@ -4,7 +4,7 @@ kind: Task
 metadata:
   name: bitbucket-set-status
   labels:
-    app.kubernetes.io/version: "0.4"
+    app.kubernetes.io/version: "0.5"
   annotations:
     tekton.dev/categories: Git
     tekton.dev/pipelines.minVersion: "0.12.1"
@@ -22,6 +22,15 @@ spec:
     reflected in pull requests involving those commits. Statuses include a
     `description` and a `target_url` to give users information about the CI
     statuses or a direct link to the full log.
+
+    Authentication (Bitbucket Cloud): app passwords are deprecated in favour of
+    API tokens (https://developer.atlassian.com/cloud/bitbucket/changelog/#CHANGE-3222).
+    API tokens authenticate over HTTP Basic auth using
+    `<atlassian-account-email>:<api-token>`. The credential can be supplied in two ways:
+      * Pre-encoded (default): `BITBUCKET_TOKEN_SECRET_KEY` already holds
+        base64("<email-or-username>:<api-token>"). Keep `BITBUCKET_USERNAME` empty.
+      * Raw token: the secret holds the raw API token and `BITBUCKET_USERNAME` is set
+        to the Atlassian account email/username; the task builds the Basic header.
   volumes:
     - name: bitbuckettoken
       secret:
@@ -72,9 +81,19 @@ spec:
       type: string
     - name: AUTH_TYPE
       description: |
-        The type of authentication to use. You could use the less secure "Basic" for example.
+        The type of authentication to use, e.g. "Basic". Bitbucket Cloud API tokens
+        (and the legacy app passwords) require "Basic".
       type: string
       default: Basic
+    - name: BITBUCKET_USERNAME
+      description: |
+        The Atlassian account email/username paired with the API token for Basic auth.
+        When set (and AUTH_TYPE is "Basic"), the secret token is treated as a RAW API
+        token and the task builds the "Basic base64(username:token)" header itself.
+        When empty (default), the secret token is used as-is, i.e. it must already be a
+        pre-encoded base64("username:token") credential.
+      type: string
+      default: ""
     - name: IMAGE
       description: |
         Image providing the python binary which this task uses.
@@ -119,6 +138,8 @@ spec:
           value: $(params.STATE)
         - name: AUTH_TYPE
           value: $(params.AUTH_TYPE)
+        - name: BITBUCKET_USERNAME
+          value: $(params.BITBUCKET_USERNAME)
         - name: SHEBANG
           value: $(params.SHEBANG)
         - name: KEY
@@ -132,15 +153,33 @@ spec:
 
         """This script will set the CI status on Bitbucket PR with enhanced debugging"""
 
+        import base64
         import json
         import os
         import sys
         import http.client
 
-        # Load the token
+        # Load the credential. Depending on BITBUCKET_USERNAME this is either a raw
+        # API token or a pre-encoded base64("username:token") Basic credential.
         bitbucket_token_filename = "/etc/bitbucket-set-status/" + \
             os.getenv("BITBUCKET_TOKEN_SECRET_KEY")
         bitbucket_token = open(bitbucket_token_filename, "r").read().strip()
+
+        auth_type = os.getenv("AUTH_TYPE")
+        username = os.getenv("BITBUCKET_USERNAME", "").strip()
+
+        # Bitbucket Cloud app passwords are deprecated in favour of API tokens
+        # (CHANGE-3222). Both authenticate via HTTP Basic auth with
+        # base64("<email-or-username>:<token>"). When a username is provided we treat
+        # the secret value as a raw API token and build the credential ourselves;
+        # otherwise the secret value is assumed to be already pre-encoded.
+        if auth_type == "Basic" and username:
+            credential = base64.b64encode(
+                "{username}:{token}".format(username=username, token=bitbucket_token).encode()
+            ).decode()
+            authHeader = "Basic " + credential
+        else:
+            authHeader = auth_type + " " + bitbucket_token
 
         # Form the status URL
         status_url = os.getenv("API_PATH_PREFIX") + os.getenv("REPO_FULL_NAME") + "/commit/" + os.getenv("SHA") + "/statuses/build"
@@ -154,7 +193,6 @@ spec:
             "name": os.getenv("NAME")
         }
 
-        authHeader = os.getenv("AUTH_TYPE") + " " + bitbucket_token
         headers = {
             "User-Agent": "TektonCD, the peaceful cat",
             "Authorization": authHeader,
@@ -178,6 +216,14 @@ spec:
         if not str(resp.status).startswith("2"):
             print("Error: %d" % (resp.status))
             print(response_body)
+            if resp.status in (401, 403):
+                print(
+                    "Hint: Bitbucket Cloud app passwords are deprecated (CHANGE-3222). "
+                    "Use a scoped API token: store base64('<atlassian-email>:<api-token>') "
+                    "in the secret token key, or set the BITBUCKET_USERNAME param and store "
+                    "the raw API token. "
+                    "See https://developer.atlassian.com/cloud/bitbucket/changelog/#CHANGE-3222"
+                )
             sys.exit(1)
         else:
             print("Bitbucket status '{state}' has been set on {repo}#{sha}".format(

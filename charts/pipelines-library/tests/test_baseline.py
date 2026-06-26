@@ -169,6 +169,39 @@ gitServers:
     assert "el-edp-my-gerrit" in r["ingress"][el_Name]["spec"]["rules"][0]["http"]["paths"][0]["backend"]["service"]["name"]
 
 
+def test_pipeline_url_uses_cluster_name():
+    config = """
+global:
+  gitProviders:
+    - github
+  dnsWildCard: "apps.example.com"
+clusterName: "my-cluster"
+    """
+
+    r = helm_template(config)
+    params = r["pipeline"]["github-maven-java17-app-build-default"]["spec"]["params"]
+    param = next(p for p in params if p["name"] == "pipelineUrl")
+
+    assert "krci-portal-ns.apps.example.com" in param["default"]
+    assert "/c/my-cluster/" in param["default"]
+
+
+def test_pipeline_url_falls_back_to_dns_wildcard_first_segment():
+    config = """
+global:
+  gitProviders:
+    - github
+  dnsWildCard: "apps.example.com"
+    """
+
+    r = helm_template(config)
+    params = r["pipeline"]["github-maven-java17-app-build-default"]["spec"]["params"]
+    param = next(p for p in params if p["name"] == "pipelineUrl")
+
+    assert "krci-portal-ns.apps.example.com" in param["default"]
+    assert "/c/apps/" in param["default"]
+
+
 def test_pruner_disabled():
     config = """
 tekton:

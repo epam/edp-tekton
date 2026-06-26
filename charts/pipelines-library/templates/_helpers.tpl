@@ -229,6 +229,6 @@ Define registry for pipelines images
 # Define pipelineUrl parameter for Tekton Pipelines
 {{- define "edp-tekton.pipelineUrlParam" -}}
 - name: pipelineUrl
-  default: https://krci-portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/{{ $.Values.global.clusterName | default ($.Values.global.dnsWildCard | splitList "." | first) }}/cicd/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+  default: https://krci-portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/{{ $.Values.clusterName | default ($.Values.global.dnsWildCard | splitList "." | first) }}/cicd/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
   type: string
 {{- end -}}

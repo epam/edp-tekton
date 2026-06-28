@@ -215,81 +215,13 @@ spec:
 
 #### Extending Pipelines: Adding a New Language
 
-**1. Create Pipeline YAML Files**
+1. **Pipeline YAMLs** — add `{provider}-{language}-app-build-default.yaml` and `{provider}-{language}-app-review.yaml` under `charts/pipelines-library/templates/pipelines/{language}/`. Guard with `{{ if has "{provider}" .Values.global.gitProviders }}` and `range` over the framework→image map.
+2. **Task sequence** — define reusable steps in `_common_{language}.yaml` as `{{- define "edp-tekton.{language}-build-common" -}}`; pass language commands via `$(params.ci-{language})` (sourced from a `values.yaml` ConfigMap).
+3. **Feature flags** — register frameworks under `deployableResources.{language}` in `values.yaml`.
+4. **Image mapping** — add `edp-tekton.resourceMapping.{language}` in `_helpers.tpl` to map enabled frameworks → runtime images.
+5. **Tasks** — reuse generic tasks in `templates/tasks/` (`maven`, `gradle`, `npm`, `python`, `golang`) or add `{language}.yaml`.
 
-In `charts/pipelines-library/templates/pipelines/{language}/`:
-
-- `{provider}-{language}-app-build-default.yaml`
-- `{provider}-{language}-app-review.yaml`
-
-Structure with Helm templating:
-
-```yaml
-{{ if has "{provider}" .Values.global.gitProviders }}
-{{- $frameworks := include "edp-tekton.resourceMapping.{language}" . | fromYaml }}
-{{- range $framework, $image := $frameworks }}
-apiVersion: tekton.dev/v1
-kind: Pipeline
-metadata:
-  name: {{ .provider }}-{{ $framework }}-app-build-default
-spec:
-  # Include common patterns + language-specific tasks
-{{ end }}
-{{ end }}
-```
-
-**2. Define Task Sequence**
-
-Create `_common_{language}.yaml` for reusable task patterns:
-
-```yaml
-{{- define "edp-tekton.{language}-build-common" -}}
-- name: compile
-  taskRef: {language}-task
-  params:
-    - name: IMAGE
-      value: $(params.image)
-    - name: EXTRA_COMMANDS
-      value: $(params.ci-{language})  # From values.yaml ConfigMap
-  workspaces:
-    - name: source
-      workspace: shared-workspace
-      subPath: source
-{{- end -}}
-```
-
-**3. Register in values.yaml**
-
-```yaml
-deployableResources:
-  {language}:
-    {framework1}: true    # Enables framework variant
-    {framework2}: false
-```
-
-**4. Add Image Mapping in _helpers.tpl**
-
-```yaml
-{{- define "edp-tekton.resourceMapping.{language}" -}}
-{{- if .Values.deployableResources.{language}.{framework1} }}
-  {{- $versions = set $versions "{framework1}" "registry.io/{language}:tag" }}
-{{- end }}
-{{- end -}}
-```
-
-**5. Create or Reuse Tasks**
-
-Tasks are generic building blocks in `/charts/pipelines-library/templates/tasks/`:
-
-- Reuse existing: `maven`, `gradle`, `npm`, `python`, `golang`
-- Or create new: `{language}.yaml` with language-specific logic
-
-**Key Principles:**
-
-- **DRY**: Use Helm includes for repeated patterns
-- **Parameterization**: ConfigMaps in `values.yaml` for language-specific commands
-- **Multi-VCS**: Single template supports all providers via conditionals
-- **Workspace Isolation**: Use `subPath` for organized directory structure (source, cache)
+**Principles:** DRY via Helm includes · language commands as `values.yaml` ConfigMaps · one template covers all VCS via conditionals · isolate dirs with workspace `subPath` (source, cache). Mirror an existing language dir (e.g. `java/`) as the working reference.
 
 ### Helm Chart Configuration
 

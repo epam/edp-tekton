@@ -1,4 +1,4 @@
-# CLAUDE.md
+# edp-tekton
 
 ## Repository Overview
 
@@ -19,6 +19,11 @@ make build              # Builds Go binary to dist/edpinterceptor-{arch}
 make test               # Runs both Go unit tests and Helm chart tests
 make test-go            # Go unit tests only (with coverage)
 make test-chart         # Helm chart validation with pytest
+
+# Lint
+make lint               # golangci-lint (config: .golangci.yaml)
+make lint-fix           # golangci-lint with auto-fix
+make validate-docs      # CI check: fail if generated helm-docs are stale
 
 # Documentation
 make helm-docs          # Generate Helm chart documentation

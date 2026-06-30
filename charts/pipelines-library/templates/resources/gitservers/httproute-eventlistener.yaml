@@ -1,0 +1,34 @@
+{{- if eq .Values.global.platform "kubernetes" }}
+{{- $root := $ -}}
+{{- range $name, $server := .Values.gitServers }}
+{{- if and (has $server.gitProvider $.Values.global.gitProviders) (and $server.eventListener.httproute (default false $server.eventListener.httproute.enabled)) }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: event-listener-{{ $name }}
+  labels:
+    app.edp.epam.com/gitServer: {{ $name }}
+    {{- include "edp-tekton.labels" $root | nindent 4 }}
+  {{- with $server.eventListener.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    - name: {{ $root.Values.global.gatewayApi.gatewayName }}
+      namespace: {{ $root.Values.global.gatewayApi.gatewayNamespace }}
+  hostnames:
+    - el-{{ $name }}-{{ $root.Release.Namespace }}.{{ $root.Values.global.dnsWildCard }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+          # The service name will come from EventListener CR
+        - name: el-edp-{{ $name }}
+          port: 8080
+{{- end }}
+---
+{{- end }}
+{{- end }}

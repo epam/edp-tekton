@@ -105,6 +105,15 @@ global:
 
   # -- platform type that can be "kubernetes" or "openshift"
   platform: "kubernetes"
+
+  # -- Gateway API parent Gateway that EventListener HTTPRoutes attach to (nginx-ingress -> Envoy Gateway migration).
+  # Used only when a gitServer sets eventListener.httproute.enabled=true; ignored otherwise.
+  gatewayApi:
+    # -- Name of the parent Gateway resource
+    gatewayName: "main-gateway"
+    # -- Namespace of the parent Gateway resource
+    gatewayNamespace: "envoy-gateway-system"
+
   dockerRegistry:
     # -- Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub
     type: "ecr"
@@ -417,6 +426,11 @@ gitServers: {}
 #         annotations: {}
 #         # -- Ingress TLS configuration
 #         tls: []
+#       httproute:
+#         # -- Enable Gateway API HTTPRoute (Envoy Gateway) for this EventListener
+#         enabled: false
+#         # -- HTTPRoute annotations
+#         annotations: {}
 
 #   my-gitlab:
 #     gitProvider: gitlab
@@ -453,6 +467,11 @@ gitServers: {}
 #         annotations: {}
 #         # -- Ingress TLS configuration
 #         tls: []
+#       httproute:
+#         # -- Enable Gateway API HTTPRoute (Envoy Gateway) for this EventListener
+#         enabled: false
+#         # -- HTTPRoute annotations
+#         annotations: {}
 
 #   my-gerrit:
 #     gitProvider: gerrit
@@ -490,6 +509,11 @@ gitServers: {}
 #         annotations: {}
 #         # -- Ingress TLS configuration
 #         tls: []
+#       httproute:
+#         # -- Enable Gateway API HTTPRoute (Envoy Gateway) for this EventListener
+#         enabled: false
+#         # -- HTTPRoute annotations
+#         annotations: {}
 
 #   my-bitbucket:
 #     gitProvider: bitbucket
@@ -521,3 +545,8 @@ gitServers: {}
 #         annotations: {}
 #         # -- Ingress TLS configuration
 #         tls: []
+#       httproute:
+#         # -- Enable Gateway API HTTPRoute (Envoy Gateway) for this EventListener
+#         enabled: false
+#         # -- HTTPRoute annotations
+#         annotations: {}

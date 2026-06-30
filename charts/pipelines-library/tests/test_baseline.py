@@ -202,6 +202,175 @@ global:
     assert "/c/apps/" in param["default"]
 
 
+def test_httproute_for_github_el():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - github
+gitServers:
+  my-github:
+    gitProvider: github
+    host: github.com
+    quickLink:
+      enabled: true
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: true
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+      httproute:
+        enabled: true
+        annotations: {}
+    """
+
+    el_Name = "event-listener-my-github"
+    r = helm_template(config)
+
+    assert el_Name in r["httproute"]
+    spec = r["httproute"][el_Name]["spec"]
+    assert spec["parentRefs"][0]["name"] == "main-gateway"
+    assert spec["parentRefs"][0]["namespace"] == "envoy-gateway-system"
+    assert spec["hostnames"][0] == "el-my-github-ns.example.com"
+    assert spec["rules"][0]["backendRefs"][0]["name"] == "el-edp-my-github"
+    assert spec["rules"][0]["backendRefs"][0]["port"] == 8080
+
+
+def test_httproute_for_gitlab_el():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - gitlab
+gitServers:
+  my-gitlab:
+    gitProvider: gitlab
+    host: gitlab.com
+    quickLink:
+      enabled: true
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: true
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+      httproute:
+        enabled: true
+        annotations: {}
+    """
+
+    el_Name = "event-listener-my-gitlab"
+    r = helm_template(config)
+
+    assert el_Name in r["httproute"]
+    spec = r["httproute"][el_Name]["spec"]
+    assert spec["parentRefs"][0]["name"] == "main-gateway"
+    assert spec["parentRefs"][0]["namespace"] == "envoy-gateway-system"
+    assert spec["hostnames"][0] == "el-my-gitlab-ns.example.com"
+    assert spec["rules"][0]["backendRefs"][0]["name"] == "el-edp-my-gitlab"
+    assert spec["rules"][0]["backendRefs"][0]["port"] == 8080
+
+
+def test_httproute_for_gerrit_el():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - gerrit
+gitServers:
+  my-gerrit:
+    gitProvider: gerrit
+    host: gerrit.com
+    quickLink:
+      enabled: true
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: true
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+      httproute:
+        enabled: true
+        annotations: {}
+    """
+
+    el_Name = "event-listener-my-gerrit"
+    r = helm_template(config)
+
+    assert el_Name in r["httproute"]
+    spec = r["httproute"][el_Name]["spec"]
+    assert spec["parentRefs"][0]["name"] == "main-gateway"
+    assert spec["parentRefs"][0]["namespace"] == "envoy-gateway-system"
+    assert spec["hostnames"][0] == "el-my-gerrit-ns.example.com"
+    assert spec["rules"][0]["backendRefs"][0]["name"] == "el-edp-my-gerrit"
+    assert spec["rules"][0]["backendRefs"][0]["port"] == 8080
+
+
+def test_httproute_disabled_by_default():
+    # HTTPRoute is opt-in: with only the Ingress enabled, no HTTPRoute is rendered
+    # and the existing Ingress keeps working (backward compatibility).
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - github
+gitServers:
+  my-github:
+    gitProvider: github
+    host: github.com
+    quickLink:
+      enabled: true
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: true
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+      ingress:
+        enabled: true
+        annotations: {}
+        tls: []
+    """
+
+    r = helm_template(config)
+
+    assert "httproute" not in r
+    assert "event-listener-my-github" in r["ingress"]
+
+
 def test_pruner_disabled():
     config = """
 tekton:

@@ -82,6 +82,9 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |
+| global.gatewayApi | object | `{"gatewayName":"main-gateway","gatewayNamespace":"envoy-gateway-system"}` | Gateway API parent Gateway that EventListener HTTPRoutes attach to (nginx-ingress -> Envoy Gateway migration). Used only when a gitServer sets eventListener.httproute.enabled=true; ignored otherwise. |
+| global.gatewayApi.gatewayName | string | `"main-gateway"` | Name of the parent Gateway resource |
+| global.gatewayApi.gatewayNamespace | string | `"envoy-gateway-system"` | Namespace of the parent Gateway resource |
 | global.gerritHost | string | `"gerrit"` | Gerrit Host URL, must be specified if gerrit is enabled |
 | global.gitProviders | list | `["bitbucket","gerrit","github","gitlab"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |

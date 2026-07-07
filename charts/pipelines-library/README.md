@@ -122,6 +122,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
 | pipelines.deployableResources.java.java25SkipSonar | bool | `true` | This parameter disables the Sonar check for Java 25, as it is not currently supported. Ref: https://docs.sonarsource.com/sonarqube-community-build/analyzing-source-code/languages/java#suoported-versions |
 | pipelines.deployableResources.tasks | bool | `true` | This flag control the installation of the tasks. |
+| pipelines.image.nodejsTag | string | `"24.18.0-alpine3.24"` | Node.js image tag used across all npm/pnpm pipelines and tasks |
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | pipelines.imagePullSecrets | list | `[]` | List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries. Example: imagePullSecrets:   - name: regcred |
 | pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |

@@ -61,6 +61,13 @@ Define registry for pipelines images
 {{- .Values.pipelines.image.registry -}}
 {{- end -}}
 
+{{/*
+Node.js image (registry + tag) for all npm/pnpm pipelines and tasks
+*/}}
+{{- define "edp-tekton.nodeImage" -}}
+{{- printf "%s/library/node:%s" .Values.pipelines.image.registry .Values.pipelines.image.nodejsTag -}}
+{{- end -}}
+
 # Mapping for Java Maven (application and library) pipeliens
 {{- define "edp-tekton.resourceMapping.maven" -}}
 {{- $registry := .Values.pipelines.image.registry -}}

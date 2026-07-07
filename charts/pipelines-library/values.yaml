@@ -13,6 +13,8 @@ pipelines:
   image:
     # -- Registry for tekton pipelines images. Default: docker.io
     registry: "docker.io"
+    # -- Node.js image tag used across all npm/pnpm pipelines and tasks
+    nodejsTag: "24.18.0-alpine3.24"
 
   # -- List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries.
   # Example:

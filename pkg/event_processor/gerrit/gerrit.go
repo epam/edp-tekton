@@ -53,6 +53,9 @@ func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, _ string)
 		TargetBranch: gerritEvent.Change.Branch,
 		Type:         event_processor.EventTypeMerge,
 		Codebase:     codebase,
+		PullRequest: &event_processor.PullRequest{
+			ChangeNumber: int(gerritEvent.Change.Number),
+		},
 	}
 
 	if gerritEvent.Type == event_processor.GerritEventTypeCommentAdded {

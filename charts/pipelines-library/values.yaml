@@ -87,6 +87,11 @@ pipelines:
     #     operator: Equal
     #     value: tekton
 
+  # -- Cancel in-progress review PipelineRuns when a new commit is pushed to the same
+  # Pull Request / Merge Request / Gerrit change. Cancellation is graceful
+  # (spec.status: CancelledRunFinally), so finally tasks of the superseded run still execute.
+  cancelInProgress: false
+
 global:
   # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
   # Pipelines, EventListener, Tasks, etc.

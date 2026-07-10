@@ -1,10 +1,38 @@
 package event_processor
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 )
+
+// GerritChangeNumber is a Gerrit change number.
+// Depending on the Gerrit version, the webhooks plugin sends it either as a number or as a string.
+type GerritChangeNumber int
+
+func (n *GerritChangeNumber) UnmarshalJSON(data []byte) error {
+	s := string(data)
+	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		s = s[1 : len(s)-1]
+	}
+
+	if s == "" || s == "null" {
+		*n = 0
+
+		return nil
+	}
+
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("failed to parse gerrit change number %q: %w", s, err)
+	}
+
+	*n = GerritChangeNumber(v)
+
+	return nil
+}
 
 // GerritEvent represents a Gerrit event.
 type GerritEvent struct {
@@ -12,7 +40,8 @@ type GerritEvent struct {
 		Name string `json:"name"`
 	} `json:"project"`
 	Change struct {
-		Branch string `json:"branch"`
+		Branch string             `json:"branch"`
+		Number GerritChangeNumber `json:"number"`
 	} `json:"change"`
 	Comment string `json:"comment"`
 	Type    string `json:"type"`

@@ -68,4 +68,16 @@ rules:
       - gitservers
       - gitservers/status
       - gitservers/finalizers
+
+{{- if .Values.pipelines.cancelInProgress }}
+  - verbs:
+      - get
+      - list
+      - watch
+      - patch
+    apiGroups:
+      - tekton.dev
+    resources:
+      - pipelineruns
+{{- end }}
 {{- end }}

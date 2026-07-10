@@ -36,6 +36,7 @@ spec:
     - ref:
         name: "edp"
         kind: NamespacedInterceptor
+{{- include "edp-tekton.cancelInProgressParams" . }}
   bindings:
     - ref: github-binding-review
   template:

@@ -460,7 +460,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Name: "o/r",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "master",
 					},
@@ -539,7 +540,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Name: "o/r",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "master",
 					},
@@ -601,7 +603,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Name: "o/r",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "master",
 					},
@@ -648,7 +651,8 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						Name: "o/r",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "master",
 					},

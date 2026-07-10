@@ -239,3 +239,13 @@ Node.js image (registry + tag) for all npm/pnpm pipelines and tasks
   default: https://krci-portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/{{ $.Values.clusterName | default ($.Values.global.dnsWildCard | splitList "." | first) }}/cicd/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
   type: string
 {{- end -}}
+
+# Interceptor params enabling cancellation of in-progress review PipelineRuns,
+# injected into the "edp" interceptor reference of every review Trigger.
+{{- define "edp-tekton.cancelInProgressParams" -}}
+{{- if .Values.pipelines.cancelInProgress }}
+      params:
+        - name: "cancelInProgress"
+          value: true
+{{- end }}
+{{- end -}}

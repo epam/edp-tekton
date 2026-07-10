@@ -56,7 +56,8 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Name: "test-repo",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "test-branch",
 					},
@@ -66,6 +67,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:  event_processor.GitProviderGerrit,
+				PullRequest:  &event_processor.PullRequest{},
 				RepoPath:     "test-repo",
 				TargetBranch: "test-branch",
 				Type:         event_processor.EventTypeMerge,
@@ -102,7 +104,8 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Name: "test-repo",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "test-branch",
 					},
@@ -113,6 +116,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderGerrit,
+				PullRequest:        &event_processor.PullRequest{},
 				RepoPath:           "test-repo",
 				TargetBranch:       "test-branch",
 				Type:               event_processor.EventTypeReviewComment,
@@ -150,7 +154,8 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Name: "test-repo",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "test-branch",
 					},
@@ -161,6 +166,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:        event_processor.GitProviderGerrit,
+				PullRequest:        &event_processor.PullRequest{},
 				RepoPath:           "test-repo",
 				TargetBranch:       "test-branch",
 				Type:               event_processor.EventTypeReviewComment,
@@ -198,7 +204,8 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Name: "test-repo",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "test-branch",
 					},
@@ -209,6 +216,7 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider:  event_processor.GitProviderGerrit,
+				PullRequest:  &event_processor.PullRequest{},
 				RepoPath:     "test-repo",
 				TargetBranch: "test-branch",
 				Type:         event_processor.EventTypeReviewComment,
@@ -234,7 +242,8 @@ func TestGerritEventProcessor_Process(t *testing.T) {
 						Name: "test-repo",
 					},
 					Change: struct {
-						Branch string `json:"branch"`
+						Branch string                             `json:"branch"`
+						Number event_processor.GerritChangeNumber `json:"number"`
 					}{
 						Branch: "test-branch",
 					},

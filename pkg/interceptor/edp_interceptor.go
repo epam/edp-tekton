@@ -38,13 +38,13 @@ type EDPInterceptor struct {
 	gitLabProcessor    event_processor.Processor
 	gerritProcessor    event_processor.Processor
 	bitbucketProcessor event_processor.Processor
-	client             ctrlClient.Reader
+	client             ctrlClient.Client
 	logger             *zap.SugaredLogger
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
 func NewEDPInterceptor(
-	c ctrlClient.Reader,
+	c ctrlClient.Client,
 	gitHubProcessor event_processor.Processor,
 	gitLabProcessor event_processor.Processor,
 	gerritProcessor event_processor.Processor,
@@ -138,6 +138,14 @@ func (i *EDPInterceptor) Process(
 			event.TargetBranch,
 			event.Codebase.Name,
 		)
+	}
+
+	if trigger && cancelInProgressEnabled(r.InterceptorParams) &&
+		event.PullRequest != nil && event.PullRequest.ChangeNumber > 0 {
+		// Cancellation is best-effort: a failure must not block triggering the new PipelineRun.
+		if err := i.cancelInProgressPipelineRuns(ctx, ns, event); err != nil {
+			i.logger.Errorf("Failed to cancel in-progress PipelineRuns: %s", err)
+		}
 	}
 
 	return &triggersv1.InterceptorResponse{

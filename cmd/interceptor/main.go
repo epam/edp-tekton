@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	triggersApi "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -71,6 +72,7 @@ func main() {
 	utilruntime.Must(codebaseApiV1.AddToScheme(scheme))
 	utilruntime.Must(corev1.AddToScheme(scheme))
 	utilruntime.Must(triggersApi.AddToScheme(scheme))
+	utilruntime.Must(tektonpipelineApi.AddToScheme(scheme))
 
 	client, err := ctrlClient.New(clusterConfig, ctrlClient.Options{Scheme: scheme})
 	if err != nil {

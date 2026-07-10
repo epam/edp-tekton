@@ -23,6 +23,7 @@ spec:
     - ref:
         kind: NamespacedInterceptor
         name: "edp"
+{{- include "edp-tekton.cancelInProgressParams" . }}
   bindings:
     - ref: bitbucket-binding-review
   template:

@@ -157,3 +157,62 @@ func TestContainsPipelineRecheck(t *testing.T) {
 		})
 	}
 }
+
+func TestGerritChangeNumber_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    string
+		want    GerritChangeNumber
+		wantErr bool
+	}{
+		{
+			name: "bare number",
+			data: `123`,
+			want: 123,
+		},
+		{
+			name: "quoted number",
+			data: `"456"`,
+			want: 456,
+		},
+		{
+			name: "empty string",
+			data: `""`,
+			want: 0,
+		},
+		{
+			name: "null",
+			data: `null`,
+			want: 0,
+		},
+		{
+			name:    "not a number",
+			data:    `"abc"`,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got GerritChangeNumber
+
+			err := got.UnmarshalJSON([]byte(tt.data))
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if got != tt.want {
+				t.Fatalf("got %d, want %d", got, tt.want)
+			}
+		})
+	}
+}

@@ -8,6 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.1
 	github.com/google/go-github/v81 v81.0.0
 	github.com/stretchr/testify v1.11.1
+	github.com/tektoncd/pipeline v1.6.1
 	github.com/tektoncd/triggers v0.34.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/oauth2 v0.34.0
@@ -65,7 +66,6 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/tektoncd/pipeline v1.6.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

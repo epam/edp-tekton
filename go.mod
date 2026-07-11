@@ -8,7 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.17.1
 	github.com/google/go-github/v81 v81.0.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tektoncd/pipeline v1.6.1
+	github.com/tektoncd/pipeline v1.6.2
 	github.com/tektoncd/triggers v0.34.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/oauth2 v0.34.0

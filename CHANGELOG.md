@@ -1,6 +1,40 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Routine
+
+- Align tekton-cache chart version
+
+
+<a name="v0.25.0"></a>
+## [v0.25.0] - 2026-07-13
+### Features
+
+- cancel in-progress review PipelineRuns superseded by a new commit
+- add optional HTTPRoute support for EventListeners
+
+### Bug Fixes
+
+- isolate save-cache task from parallel push tasks in Maven pipelines
+
+### Code Refactoring
+
+- Move clusterName to top-level configuration
+- clean up defaulttype getversion tasks
+- Extract pipelineUrl parameter to reusable Helm helper
+
+### Routine
+
+- Align tekton-cache chart version
+- Align tekton-cache image
+- upgrade Node.js to 24.18.0 for npm/pnpm pipelines
+- Update current development version
+
+### Documentation
+
+- document lint targets in CLAUDE.md
+- condense the new-language pipeline extension guide
+
 
 <a name="v0.24.0"></a>
 ## [v0.24.0] - 2026-05-22
@@ -856,7 +890,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.25.0...HEAD
+[v0.25.0]: https://github.com/epam/edp-tekton/compare/v0.24.0...v0.25.0
 [v0.24.0]: https://github.com/epam/edp-tekton/compare/v0.23.0...v0.24.0
 [v0.23.0]: https://github.com/epam/edp-tekton/compare/v0.22.0...v0.23.0
 [v0.22.0]: https://github.com/epam/edp-tekton/compare/v0.21.0...v0.22.0

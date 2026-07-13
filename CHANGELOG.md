@@ -1,6 +1,33 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- cancel in-progress review PipelineRuns superseded by a new commit
+- add optional HTTPRoute support for EventListeners
+
+### Bug Fixes
+
+- isolate save-cache task from parallel push tasks in Maven pipelines
+
+### Code Refactoring
+
+- Move clusterName to top-level configuration
+- clean up defaulttype getversion tasks
+- Extract pipelineUrl parameter to reusable Helm helper
+
+### Routine
+
+- Align tekton-cache chart version
+- Align tekton-cache image
+- upgrade Node.js to 24.18.0 for npm/pnpm pipelines
+- Update current development version
+
+### Documentation
+
+- document lint targets in CLAUDE.md
+- condense the new-language pipeline extension guide
+
 
 <a name="v0.24.0"></a>
 ## [v0.24.0] - 2026-05-22

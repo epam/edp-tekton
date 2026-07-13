@@ -59,7 +59,7 @@ spec:
         - name: STATE
           value: "pending"
         - name: CONTEXT
-          value: "Build Pipeline"
+          value: "Review Pipeline"
         - name: AUTH_TYPE
           value: Token
         - name: GITHUB_TOKEN_SECRET_NAME

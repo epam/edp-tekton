@@ -1,6 +1,6 @@
 # tekton-cache
 
-![Version: 0.4.4](https://img.shields.io/badge/Version-0.4.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.4](https://img.shields.io/badge/AppVersion-0.4.4-informational?style=flat-square)
+![Version: 0.4.5](https://img.shields.io/badge/Version-0.4.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.5](https://img.shields.io/badge/AppVersion-0.4.5-informational?style=flat-square)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
 
 A Helm chart for KubeRocketCI Tekton Cache
@@ -31,9 +31,9 @@ It leverages the power of Kubernetes/Tekton to cache dependencies and build outp
 | cacheSize | string | `"5Gi"` | Defines size of the Persistent Volume that is used for cache. |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` | Defines the policy with which pod will request its image. |
-| image.registry | string | `"docker.io"` | Set the image registry, default to Docker Hub; can be customized to use an alternative provider |
-| image.repository | string | `"epamedp/tekton-cache"` | Tekton-cache container image. |
-| image.tag | string | `"0.2.0"` | Overrides the image tag whose default is the chart appVersion. |
+| image.registry | string | `"ghcr.io"` | Set the image registry, default to Docker Hub; can be customized to use an alternative provider |
+| image.repository | string | `"kuberocketci/krci-cache"` | Tekton-cache container image. |
+| image.tag | string | `"0.3.0"` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` | Specifies secrets for pulling Docker images. |
 | initContainers.repository | string | `"busybox"` | Defines the repository. |
 | initContainers.tag | string | `"1.36.1"` | InitContainer image. |

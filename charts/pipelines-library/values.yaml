@@ -9,6 +9,11 @@ fullnameOverride: ""
 # Must match krci-portal configEnv.DEFAULT_CLUSTER_NAME. If left empty, falls back to the first segment of global.dnsWildCard.
 clusterName: ""
 
+# -- Portal host used to build pipeline links in commit statuses and reporter PR comments.
+# Set this when the krci-portal ingress uses a custom host. If left empty, defaults to the
+# krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>.
+portalHost: ""
+
 pipelines:
   image:
     # -- Registry for tekton pipelines images. Default: docker.io
@@ -147,6 +152,16 @@ tekton-cache:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry
   # imagePullSecrets: []
   # - name: regcred
+
+## The tekton-reporter subchart configuration.
+# Ref: https://github.com/epam/edp-tekton/blob/master/charts/tekton-reporter/values.yaml
+# The reporter is a separate deployment unit that publishes review PipelineRun
+# results (task table + failed-step logs) as pull request comments.
+tekton-reporter:
+  # -- Enables the tekton-reporter subchart. Set to false to not deploy the reporter.
+  enabled: true
+  # See the subchart values for tailLines, commentStrategy, portalHost and the
+  # important security note about publishing logs from untrusted pull requests.
 
 # Kaniko configuration section
 kaniko:

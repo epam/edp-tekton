@@ -13,3 +13,12 @@ metadata:
   name: el-edp-my-gitlab
 status:
   readyReplicas: 1
+
+# Reporter
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-reporter
+status:
+  readyReplicas: 1

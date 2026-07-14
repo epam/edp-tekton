@@ -5,6 +5,7 @@ go 1.25.8
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20260116090828-b355af57b2b3
 	github.com/epam/edp-common v0.0.0-20230710145648-344bbce4120e
+	github.com/go-logr/logr v1.4.3
 	github.com/go-resty/resty/v2 v2.17.1
 	github.com/google/go-github/v81 v81.0.0
 	github.com/stretchr/testify v1.11.1
@@ -15,6 +16,7 @@ require (
 	google.golang.org/grpc v1.79.3
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
+	k8s.io/client-go v0.34.3
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
 	knative.dev/pkg v0.0.0-20250415155312-ed3e2158b883
 	sigs.k8s.io/controller-runtime v0.22.5
@@ -36,7 +38,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/zapr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
@@ -88,7 +90,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.34.3 // indirect
-	k8s.io/client-go v0.34.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect

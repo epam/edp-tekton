@@ -1,0 +1,28 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/epmdedp)](https://artifacthub.io/packages/search?repo=epmdedp)
+
+{{ template "chart.description" . }}
+
+## Additional Information
+
+The Tekton Reporter is a Kubernetes controller that watches finished review PipelineRuns and publishes their result
+as a pull request comment: a per-task status table plus the trailing logs of any failed step. It supports GitHub,
+GitLab and Bitbucket. It is packaged as a separate, independently toggleable deployment unit (`enabled`) that shares
+the `edp-tekton` container image.
+
+> **Security note:** published logs originate from pipeline steps that execute the pull request's own code. Secret
+> values are masked on a best-effort basis only. Enable this chart only for pipelines whose secret-bearing steps do
+> not execute untrusted code, or whose injected secrets have a blast radius limited to the build itself.
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}

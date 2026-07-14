@@ -64,8 +64,9 @@ helm-docs: helmdocs	## generate helm docs
 	$(HELMDOCS)
 
 .PHONY: build
-build: fmt vet ## build interceptor binary
+build: fmt vet ## build interceptor and reporter binaries
 	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpinterceptor-${HOST_ARCH} ./cmd/interceptor/main.go
+	CGO_ENABLED=0 GOOS=${HOST_OS} GOARCH=${HOST_ARCH} go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/edpreporter-${HOST_ARCH} ./cmd/reporter/main.go
 
 .PHONY: clean
 clean:  ## clean up

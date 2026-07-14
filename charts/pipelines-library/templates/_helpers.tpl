@@ -233,10 +233,23 @@ Node.js image (registry + tag) for all npm/pnpm pipelines and tasks
 {{- end }}
 
 
+# Host of the portal, shared by every portal link in the chart. Defaults to the
+# krci-portal chart's own default ingress host (krci-portal-<ns>.<dnsWildCard>);
+# override .Values.portalHost when the portal ingress uses a custom host.
+{{- define "edp-tekton.portalHost" -}}
+{{- .Values.portalHost | default (printf "krci-portal-%s.%s" $.Release.Namespace $.Values.global.dnsWildCard) -}}
+{{- end -}}
+
+# Base URL of the portal PipelineRun details pages; the single source of truth
+# for the portal route, shared by pipelineUrlParam and the reporter.
+{{- define "edp-tekton.portalBaseUrl" -}}
+https://{{ include "edp-tekton.portalHost" . }}/c/{{ $.Values.clusterName | default ($.Values.global.dnsWildCard | splitList "." | first) }}/cicd/pipelineruns
+{{- end -}}
+
 # Define pipelineUrl parameter for Tekton Pipelines
 {{- define "edp-tekton.pipelineUrlParam" -}}
 - name: pipelineUrl
-  default: https://krci-portal-{{ $.Release.Namespace }}.{{ $.Values.global.dnsWildCard }}/c/{{ $.Values.clusterName | default ($.Values.global.dnsWildCard | splitList "." | first) }}/cicd/pipelineruns/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
+  default: {{ include "edp-tekton.portalBaseUrl" . }}/$(context.pipelineRun.namespace)/$(context.pipelineRun.name)
   type: string
 {{- end -}}
 

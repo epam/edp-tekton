@@ -4,6 +4,7 @@ FROM gcr.io/distroless/static:nonroot
 ARG TARGETARCH
 WORKDIR /
 COPY ./dist/edpinterceptor-${TARGETARCH} /edpinterceptor
+COPY ./dist/edpreporter-${TARGETARCH} /edpreporter
 
 USER 65532:65532
 

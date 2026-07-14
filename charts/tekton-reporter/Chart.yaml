@@ -1,25 +1,20 @@
 apiVersion: v2
-description: A Helm chart for KubeRocketCI Tekton Pipelines
+name: tekton-reporter
 home: https://docs.kuberocketci.io
-name: edp-tekton
+description: A Helm chart for KubeRocketCI Tekton Reporter that publishes review PipelineRun results as pull request comments
 type: application
+# Versioned in lockstep with the edp-tekton chart: the reporter ships in the
+# shared epamedp/edp-tekton image, so its default image tag (appVersion) must
+# match. Bump together with charts/pipelines-library on release.
 version: 0.25.0-SNAPSHOT
 appVersion: 0.25.0-SNAPSHOT
 icon: https://docs.kuberocketci.io/img/logo.svg
 keywords:
   - edp
   - tekton
-  - cd-pipeline
-  - pipelines
-  - jira
   - ci
-  - cd
-  - promote
-  - git
-  - gerrit
-  - github
-  - gitlab
-  - bitbucket
+  - reporter
+  - pull-request
 maintainers:
   - name: epmd-edp
     email: SupportEPMD-EDP@epam.com
@@ -35,17 +30,3 @@ annotations:
       url: https://docs.kuberocketci.io
     - name: EPAM SolutionHub
       url: https://solutionshub.epam.com/solution/kuberocketci
-
-# we use templates from common library
-dependencies:
-  - name: edp-tekton-common-library
-    version: 0.3.18
-    repository: "file://../common-library"
-  - name: tekton-cache
-    version: 0.4.5
-    repository: "@epamedp"
-    condition: tekton-cache.enabled
-  - name: tekton-reporter
-    version: 0.25.0-SNAPSHOT
-    repository: "file://../tekton-reporter"
-    condition: tekton-reporter.enabled

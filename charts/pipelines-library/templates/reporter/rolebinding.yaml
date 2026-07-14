@@ -1,0 +1,16 @@
+{{- if eq .Values.reporter.enabled true }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "edp-tekton-reporter.name" . }}
+  labels:
+    {{- include "edp-tekton-reporter.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "edp-tekton-reporter.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "edp-tekton-reporter.name" . }}
+{{- end }}

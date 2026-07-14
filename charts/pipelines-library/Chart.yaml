@@ -45,7 +45,3 @@ dependencies:
     version: 0.4.5
     repository: "@epamedp"
     condition: tekton-cache.enabled
-  - name: tekton-reporter
-    version: 0.25.0-SNAPSHOT
-    repository: "file://../tekton-reporter"
-    condition: tekton-reporter.enabled

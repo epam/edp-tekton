@@ -1,21 +1,4 @@
-import tempfile
-import yaml
-from subprocess import check_output
-
-from .helpers import kind_builder
-
-
-def reporter_template(config):
-    """Render the standalone tekton-reporter chart with the given values."""
-    with tempfile.NamedTemporaryFile() as temp:
-        with open(temp.name, "w") as values:
-            values.write(config)
-        helm_cmd = (
-            f"helm template release-name -f {temp.name} "
-            "./charts/tekton-reporter --namespace=ns"
-        )
-        rendered = yaml.load_all(check_output(helm_cmd.split()), Loader=yaml.FullLoader)
-        return kind_builder(rendered)
+from .helpers import helm_template
 
 
 def test_reporter_enabled_by_default():
@@ -24,7 +7,7 @@ global:
   dnsWildCard: "example.com"
     """
 
-    r = reporter_template(config)
+    r = helm_template(config)
 
     assert "tekton-reporter" in r["deployment"]
     assert "tekton-reporter" in r["serviceaccount"]
@@ -45,19 +28,36 @@ global:
     assert deployment["spec"]["template"]["spec"]["serviceAccountName"] == "tekton-reporter"
 
 
+def test_reporter_disabled():
+    config = """
+global:
+  dnsWildCard: "example.com"
+reporter:
+  enabled: false
+    """
+
+    r = helm_template(config)
+
+    assert "tekton-reporter" not in r.get("deployment", {})
+    assert "tekton-reporter" not in r.get("serviceaccount", {})
+    assert "tekton-reporter" not in r.get("role", {})
+    assert "tekton-reporter" not in r.get("rolebinding", {})
+
+
 def test_reporter_custom_configuration():
     config = """
 global:
   dnsWildCard: "example.com"
 clusterName: "prod-cluster"
-tailLines: 50
-commentStrategy: new
-image:
-  repository: custom/reporter
-  tag: 1.2.3
+reporter:
+  tailLines: 50
+  commentStrategy: new
+  image:
+    repository: custom/reporter
+    tag: 1.2.3
     """
 
-    r = reporter_template(config)
+    r = helm_template(config)
 
     container = r["deployment"]["tekton-reporter"]["spec"]["template"]["spec"]["containers"][0]
 
@@ -76,7 +76,7 @@ global:
 portalHost: "portal.example.com"
     """
 
-    r = reporter_template(config)
+    r = helm_template(config)
 
     container = r["deployment"]["tekton-reporter"]["spec"]["template"]["spec"]["containers"][0]
     env = {e["name"]: e.get("value") for e in container["env"]}
@@ -87,18 +87,19 @@ def test_reporter_extra_volumes():
     config = """
 global:
   dnsWildCard: "example.com"
-extraVolumes:
-  - name: git-ca
-    configMap:
-      name: git-ca
-extraVolumeMounts:
-  - name: git-ca
-    mountPath: /etc/ssl/certs/git-ca.crt
-    subPath: ca.crt
-    readOnly: true
+reporter:
+  extraVolumes:
+    - name: git-ca
+      configMap:
+        name: git-ca
+  extraVolumeMounts:
+    - name: git-ca
+      mountPath: /etc/ssl/certs/git-ca.crt
+      subPath: ca.crt
+      readOnly: true
     """
 
-    r = reporter_template(config)
+    r = helm_template(config)
 
     pod = r["deployment"]["tekton-reporter"]["spec"]["template"]["spec"]
     assert pod["volumes"][0]["configMap"]["name"] == "git-ca"
@@ -114,7 +115,7 @@ global:
   dnsWildCard: "example.com"
     """
 
-    r = reporter_template(config)
+    r = helm_template(config)
 
     rules = r["role"]["tekton-reporter"]["rules"]
     by_resource = {}
@@ -133,13 +134,3 @@ global:
     binding = r["rolebinding"]["tekton-reporter"]
     assert binding["roleRef"]["name"] == "tekton-reporter"
     assert binding["subjects"][0]["name"] == "tekton-reporter"
-
-
-def test_reporter_subchart_toggle_in_edp_tekton():
-    """The reporter is wired as a conditional dependency of the edp-tekton chart."""
-    with open("./charts/pipelines-library/Chart.yaml") as f:
-        chart = yaml.safe_load(f)
-
-    dep = next(d for d in chart["dependencies"] if d["name"] == "tekton-reporter")
-    assert dep["condition"] == "tekton-reporter.enabled"
-    assert dep["repository"] == "file://../tekton-reporter"

@@ -1,19 +1,19 @@
-{{- if eq .Values.global.platform "openshift" -}}
+{{- if and (eq .Values.reporter.enabled true) (eq .Values.global.platform "openshift") -}}
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
   labels:
-    {{- include "tekton-reporter.labels" . | nindent 4 }}
+    {{- include "edp-tekton-reporter.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": "pre-install"
-  name: {{ include "tekton-reporter.name" . }}-{{ .Release.Namespace }}
+  name: {{ include "edp-tekton-reporter.name" . }}-{{ .Release.Namespace }}
 runAsUser:
   type: MustRunAs
   uid: 65532
 seLinuxContext:
   type: MustRunAs
 users:
-  - system:serviceaccount:{{ .Release.Namespace }}:{{ include "tekton-reporter.serviceAccountName" . }}
+  - system:serviceaccount:{{ .Release.Namespace }}:{{ include "edp-tekton-reporter.serviceAccountName" . }}
 allowHostDirVolumePlugin: false
 allowHostIPC: false
 allowHostNetwork: false

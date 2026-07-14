@@ -5,8 +5,5 @@ dependencies:
 - name: tekton-cache
   repository: https://epam.github.io/edp-helm-charts/stable
   version: 0.4.5
-- name: tekton-reporter
-  repository: file://../tekton-reporter
-  version: 0.25.0-SNAPSHOT
-digest: sha256:aae105e33a0c9efa97ef8c60f4812d83a99d2fcb5e544a55b79a0eda52df8e57
-generated: "2026-07-14T18:38:56.386614+03:00"
+digest: sha256:205b5b0ac7b4dac99a4cf1121d872331595a722ad15556095675773dcf83491c
+generated: "2026-07-14T19:42:08.784958+03:00"

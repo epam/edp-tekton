@@ -1,0 +1,100 @@
+# Default values for tekton-reporter.
+# This is a YAML-formatted file.
+#
+# The reporter watches finished review PipelineRuns and publishes a pull request
+# comment with the per-task status table and the trailing logs of failed steps.
+#
+# SECURITY NOTE: published logs come from pipeline steps that execute the pull
+# request's own code. Secret values referenced by those steps are masked on a
+# best-effort basis (raw value plus common base64/hex encodings), but this is
+# not a hard security boundary — a malicious author can print an arbitrarily
+# transformed secret that masking cannot recognise. Only enable this for
+# pipelines whose secret-bearing steps do not run untrusted code, or whose
+# injected secrets have a blast radius limited to the build itself.
+#
+# Deployment of this chart is toggled by the parent edp-tekton chart via the
+# `tekton-reporter.enabled` value (dependency condition), matching tekton-cache.
+
+nameOverride: "tekton-reporter"
+
+# -- Number of trailing log lines published for every failed step
+tailLines: 100
+
+# -- Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment
+commentStrategy: update
+
+# -- Portal host used to build pipeline links in reporter pull request comments.
+# Set this when the krci-portal ingress uses a custom host. If left empty, defaults to the
+# krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>.
+portalHost: ""
+
+# -- Cluster name used to construct the krci-portal pipeline URL (/c/<clusterName>/...).
+# Must match krci-portal configEnv.DEFAULT_CLUSTER_NAME. If left empty, falls back to the first segment of global.dnsWildCard.
+clusterName: ""
+
+image:
+  repository: epamedp/edp-tekton
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag:
+
+imagePullSecrets: []
+
+serviceAccount:
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # -- If not set, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+
+# -- Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS
+extraVolumes: []
+# extraVolumes:
+#   - name: git-ca
+#     configMap:
+#       name: git-ca
+
+# -- Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it
+extraVolumeMounts: []
+# extraVolumeMounts:
+#   - name: git-ca
+#     mountPath: /etc/ssl/certs/git-ca.crt
+#     subPath: ca.crt
+#     readOnly: true
+
+# -- The resource limits and requests for the Tekton Reporter
+resources:
+  limits:
+    memory: 128Mi
+    cpu: 100m
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# -- Node labels for pod assignment
+nodeSelector: {}
+# -- Toleration labels for pod assignment
+tolerations: []
+# -- Affinity settings for pod assignment
+affinity: {}
+
+global:
+  # -- Platform type: "kubernetes" or "openshift"
+  platform: "kubernetes"
+  # -- Wildcard DNS used to build the default portal host
+  dnsWildCard: ""

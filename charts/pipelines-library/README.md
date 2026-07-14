@@ -67,6 +67,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 |------------|------|---------|
 | @epamedp | tekton-cache | 0.4.5 |
 | file://../common-library | edp-tekton-common-library | 0.3.18 |
+| file://../tekton-reporter | tekton-reporter | 0.25.0-SNAPSHOT |
 
 ## Values
 
@@ -127,8 +128,10 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | pipelines.imagePullSecrets | list | `[]` | List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries. Example: imagePullSecrets:   - name: regcred |
 | pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |
+| portalHost | string | `""` | Portal host used to build pipeline links in commit statuses and reporter PR comments. Set this when the krci-portal ingress uses a custom host. If left empty, defaults to the krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>. |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
+| tekton-reporter.enabled | bool | `true` | Enables the tekton-reporter subchart. Set to false to not deploy the reporter. |
 | tekton.configs.gradleConfigMap | string | `"custom-gradle-settings"` | Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables. |
 | tekton.configs.mavenConfigMap | string | `"custom-maven-settings"` | Default configuration map for provisioning Maven settings.xml file. To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml |
 | tekton.configs.npmConfigMap | string | `"custom-npm-settings"` | Default configuration maps for provisioning NPM .npmrc files. To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml |

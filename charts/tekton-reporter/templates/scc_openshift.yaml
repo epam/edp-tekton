@@ -1,0 +1,26 @@
+{{- if eq .Values.global.platform "openshift" -}}
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  labels:
+    {{- include "tekton-reporter.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install"
+  name: {{ include "tekton-reporter.name" . }}-{{ .Release.Namespace }}
+runAsUser:
+  type: MustRunAs
+  uid: 65532
+seLinuxContext:
+  type: MustRunAs
+users:
+  - system:serviceaccount:{{ .Release.Namespace }}:{{ include "tekton-reporter.serviceAccountName" . }}
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowedCapabilities: []
+allowedFlexVolumes: []
+readOnlyRootFilesystem: false
+{{- end -}}

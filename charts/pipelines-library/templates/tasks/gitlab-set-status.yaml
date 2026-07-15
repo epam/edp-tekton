@@ -96,6 +96,16 @@ spec:
         TARGET_URL = "$(params.TARGET_URL)"
         DESCRIPTION = "$(params.DESCRIPTION)"
 
+        # A gracefully cancelled PipelineRun (e.g. superseded by a newer commit via the
+        # pipeline queue) reaches the failure finally task looking like a genuine failure.
+        # The cancel-reason annotation stamped on the PipelineRun propagates to this pod,
+        # so report `canceled` instead. Best effort: no annotation, no behavior change.
+        CANCEL_REASON = os.getenv("QUEUE_CANCEL_REASON", "")
+        if STATE == "failed" and CANCEL_REASON:
+            STATE = "canceled"
+            DESCRIPTION = "SUPERSEDED BY NEWER COMMIT" if CANCEL_REASON == "superseded" else "CANCELED"
+            print(f"PipelineRun was gracefully cancelled ({CANCEL_REASON}), reporting '{STATE}'")
+
         headers = {
             "User-Agent": "TektonCD, the peaceful cat",
             "Authorization": f"Bearer {GITLAB_TOKEN}",
@@ -146,4 +156,8 @@ spec:
             secretKeyRef:
               name: $(params.GITLAB_TOKEN_SECRET_NAME)
               key: $(params.GITLAB_TOKEN_SECRET_KEY)
+        - name: QUEUE_CANCEL_REASON
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['app.edp.epam.com/queue-cancel-reason']
 {{ end }}

@@ -22,6 +22,12 @@ const (
 	// cancelInProgressParam is the interceptor parameter that enables cancellation of
 	// in-progress review PipelineRuns superseded by a new event for the same change.
 	cancelInProgressParam = "cancelInProgress"
+
+	// cancelReasonAnnotation mirrors the annotation the tekton-pipeline-queue operator
+	// stamps on runs it cancels, so consumers (e.g. the finally status tasks) treat
+	// interceptor- and queue-cancelled runs uniformly.
+	cancelReasonAnnotation = "app.edp.epam.com/queue-cancel-reason"
+	cancelReasonSuperseded = "superseded"
 )
 
 // cancelInProgressEnabled checks if the cancelInProgress interceptor parameter is set to true.
@@ -66,6 +72,12 @@ func (i *EDPInterceptor) cancelInProgressPipelineRuns(
 
 		patch := ctrlClient.MergeFrom(pipelineRun.DeepCopy())
 		pipelineRun.Spec.Status = tektonpipelineApi.PipelineRunSpecStatusCancelledRunFinally
+
+		if pipelineRun.Annotations == nil {
+			pipelineRun.Annotations = map[string]string{}
+		}
+
+		pipelineRun.Annotations[cancelReasonAnnotation] = cancelReasonSuperseded
 
 		if err := i.client.Patch(ctx, pipelineRun, patch); err != nil {
 			i.logger.Errorf("Failed to cancel PipelineRun %s superseded by a new event for codebase %s change %d: %s",

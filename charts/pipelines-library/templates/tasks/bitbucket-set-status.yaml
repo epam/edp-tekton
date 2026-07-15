@@ -125,6 +125,10 @@ spec:
           value: $(params.KEY)
         - name: NAME
           value: $(params.NAME)
+        - name: QUEUE_CANCEL_REASON
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['app.edp.epam.com/queue-cancel-reason']
 
       image: $(params.IMAGE)
       script: |
@@ -145,13 +149,29 @@ spec:
         # Form the status URL
         status_url = os.getenv("API_PATH_PREFIX") + os.getenv("REPO_FULL_NAME") + "/commit/" + os.getenv("SHA") + "/statuses/build"
 
+        state = os.getenv("STATE")
+        description = os.getenv("DESCRIPTION")
+        name = os.getenv("NAME")
+
+        # A gracefully cancelled PipelineRun (e.g. superseded by a newer commit via the
+        # pipeline queue) reaches the failure finally task looking like a genuine failure.
+        # The cancel-reason annotation stamped on the PipelineRun propagates to this pod,
+        # so report `STOPPED` instead. Best effort: no annotation, no behavior change.
+        cancel_reason = os.getenv("QUEUE_CANCEL_REASON", "")
+        if state == "FAILED" and cancel_reason:
+            state = "STOPPED"
+            description = "SUPERSEDED BY NEWER COMMIT" if cancel_reason == "superseded" else "CANCELED"
+            name = name.replace("(FAILED)", "(CANCELED)")
+            print("PipelineRun was gracefully cancelled ({reason}), reporting '{state}'".format(
+                reason=cancel_reason, state=state))
+
         # Prepare the data
         data = {
-            "state": os.getenv("STATE"),
+            "state": state,
             "url": os.getenv("TARGET_URL"),
-            "description": os.getenv("DESCRIPTION"),
+            "description": description,
             "key": os.getenv("KEY"),
-            "name": os.getenv("NAME")
+            "name": name
         }
 
         authHeader = os.getenv("AUTH_TYPE") + " " + bitbucket_token
@@ -181,10 +201,10 @@ spec:
             sys.exit(1)
         else:
             print("Bitbucket status '{state}' has been set on {repo}#{sha}".format(
-                state=os.getenv("STATE"),
+                state=state,
                 repo=os.getenv("REPO_FULL_NAME"),
                 sha=os.getenv("SHA"),
                 key=os.getenv("KEY"),
-                name=os.getenv("NAME"),)
+                name=name,)
             )
 {{ end }}

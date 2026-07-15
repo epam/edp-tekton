@@ -144,6 +144,14 @@ func TestEDPInterceptor_CancelInProgressPipelineRuns(t *testing.T) {
 		pipelineRun := &pipelineRuns.Items[i]
 		assert.Equal(t, wantSpecStatus[pipelineRun.Name], pipelineRun.Spec.Status,
 			"unexpected spec.status for %s", pipelineRun.Name)
+
+		if pipelineRun.Name == "running" {
+			assert.Equal(t, cancelReasonSuperseded, pipelineRun.Annotations[cancelReasonAnnotation],
+				"cancelled run must carry the superseded cancel-reason annotation")
+		} else {
+			assert.NotContains(t, pipelineRun.Annotations, cancelReasonAnnotation,
+				"untouched run %s must not carry the cancel-reason annotation", pipelineRun.Name)
+		}
 	}
 }
 

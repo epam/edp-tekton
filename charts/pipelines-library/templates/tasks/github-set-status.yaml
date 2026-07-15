@@ -121,6 +121,10 @@ spec:
           value: $(params.AUTH_TYPE)
         - name: SHEBANG
           value: $(params.SHEBANG)
+        - name: QUEUE_CANCEL_REASON
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['app.edp.epam.com/queue-cancel-reason']
 
       image: $(params.IMAGE)
       script: |
@@ -140,10 +144,25 @@ spec:
         status_url = os.getenv("API_PATH_PREFIX") + "/repos/" + \
             os.getenv("REPO_FULL_NAME") + "/statuses/" + os.getenv("SHA")
 
+        state = os.getenv("STATE")
+        description = os.getenv("DESCRIPTION")
+
+        # A gracefully cancelled PipelineRun (e.g. superseded by a newer commit via the
+        # pipeline queue) reaches the failure finally task looking like a genuine failure.
+        # The cancel-reason annotation stamped on the PipelineRun propagates to this pod,
+        # so report `error` (the commit status API has no canceled state) instead.
+        # Best effort: no annotation, no behavior change.
+        cancel_reason = os.getenv("QUEUE_CANCEL_REASON", "")
+        if state == "failure" and cancel_reason:
+            state = "error"
+            description = "SUPERSEDED BY NEWER COMMIT" if cancel_reason == "superseded" else "CANCELED"
+            print("PipelineRun was gracefully cancelled ({reason}), reporting '{state}'".format(
+                reason=cancel_reason, state=state))
+
         data = {
-            "state": os.getenv("STATE"),
+            "state": state,
             "target_url": os.getenv("TARGET_URL"),
-            "description": os.getenv("DESCRIPTION"),
+            "description": description,
             "context": os.getenv("CONTEXT")
         }
         print("Sending this data to GitHub@{url}: ".format(
@@ -174,7 +193,7 @@ spec:
             sys.exit(1)
         else:
             print("GitHub status '{state}' has been set on {repo}#{sha} ".format(
-                state=os.getenv("STATE"),
+                state=state,
                 repo=os.getenv("REPO_FULL_NAME"),
                 sha=os.getenv("SHA")))
 {{ end }}

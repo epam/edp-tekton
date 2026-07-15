@@ -4,10 +4,12 @@ package bitbucket
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
 
+	"github.com/epam/edp-tekton/pkg/reporter/provider/retry"
 	"github.com/epam/edp-tekton/pkg/reporter/provider/types"
 )
 
@@ -22,9 +24,11 @@ type Provider struct {
 // New creates a Bitbucket Cloud provider. The token is the base64-encoded
 // credentials stored in the GitServer secret, sent as Basic authorization
 // (same convention as the interceptor's Bitbucket integration).
+// Transient API failures are retried per the shared retry policy; build
+// statuses are keyed upserts, so retrying is always safe.
 func New(token string) *Provider {
 	return &Provider{
-		client: resty.New().SetBaseURL(cloudAPIBaseURL),
+		client: retry.ConfigureResty(resty.New().SetBaseURL(cloudAPIBaseURL)),
 		token:  token,
 	}
 }
@@ -85,6 +89,59 @@ func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, 
 	}
 
 	return nil
+}
+
+// SetCommitStatus posts a build status via the Bitbucket Cloud commit statuses API.
+func (p *Provider) SetCommitStatus(ctx context.Context, ref types.CommitRef, status types.CommitStatus) error {
+	state, err := apiState(status.State)
+	if err != nil {
+		return err
+	}
+
+	body := map[string]string{
+		"state":       state,
+		"key":         status.Key,
+		"name":        status.Name,
+		"description": status.Description,
+		// The url field is required by the Bitbucket build-status API.
+		"url": status.TargetURL,
+	}
+
+	resp, err := p.request(ctx).
+		SetBody(body).
+		Post(fmt.Sprintf("/repositories/%s/commit/%s/statuses/build",
+			escapePathSegments(ref.RepoFullName), url.PathEscape(ref.Sha)))
+	if err != nil {
+		return fmt.Errorf("failed to set Bitbucket build status: %w", err)
+	}
+
+	if resp.IsError() {
+		return fmt.Errorf("failed to set Bitbucket build status: status %s", resp.Status())
+	}
+
+	return nil
+}
+
+// escapePathSegments escapes every segment of a workspace/repo path while
+// keeping the segment separators, which the Bitbucket API expects literal.
+func escapePathSegments(path string) string {
+	segments := strings.Split(path, "/")
+	for i := range segments {
+		segments[i] = url.PathEscape(segments[i])
+	}
+
+	return strings.Join(segments, "/")
+}
+
+func apiState(state types.CommitState) (string, error) {
+	switch state {
+	case types.CommitStatePending:
+		// Bitbucket Cloud has no dedicated pending state; INPROGRESS is the
+		// pending-equivalent the pipeline's own status task uses as well.
+		return "INPROGRESS", nil
+	default:
+		return "", fmt.Errorf("unsupported Bitbucket commit state %q", state)
+	}
 }
 
 func (p *Provider) findComment(ctx context.Context, ref types.PullRequestRef, marker string) (int, error) {

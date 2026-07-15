@@ -3,11 +3,13 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/google/go-github/v81/github"
 
+	"github.com/epam/edp-tekton/pkg/reporter/provider/retry"
 	"github.com/epam/edp-tekton/pkg/reporter/provider/types"
 )
 
@@ -77,6 +79,70 @@ func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, 
 	}
 
 	return nil
+}
+
+// SetCommitStatus posts a commit status via the GitHub commit statuses API.
+func (p *Provider) SetCommitStatus(ctx context.Context, ref types.CommitRef, status types.CommitStatus) error {
+	owner, repo, err := splitRepo(ref.RepoFullName)
+	if err != nil {
+		return err
+	}
+
+	state, err := apiState(status.State)
+	if err != nil {
+		return err
+	}
+
+	repoStatus := github.RepoStatus{
+		State:       github.Ptr(state),
+		Context:     github.Ptr(status.Context),
+		Description: github.Ptr(status.Description),
+	}
+	if status.TargetURL != "" {
+		repoStatus.TargetURL = github.Ptr(status.TargetURL)
+	}
+
+	// Unlike GitLab, GitHub statuses have no state machine: every POST creates
+	// a new status and the latest one wins, so retrying is always safe.
+	err = retry.Do(ctx, func() error {
+		_, _, err := p.client.Repositories.CreateStatus(ctx, owner, repo, ref.Sha, repoStatus)
+
+		return err
+	}, transient)
+	if err != nil {
+		return fmt.Errorf("failed to set GitHub commit status: %w", err)
+	}
+
+	return nil
+}
+
+// transient classifies go-github errors for the retry policy: primary and
+// secondary rate limits, 5xx responses and transport errors are retryable.
+func transient(err error) bool {
+	var (
+		rateErr  *github.RateLimitError
+		abuseErr *github.AbuseRateLimitError
+	)
+
+	if errors.As(err, &rateErr) || errors.As(err, &abuseErr) {
+		return true
+	}
+
+	var respErr *github.ErrorResponse
+	if errors.As(err, &respErr) && respErr.Response != nil {
+		return retry.Transient(respErr.Response.StatusCode, err)
+	}
+
+	return retry.Transient(0, err)
+}
+
+func apiState(state types.CommitState) (string, error) {
+	switch state {
+	case types.CommitStatePending:
+		return "pending", nil
+	default:
+		return "", fmt.Errorf("unsupported GitHub commit state %q", state)
+	}
 }
 
 func (p *Provider) findComment(ctx context.Context, owner, repo string, number int, marker string) (int64, error) {

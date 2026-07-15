@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	"go.uber.org/zap"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
@@ -28,6 +30,12 @@ const (
 	// interceptor- and queue-cancelled runs uniformly.
 	cancelReasonAnnotation = "app.edp.epam.com/queue-cancel-reason"
 	cancelReasonSuperseded = "superseded"
+
+	// cancelInProgressTimeout bounds the whole best-effort cancellation so a slow
+	// API server cannot burn the interceptor's request budget: the webhook budget
+	// (executeTimeOut) is shared with postQueuedCommitStatus, which runs after
+	// this call.
+	cancelInProgressTimeout = time.Second
 )
 
 // cancelInProgressEnabled checks if the cancelInProgress interceptor parameter is set to true.
@@ -42,9 +50,13 @@ func cancelInProgressEnabled(params map[string]any) bool {
 // so the run triggered by the current event is never affected.
 func (i *EDPInterceptor) cancelInProgressPipelineRuns(
 	ctx context.Context,
+	log *zap.SugaredLogger,
 	ns string,
 	event *event_processor.EventInfo,
 ) error {
+	ctx, cancel := context.WithTimeout(ctx, cancelInProgressTimeout)
+	defer cancel()
+
 	pipelineRuns := &tektonpipelineApi.PipelineRunList{}
 	if err := i.client.List(
 		ctx,
@@ -80,13 +92,13 @@ func (i *EDPInterceptor) cancelInProgressPipelineRuns(
 		pipelineRun.Annotations[cancelReasonAnnotation] = cancelReasonSuperseded
 
 		if err := i.client.Patch(ctx, pipelineRun, patch); err != nil {
-			i.logger.Errorf("Failed to cancel PipelineRun %s superseded by a new event for codebase %s change %d: %s",
+			log.Errorf("Failed to cancel PipelineRun %s superseded by a new event for codebase %s change %d: %s",
 				pipelineRun.Name, event.Codebase.Name, event.PullRequest.ChangeNumber, err)
 
 			continue
 		}
 
-		i.logger.Infof("Canceled in-progress PipelineRun %s superseded by a new event for codebase %s change %d",
+		log.Infof("Canceled in-progress PipelineRun %s superseded by a new event for codebase %s change %d",
 			pipelineRun.Name, event.Codebase.Name, event.PullRequest.ChangeNumber)
 	}
 

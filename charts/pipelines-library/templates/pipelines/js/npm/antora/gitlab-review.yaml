@@ -61,7 +61,7 @@ spec:
         name: gitlab-set-status
       params:
         - name: "STATE"
-          value: "pending"
+          value: {{ include "edp-tekton.gitlabReviewStartState" . }}
         - name: "GITLAB_HOST_URL"
           value: "$(params.git-source-url)"
         - name: "REPO_FULL_NAME"

@@ -54,6 +54,7 @@ spec:
             "app.edp.epam.com/git-avatar": "$(tt.params.gitavatar)",
             "app.edp.epam.com/git-change-url": "$(tt.params.gitchangeurl)"}
       spec:
+{{- include "edp-tekton.reviewPipelineRunPending" . }}
         taskRunTemplate:
           serviceAccountName: tekton
           {{ if .Values.pipelines.podTemplate }}

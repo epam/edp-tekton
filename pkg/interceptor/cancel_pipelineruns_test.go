@@ -126,7 +126,8 @@ func TestEDPInterceptor_CancelInProgressPipelineRuns(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, interceptor.cancelInProgressPipelineRuns(context.Background(), "default", event))
+	require.NoError(t,
+		interceptor.cancelInProgressPipelineRuns(context.Background(), zap.NewNop().Sugar(), "default", event))
 
 	wantSpecStatus := map[string]tektonpipelineApi.PipelineRunSpecStatus{
 		"running":                tektonpipelineApi.PipelineRunSpecStatusCancelledRunFinally,
@@ -197,7 +198,7 @@ func TestEDPInterceptor_CancelInProgressPipelineRuns_PatchError(t *testing.T) {
 		PullRequest: &event_processor.PullRequest{ChangeNumber: 1},
 	}
 
-	require.NoError(t, i.cancelInProgressPipelineRuns(context.Background(), "default", event))
+	require.NoError(t, i.cancelInProgressPipelineRuns(context.Background(), zap.NewNop().Sugar(), "default", event))
 
 	got := &tektonpipelineApi.PipelineRun{}
 	require.NoError(t,

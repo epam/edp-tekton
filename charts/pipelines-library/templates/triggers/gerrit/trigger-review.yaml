@@ -16,7 +16,11 @@ spec:
     - ref:
         name: "edp"
         kind: NamespacedInterceptor
-{{- include "edp-tekton.cancelInProgressParams" . }}
+{{- if .Values.pipelines.cancelInProgress }}
+      params:
+        - name: "cancelInProgress"
+          value: true
+{{- end }}
   bindings:
     - ref: gerrit-binding-review
   template:

@@ -29,3 +29,19 @@ func New(gitProvider, host, token string) (types.Provider, error) {
 		return nil, fmt.Errorf("unsupported git provider %q", gitProvider)
 	}
 }
+
+// NewCommitStatusSetter returns the types.CommitStatusSetter implementation
+// for the given git provider type. Gerrit is not supported: its review
+// reporting is vote-based.
+func NewCommitStatusSetter(gitProvider, host, token string) (types.CommitStatusSetter, error) {
+	switch gitProvider {
+	case codebaseApi.GitProviderGithub:
+		return github.New(host, token)
+	case codebaseApi.GitProviderGitlab:
+		return gitlab.New(host, token), nil
+	case codebaseApi.GitProviderBitbucket:
+		return bitbucket.New(token), nil
+	default:
+		return nil, fmt.Errorf("unsupported git provider %q", gitProvider)
+	}
+}

@@ -15,6 +15,7 @@ import (
 	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	triggersApi "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -51,7 +52,7 @@ type config struct {
 }
 
 func main() {
-	zapLogger, err := zap.NewProduction()
+	zapLogger, err := newLogger()
 	if err != nil {
 		log.Fatalf("Failed to initialize logger: %s", err)
 	}
@@ -186,6 +187,24 @@ func (h *edpInterceptorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 func readinessHandler(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+// newLogger builds the production logger honoring the LOG_LEVEL environment
+// variable (zap level names: debug, info, warn, error); unset means info.
+// Debug enables the per-request interceptor payload dumps.
+func newLogger() (*zap.Logger, error) {
+	cfg := zap.NewProductionConfig()
+
+	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
+		level, err := zapcore.ParseLevel(lvl)
+		if err != nil {
+			return nil, fmt.Errorf("invalid LOG_LEVEL %q: %w", lvl, err)
+		}
+
+		cfg.Level = zap.NewAtomicLevelAt(level)
+	}
+
+	return cfg.Build()
 }
 
 func logBuildInfo(logger *zap.SugaredLogger) {

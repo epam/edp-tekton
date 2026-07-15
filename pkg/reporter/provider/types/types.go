@@ -27,3 +27,41 @@ type Comment struct {
 type Provider interface {
 	UpsertComment(ctx context.Context, ref PullRequestRef, comment Comment) error
 }
+
+// CommitRef identifies a commit.
+type CommitRef struct {
+	// RepoFullName is the full repository path, e.g. org/repo or group/subgroup/repo.
+	RepoFullName string
+	Sha          string
+}
+
+// CommitState is a provider-agnostic commit status state; each provider maps
+// it to its own API value.
+type CommitState string
+
+// CommitStatePending marks a commit as awaiting a CI verdict
+// (GitLab/GitHub: pending, Bitbucket: INPROGRESS).
+const CommitStatePending CommitState = "pending"
+
+// CommitStatus is a provider-agnostic commit status request. Providers pick
+// the labeling fields their API supports.
+type CommitStatus struct {
+	State CommitState
+	// Context labels the check on GitLab/GitHub. It must match the context the
+	// pipeline's own status tasks use so every stage updates the same check.
+	Context string
+	// Key is the Bitbucket build-status key: statuses with the same key
+	// overwrite each other, so it must match the pipeline's status task KEY.
+	Key string
+	// Name is the Bitbucket build-status display name.
+	Name        string
+	Description string
+	// TargetURL links the status to details; optional on GitLab/GitHub,
+	// required by the Bitbucket build-status API.
+	TargetURL string
+}
+
+// CommitStatusSetter sets a commit status (build status on Bitbucket).
+type CommitStatusSetter interface {
+	SetCommitStatus(ctx context.Context, ref CommitRef, status CommitStatus) error
+}

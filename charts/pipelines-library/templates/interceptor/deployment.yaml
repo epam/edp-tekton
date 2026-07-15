@@ -47,6 +47,10 @@ spec:
               value: tekton.dev/triggers
             - name: INTERCEPTOR_NAME
               value: edp
+            - name: PORTAL_BASE_URL
+              value: {{ include "edp-tekton.portalBaseUrl" . | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.interceptor.logLevel | default "info" | quote }}
           name: tekton-triggers-edp-interceptor
           securityContext:
             {{- toYaml .Values.interceptor.securityContext | nindent 12 }}
@@ -68,6 +72,14 @@ spec:
             timeoutSeconds: 5
           resources:
             {{- toYaml .Values.interceptor.resources | nindent 12 }}
+          {{- with .Values.interceptor.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.interceptor.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.interceptor.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

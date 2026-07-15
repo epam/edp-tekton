@@ -54,6 +54,7 @@ spec:
             "app.edp.epam.com/git-repository": "$(tt.params.gerritproject)",
             "app.edp.epam.com/git-author": "$(tt.params.gitauthor)"}
       spec:
+{{- include "edp-tekton.reviewPipelineRunPending" . }}
         taskRunTemplate:
           serviceAccountName: tekton
           {{ if .Values.pipelines.podTemplate }}

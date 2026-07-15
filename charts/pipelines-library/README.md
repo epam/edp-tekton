@@ -94,10 +94,13 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | grafana.serviceMonitor.prometheusReleaseLabels.release | string | `"prom"` |  |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true |
+| interceptor.extraVolumeMounts | list | `[]` | Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it |
+| interceptor.extraVolumes | list | `[]` | Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS (required for pipelines.queue.enabled against such servers) |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
 | interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
+| interceptor.logLevel | string | `"info"` | Interceptor log level (debug, info, warn, error). debug additionally logs the full webhook request/response payloads. |
 | interceptor.nameOverride | string | `"tekton-interceptor"` |  |
 | interceptor.nodeSelector | object | `{}` | Node labels for pod assignment |
 | interceptor.podAnnotations | object | `{}` |  |
@@ -117,7 +120,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
 | nameOverride | string | `""` |  |
-| pipelines.cancelInProgress | bool | `false` | Cancel in-progress review PipelineRuns when a new commit is pushed to the same Pull Request / Merge Request / Gerrit change. Cancellation is graceful (spec.status: CancelledRunFinally), so finally tasks of the superseded run still execute. |
+| pipelines.cancelInProgress | bool | `false` | Cancel in-progress review PipelineRuns when a new commit is pushed to the same Pull Request / Merge Request / Gerrit change. Handled entirely by the KRCI interceptor - no extra components are required. Cancellation is graceful (spec.status: CancelledRunFinally), so finally tasks of the superseded run still execute. |
 | pipelines.deployableResources | object | `{"autotests":true,"c":{"cmake":true,"make":true},"cs":{"dotnet3.1":false,"dotnet6.0":false},"deploy":true,"docker":true,"gitops":true,"go":{"beego":true,"gin":true,"operatorsdk":true},"groovy":true,"helm":true,"helm-pipeline":true,"infrastructure":true,"java":{"java17":true,"java21":true,"java25":true,"java25SkipSonar":true},"js":{"npm":{"angular":true,"antora":true,"express":true,"next":true,"react":true,"vue":true},"pnpm":{"angular":true,"antora":true,"express":true,"next":true,"react":true,"vue":true}},"opa":false,"python":{"ansible":true,"fastapi":true,"flask":true,"python3.13":false},"security":true,"tasks":true,"terraform":true}` | This section contains the list of pipelines and tasks that will be installed. |
 | pipelines.deployableResources.c | object | `{"cmake":true,"make":true}` | This section control the installation of the review and build pipelines. |
 | pipelines.deployableResources.deploy | bool | `true` | This flag control the installation of the Deploy pipelines. |
@@ -127,6 +130,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.image.registry | string | `"docker.io"` | Registry for tekton pipelines images. Default: docker.io |
 | pipelines.imagePullSecrets | list | `[]` | List of image pull secrets used by the Tekton ServiceAccount for pulling images from private registries. Example: imagePullSecrets:   - name: regcred |
 | pipelines.podTemplate | list | `[]` | This section allows to determine on which nodes to run tekton pipelines |
+| pipelines.queue.enabled | bool | `false` | Post a pending/QUEUED commit status from the interceptor at webhook time, so a review PipelineRun waiting in the queue shows a check in the VCS UI before it starts. Covers gitlab, github and bitbucket. |
+| pipelines.queue.pendingPipelineRun | bool | `false` | Create review PipelineRuns in the Pending state (spec.status: PipelineRunPending), so a PipelineRunQueue decides when they start. Requires the tekton-pipeline-queue operator; without it Pending PipelineRuns never start. |
 | portalHost | string | `""` | Portal host used to build pipeline links in commit statuses and reporter PR comments. Set this when the krci-portal ingress uses a custom host. If left empty, defaults to the krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>. |
 | reporter.affinity | object | `{}` | Affinity settings for pod assignment |
 | reporter.commentStrategy | string | `"update"` | Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment |

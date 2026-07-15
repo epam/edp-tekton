@@ -253,12 +253,29 @@ https://{{ include "edp-tekton.portalHost" . }}/c/{{ $.Values.clusterName | defa
   type: string
 {{- end -}}
 
-# Interceptor params enabling cancellation of in-progress review PipelineRuns,
-# injected into the "edp" interceptor reference of every review Trigger.
-{{- define "edp-tekton.cancelInProgressParams" -}}
-{{- if .Values.pipelines.cancelInProgress }}
+# Interceptor params for the "edp" interceptor reference of gitlab/github/bitbucket
+# review Triggers: cancellation of superseded runs and queued commit status reporting.
+# The Gerrit review Trigger sets only the cancelInProgress param, because Gerrit
+# review reporting is vote-based and queued status reporting does not apply.
+{{- define "edp-tekton.reviewInterceptorParams" -}}
+{{- if or .Values.pipelines.cancelInProgress .Values.pipelines.queue.enabled }}
       params:
+{{- if .Values.pipelines.cancelInProgress }}
         - name: "cancelInProgress"
           value: true
+{{- end }}
+{{- if .Values.pipelines.queue.enabled }}
+        - name: "queuedStatusReporting"
+          value: true
+{{- end }}
+{{- end }}
+{{- end -}}
+
+# PipelineRun spec.status for review runs: born Pending when
+# pipelines.queue.pendingPipelineRun is set, so a PipelineRunQueue decides when
+# they start.
+{{- define "edp-tekton.reviewPipelineRunPending" -}}
+{{- if .Values.pipelines.queue.pendingPipelineRun }}
+        status: PipelineRunPending
 {{- end }}
 {{- end -}}

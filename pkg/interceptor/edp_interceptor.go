@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
 
 	"github.com/epam/edp-tekton/pkg/event_processor"
+	"github.com/epam/edp-tekton/pkg/reporter/provider"
 )
 
 const (
@@ -34,12 +36,14 @@ type EDPInterceptorInterface interface {
 
 // EDPInterceptor is an interceptor for EDP.
 type EDPInterceptor struct {
-	gitHubProcessor    event_processor.Processor
-	gitLabProcessor    event_processor.Processor
-	gerritProcessor    event_processor.Processor
-	bitbucketProcessor event_processor.Processor
-	client             ctrlClient.Client
-	logger             *zap.SugaredLogger
+	gitHubProcessor     event_processor.Processor
+	gitLabProcessor     event_processor.Processor
+	gerritProcessor     event_processor.Processor
+	bitbucketProcessor  event_processor.Processor
+	client              ctrlClient.Client
+	logger              *zap.SugaredLogger
+	statusSetterFactory commitStatusSetterFactory
+	portalBaseURL       string
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
@@ -52,12 +56,14 @@ func NewEDPInterceptor(
 	l *zap.SugaredLogger,
 ) *EDPInterceptor {
 	return &EDPInterceptor{
-		gitHubProcessor:    gitHubProcessor,
-		gitLabProcessor:    gitLabProcessor,
-		gerritProcessor:    gerritProcessor,
-		bitbucketProcessor: bitbucketProcessor,
-		client:             c,
-		logger:             l,
+		gitHubProcessor:     gitHubProcessor,
+		gitLabProcessor:     gitLabProcessor,
+		gerritProcessor:     gerritProcessor,
+		bitbucketProcessor:  bitbucketProcessor,
+		client:              c,
+		logger:              l,
+		statusSetterFactory: provider.NewCommitStatusSetter,
+		portalBaseURL:       os.Getenv(portalBaseURLEnv),
 	}
 }
 
@@ -83,7 +89,8 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 		return nil, badRequest(fmt.Errorf("failed to parse body as InterceptorRequest: %w", err))
 	}
 
-	i.logger.Infof("Interceptor request is: %s", body.Bytes())
+	log := i.requestLogger(&ireq)
+	log.Debugf("Interceptor request is: %s", body.Bytes())
 
 	iresp := i.Process(ctx, &ireq)
 
@@ -92,9 +99,21 @@ func (i *EDPInterceptor) Execute(r *http.Request) ([]byte, error) {
 		return nil, internal(err)
 	}
 
-	i.logger.Infof("Interceptor response is: %s", respBytes)
+	log.Debugf("Interceptor response is: %s", respBytes)
 
 	return respBytes, nil
+}
+
+// requestLogger returns a logger scoped to the webhook event, so every log
+// line of one request can be correlated across concurrent deliveries: the
+// EventListener logs the same eventID and stamps it on the PipelineRuns it
+// creates as the triggers.tekton.dev/triggers-eventid label.
+func (i *EDPInterceptor) requestLogger(r *triggersv1.InterceptorRequest) *zap.SugaredLogger {
+	if r.Context == nil {
+		return i.logger
+	}
+
+	return i.logger.With("eventID", r.Context.EventID, "trigger", r.Context.TriggerID)
 }
 
 // Process processes the interceptor request.
@@ -102,21 +121,28 @@ func (i *EDPInterceptor) Process(
 	ctx context.Context,
 	r *triggersv1.InterceptorRequest,
 ) *triggersv1.InterceptorResponse {
+	log := i.requestLogger(r)
+
 	event, err := i.processEvent(ctx, r)
 	if err != nil {
 		return interceptors.Fail(codes.InvalidArgument, err.Error())
 	}
 
+	log = log.With("repo", event.RepoPath, "branch", event.TargetBranch, "type", event.Type)
+
+	log.Infof("Processing webhook event: repo %s, target branch %s, type %s",
+		event.RepoPath, event.TargetBranch, event.Type)
+
 	if event.IsReviewCommentEvent() {
 		if !event.HasPipelineRecheck {
-			i.logger.Infof("Pipeline recheck comment is not found, skipping pipeline triggering")
+			log.Infof("Pipeline recheck comment is not found, skipping pipeline triggering")
 
 			return &triggersv1.InterceptorResponse{
 				Continue: false,
 			}
 		}
 
-		i.logger.Infof("Found comment for recheck, triggering pipeline")
+		log.Infof("Found comment for recheck, triggering pipeline")
 	}
 
 	prepareCodebase(event.Codebase)
@@ -132,7 +158,7 @@ func (i *EDPInterceptor) Process(
 
 		trigger = false
 
-		i.logger.Infof("CodebaseBranch with the git branch %s not found, skipping pipeline triggering. "+
+		log.Infof("CodebaseBranch with the git branch %s not found, skipping pipeline triggering. "+
 			"You can ignore this message otherwise add branch %s to codebase %s for the pipeline triggering",
 			event.TargetBranch,
 			event.TargetBranch,
@@ -143,8 +169,22 @@ func (i *EDPInterceptor) Process(
 	if trigger && cancelInProgressEnabled(r.InterceptorParams) &&
 		event.PullRequest != nil && event.PullRequest.ChangeNumber > 0 {
 		// Cancellation is best-effort: a failure must not block triggering the new PipelineRun.
-		if err := i.cancelInProgressPipelineRuns(ctx, ns, event); err != nil {
-			i.logger.Errorf("Failed to cancel in-progress PipelineRuns: %s", err)
+		if err := i.cancelInProgressPipelineRuns(ctx, log, ns, event); err != nil {
+			log.Errorf("Failed to cancel in-progress PipelineRuns: %s", err)
+		}
+	}
+
+	if trigger && queuedStatusReportingEnabled(r.InterceptorParams) &&
+		event.PullRequest != nil && event.PullRequest.HeadSha != "" {
+		// Status posting is best-effort: a failure must not block triggering the
+		// new PipelineRun. It runs synchronously on purpose: the PipelineRun must
+		// not exist before the QUEUED status is posted, otherwise a fast-starting
+		// run's own status post could race a detached QUEUED post — GitHub and
+		// Bitbucket have no status state machine, so a late QUEUED would overwrite
+		// the newer state. postQueuedCommitStatus bounds itself with its own
+		// timeout so the webhook budget is preserved.
+		if err := i.postQueuedCommitStatus(ctx, log, ns, event); err != nil {
+			log.Errorf("Failed to post queued commit status: %s", err)
 		}
 	}
 

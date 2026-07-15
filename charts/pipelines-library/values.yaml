@@ -93,9 +93,21 @@ pipelines:
     #     value: tekton
 
   # -- Cancel in-progress review PipelineRuns when a new commit is pushed to the same
-  # Pull Request / Merge Request / Gerrit change. Cancellation is graceful
+  # Pull Request / Merge Request / Gerrit change. Handled entirely by the KRCI
+  # interceptor - no extra components are required. Cancellation is graceful
   # (spec.status: CancelledRunFinally), so finally tasks of the superseded run still execute.
   cancelInProgress: false
+
+  # Settings for review PipelineRun queueing with the tekton-pipeline-queue operator.
+  queue:
+    # -- Post a pending/QUEUED commit status from the interceptor at webhook time,
+    # so a review PipelineRun waiting in the queue shows a check in the VCS UI
+    # before it starts. Covers gitlab, github and bitbucket.
+    enabled: false
+    # -- Create review PipelineRuns in the Pending state (spec.status: PipelineRunPending),
+    # so a PipelineRunQueue decides when they start. Requires the tekton-pipeline-queue
+    # operator; without it Pending PipelineRuns never start.
+    pendingPipelineRun: false
 
 global:
   # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
@@ -345,6 +357,10 @@ interceptor:
   # -- Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true
   enabled: true
 
+  # -- Interceptor log level (debug, info, warn, error). debug additionally logs
+  # the full webhook request/response payloads.
+  logLevel: info
+
   nameOverride: "tekton-interceptor"
 
   image:
@@ -376,6 +392,22 @@ interceptor:
     runAsNonRoot: true
     runAsUser: 65532
     runAsGroup: 65532
+
+  # -- Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers
+  # with self-signed TLS (required for pipelines.queue.enabled against such servers)
+  extraVolumes: []
+  # extraVolumes:
+  #   - name: git-ca
+  #     configMap:
+  #       name: git-ca
+
+  # -- Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it
+  extraVolumeMounts: []
+  # extraVolumeMounts:
+  #   - name: git-ca
+  #     mountPath: /etc/ssl/certs/git-ca.crt
+  #     subPath: ca.crt
+  #     readOnly: true
 
   # -- The resource limits and requests for the Tekton Interceptor
   resources:

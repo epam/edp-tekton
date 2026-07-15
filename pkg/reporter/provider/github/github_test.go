@@ -126,3 +126,111 @@ func TestSplitRepoInvalid(t *testing.T) {
 		types.Comment{Body: "b"})
 	assert.Error(t, err)
 }
+
+func TestSetCommitStatusPostsPending(t *testing.T) {
+	t.Parallel()
+
+	var posted *github.RepoStatus
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/statuses/abc123", func(w http.ResponseWriter, r *http.Request) {
+		var s github.RepoStatus
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&s))
+		posted = &s
+
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(&s)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.SetCommitStatus(context.Background(),
+		types.CommitRef{RepoFullName: "org/repo", Sha: "abc123"},
+		types.CommitStatus{
+			State:       types.CommitStatePending,
+			Context:     "Review Pipeline",
+			Description: "QUEUED",
+			TargetURL:   "https://example.com/pr/1",
+		})
+	require.NoError(t, err)
+	require.NotNil(t, posted)
+	assert.Equal(t, "pending", posted.GetState())
+	assert.Equal(t, "Review Pipeline", posted.GetContext())
+	assert.Equal(t, "QUEUED", posted.GetDescription())
+	assert.Equal(t, "https://example.com/pr/1", posted.GetTargetURL())
+}
+
+func TestSetCommitStatusPropagatesAPIError(t *testing.T) {
+	t.Parallel()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/statuses/abc123", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.SetCommitStatus(context.Background(),
+		types.CommitRef{RepoFullName: "org/repo", Sha: "abc123"},
+		types.CommitStatus{State: types.CommitStatePending})
+	assert.Error(t, err)
+}
+
+func TestSetCommitStatusRetriesTransientError(t *testing.T) {
+	t.Parallel()
+
+	calls := 0
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/statuses/abc123", func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		if calls == 1 {
+			w.WriteHeader(http.StatusBadGateway)
+
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		_, _ = w.Write([]byte(`{}`))
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.SetCommitStatus(context.Background(),
+		types.CommitRef{RepoFullName: "org/repo", Sha: "abc123"},
+		types.CommitStatus{State: types.CommitStatePending})
+	require.NoError(t, err)
+	assert.Equal(t, 2, calls)
+}
+
+func TestSetCommitStatusDoesNotRetryPermanentError(t *testing.T) {
+	t.Parallel()
+
+	calls := 0
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/statuses/abc123", func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.SetCommitStatus(context.Background(),
+		types.CommitRef{RepoFullName: "org/repo", Sha: "abc123"},
+		types.CommitStatus{State: types.CommitStatePending})
+	assert.Error(t, err)
+	assert.Equal(t, 1, calls)
+}
+
+func TestSetCommitStatusRejectsUnsupportedState(t *testing.T) {
+	t.Parallel()
+
+	p := newTestProvider(t, http.NewServeMux())
+
+	err := p.SetCommitStatus(context.Background(),
+		types.CommitRef{RepoFullName: "org/repo", Sha: "abc123"},
+		types.CommitStatus{State: "success"})
+	assert.ErrorContains(t, err, "unsupported GitHub commit state")
+}

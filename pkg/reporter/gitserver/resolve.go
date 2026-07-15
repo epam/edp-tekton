@@ -34,13 +34,20 @@ func Resolve(ctx context.Context, reader ctrlClient.Reader, namespace, codebaseN
 		return nil, fmt.Errorf("failed to get Codebase %s: %w", codebaseName, err)
 	}
 
+	return ResolveGitServer(ctx, reader, namespace, codebase.Spec.GitServer)
+}
+
+// ResolveGitServer returns the provider connection info for the named GitServer.
+// Callers that already hold the Codebase can use it directly to skip the extra
+// Codebase lookup Resolve performs.
+func ResolveGitServer(ctx context.Context, reader ctrlClient.Reader, namespace, gitServerName string) (*Info, error) {
 	gitServer := &codebaseApi.GitServer{}
 	if err := reader.Get(
 		ctx,
-		types.NamespacedName{Namespace: namespace, Name: codebase.Spec.GitServer},
+		types.NamespacedName{Namespace: namespace, Name: gitServerName},
 		gitServer,
 	); err != nil {
-		return nil, fmt.Errorf("failed to get GitServer %s: %w", codebase.Spec.GitServer, err)
+		return nil, fmt.Errorf("failed to get GitServer %s: %w", gitServerName, err)
 	}
 
 	secret := &corev1.Secret{}

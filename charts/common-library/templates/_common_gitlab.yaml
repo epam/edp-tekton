@@ -1,3 +1,11 @@
+# State for the GitLab review start status. With pipelines.queue.enabled the
+# interceptor has already posted a pending/QUEUED status in the same context, and GitLab
+# rejects a pending -> pending transition, so the start task must post `running` instead.
+# Kept `pending` otherwise to preserve the long-standing default for existing installations.
+{{- define "edp-tekton.gitlabReviewStartState" -}}
+{{- if ((.Values.pipelines).queue).enabled -}}"running"{{- else -}}"pending"{{- end -}}
+{{- end -}}
+
 # The init section for gitlab build pipeline
 {{- define "gitlab-build-start" -}}
 - name: report-pipeline-start-to-gitlab
@@ -66,7 +74,7 @@
     name: gitlab-set-status
   params:
     - name: "STATE"
-      value: "pending"
+      value: {{ include "edp-tekton.gitlabReviewStartState" . }}
     - name: "GITLAB_HOST_URL"
       value: "$(params.git-source-url)"
     - name: "REPO_FULL_NAME"

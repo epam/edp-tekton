@@ -109,8 +109,7 @@ global:
             assert "dockerbuild-verify" in rt[8]["name"]
             assert "helm-lint" in rt[9]["name"]
             assert "save-cache" in rt[10]["name"]
-            assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
-            assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
+            assert "github-report-pipeline-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][github_build_pipeline_def]["spec"]["tasks"]
@@ -189,8 +188,7 @@ global:
             assert "dockerbuild-verify" in rt[8]["name"]
             assert "helm-lint" in rt[9]["name"]
             assert "save-cache" in rt[10]["name"]
-            assert "gitlab-set-success-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
-            assert "gitlab-set-failure-status" in r["pipeline"][review_pipeline]["spec"]["finally"][1]["name"]
+            assert "gitlab-report-pipeline-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][build_pipeline_def]["spec"]["tasks"]
@@ -268,8 +266,7 @@ global:
             assert "dockerbuild-verify" in rt[8]["name"]
             assert "helm-lint" in rt[9]["name"]
             assert "save-cache" in rt[10]["name"]
-            assert "bitbucket-set-success-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
-            assert "bitbucket-set-failure-status" in r["pipeline"][review_pipeline]["spec"]["finally"][1]["name"]
+            assert "bitbucket-report-pipeline-status" in r["pipeline"][review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][build_pipeline_def]["spec"]["tasks"]

@@ -128,61 +128,29 @@
 # final section for bitbucket codereview pipelines
 {{- define "bitbucket-review-vote" -}}
 finally:
-  - name: bitbucket-set-success-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Succeeded"]
+  # A single unguarded reporter: the task derives the build status from the
+  # aggregate $(tasks.status) (success, failure, or cancellation - caught
+  # mid-task or landed between tasks), so every terminal shape is reported and
+  # no when-guard gap can leave the check stuck on a non-terminal state.
+  - name: bitbucket-report-pipeline-status
     taskRef:
       kind: Task
       name: bitbucket-set-status
     params:
+      - name: PIPELINE_STATUS
+        value: "$(tasks.status)"
       - name: REPO_FULL_NAME
         value: $(params.gitfullrepositoryname)
       - name: SHA
         value: "$(params.git-source-revision)"
       - name: TARGET_URL
         value: $(params.pipelineUrl)
-      - name: DESCRIPTION
-        value: "Review Pipeline"
-      - name: STATE
-        value: "SUCCESSFUL"
       - name: BITBUCKET_TOKEN_SECRET_NAME
         value: ci-bitbucket
       - name: BITBUCKET_TOKEN_SECRET_KEY
         value: token
       - name: KEY
         value: "review"
-      - name: NAME
-        value: "Pipeline (PASSED)"
-
-  - name: bitbucket-set-failure-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Failed"]
-    taskRef:
-      kind: Task
-      name: bitbucket-set-status
-    params:
-      - name: REPO_FULL_NAME
-        value: $(params.gitfullrepositoryname)
-      - name: SHA
-        value: "$(params.git-source-revision)"
-      - name: TARGET_URL
-        value: $(params.pipelineUrl)
-      - name: DESCRIPTION
-        value: "Review Pipeline"
-      - name: STATE
-        value: "FAILED"
-      - name: BITBUCKET_TOKEN_SECRET_NAME
-        value: ci-bitbucket
-      - name: BITBUCKET_TOKEN_SECRET_KEY
-        value: token
-      - name: KEY
-        value: "review"
-      - name: NAME
-        value: "Pipeline (FAILED)"
 {{- end -}}
 
 # The init section for bitbucket build pipeline

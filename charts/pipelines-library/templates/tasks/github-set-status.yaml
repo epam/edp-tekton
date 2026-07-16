@@ -63,8 +63,9 @@ spec:
       type: string
     - name: DESCRIPTION
       description: |
-        A short description of the status.
+        A short description of the status. Ignored when PIPELINE_STATUS is set.
       type: string
+      default: ""
     - name: CONTEXT
       description: |
         The GitHub context, A string label to differentiate this status from
@@ -74,8 +75,17 @@ spec:
     - name: STATE
       description: |
         The state of the status. Can be one of the following `error`,
-        `failure`, `pending`, or `success`.
+        `failure`, `pending`, or `success`. Ignored when PIPELINE_STATUS is set.
       type: string
+      default: ""
+    - name: PIPELINE_STATUS
+      description: |
+        The aggregate execution status of the PipelineRun's tasks,
+        $(tasks.status), passed by a single unguarded finally task. When set,
+        the task derives the commit state and description from it (Succeeded,
+        Failed, Completed, None) instead of using STATE/DESCRIPTION.
+      type: string
+      default: ""
     - name: AUTH_TYPE
       description: |
         The type of authentication to use. You could use the less secure "Basic" for example
@@ -117,6 +127,8 @@ spec:
           value: $(params.CONTEXT)
         - name: STATE
           value: $(params.STATE)
+        - name: PIPELINE_STATUS
+          value: $(params.PIPELINE_STATUS)
         - name: AUTH_TYPE
           value: $(params.AUTH_TYPE)
         - name: SHEBANG
@@ -147,13 +159,37 @@ spec:
         state = os.getenv("STATE")
         description = os.getenv("DESCRIPTION")
 
-        # A gracefully cancelled PipelineRun (e.g. superseded by a newer commit via the
-        # pipeline queue) reaches the failure finally task looking like a genuine failure.
-        # The cancel-reason annotation stamped on the PipelineRun propagates to this pod,
-        # so report `error` (the commit status API has no canceled state) instead.
-        # Best effort: no annotation, no behavior change.
+        pipeline_status = os.getenv("PIPELINE_STATUS", "")
+        # The cancel-reason annotation the pipeline queue (or the interceptor) stamps
+        # in the same patch that cancels the run propagates to this pod. Its absence
+        # on a cancelled run means the cancellation came from elsewhere (kubectl,
+        # portal).
         cancel_reason = os.getenv("QUEUE_CANCEL_REASON", "")
-        if state == "failure" and cancel_reason:
+
+        if pipeline_status:
+            # Single-reporter mode: derive the state from the aggregate, so every
+            # terminal shape is covered and no when-guard gap can leave the commit
+            # status unreported. The commit status API has no canceled state, so
+            # cancellations are reported as `error` + description.
+            if pipeline_status == "Succeeded":
+                state, description = "success", "Pipeline (PASSED)"
+            elif pipeline_status == "Failed" and not cancel_reason:
+                state, description = "failure", "Pipeline (FAILED)"
+            elif pipeline_status in ("Failed", "Completed"):
+                # Failed with a stamped cancel reason: the cancellation caught a task
+                # mid-flight. Completed: the cancellation landed between tasks (review
+                # pipelines have no when-skipped regular tasks, so Completed can only
+                # mean cancellation; manual cancels carry no annotation and land here).
+                state = "error"
+                description = "SUPERSEDED BY NEWER COMMIT" if cancel_reason == "superseded" else "CANCELED"
+            else:
+                # None: no aggregate available; not expected in a finally task.
+                state, description = "failure", "Pipeline (UNKNOWN)"
+            print("Derived state '{state}' ({description}) from aggregate '{agg}'".format(
+                state=state, description=description, agg=pipeline_status))
+        elif state == "failure" and cancel_reason:
+            # Explicit-STATE callers (e.g. build pipelines' failure vote): a gracefully
+            # cancelled run reaches the failure task looking like a genuine failure.
             state = "error"
             description = "SUPERSEDED BY NEWER COMMIT" if cancel_reason == "superseded" else "CANCELED"
             print("PipelineRun was gracefully cancelled ({reason}), reporting '{state}'".format(

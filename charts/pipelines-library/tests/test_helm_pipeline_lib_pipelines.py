@@ -75,8 +75,7 @@ global:
     assert "helm-dependency-update" in r[3]["name"]
     assert "helm-lint" in r[4]["name"]
     assert "helm-template" in r[5]["name"]
-    assert "gitlab-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-    assert "gitlab-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+    assert "gitlab-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
     bdef = ht["pipeline"][build_def]["spec"]["tasks"]
     assert "report-pipeline-start-to-gitlab" in bdef[0]["name"]
@@ -129,8 +128,7 @@ global:
     assert "helm-dependency-update" in r[3]["name"]
     assert "helm-lint" in r[4]["name"]
     assert "helm-template" in r[5]["name"]
-    assert "github-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-    assert "github-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+    assert "github-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
     bdef = ht["pipeline"][build_def]["spec"]["tasks"]
     assert "github-set-pending-status" in bdef[0]["name"]
@@ -183,8 +181,7 @@ global:
     assert "helm-dependency-update" in r[3]["name"]
     assert "helm-lint" in r[4]["name"]
     assert "helm-template" in r[5]["name"]
-    assert "bitbucket-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-    assert "bitbucket-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+    assert "bitbucket-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
     bdef = ht["pipeline"][build_def]["spec"]["tasks"]
     assert "bitbucket-set-pending-status" in bdef[0]["name"]

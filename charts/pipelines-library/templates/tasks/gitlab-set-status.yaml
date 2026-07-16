@@ -141,10 +141,24 @@ spec:
 
             resp = conn.getresponse()
             if not str(resp.status).startswith("2"):
-                print(f"{resp.status} | Unable to set status")
-                response_data = json.dumps(json.loads(resp.read()), indent=4)
-                print(response_data)
-                sys.exit(1)
+                body = resp.read().decode()
+
+                # GitLab enforces a state machine on commit statuses: posting a state
+                # that is not a valid transition from an unfinished status in the same
+                # context (e.g. `running` while a stuck previous run left the check
+                # running) fails with 400 "Cannot transition status". The check already
+                # shows a live state for this SHA and the next terminal post resets it,
+                # so treat the conflict as already reported instead of failing the run.
+                if resp.status == 400 and "Cannot transition status" in body:
+                    print(f"Status of {REPO_FULL_NAME}#{SHA} already reports an active state, skipping '{STATE}'")
+                    print(body)
+                else:
+                    print(f"{resp.status} | Unable to set status")
+                    try:
+                        print(json.dumps(json.loads(body), indent=4))
+                    except ValueError:
+                        print(body)
+                    sys.exit(1)
             else:
                 print(f"Just set status of {REPO_FULL_NAME}#{SHA} to {STATE}")
         finally:

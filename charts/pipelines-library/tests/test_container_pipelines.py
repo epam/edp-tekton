@@ -91,8 +91,7 @@ global:
             assert "dockerfile-lint" in rt[2]["name"]
             assert "dockerbuild-verify" in rt[3]["name"]
 
-            assert "github-set-success-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
-            assert "github-set-failure-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][1]["name"]
+            assert "github-report-pipeline-status" in r["pipeline"][github_review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][github_build_pipeline_def]["spec"]["tasks"]
@@ -156,8 +155,7 @@ global:
             assert "dockerfile-lint" in rt[2]["name"]
             assert "dockerbuild-verify" in rt[3]["name"]
 
-            assert "gitlab-set-success-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
-            assert "gitlab-set-failure-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][1]["name"]
+            assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][gitlab_build_pipeline_def]["spec"]["tasks"]
@@ -220,8 +218,7 @@ global:
             assert "dockerfile-lint" in rt[2]["name"]
             assert "dockerbuild-verify" in rt[3]["name"]
 
-            assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][0]["name"]
-            assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][1]["name"]
+            assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_review_pipeline]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             btd = r["pipeline"][bitbucket_build_pipeline_def]["spec"]["tasks"]

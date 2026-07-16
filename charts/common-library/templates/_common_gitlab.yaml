@@ -130,17 +130,17 @@
 # final section for gitlab codereview pipelines
 {{- define "gitlab-review-vote" -}}
 finally:
-  - name: gitlab-set-success-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Succeeded"]
+  # A single unguarded reporter: the task derives the commit state from the
+  # aggregate $(tasks.status) (success, failure, or cancellation - caught
+  # mid-task or landed between tasks), so every terminal shape is reported and
+  # no when-guard gap can leave the check stuck on a non-terminal state.
+  - name: gitlab-report-pipeline-status
     taskRef:
       kind: Task
       name: gitlab-set-status
     params:
-      - name: "STATE"
-        value: "success"
+      - name: "PIPELINE_STATUS"
+        value: "$(tasks.status)"
       - name: "GITLAB_HOST_URL"
         value: "$(params.git-source-url)"
       - name: "REPO_FULL_NAME"
@@ -155,36 +155,6 @@ finally:
         value: $(params.pipelineUrl)
       - name: "CONTEXT"
         value: "Review Pipeline"
-      - name: "DESCRIPTION"
-        value: "PASSED"
-
-  - name: gitlab-set-failure-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Failed"]
-    taskRef:
-      kind: Task
-      name: gitlab-set-status
-    params:
-      - name: "STATE"
-        value: "failed"
-      - name: "GITLAB_HOST_URL"
-        value: "$(params.git-source-url)"
-      - name: "REPO_FULL_NAME"
-        value: "$(params.gitfullrepositoryname)"
-      - name: "GITLAB_TOKEN_SECRET_NAME"
-        value: ci-gitlab
-      - name: "GITLAB_TOKEN_SECRET_KEY"
-        value: token
-      - name: "SHA"
-        value: "$(params.git-source-revision)"
-      - name: "TARGET_URL"
-        value: $(params.pipelineUrl)
-      - name: "CONTEXT"
-        value: "Review Pipeline"
-      - name: "DESCRIPTION"
-        value: "FAILED"
 {{- end -}}
 
 

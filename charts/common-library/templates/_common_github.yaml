@@ -121,49 +121,19 @@
 # final section for github codereview pipelines
 {{- define "github-review-vote" -}}
 finally:
-  - name: github-set-success-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Succeeded"]
+  # A single unguarded reporter: the task derives the commit state from the
+  # aggregate $(tasks.status) (success, failure, or cancellation - caught
+  # mid-task or landed between tasks), so every terminal shape is reported and
+  # no when-guard gap can leave the check stuck on a non-terminal state.
+  - name: github-report-pipeline-status
     taskRef:
       kind: Task
       name: github-set-status
     params:
+      - name: PIPELINE_STATUS
+        value: "$(tasks.status)"
       - name: REPO_FULL_NAME
         value: $(params.gitfullrepositoryname)
-      - name: DESCRIPTION
-        value: "Pipeline (PASSED)"
-      - name: STATE
-        value: "success"
-      - name: CONTEXT
-        value: "Review Pipeline"
-      - name: AUTH_TYPE
-        value: Token
-      - name: GITHUB_TOKEN_SECRET_NAME
-        value: ci-github
-      - name: GITHUB_TOKEN_SECRET_KEY
-        value: token
-      - name: SHA
-        value: $(params.gitsha)
-      - name: TARGET_URL
-        value: $(params.pipelineUrl)
-
-  - name: github-set-failure-status
-    when:
-      - input: "$(tasks.status)"
-        operator: in
-        values: ["Failed"]
-    taskRef:
-      kind: Task
-      name: github-set-status
-    params:
-      - name: REPO_FULL_NAME
-        value: $(params.gitfullrepositoryname)
-      - name: DESCRIPTION
-        value: "Pipeline (FAILED)"
-      - name: STATE
-        value: "failure"
       - name: CONTEXT
         value: "Review Pipeline"
       - name: AUTH_TYPE

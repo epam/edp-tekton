@@ -154,8 +154,7 @@ pipelines:
                 assert "helm-lint" in r[10]["name"]
                 assert "save-cache" in r[11]["name"]
 
-            assert "gitlab-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-            assert "gitlab-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+            assert "gitlab-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             bd = ht["pipeline"][build_default]["spec"]["tasks"]
@@ -261,8 +260,7 @@ pipelines:
                 assert "helm-lint" in r[10]["name"]
                 assert "save-cache" in r[11]["name"]
 
-            assert "github-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-            assert "github-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+            assert "github-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             bd = ht["pipeline"][build_default]["spec"]["tasks"]
@@ -367,8 +365,7 @@ pipelines:
                 assert "helm-lint" in r[10]["name"]
                 assert "save-cache" in r[11]["name"]
 
-            assert "bitbucket-set-success-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
-            assert "bitbucket-set-failure-status" in ht["pipeline"][review]["spec"]["finally"][1]["name"]
+            assert "bitbucket-report-pipeline-status" in ht["pipeline"][review]["spec"]["finally"][0]["name"]
 
             # build with default versioning
             bd = ht["pipeline"][build_default]["spec"]["tasks"]

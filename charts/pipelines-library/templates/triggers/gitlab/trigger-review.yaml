@@ -21,8 +21,9 @@ spec:
         name: "cel"
         kind: ClusterInterceptor
       params:
+        # Process MR open/reopen, code pushes (update with oldrev), and comments.
         - name: "filter"
-          value: "body.object_attributes.action in ['open', 'reopen', 'update'] && !(has(body.changes.assignees) || has(body.changes.reviewers)) || (body.object_kind == 'note' && has(body.merge_request))"
+          value: "body.object_attributes.action in ['open', 'reopen'] || (body.object_attributes.action == 'update' && has(body.object_attributes.oldrev)) || (body.object_kind == 'note' && has(body.merge_request))"
     - ref:
         name: "edp"
         kind: NamespacedInterceptor

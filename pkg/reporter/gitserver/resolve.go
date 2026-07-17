@@ -16,6 +16,19 @@ import (
 
 const tokenSecretField = "token"
 
+// tokenRequiredProviders are the git providers whose reporter integration
+// authenticates with an API token, so their GitServer secret must carry a
+// non-empty one. Providers outside this set (currently Gerrit, which the
+// reporter reaches over SSH and does not support as a comment target) resolve
+// without a token; report() rejects them later via provider.New, whose error
+// is classified as permanent so the PipelineRun is marked skipped once
+// instead of endlessly requeuing on a token that will never appear.
+var tokenRequiredProviders = map[string]bool{
+	codebaseApi.GitProviderGithub:    true,
+	codebaseApi.GitProviderGitlab:    true,
+	codebaseApi.GitProviderBitbucket: true,
+}
+
 // Info is the resolved git provider connection info for a Codebase.
 type Info struct {
 	// Provider is one of the codebaseApi.GitProvider* constants (github, gitlab, bitbucket, gerrit).
@@ -60,7 +73,7 @@ func ResolveGitServer(ctx context.Context, reader ctrlClient.Reader, namespace, 
 	}
 
 	token := string(secret.Data[tokenSecretField])
-	if token == "" {
+	if token == "" && tokenRequiredProviders[gitServer.Spec.GitProvider] {
 		return nil, errors.New("token is empty in GitServer secret")
 	}
 

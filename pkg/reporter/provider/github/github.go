@@ -45,6 +45,10 @@ func NewWithClient(client *github.Client) *Provider {
 	return &Provider{client: client}
 }
 
+// SupportsCollapsibleSections reports that GitHub renders embedded HTML
+// (<details>/<summary>) inside markdown comments.
+func (p *Provider) SupportsCollapsibleSections() bool { return true }
+
 // UpsertComment creates the report comment or, when comment.Update is set,
 // edits the previous report comment identified by the marker.
 func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, comment types.Comment) error {

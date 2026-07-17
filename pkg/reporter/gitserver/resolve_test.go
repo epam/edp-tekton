@@ -55,6 +55,39 @@ func TestResolve(t *testing.T) {
 	assert.Equal(t, &Info{Provider: codebaseApi.GitProviderGithub, Host: "github.com", Token: "gh-token"}, info)
 }
 
+func TestResolveGerritWithoutTokenSucceeds(t *testing.T) {
+	t.Parallel()
+
+	// Gerrit is reached over SSH and has no reporter token; its GitServer
+	// secret legitimately carries no "token" key. Resolve must not reject it
+	// here — report() rejects unsupported providers later via provider.New,
+	// whose error is permanent, so the PipelineRun is marked skipped once
+	// instead of endlessly requeuing on a token that will never appear.
+	objects := []ctrlClient.Object{
+		&codebaseApi.Codebase{
+			ObjectMeta: metav1.ObjectMeta{Name: "gr-app", Namespace: "krci"},
+			Spec:       codebaseApi.CodebaseSpec{GitServer: "gerrit"},
+		},
+		&codebaseApi.GitServer{
+			ObjectMeta: metav1.ObjectMeta{Name: "gerrit", Namespace: "krci"},
+			Spec: codebaseApi.GitServerSpec{
+				GitHost:          "gerrit.example.com",
+				GitProvider:      codebaseApi.GitProviderGerrit,
+				NameSshKeySecret: "ci-gerrit",
+			},
+		},
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{Name: "ci-gerrit", Namespace: "krci"},
+			Data:       map[string][]byte{"id_rsa": []byte("key")},
+		},
+	}
+
+	info, err := Resolve(context.Background(), newReader(t, objects...), "krci", "gr-app")
+	require.NoError(t, err)
+
+	assert.Equal(t, &Info{Provider: codebaseApi.GitProviderGerrit, Host: "gerrit.example.com", Token: ""}, info)
+}
+
 func TestResolveErrors(t *testing.T) {
 	t.Parallel()
 

@@ -44,6 +44,10 @@ func NewWithClient(client *resty.Client) *Provider {
 	return &Provider{client: client}
 }
 
+// SupportsCollapsibleSections reports that GitLab renders embedded HTML
+// (<details>/<summary>) inside markdown notes.
+func (p *Provider) SupportsCollapsibleSections() bool { return true }
+
 type note struct {
 	ID   int    `json:"id"`
 	Body string `json:"body"`

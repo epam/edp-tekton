@@ -188,7 +188,10 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 	}
 
 	marker := fmt.Sprintf("<!-- krci-pipeline-report codebase=%s -->", codebaseName)
-	body := formatter.Truncate(r.formatter.Format(report, marker, r.config.TailLines), reporter.MaxCommentBytes)
+	body := formatter.Truncate(
+		r.formatter.Format(report, marker, r.config.TailLines, gitProvider.SupportsCollapsibleSections()),
+		reporter.MaxCommentBytes,
+	)
 
 	if err := gitProvider.UpsertComment(ctx, pullRequest, types.Comment{
 		Marker: marker,

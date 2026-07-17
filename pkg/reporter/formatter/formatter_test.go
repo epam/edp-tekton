@@ -40,7 +40,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	body := New(PortalLinkBuilder{BaseURL: "https://portal.example.com/c/main/cicd/pipelineruns"}).
-		Format(report, "<!-- marker -->", 100, true)
+		Format(report, "<!-- marker -->", Options{TailLines: 100, CollapsibleSections: true})
 
 	require.True(t, strings.HasPrefix(body, "<!-- marker -->\n"), "comment must start with the marker")
 	assert.Contains(t, body, "❌ Failed")
@@ -78,11 +78,9 @@ func TestFormatWithoutCollapsibleSections(t *testing.T) {
 		}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", 100, false)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", Options{TailLines: 100})
 
-	// Bitbucket Cloud escapes embedded HTML instead of rendering it, so a
-	// <details>/<summary> section would show as literal tags around an
-	// always-expanded log; the failed step must render as plain markdown.
+	// Renderers that escape embedded HTML (Bitbucket Cloud) must get pure markdown.
 	assert.NotContains(t, body, "<details>")
 	assert.NotContains(t, body, "<summary>")
 	assert.NotContains(t, body, "<b>")
@@ -99,7 +97,7 @@ func TestFormatSucceededWithoutLinks(t *testing.T) {
 		Tasks:           []collector.TaskResult{{Name: "build", Succeeded: true, Duration: time.Second}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", 100, true)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", Options{TailLines: 100, CollapsibleSections: true})
 
 	assert.Contains(t, body, "## Pipeline `review-ok` ✅ Passed")
 	assert.NotContains(t, body, "<details>")
@@ -119,7 +117,7 @@ func TestFormatEscapesCodeFences(t *testing.T) {
 		}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10, true)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", Options{TailLines: 10, CollapsibleSections: true})
 
 	assert.NotContains(t, body, "```\ninjected", "log content must not close the code fence")
 }
@@ -137,7 +135,7 @@ func TestFormatEscapesLongBacktickRuns(t *testing.T) {
 		}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10, true)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", Options{TailLines: 10, CollapsibleSections: true})
 
 	// Strip the two legitimate fence delimiters, then no run of 3+ backticks may remain.
 	inner := strings.SplitN(body, "```\n", 3)

@@ -58,11 +58,9 @@ func TestResolve(t *testing.T) {
 func TestResolveGerritWithoutTokenSucceeds(t *testing.T) {
 	t.Parallel()
 
-	// Gerrit is reached over SSH and has no reporter token; its GitServer
-	// secret legitimately carries no "token" key. Resolve must not reject it
-	// here — report() rejects unsupported providers later via provider.New,
-	// whose error is permanent, so the PipelineRun is marked skipped once
-	// instead of endlessly requeuing on a token that will never appear.
+	// Gerrit's GitServer secret is an SSH key with no "token" field; Resolve
+	// must pass it through so provider.New can reject it with a permanent
+	// error instead of the run requeuing here forever.
 	objects := []ctrlClient.Object{
 		&codebaseApi.Codebase{
 			ObjectMeta: metav1.ObjectMeta{Name: "gr-app", Namespace: "krci"},

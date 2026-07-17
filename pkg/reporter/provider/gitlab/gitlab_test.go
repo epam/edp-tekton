@@ -371,3 +371,11 @@ func TestUpsertCommentPropagatesAPIError(t *testing.T) {
 		types.Comment{Marker: "<!-- m -->", Body: "b", Update: false})
 	assert.Error(t, err)
 }
+
+func TestSupportsCollapsibleSections(t *testing.T) {
+	t.Parallel()
+
+	p := New("git.example.com", "token")
+
+	assert.True(t, p.SupportsCollapsibleSections(), "GitLab renders embedded HTML in markdown notes")
+}

@@ -48,6 +48,10 @@ func (f *fakeProvider) UpsertComment(
 	return nil
 }
 
+// SupportsCollapsibleSections defaults fakeProvider to the common case
+// (GitHub/GitLab); the formatter's own tests cover the plain-markdown branch.
+func (f *fakeProvider) SupportsCollapsibleSections() bool { return true }
+
 type stubLogFetcher struct{}
 
 func (stubLogFetcher) GetLogs(_ context.Context, _, _, container string, _ int64) (string, error) {

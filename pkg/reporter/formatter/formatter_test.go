@@ -40,7 +40,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	body := New(PortalLinkBuilder{BaseURL: "https://portal.example.com/c/main/cicd/pipelineruns"}).
-		Format(report, "<!-- marker -->", 100)
+		Format(report, "<!-- marker -->", 100, true)
 
 	require.True(t, strings.HasPrefix(body, "<!-- marker -->\n"), "comment must start with the marker")
 	assert.Contains(t, body, "❌ Failed")
@@ -63,6 +63,33 @@ func TestFormat(t *testing.T) {
 	assert.Equal(t, 1, strings.Count(body, "<details>"))
 }
 
+func TestFormatWithoutCollapsibleSections(t *testing.T) {
+	t.Parallel()
+
+	report := &collector.Report{
+		PipelineRunName: "review-bb-app",
+		Succeeded:       false,
+		Tasks: []collector.TaskResult{{
+			Name:      "test",
+			Succeeded: false,
+			Steps: []collector.StepResult{
+				{Name: "mvn-goals", ExitCode: 1, LogTail: "BUILD FAILURE"},
+			},
+		}},
+	}
+
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", 100, false)
+
+	// Bitbucket Cloud escapes embedded HTML instead of rendering it, so a
+	// <details>/<summary> section would show as literal tags around an
+	// always-expanded log; the failed step must render as plain markdown.
+	assert.NotContains(t, body, "<details>")
+	assert.NotContains(t, body, "<summary>")
+	assert.NotContains(t, body, "<b>")
+	assert.Contains(t, body, "❌ **test / mvn-goals** (exit code 1, last 100 log lines)")
+	assert.Contains(t, body, "```\nBUILD FAILURE\n```")
+}
+
 func TestFormatSucceededWithoutLinks(t *testing.T) {
 	t.Parallel()
 
@@ -72,7 +99,7 @@ func TestFormatSucceededWithoutLinks(t *testing.T) {
 		Tasks:           []collector.TaskResult{{Name: "build", Succeeded: true, Duration: time.Second}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", 100)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", 100, true)
 
 	assert.Contains(t, body, "## Pipeline `review-ok` ✅ Passed")
 	assert.NotContains(t, body, "<details>")
@@ -92,7 +119,7 @@ func TestFormatEscapesCodeFences(t *testing.T) {
 		}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10, true)
 
 	assert.NotContains(t, body, "```\ninjected", "log content must not close the code fence")
 }
@@ -110,7 +137,7 @@ func TestFormatEscapesLongBacktickRuns(t *testing.T) {
 		}},
 	}
 
-	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10)
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- m -->", 10, true)
 
 	// Strip the two legitimate fence delimiters, then no run of 3+ backticks may remain.
 	inner := strings.SplitN(body, "```\n", 3)

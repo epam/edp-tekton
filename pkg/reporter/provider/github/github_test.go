@@ -234,3 +234,12 @@ func TestSetCommitStatusRejectsUnsupportedState(t *testing.T) {
 		types.CommitStatus{State: "success"})
 	assert.ErrorContains(t, err, "unsupported GitHub commit state")
 }
+
+func TestSupportsCollapsibleSections(t *testing.T) {
+	t.Parallel()
+
+	p, err := New("github.com", "token")
+	require.NoError(t, err)
+
+	assert.True(t, p.SupportsCollapsibleSections(), "GitHub renders embedded HTML in markdown comments")
+}

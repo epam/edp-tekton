@@ -209,3 +209,12 @@ func TestSetCommitStatusRejectsUnsupportedState(t *testing.T) {
 		types.CommitStatus{State: "success"})
 	assert.ErrorContains(t, err, "unsupported Bitbucket commit state")
 }
+
+func TestSupportsCollapsibleSections(t *testing.T) {
+	t.Parallel()
+
+	p := New("token")
+
+	assert.False(t, p.SupportsCollapsibleSections(),
+		"Bitbucket Cloud escapes embedded HTML instead of rendering it")
+}

@@ -59,8 +59,16 @@ func New(links LinkBuilder) *Formatter {
 
 // Format renders the report as a markdown comment starting with the given
 // hidden marker. Every task is listed in a status table; failed steps get a
-// collapsible log section below the table.
-func (f *Formatter) Format(report *collector.Report, marker string, tailLines int64) string {
+// log section below the table, rendered as a collapsible <details> block
+// when supportsCollapsibleSections is true, or as a plain bold heading plus
+// code fence otherwise (for renderers, e.g. Bitbucket Cloud, that escape
+// embedded HTML instead of executing it).
+func (f *Formatter) Format(
+	report *collector.Report,
+	marker string,
+	tailLines int64,
+	supportsCollapsibleSections bool,
+) string {
 	var b strings.Builder
 
 	b.WriteString(marker)
@@ -98,10 +106,17 @@ func (f *Formatter) Format(report *collector.Report, marker string, tailLines in
 				continue
 			}
 
-			fmt.Fprintf(&b,
-				"\n<details><summary>%s <b>%s</b> / %s (exit code %d, last %d log lines)</summary>\n\n```\n%s\n```\n</details>\n",
-				statusFailed, task.Name, step.Name, step.ExitCode, tailLines, sanitizeCodeFence(step.LogTail),
-			)
+			if supportsCollapsibleSections {
+				fmt.Fprintf(&b,
+					"\n<details><summary>%s <b>%s</b> / %s (exit code %d, last %d log lines)</summary>\n\n```\n%s\n```\n</details>\n",
+					statusFailed, task.Name, step.Name, step.ExitCode, tailLines, sanitizeCodeFence(step.LogTail),
+				)
+			} else {
+				fmt.Fprintf(&b,
+					"\n%s **%s / %s** (exit code %d, last %d log lines)\n\n```\n%s\n```\n",
+					statusFailed, task.Name, step.Name, step.ExitCode, tailLines, sanitizeCodeFence(step.LogTail),
+				)
+			}
 		}
 	}
 

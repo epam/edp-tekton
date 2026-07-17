@@ -26,6 +26,12 @@ type Comment struct {
 // Provider posts or updates a pull request comment.
 type Provider interface {
 	UpsertComment(ctx context.Context, ref PullRequestRef, comment Comment) error
+	// SupportsCollapsibleSections reports whether the provider's comment
+	// renderer executes embedded HTML (<details>/<summary>) instead of
+	// escaping it as literal text. The reporter uses this to decide whether
+	// failed-step logs can be rendered as a collapsible section or must fall
+	// back to plain markdown.
+	SupportsCollapsibleSections() bool
 }
 
 // CommitRef identifies a commit.

@@ -38,6 +38,12 @@ func NewWithClient(client *resty.Client, token string) *Provider {
 	return &Provider{client: client, token: token}
 }
 
+// SupportsCollapsibleSections reports that Bitbucket Cloud's comment renderer
+// escapes embedded HTML instead of executing it: a <details>/<summary>
+// section would render as literal tags around an always-expanded log, so the
+// reporter must fall back to plain markdown for this provider.
+func (p *Provider) SupportsCollapsibleSections() bool { return false }
+
 type comment struct {
 	ID      int `json:"id"`
 	Content struct {

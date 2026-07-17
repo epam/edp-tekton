@@ -57,18 +57,20 @@ func New(links LinkBuilder) *Formatter {
 	return &Formatter{links: links}
 }
 
+// Options control how Format renders the failed-step log sections.
+type Options struct {
+	// TailLines is the log-line count echoed in each failed-step heading.
+	TailLines int64
+	// CollapsibleSections wraps failed-step logs in <details> blocks; leave
+	// false for renderers (e.g. Bitbucket Cloud) that escape embedded HTML
+	// instead of executing it.
+	CollapsibleSections bool
+}
+
 // Format renders the report as a markdown comment starting with the given
 // hidden marker. Every task is listed in a status table; failed steps get a
-// log section below the table, rendered as a collapsible <details> block
-// when supportsCollapsibleSections is true, or as a plain bold heading plus
-// code fence otherwise (for renderers, e.g. Bitbucket Cloud, that escape
-// embedded HTML instead of executing it).
-func (f *Formatter) Format(
-	report *collector.Report,
-	marker string,
-	tailLines int64,
-	supportsCollapsibleSections bool,
-) string {
+// log section below the table, shaped per opts.
+func (f *Formatter) Format(report *collector.Report, marker string, opts Options) string {
 	var b strings.Builder
 
 	b.WriteString(marker)
@@ -106,17 +108,15 @@ func (f *Formatter) Format(
 				continue
 			}
 
-			if supportsCollapsibleSections {
-				fmt.Fprintf(&b,
-					"\n<details><summary>%s <b>%s</b> / %s (exit code %d, last %d log lines)</summary>\n\n```\n%s\n```\n</details>\n",
-					statusFailed, task.Name, step.Name, step.ExitCode, tailLines, sanitizeCodeFence(step.LogTail),
-				)
-			} else {
-				fmt.Fprintf(&b,
-					"\n%s **%s / %s** (exit code %d, last %d log lines)\n\n```\n%s\n```\n",
-					statusFailed, task.Name, step.Name, step.ExitCode, tailLines, sanitizeCodeFence(step.LogTail),
-				)
+			tmpl := "\n%s **%s / %s** (exit code %d, last %d log lines)\n\n```\n%s\n```\n"
+			if opts.CollapsibleSections {
+				tmpl = "\n<details><summary>%s <b>%s</b> / %s (exit code %d, last %d log lines)</summary>" +
+					"\n\n```\n%s\n```\n</details>\n"
 			}
+
+			fmt.Fprintf(&b, tmpl,
+				statusFailed, task.Name, step.Name, step.ExitCode, opts.TailLines, sanitizeCodeFence(step.LogTail),
+			)
 		}
 	}
 

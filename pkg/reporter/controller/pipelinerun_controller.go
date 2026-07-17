@@ -188,8 +188,17 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 	}
 
 	marker := fmt.Sprintf("<!-- krci-pipeline-report codebase=%s -->", codebaseName)
+
+	collapsible := false
+	if c, ok := gitProvider.(types.CollapsibleSectionsSupport); ok {
+		collapsible = c.SupportsCollapsibleSections()
+	}
+
 	body := formatter.Truncate(
-		r.formatter.Format(report, marker, r.config.TailLines, gitProvider.SupportsCollapsibleSections()),
+		r.formatter.Format(report, marker, formatter.Options{
+			TailLines:           r.config.TailLines,
+			CollapsibleSections: collapsible,
+		}),
 		reporter.MaxCommentBytes,
 	)
 

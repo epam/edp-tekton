@@ -1,8 +1,32 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.26.0"></a>
+## [v0.26.0] - 2026-07-20
+### Features
+
+- post queued commit status at webhook time for review PipelineRuns
+- report canceled commit status for superseded review PipelineRuns
+- publish review PipelineRun results as pull request comments
+
+### Bug Fixes
+
+- retrigger GitLab review pipelines only on code pushes and comment commands
+- report Bitbucket logs as plain markdown, stop Gerrit reconcile loop
+- report review pipeline status from a single aggregate-driven finally task
+- tolerate GitLab commit status transition conflicts in gitlab-set-status
+- use Review Pipeline status context in GitHub review pipelines
+
+### Code Refactoring
+
+- address review findings on the reporter fixes
+- move tekton-reporter into the pipelines-library chart
+
 ### Routine
 
+- Update current development version
+- Update current development version
 - Align tekton-cache chart version
 
 
@@ -890,7 +914,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.25.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.26.0...HEAD
+[v0.26.0]: https://github.com/epam/edp-tekton/compare/v0.25.0...v0.26.0
 [v0.25.0]: https://github.com/epam/edp-tekton/compare/v0.24.0...v0.25.0
 [v0.24.0]: https://github.com/epam/edp-tekton/compare/v0.23.0...v0.24.0
 [v0.23.0]: https://github.com/epam/edp-tekton/compare/v0.22.0...v0.23.0

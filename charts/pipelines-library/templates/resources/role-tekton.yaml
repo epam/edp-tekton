@@ -61,3 +61,14 @@ rules:
       - argoproj.io
     resources:
       - applicationsets
+
+{{- if .Values.pipelines.argocdDiffPreview.enabled }}
+  # the gitops review diff preview exports the Applications affected by an MR
+  # (resolved by name from the changed GitOps file paths) to render the diff
+  - verbs:
+      - get
+    apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+{{- end }}

@@ -109,6 +109,30 @@ pipelines:
     # operator; without it Pending PipelineRuns never start.
     pendingPipelineRun: false
 
+  # -- Argo CD Diff Preview settings for the GitOps review pipelines. When enabled, the
+  # gitops review pipeline renders an MR manifest diff via the standing argocd-diff-preview
+  # vcluster (installed by the argocd-diff-preview cluster addon) and posts it as an MR
+  # comment; it stays best-effort at runtime and skips silently if the addon is unhealthy.
+  argocdDiffPreview:
+    # -- Install the diff-preview task and wire it into the gitops review pipeline. Enable
+    # this together with the argocd-diff-preview cluster addon; leave disabled otherwise.
+    enabled: false
+    # -- Namespace of the argocd-diff-preview vcluster addon.
+    namespace: argocd-diff-preview
+    # -- Kubeconfig secret exported by the vcluster addon.
+    kubeconfigSecret: vc-argocd-diff-preview
+    # -- Namespace of the Argo CD instance inside the argocd-diff-preview vcluster
+    # (must match the addon's embedded Argo CD bootstrap configuration).
+    innerArgocdNamespace: argocd
+    # -- argocd-diff-preview tool image.
+    toolImage: dagandersen/argocd-diff-preview:v0.2.11
+    # -- Utility image with git/kubectl/jq/yq for the connect and prepare-and-export steps.
+    utilImage: alpine/k8s:1.33.4
+    # -- Python image for posting the MR comment.
+    commentImage: python:3.12-alpine
+    # -- Maximum time in seconds to wait for Argo CD to render all applications.
+    renderTimeoutSeconds: "300"
+
 global:
   # By defining gitProviders you install the corresponding Kubernetes resources for the selected Git Provider:
   # Pipelines, EventListener, Tasks, etc.

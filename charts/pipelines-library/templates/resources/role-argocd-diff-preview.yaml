@@ -1,0 +1,44 @@
+{{- /*
+The gitops review pipelines connect to the standing argocd-diff-preview vcluster (see
+the argocd-diff-preview cluster addon) by reading its exported kubeconfig secret. The
+namespace is created here so the chart installs cleanly before the addon; the
+addon deploys into it later. The diff step is best-effort and skips while the
+secret does not exist. Only rendered when the diff preview is enabled.
+*/ -}}
+{{- if .Values.pipelines.argocdDiffPreview.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.pipelines.argocdDiffPreview.namespace }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tekton-argocd-diff-preview-kubeconfig
+  namespace: {{ .Values.pipelines.argocdDiffPreview.namespace }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["{{ .Values.pipelines.argocdDiffPreview.kubeconfigSecret }}"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-argocd-diff-preview-kubeconfig
+  namespace: {{ .Values.pipelines.argocdDiffPreview.namespace }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-argocd-diff-preview-kubeconfig
+subjects:
+  - kind: ServiceAccount
+    name: tekton
+    namespace: {{ .Release.Namespace }}
+{{- end }}

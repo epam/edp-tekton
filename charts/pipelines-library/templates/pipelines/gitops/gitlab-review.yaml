@@ -24,12 +24,19 @@ spec:
       default: "main"
       type: string
     - name: git-refspec
-      description: Refspec to fetch before checking out revision.
-      default: ""
+      description: >-
+        Refspec to fetch before checking out revision. When the diff preview is
+        enabled, branch heads are fetched so it can reconstruct the MR target
+        branch locally.
+      default: {{ if .Values.pipelines.argocdDiffPreview.enabled }}"+refs/heads/*:refs/remotes/origin/*"{{ else }}""{{ end }}
       type: string
     - name: CODEBASE_NAME
       default: krci-gitops
       description: "Project name"
+      type: string
+    - name: targetBranch
+      description: Target branch of the Merge Request, used as the diff preview base
+      default: main
       type: string
     - name: changeNumber
       description: Change number from Merge Request
@@ -51,6 +58,29 @@ spec:
         - name: source
           subPath: source
           workspace: shared-workspace
+
+{{- if .Values.pipelines.argocdDiffPreview.enabled }}
+    - name: argocd-diff-preview
+      runAfter:
+        - yaml-lint
+      taskRef:
+        kind: Task
+        name: argocd-diff-preview
+      params:
+        - name: GITOPS_URL
+          value: $(params.git-source-url)
+        - name: TARGET_REVISION
+          value: $(params.git-source-revision)
+        - name: BASE_BRANCH
+          value: $(params.targetBranch)
+        - name: CHANGE_NUMBER
+          value: $(params.changeNumber)
+        - name: REPO_FULL_NAME
+          value: $(params.gitfullrepositoryname)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+{{- end }}
 
 {{ include "gitlab-review-vote" . | nindent 2 }}
 

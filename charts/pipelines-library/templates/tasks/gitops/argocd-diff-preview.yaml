@@ -1,0 +1,263 @@
+{{ if and .Values.pipelines.deployableResources.tasks .Values.pipelines.argocdDiffPreview.enabled }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: argocd-diff-preview
+spec:
+  description: >-
+    Best-effort Argo CD manifest diff between the merge request revision and the
+    target branch of the GitOps repository, rendered by the standing
+    argocd-diff-preview vcluster (see the argocd-diff-preview cluster addon) and posted as an
+    MR comment. Every step continues on error: when the preview environment is
+    not installed or unhealthy, the task skips silently and the review pipeline
+    stays green.
+  params:
+    - name: GITOPS_URL
+      type: string
+      description: SSH clone URL of the GitOps repository
+    - name: TARGET_REVISION
+      type: string
+      description: MR head SHA, rendered as the target revision
+    - name: BASE_BRANCH
+      type: string
+      description: MR target branch, rendered as the base revision
+      default: main
+    - name: CHANGE_NUMBER
+      type: string
+      description: MR change number, used for the comment API
+    - name: REPO_FULL_NAME
+      type: string
+      description: Repository full name (also used to match repoURLs for revision redirect)
+    - name: GITLAB_TOKEN_SECRET_NAME
+      type: string
+      description: Name of the kubernetes secret holding the GitLab API token
+      default: ci-gitlab
+    - name: GITLAB_TOKEN_SECRET_KEY
+      type: string
+      description: Key within the secret holding the GitLab API token
+      default: token
+    - name: VCLUSTER_NAMESPACE
+      type: string
+      default: "{{ .Values.pipelines.argocdDiffPreview.namespace }}"
+    - name: VCLUSTER_KUBECONFIG_SECRET
+      type: string
+      default: "{{ .Values.pipelines.argocdDiffPreview.kubeconfigSecret }}"
+    - name: TOOL_IMAGE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/{{ .Values.pipelines.argocdDiffPreview.toolImage }}"
+    - name: UTIL_IMAGE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/{{ .Values.pipelines.argocdDiffPreview.utilImage }}"
+    - name: COMMENT_IMAGE
+      type: string
+      default: "{{ include "edp-tekton.registry" . }}/{{ .Values.pipelines.argocdDiffPreview.commentImage }}"
+    - name: RENDER_TIMEOUT
+      type: string
+      default: "{{ .Values.pipelines.argocdDiffPreview.renderTimeoutSeconds }}"
+    - name: INNER_ARGOCD_NAMESPACE
+      type: string
+      description: Namespace of the Argo CD instance inside the argocd-diff-preview vcluster (addon contract)
+      default: "{{ .Values.pipelines.argocdDiffPreview.innerArgocdNamespace }}"
+  results:
+    - name: previewStatus
+      description: "'available' when the diff preview environment was reached, otherwise 'skipped'"
+  workspaces:
+    - name: source
+      description: Shared workspace with the MR revision checked out under source/
+  volumes:
+    # Platform custom CA bundle (same secret kaniko/buildkit/git-clone trust), so
+    # the comment step can verify a self-signed/internal GitLab certificate. The
+    # secret is optional: on a cluster without a custom CA the mount is empty and
+    # the comment step falls back to the default system trust store.
+    - name: custom-ca
+      secret:
+        secretName: custom-ca-certificates
+        optional: true
+        items:
+          - key: ca.crt
+            path: ca.crt
+  steps:
+    - name: connect
+      image: $(params.UTIL_IMAGE)
+      workingDir: $(workspaces.source.path)
+      onError: continue
+      env:
+        - name: VC_NS
+          value: $(params.VCLUSTER_NAMESPACE)
+        - name: VC_SECRET
+          value: $(params.VCLUSTER_KUBECONFIG_SECRET)
+        - name: INNER_ARGOCD_NS
+          value: $(params.INNER_ARGOCD_NAMESPACE)
+      script: |
+        #!/bin/bash
+        set -eu
+        mkdir -p diff/output
+        printf 'skipped' > "$(results.previewStatus.path)"
+        # Write to a temp file first: a failed 'kubectl get' would otherwise
+        # leave an empty kubeconfig behind and downstream guards would pass.
+        kubectl -n "$VC_NS" get secret "$VC_SECRET" -o jsonpath='{.data.config}' | base64 -d > diff/kubeconfig.tmp
+        [ -s diff/kubeconfig.tmp ]
+        export KUBECONFIG=$PWD/diff/kubeconfig.tmp
+        kubectl get --raw /readyz --request-timeout=10s >/dev/null
+        kubectl -n "$INNER_ARGOCD_NS" wait deploy/argocd-repo-server --for=condition=Available --timeout=60s
+        mv diff/kubeconfig.tmp diff/kubeconfig
+        printf 'available' > "$(results.previewStatus.path)"
+        echo "argocd-diff-preview environment is available"
+    - name: prepare-and-export
+      image: $(params.UTIL_IMAGE)
+      workingDir: $(workspaces.source.path)
+      onError: continue
+      env:
+        - name: BASE_BRANCH
+          value: $(params.BASE_BRANCH)
+        - name: INNER_ARGOCD_NS
+          value: $(params.INNER_ARGOCD_NAMESPACE)
+      script: |
+        #!/bin/bash
+        set -eu
+        [ -s diff/kubeconfig ] || { echo "argocd-diff-preview environment unavailable - skipping"; exit 0; }
+        # fetch-repository already cloned the full repository into source/, so
+        # both trees are reconstructed locally - no network access needed.
+        mkdir -p diff/base-branch
+        git -C source archive "origin/${BASE_BRANCH}" | tar -x -C diff/base-branch
+        # HEAD is the checked-out MR revision; archive tracked files only, so no
+        # .git object store is copied (and later discarded) into the diff tree.
+        mkdir -p diff/target-branch
+        git -C source archive HEAD | tar -x -C diff/target-branch
+        cd diff
+        mkdir -p base-branch/apps target-branch/apps
+        # Changed file paths (modified, added and removed) between the two
+        # trees; the tree-name prefix is stripped from either side.
+        git diff --no-index --no-renames --name-status base-branch target-branch \
+          | cut -f2- | cut -d/ -f2- | sort -u > changed-files.txt || true
+        echo "changed files:"; cat changed-files.txt
+        # Argo CD Applications for KRCI deployments exist only in-cluster
+        # (generated by cd-pipeline-operator). The GitOps repository layout is
+        # a platform contract: the operator's ApplicationSet template reads
+        # $values/<pipeline>/<stage>/<codebase>-values.yaml for the Application
+        # named <pipeline>-<stage>-<codebase>. Changed file paths therefore map
+        # deterministically to the affected Applications, and only those are
+        # exported and rendered.
+        while IFS= read -r f; do
+          case "$f" in
+            */*/*-values.yaml) ;;
+            *) continue ;;
+          esac
+          p=${f%%/*}; rest=${f#*/}; s=${rest%%/*}; file=${rest#*/}
+          # exactly three path segments: <pipeline>/<stage>/<codebase>-values.yaml
+          [ "${file#*/}" = "$file" ] || continue
+          app="$p-$s-${file%-values.yaml}"
+          if ! kubectl get application "$app" -o json > "/tmp/$app.json" 2>/dev/null; then
+            echo "no live Application $app for $f - skipping"
+            continue
+          fi
+          jq --arg ns "$INNER_ARGOCD_NS" '
+            del(.status)
+            | .metadata |= (del(.managedFields,.ownerReferences,.uid,.resourceVersion,
+                                .creationTimestamp,.generation,.annotations,.finalizers)
+                            | .namespace = $ns)
+            | .spec.project = "default"
+            | .spec.destination = {server: "https://kubernetes.default.svc",
+                                   namespace: (.spec.destination.namespace // "default")}
+          ' "/tmp/$app.json" | yq -P > "base-branch/apps/$app.yaml"
+          cp "base-branch/apps/$app.yaml" "target-branch/apps/$app.yaml"
+        done < changed-files.txt
+        echo "exported applications:"; ls base-branch/apps
+    - name: diff
+      image: $(params.TOOL_IMAGE)
+      workingDir: $(workspaces.source.path)/diff
+      onError: continue
+      env:
+        - name: KUBECONFIG
+          value: $(workspaces.source.path)/diff/kubeconfig
+        - name: CREATE_CLUSTER
+          value: "false"
+        - name: ARGOCD_NAMESPACE
+          value: $(params.INNER_ARGOCD_NAMESPACE)
+        - name: BASE_BRANCH
+          value: $(params.BASE_BRANCH)
+        - name: TARGET_BRANCH
+          value: $(params.TARGET_REVISION)
+        - name: REPO_REGEX
+          value: $(params.REPO_FULL_NAME)
+      command: ["/argocd-diff-preview"]
+      args: ["--timeout", "$(params.RENDER_TIMEOUT)"]
+    - name: comment-mr
+      image: $(params.COMMENT_IMAGE)
+      workingDir: $(workspaces.source.path)/diff
+      onError: continue
+      env:
+        - name: GIT_SOURCE_URL
+          value: $(params.GITOPS_URL)
+        - name: REPO_FULL_NAME
+          value: $(params.REPO_FULL_NAME)
+        - name: CHANGE_NUMBER
+          value: $(params.CHANGE_NUMBER)
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.GITLAB_TOKEN_SECRET_NAME)
+              key: $(params.GITLAB_TOKEN_SECRET_KEY)
+      volumeMounts:
+        - name: custom-ca
+          mountPath: /etc/custom-certs
+          readOnly: true
+      script: |
+        #!/usr/bin/env python3
+        import json, os, ssl, sys, urllib.parse, urllib.request
+
+        if not os.path.exists("output/diff.md"):
+            print("no diff produced - skipping comment")
+            sys.exit(0)
+
+        marker = "<!-- argocd-diff-preview -->"
+        with open("output/diff.md") as f:
+            body = marker + "\n" + f.read()
+
+        # Derive the GitLab web host from the clone URL. GitLab emits either the
+        # scp-like form (git@host:group/project.git) or, for a non-standard SSH
+        # port, the scheme form (ssh://git@host:port/...); urlparse only resolves
+        # the host when a scheme is present, so add one for the scp-like form.
+        clone_url = os.environ["GIT_SOURCE_URL"]
+        if "://" not in clone_url:
+            clone_url = "ssh://" + clone_url
+        git_host = urllib.parse.urlparse(clone_url).hostname
+        project = urllib.parse.quote(os.environ["REPO_FULL_NAME"], safe="")
+        mr = os.environ["CHANGE_NUMBER"]
+        token = os.environ["GITLAB_TOKEN"]
+        base = f"https://{git_host}/api/v4/projects/{project}/merge_requests/{mr}/notes"
+        # Verify TLS against the default trust store plus, when mounted, the
+        # platform custom CA (adds internal/self-signed GitLab certs on top).
+        ctx = ssl.create_default_context()
+        ca_file = "/etc/custom-certs/ca.crt"
+        if os.path.exists(ca_file):
+            ctx.load_verify_locations(ca_file)
+
+        def req(url, method="GET", payload=None):
+            data = json.dumps(payload).encode() if payload is not None else None
+            r = urllib.request.Request(url, data=data, method=method, headers={
+                "PRIVATE-TOKEN": token, "Content-Type": "application/json"})
+            with urllib.request.urlopen(r, context=ctx) as resp:
+                return json.load(resp)
+
+        def find_existing():
+            # Page through the MR notes: an active MR can exceed a single page,
+            # and missing the marker note would post a duplicate every run.
+            page = 1
+            while True:
+                notes = req(f"{base}?per_page=100&page={page}")
+                if not notes:
+                    return None
+                for n in notes:
+                    if n.get("body", "").startswith(marker):
+                        return n
+                page += 1
+
+        existing = find_existing()
+        if existing:
+            req(f"{base}/{existing['id']}", "PUT", {"body": body})
+            print(f"updated note {existing['id']}")
+        else:
+            note = req(base, "POST", {"body": body})
+            print(f"created note {note['id']}")
+{{ end }}

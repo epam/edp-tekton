@@ -38,15 +38,25 @@ spec:
 
         VERSION=$(find ${DEPLOYABLE_MODULE} -name '*.csproj' | xargs awk  -F '[><]' '/<Version>/ {print $3}' | tr '[:upper:]' '[:lower:]')
 
+        # VERSION prefixes the NuGet PackageVersion and the image tag. Empty yields a
+        # leading-hyphen value, invalid for both.
+        if [ -z "${VERSION}" ]; then
+          echo "No <Version> found in the deployable module .csproj"
+          exit 1
+        fi
+
         BUILD_VERSION=$(cat $(results.TIMESTAMP.path))
         VCS_TAG="${VERSION}-${BUILD_VERSION}"
         IS_TAG="${VCS_TAG}"
 
-        echo "Application version - ${BUILD_VERSION}"
+        echo "Application version - ${VCS_TAG}"
         echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
 
-        printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
+        # VERSION is consumed as the NuGet PackageVersion. A bare YYYYMMDD-HHMMSS
+        # parses as an all-digit SemVer pre-release, which NuGet rejects for hours
+        # 00-09 (leading zero); keep it composed with the project version.
+        printf "%s" "${VCS_TAG}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
 

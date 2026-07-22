@@ -18,6 +18,7 @@ import (
 const (
 	pipelineTypeLabel = "app.edp.epam.com/pipelinetype"
 	changeNumberLabel = "app.edp.epam.com/git-change-number"
+	commitShaLabel    = "app.edp.epam.com/git-commit-sha"
 
 	pipelineTypeReview = "review"
 
@@ -36,6 +37,14 @@ const (
 	// (executeTimeOut) is shared with postQueuedCommitStatus, which runs after
 	// this call.
 	cancelInProgressTimeout = time.Second
+
+	// headAlreadyTriggeredTimeout bounds the List call in headAlreadyTriggered. Unlike
+	// cancelInProgressTimeout, a timeout here is NOT an acceptable outcome: headAlreadyTriggered
+	// is a correctness gate (a timeout fails open and recreates the retrigger loop this guard
+	// exists to prevent), not a best-effort cleanup, so it gets its own, more generous budget
+	// instead of silently sharing cancelInProgressTimeout's best-effort semantics. Still bounded
+	// well under executeTimeOut (3s) so a slow List cannot itself starve the request.
+	headAlreadyTriggeredTimeout = 2 * time.Second
 )
 
 // cancelInProgressEnabled checks if the cancelInProgress interceptor parameter is set to true.
@@ -103,4 +112,35 @@ func (i *EDPInterceptor) cancelInProgressPipelineRuns(
 	}
 
 	return nil
+}
+
+// headAlreadyTriggered reports whether a review PipelineRun already exists for the
+// same codebase, change number and head commit SHA. Bitbucket fires pullrequest:updated
+// for both code pushes and metadata-only edits with no distinguishing payload field,
+// so an existing run for the same head SHA means the update carries no new commits.
+func (i *EDPInterceptor) headAlreadyTriggered(
+	ctx context.Context,
+	ns string,
+	event *event_processor.EventInfo,
+) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, headAlreadyTriggeredTimeout)
+	defer cancel()
+
+	pipelineRuns := &tektonpipelineApi.PipelineRunList{}
+	if err := i.client.List(
+		ctx,
+		pipelineRuns,
+		ctrlClient.InNamespace(ns),
+		ctrlClient.MatchingLabels{
+			codebaseApi.CodebaseLabel: event.Codebase.Name,
+			pipelineTypeLabel:         pipelineTypeReview,
+			changeNumberLabel:         strconv.Itoa(event.PullRequest.ChangeNumber),
+			commitShaLabel:            event.PullRequest.HeadSha,
+		},
+	); err != nil {
+		return false, fmt.Errorf("failed to list PipelineRuns for codebase %s change %d head %s: %w",
+			event.Codebase.Name, event.PullRequest.ChangeNumber, event.PullRequest.HeadSha, err)
+	}
+
+	return len(pipelineRuns.Items) > 0, nil
 }

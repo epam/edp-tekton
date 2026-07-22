@@ -317,3 +317,273 @@ func TestEDPInterceptor_Process_CancelInProgress(t *testing.T) {
 		assert.True(t, resp.Continue)
 	})
 }
+
+func TestEDPInterceptor_HeadAlreadyTriggered(t *testing.T) {
+	t.Parallel()
+
+	newPipelineRun := func(name, codebase, changeNumber, headSha string) *tektonpipelineApi.PipelineRun {
+		return &tektonpipelineApi.PipelineRun{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      name,
+				Labels: map[string]string{
+					codebaseApi.CodebaseLabel: codebase,
+					pipelineTypeLabel:         pipelineTypeReview,
+					changeNumberLabel:         changeNumber,
+					commitShaLabel:            headSha,
+				},
+			},
+		}
+	}
+
+	event := &event_processor.EventInfo{
+		Codebase: &codebaseApi.Codebase{
+			ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "demo"},
+		},
+		PullRequest: &event_processor.PullRequest{ChangeNumber: 1, HeadSha: "sha-1"},
+	}
+
+	t.Run("matching run for the same head SHA is found", func(t *testing.T) {
+		t.Parallel()
+
+		scheme := runtime.NewScheme()
+		require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(newPipelineRun("matching", "demo", "1", "sha-1")).
+			Build()
+
+		i := &EDPInterceptor{client: fakeClient, logger: zap.NewNop().Sugar()}
+
+		got, err := i.headAlreadyTriggered(context.Background(), "default", event)
+		require.NoError(t, err)
+		assert.True(t, got)
+	})
+
+	t.Run("existing run has a different head SHA, i.e. a real new commit", func(t *testing.T) {
+		t.Parallel()
+
+		scheme := runtime.NewScheme()
+		require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithObjects(newPipelineRun("other-sha", "demo", "1", "sha-2")).
+			Build()
+
+		i := &EDPInterceptor{client: fakeClient, logger: zap.NewNop().Sugar()}
+
+		got, err := i.headAlreadyTriggered(context.Background(), "default", event)
+		require.NoError(t, err)
+		assert.False(t, got)
+	})
+
+	t.Run("no PipelineRuns at all, first review", func(t *testing.T) {
+		t.Parallel()
+
+		scheme := runtime.NewScheme()
+		require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
+
+		fakeClient := fake.NewClientBuilder().WithScheme(scheme).Build()
+
+		i := &EDPInterceptor{client: fakeClient, logger: zap.NewNop().Sugar()}
+
+		got, err := i.headAlreadyTriggered(context.Background(), "default", event)
+		require.NoError(t, err)
+		assert.False(t, got)
+	})
+
+	t.Run("list error propagates", func(t *testing.T) {
+		t.Parallel()
+
+		// The scheme misses the Tekton API, so listing PipelineRuns fails.
+		scheme := runtime.NewScheme()
+		require.NoError(t, codebaseApi.AddToScheme(scheme))
+
+		fakeClient := fake.NewClientBuilder().WithScheme(scheme).Build()
+
+		i := &EDPInterceptor{client: fakeClient, logger: zap.NewNop().Sugar()}
+
+		_, err := i.headAlreadyTriggered(context.Background(), "default", event)
+		require.Error(t, err)
+	})
+}
+
+// TestEDPInterceptor_Process_PullRequestUpdateGuard covers the EPMDEDP-17224 guard:
+// Bitbucket fires pullrequest:updated for both code pushes and metadata-only edits
+// with no distinguishing payload field, so the interceptor must skip an update whose
+// head SHA already triggered a review PipelineRun for the same codebase/change.
+func TestEDPInterceptor_Process_PullRequestUpdateGuard(t *testing.T) {
+	t.Parallel()
+
+	newBitbucketProcessor := func(eventType, headSha string) event_processor.Processor {
+		m := &mocks.Processor{}
+		m.On("Process", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&event_processor.EventInfo{
+			GitProvider:  event_processor.GitProviderBitbucket,
+			RepoPath:     "/o/r",
+			TargetBranch: "master",
+			Type:         eventType,
+			Codebase: &codebaseApi.Codebase{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "demo"},
+			},
+			PullRequest: &event_processor.PullRequest{ChangeNumber: 1, HeadSha: headSha},
+		}, nil)
+
+		return m
+	}
+
+	codebaseBranch := &codebaseApi.CodebaseBranch{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "demo-master",
+			Labels: map[string]string{
+				codebaseApi.CodebaseLabel: "demo",
+			},
+		},
+		Spec: codebaseApi.CodebaseBranchSpec{BranchName: "master"},
+	}
+
+	matchingRun := &tektonpipelineApi.PipelineRun{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "prior-review-run",
+			Labels: map[string]string{
+				codebaseApi.CodebaseLabel: "demo",
+				pipelineTypeLabel:         pipelineTypeReview,
+				changeNumberLabel:         "1",
+				commitShaLabel:            "sha-1",
+			},
+		},
+	}
+
+	newScheme := func(t *testing.T) *runtime.Scheme {
+		t.Helper()
+
+		scheme := runtime.NewScheme()
+		require.NoError(t, codebaseApi.AddToScheme(scheme))
+		require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
+
+		return scheme
+	}
+
+	newRequest := func(params map[string]any) *triggersv1.InterceptorRequest {
+		return &triggersv1.InterceptorRequest{
+			Header: map[string][]string{
+				"X-Event-Key": {event_processor.BitbucketEventTypePullRequestUpdated},
+			},
+			Context: &triggersv1.TriggerContext{
+				TriggerID: "namespace/default/triggers/name",
+			},
+			InterceptorParams: params,
+		}
+	}
+
+	t.Run("same head SHA already triggered a review, update is skipped", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy(), matchingRun.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypePullRequestUpdate, "sha-1"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(nil))
+		assert.False(t, resp.Continue)
+	})
+
+	t.Run("different head SHA means a real new commit, triggers normally", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy(), matchingRun.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypePullRequestUpdate, "sha-2"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(nil))
+		assert.True(t, resp.Continue)
+	})
+
+	t.Run("no prior PipelineRuns, first review, triggers", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypePullRequestUpdate, "sha-1"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(nil))
+		assert.True(t, resp.Continue)
+	})
+
+	t.Run("pullrequest:created bypasses the guard regardless of a coincidental label match", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy(), matchingRun.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypeMerge, "sha-1"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(nil))
+		assert.True(t, resp.Continue)
+	})
+
+	t.Run("guard is independent of the cancelInProgress param: absent", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy(), matchingRun.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypePullRequestUpdate, "sha-1"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(nil))
+		assert.False(t, resp.Continue)
+	})
+
+	t.Run("guard is independent of the cancelInProgress param: explicit false", func(t *testing.T) {
+		t.Parallel()
+
+		fakeClient := fake.NewClientBuilder().
+			WithScheme(newScheme(t)).
+			WithObjects(codebaseBranch.DeepCopy(), matchingRun.DeepCopy()).
+			Build()
+
+		i := NewEDPInterceptor(
+			fakeClient, &mocks.Processor{}, &mocks.Processor{}, &mocks.Processor{},
+			newBitbucketProcessor(event_processor.EventTypePullRequestUpdate, "sha-1"),
+			zap.NewNop().Sugar(),
+		)
+
+		resp := i.Process(context.Background(), newRequest(map[string]any{cancelInProgressParam: false}))
+		assert.False(t, resp.Continue)
+	})
+}

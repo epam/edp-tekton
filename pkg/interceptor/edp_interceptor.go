@@ -133,6 +133,8 @@ func (i *EDPInterceptor) Process(
 	log.Infof("Processing webhook event: repo %s, target branch %s, type %s",
 		event.RepoPath, event.TargetBranch, event.Type)
 
+	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
+
 	if event.IsReviewCommentEvent() {
 		if !event.HasPipelineRecheck {
 			log.Infof("Pipeline recheck comment is not found, skipping pipeline triggering")
@@ -145,10 +147,23 @@ func (i *EDPInterceptor) Process(
 		log.Infof("Found comment for recheck, triggering pipeline")
 	}
 
+	if event.IsPullRequestUpdateEvent() &&
+		event.PullRequest != nil && event.PullRequest.HeadSha != "" && event.PullRequest.ChangeNumber > 0 {
+		alreadyReviewed, err := i.headAlreadyTriggered(ctx, ns, event)
+		if err != nil {
+			// Fail open: a guard failure must not block a legitimate code push.
+			log.Errorf("Failed to check previously triggered head SHA: %s", err)
+		} else if alreadyReviewed {
+			log.Infof("Bitbucket update carries no new commits (head %s already triggered a review), skipping",
+				event.PullRequest.HeadSha)
+
+			return &triggersv1.InterceptorResponse{Continue: false}
+		}
+	}
+
 	prepareCodebase(event.Codebase)
 
 	trigger := true
-	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
 	codebaseBranch, err := i.getCodebaseBranch(ctx, event.Codebase.Name, event.TargetBranch, ns)
 	if err != nil {

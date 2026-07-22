@@ -635,3 +635,82 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 		})
 	}
 }
+
+// TestEventProcessor_processPullRequestUpdatedEvent asserts that a Bitbucket
+// pullrequest:updated webhook is tagged with EventTypePullRequestUpdate, distinct
+// from EventTypeMerge used for pullrequest:created - the edp interceptor guard
+// (EPMDEDP-17224) relies on this to skip metadata-only updates that carry no new commit.
+func TestEventProcessor_processPullRequestUpdatedEvent(t *testing.T) {
+	t.Parallel()
+
+	scheme := runtime.NewScheme()
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
+	require.NoError(t, corev1.AddToScheme(scheme))
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "pullrequests/1") {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"values": [{"message": "commit message"}]}`))
+
+			return
+		}
+	}))
+
+	t.Cleanup(server.Close)
+
+	body, err := json.Marshal(event_processor.BitbucketEvent{
+		Repository: event_processor.BitbucketRepository{
+			FullName: "o/r",
+		},
+		PullRequest: event_processor.BitbucketPullRequest{
+			ID:    1,
+			Title: "fix",
+			Source: event_processor.BitbucketPullRequestSrc{
+				Branch: event_processor.BitbucketBranch{Name: "feature1"},
+				Commit: event_processor.BitbucketCommit{Hash: "123"},
+			},
+			Destination: event_processor.BitbucketPullRequestDest{
+				Branch: event_processor.BitbucketBranch{Name: "master"},
+				Commit: event_processor.BitbucketCommit{Hash: "456"},
+			},
+			LastCommit: event_processor.BitbucketCommit{Hash: "123"},
+		},
+	})
+	require.NoError(t, err)
+
+	p := NewEventProcessor(
+		fake.NewClientBuilder().WithScheme(scheme).WithObjects(createTestKubeObjects()...).Build(),
+		&EventProcessorOptions{
+			Logger:      zap.NewNop().Sugar(),
+			RestyClient: resty.New().SetBaseURL(server.URL),
+		},
+	)
+
+	tests := []struct {
+		name      string
+		eventType string
+		wantType  string
+	}{
+		{
+			name:      "pullrequest:updated is tagged as a pull request update",
+			eventType: event_processor.BitbucketEventTypePullRequestUpdated,
+			wantType:  event_processor.EventTypePullRequestUpdate,
+		},
+		{
+			name:      "pullrequest:created keeps the default merge type",
+			eventType: "pullrequest:created",
+			wantType:  event_processor.EventTypeMerge,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := p.Process(context.Background(), body, "default", tt.eventType)
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantType, got.Type)
+		})
+	}
+}

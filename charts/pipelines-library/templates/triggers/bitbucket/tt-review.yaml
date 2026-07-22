@@ -44,6 +44,10 @@ spec:
           app.edp.epam.com/pipelinetype: review
           # used by the krci interceptor to find superseded review PipelineRuns for the same change
           app.edp.epam.com/git-change-number: "$(tt.params.changeNumber)"
+          # used by the krci interceptor to detect a pullrequest:updated webhook
+          # that carries no new commit (Bitbucket fires the same event for
+          # metadata-only edits and code pushes)
+          app.edp.epam.com/git-commit-sha: "$(tt.params.gitrevision)"
         annotations:
           argocd.argoproj.io/compare-options: IgnoreExtraneous
           results.tekton.dev/resultAnnotations: |-

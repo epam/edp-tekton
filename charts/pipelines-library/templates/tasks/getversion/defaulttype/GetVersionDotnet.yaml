@@ -5,7 +5,7 @@ metadata:
   name: get-version-dotnet-default
 spec:
   description: >-
-    This task retrieves the version information for a .NET project, generates a build version and VCS tag based on the current timestamp.
+    This task retrieves the version information for a .NET project, generates a build version and VCS tag based on the current Unix epoch timestamp.
   workspaces:
     - name: source
       description: The workspace consisting of dotnet project.
@@ -24,7 +24,7 @@ spec:
     - name: get-timestamp
       image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
       script: |
-        ts=$(date "+%Y%m%d-%H%M%S")
+        ts=$(date "+%s")
         echo "Current Timestamp: ${ts}"
         printf "%s" "${ts}" > "$(results.TIMESTAMP.path)"
 
@@ -42,11 +42,11 @@ spec:
         VCS_TAG="${VERSION}-${BUILD_VERSION}"
         IS_TAG="${VCS_TAG}"
 
-        echo "Application version - ${BUILD_VERSION}"
+        echo "Application version - ${VCS_TAG}"
         echo "VCS tag - ${VCS_TAG}"
         echo "IS tag - ${IS_TAG}"
 
-        printf "%s" "${BUILD_VERSION}" > "$(results.VERSION.path)"
+        printf "%s" "${VCS_TAG}" > "$(results.VERSION.path)"
         printf "%s" "${VCS_TAG}" > "$(results.VCS_TAG.path)"
         printf "%s" "${IS_TAG}" > "$(results.IS_TAG.path)"
 

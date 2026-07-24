@@ -216,3 +216,24 @@ func TestGerritChangeNumber_UnmarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestEventInfo_IsPullRequestUpdateEvent(t *testing.T) {
+	tests := []struct {
+		name     string
+		typ      string
+		expected bool
+	}{
+		{name: "update event", typ: EventTypePullRequestUpdate, expected: true},
+		{name: "merge event", typ: EventTypeMerge, expected: false},
+		{name: "comment event", typ: EventTypeReviewComment, expected: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &EventInfo{Type: tt.typ}
+			if got := e.IsPullRequestUpdateEvent(); got != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}

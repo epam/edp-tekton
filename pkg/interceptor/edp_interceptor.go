@@ -44,6 +44,7 @@ type EDPInterceptor struct {
 	logger              *zap.SugaredLogger
 	statusSetterFactory commitStatusSetterFactory
 	portalBaseURL       string
+	deduper             *reviewDeduper
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
@@ -64,6 +65,7 @@ func NewEDPInterceptor(
 		logger:              l,
 		statusSetterFactory: provider.NewCommitStatusSetter,
 		portalBaseURL:       os.Getenv(portalBaseURLEnv),
+		deduper:             newReviewDeduper(),
 	}
 }
 
@@ -145,10 +147,18 @@ func (i *EDPInterceptor) Process(
 		log.Infof("Found comment for recheck, triggering pipeline")
 	}
 
+	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
+
+	if i.deduper.alreadyReviewed(ns, event) {
+		log.Infof("Bitbucket update carries no new commits (head %s already triggered a review), skipping",
+			event.PullRequest.HeadSha)
+
+		return &triggersv1.InterceptorResponse{Continue: false}
+	}
+
 	prepareCodebase(event.Codebase)
 
 	trigger := true
-	ns, _ := triggersv1.ParseTriggerID(r.Context.TriggerID)
 
 	codebaseBranch, err := i.getCodebaseBranch(ctx, event.Codebase.Name, event.TargetBranch, ns)
 	if err != nil {
@@ -164,6 +174,10 @@ func (i *EDPInterceptor) Process(
 			event.TargetBranch,
 			event.Codebase.Name,
 		)
+	}
+
+	if trigger {
+		i.deduper.record(ns, event)
 	}
 
 	if trigger && cancelInProgressEnabled(r.InterceptorParams) &&

@@ -344,6 +344,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 
 	tests := []struct {
 		name        string
+		eventType   string
 		args        args
 		kubeObjects []client.Object
 		wantErr     require.ErrorAssertionFunc
@@ -433,6 +434,41 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					Author:            "bbmergeuser",
 					AuthorAvatarUrl:   "https://bitbucket.org/avatar/bbmergeuser",
 					Url:               "https://bitbucket.org/o/r/pull-requests/1",
+				},
+			},
+		},
+		{
+			name:      "pullrequest:updated maps to pull request update type",
+			eventType: event_processor.BitbucketEventTypePullRequestUpdated,
+			args: args{
+				body: event_processor.BitbucketEvent{
+					Repository: event_processor.BitbucketRepository{FullName: "o/r"},
+					PullRequest: event_processor.BitbucketPullRequest{
+						ID: 1,
+						Source: event_processor.BitbucketPullRequestSrc{
+							Branch: event_processor.BitbucketBranch{Name: "feature1"},
+							Commit: event_processor.BitbucketCommit{Hash: "123"},
+						},
+						Destination: event_processor.BitbucketPullRequestDest{Branch: event_processor.BitbucketBranch{Name: "master"}},
+					},
+				},
+			},
+			kubeObjects: createTestKubeObjects(),
+			wantErr:     require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider:  event_processor.GitProviderBitbucket,
+				RepoPath:     "/o/r",
+				TargetBranch: "master",
+				Type:         event_processor.EventTypePullRequestUpdate,
+				Codebase: &codebaseApi.Codebase{
+					ObjectMeta: metav1.ObjectMeta{Name: "test-codebase", Namespace: "default", ResourceVersion: "999"},
+					Spec:       codebaseApi.CodebaseSpec{GitUrlPath: "/o/r", GitServer: "test-git-server"},
+				},
+				PullRequest: &event_processor.PullRequest{
+					HeadRef:           "feature1",
+					HeadSha:           "123",
+					ChangeNumber:      1,
+					LastCommitMessage: "commit message",
 				},
 			},
 		},
@@ -628,7 +664,7 @@ func TestEventProcessor_processMergeEvent(t *testing.T) {
 					RestyClient: resty.New().SetBaseURL(server.URL),
 				},
 			)
-			got, err := p.Process(context.Background(), body, "default", "")
+			got, err := p.Process(context.Background(), body, "default", tt.eventType)
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)

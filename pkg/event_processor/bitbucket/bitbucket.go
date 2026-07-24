@@ -103,6 +103,8 @@ func (p *EventProcessor) Process(
 	case event_processor.BitbucketEventTypeCommentAdded:
 		eventInfo.Type = event_processor.EventTypeReviewComment
 		eventInfo.HasPipelineRecheck = event_processor.ContainsPipelineRecheckPrefix(bitbucketEvent.Comment.Content.Raw)
+	case event_processor.BitbucketEventTypePullRequestUpdated:
+		eventInfo.Type = event_processor.EventTypePullRequestUpdate
 	}
 
 	return eventInfo, nil

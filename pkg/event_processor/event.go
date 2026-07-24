@@ -155,13 +155,15 @@ const (
 	GitProviderGerrit    = "gerrit"
 	GitProviderBitbucket = "bitbucket"
 
-	GerritEventTypeCommentAdded    = "comment-added"
-	GitHubEventTypeCommentAdded    = "issue_comment"
-	GitLabEventTypeCommentAdded    = "Note Hook"
-	BitbucketEventTypeCommentAdded = "pullrequest:comment_created"
+	GerritEventTypeCommentAdded          = "comment-added"
+	GitHubEventTypeCommentAdded          = "issue_comment"
+	GitLabEventTypeCommentAdded          = "Note Hook"
+	BitbucketEventTypeCommentAdded       = "pullrequest:comment_created"
+	BitbucketEventTypePullRequestUpdated = "pullrequest:updated"
 
-	EventTypeReviewComment = "comment"
-	EventTypeMerge         = "merge"
+	EventTypeReviewComment     = "comment"
+	EventTypeMerge             = "merge"
+	EventTypePullRequestUpdate = "pull_request_update"
 
 	RecheckComment  = "/recheck"
 	OkToTestComment = "/ok-to-test"
@@ -192,6 +194,12 @@ type PullRequest struct {
 // IsReviewCommentEvent returns true if the event is a review comment event.
 func (e *EventInfo) IsReviewCommentEvent() bool {
 	return e.Type == EventTypeReviewComment
+}
+
+// IsPullRequestUpdateEvent returns true for a Bitbucket pullrequest:updated event,
+// fired identically for code pushes and metadata-only edits (title, description, reviewers).
+func (e *EventInfo) IsPullRequestUpdateEvent() bool {
+	return e.Type == EventTypePullRequestUpdate
 }
 
 // ContainsPipelineRecheckPrefix checks if the comment starts with the pipeline recheck or ok to test comment.

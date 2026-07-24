@@ -8,6 +8,7 @@ require (
 	github.com/go-logr/logr v1.4.3
 	github.com/go-resty/resty/v2 v2.17.1
 	github.com/google/go-github/v81 v81.0.0
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.11.1
 	github.com/tektoncd/pipeline v1.6.2
 	github.com/tektoncd/triggers v0.34.0

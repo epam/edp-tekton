@@ -31,15 +31,6 @@ rules:
       - patch
       - list
 
-  # we need to create jira issues
-  - apiGroups:
-      - 'v2.edp.epam.com'
-    resources:
-      - jiraissuemetadatas
-    verbs:
-      - create
-      - get
-
   # we need to get information about the taskRun running in ns containers
   - verbs:
       - get

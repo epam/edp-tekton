@@ -29,7 +29,7 @@ func bitbucketEventInfo(eventType, headSha, targetBranch string) *event_processo
 		Type:         event_processor.EventTypeMerge,
 		Codebase: &codebaseApi.Codebase{
 			ObjectMeta: metav1.ObjectMeta{Namespace: "default", Name: "demo"},
-			Spec:       codebaseApi.CodebaseSpec{GitUrlPath: "/o/r", CommitMessagePattern: ptr.To(""), JiraServer: ptr.To("")},
+			Spec:       codebaseApi.CodebaseSpec{GitUrlPath: "/o/r", CommitMessagePattern: ptr.To("")},
 		},
 		PullRequest: &event_processor.PullRequest{HeadSha: headSha, ChangeNumber: 5},
 	}

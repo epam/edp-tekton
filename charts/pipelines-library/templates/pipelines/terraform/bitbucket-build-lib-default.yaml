@@ -37,20 +37,8 @@ spec:
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string
-    - name: TICKET_NAME_PATTERN
-      description: "Ticket name pattern"
-      default: ""
-    - name: COMMIT_MESSAGE_PATTERN
-      description: "Pattern to validate a commit message"
-      default: ""
     - name: COMMIT_MESSAGE
       description: "Commit message"
-      default: ""
-    - name: JIRA_ISSUE_METADATA_PAYLOAD
-      description: "Jira Payload"
-      default: ""
-    - name: JIRA_SERVER
-      description: "Jira server name"
       default: ""
     - name: terraform_default_version
       type: string
@@ -75,7 +63,7 @@ spec:
 
 {{- include "terraform-check-build-common" . | nindent 4 }}
 
-{{ include "finally-block-default" . | nindent 2 }}
+  finally:
 
 {{ include "bitbucket-build-vote" $ | nindent 4 }}
 

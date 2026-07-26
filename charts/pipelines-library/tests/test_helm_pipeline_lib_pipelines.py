@@ -36,7 +36,6 @@ global:
     assert "helm-lint" in bdef[4]["name"]
     assert "helm-template" in bdef[5]["name"]
     assert "git-tag" in bdef[6]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
 
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
     assert "fetch-repository" in bedp[0]["name"]
@@ -48,7 +47,6 @@ global:
     assert "helm-template" in bedp[6]["name"]
     assert "git-tag" in bedp[7]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 def test_helm_pipelines_gitlab():
     config = """
@@ -85,9 +83,7 @@ global:
     assert "helm-lint" in bdef[4]["name"]
     assert "helm-template" in bdef[5]["name"]
     assert "git-tag" in bdef[6]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
-    assert "gitlab-set-success-status" in ht["pipeline"][build_def]["spec"]["finally"][1]["name"]
-    assert "gitlab-set-failure-status" in ht["pipeline"][build_def]["spec"]["finally"][2]["name"]
+    assert "gitlab-report-pipeline-status" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
 
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
     assert "report-pipeline-start-to-gitlab" in bedp[0]["name"]
@@ -99,9 +95,7 @@ global:
     assert "helm-template" in bedp[6]["name"]
     assert "git-tag" in bedp[7]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "gitlab-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "gitlab-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "gitlab-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 def test_helm_pipelines_github():
     config = """
@@ -138,9 +132,7 @@ global:
     assert "helm-lint" in bdef[4]["name"]
     assert "helm-template" in bdef[5]["name"]
     assert "git-tag" in bdef[6]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
-    assert "github-set-success-status" in ht["pipeline"][build_def]["spec"]["finally"][1]["name"]
-    assert "github-set-failure-status" in ht["pipeline"][build_def]["spec"]["finally"][2]["name"]
+    assert "github-report-pipeline-status" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
 
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
     assert "github-set-pending-status" in bedp[0]["name"]
@@ -152,9 +144,7 @@ global:
     assert "helm-template" in bedp[6]["name"]
     assert "git-tag" in bedp[7]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "github-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "github-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "github-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 def test_helm_pipelines_bitbucket():
     config = """
@@ -191,9 +181,7 @@ global:
     assert "helm-lint" in bdef[4]["name"]
     assert "helm-template" in bdef[5]["name"]
     assert "git-tag" in bdef[6]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
-    assert "bitbucket-set-success-status" in ht["pipeline"][build_def]["spec"]["finally"][1]["name"]
-    assert "bitbucket-set-failure-status" in ht["pipeline"][build_def]["spec"]["finally"][2]["name"]
+    assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_def]["spec"]["finally"][0]["name"]
 
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
     assert "bitbucket-set-pending-status" in bedp[0]["name"]
@@ -205,6 +193,4 @@ global:
     assert "helm-template" in bedp[6]["name"]
     assert "git-tag" in bedp[7]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "bitbucket-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "bitbucket-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]

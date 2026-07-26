@@ -22,18 +22,12 @@ spec:
       description: Codebase name used in pipeline
     - name: codebasebranch
       description: Codebasebranch name used in pipeline
-    - name: ticketNamePattern
-      description: Ticket name pattern
     - name: commitMessagePattern
       description: Commit message pattern to run commit-validate task
     - name: commitMessage
       description: Commit message
     - name: changeNumber
       description: Change number from Merge Request
-    - name: jiraIssueMetadataPayload
-      description: Jira issue payload
-    - name: jiraServer
-      description: Jira server name
     - name: pipelineName
       description: Pipeline to trigger. Populated by krci interceptor from codebasebranch spec
   resourcetemplates:
@@ -80,16 +74,10 @@ spec:
             value: $(tt.params.changeNumber)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
-          - name: TICKET_NAME_PATTERN
-            value: $(tt.params.ticketNamePattern)
           - name: COMMIT_MESSAGE_PATTERN
             value: $(tt.params.commitMessagePattern)
           - name: COMMIT_MESSAGE
             value: $(tt.params.commitMessage)
-          - name: JIRA_ISSUE_METADATA_PAYLOAD
-            value: $(tt.params.jiraIssueMetadataPayload)
-          - name: JIRA_SERVER
-            value: $(tt.params.jiraServer)
         workspaces:
           - name: shared-workspace
             volumeClaimTemplate:

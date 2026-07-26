@@ -198,40 +198,6 @@ finally:
       value: $(tasks.get-version.results.BUILD_ID)
 {{- end -}}
 
-{{- define "push-to-jira" -}}
-- name: push-to-jira
-  taskRef:
-    kind: Task
-    name: push-to-jira
-  when:
-    - input: "$(tasks.status)"
-      operator: in
-      values: ["Succeeded"]
-    - input: "$(params.JIRA_SERVER)"
-      operator: notin
-      values: [""]
-    - input: "$(params.COMMIT_MESSAGE)"
-      operator: notin
-      values: [""]
-  params:
-    - name: TICKET_NAME_PATTERN
-      value: "$(params.TICKET_NAME_PATTERN)"
-    - name: COMMIT_MESSAGE
-      value: "$(params.COMMIT_MESSAGE)"
-    - name: COMMIT_ID
-      value: "$(tasks.fetch-repository.results.commit)"
-    - name: JIRA_ISSUE_METADATA_PAYLOAD
-      value: "$(params.JIRA_ISSUE_METADATA_PAYLOAD)"
-    - name: CODEBASE_NAME
-      value: "$(params.CODEBASE_NAME)"
-    - name: VCS_TAG
-      value: "$(tasks.get-version.results.VCS_TAG)"
-    - name: VERSION
-      value: "$(tasks.get-version.results.VERSION)"
-    - name: GIT_URL
-      value: $(params.git-source-url)
-{{- end -}}
-
 {{- define "send-to-microsoft-teams-build" -}}
 - name: send-to-microsoft-teams-failed
   when:
@@ -250,19 +216,10 @@ finally:
       Build Failed project: $(params.CODEBASE_NAME)<br> branch: $(params.git-source-revision)<br> pipeline: <a href=$(params.pipelineUrl)>$(context.pipelineRun.name)</a><br> commit message: $(params.COMMIT_MESSAGE)
 {{- end -}}
 
-# final section for all build pipelines that use default versioning
-{{- define "finally-block-default" -}}
-finally:
-{{ include "push-to-jira" . | nindent 2 }}
-
-{{- end -}}
-
 # final section for all build pipelines that use semver versioning
 {{- define "finally-block-semver" -}}
 finally:
 {{ include "update-codebasebranch" . | nindent 2 }}
-
-{{ include "push-to-jira" . | nindent 2 }}
 
 {{- end -}}
 

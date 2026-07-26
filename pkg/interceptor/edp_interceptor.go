@@ -299,12 +299,9 @@ func prepareCodebase(codebase *codebaseApi.Codebase) {
 	codebase.Spec.Framework = strings.ToLower(codebase.Spec.Framework)
 	codebase.Spec.BuildTool = strings.ToLower(codebase.Spec.BuildTool)
 
+	// TriggerBindings read $(extensions.spec.commitMessagePattern); normalize nil so the JSONPath resolves.
 	if codebase.Spec.CommitMessagePattern == nil {
 		codebase.Spec.CommitMessagePattern = ptr.To("")
-	}
-
-	if codebase.Spec.JiraServer == nil {
-		codebase.Spec.JiraServer = ptr.To("")
 	}
 }
 

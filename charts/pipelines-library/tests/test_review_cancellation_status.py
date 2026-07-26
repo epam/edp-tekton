@@ -67,7 +67,7 @@ def test_set_status_tasks_derive_state_from_aggregate():
         assert SUPERSEDED_DESCRIPTION in step["script"], task_name
 
 
-def test_review_pipelines_use_single_status_reporter():
+def test_pipelines_use_single_status_reporter():
     r = helm_template(ALL_PROVIDERS)
 
     checked = 0
@@ -77,21 +77,16 @@ def test_review_pipelines_use_single_status_reporter():
             if not name.startswith(f"{provider}-"):
                 assert reporter is None, name
                 continue
-            if "-review" not in name:
-                # Cancellation reporting is a review-pipeline concern; build
-                # pipelines keep their guarded success/failure vote tasks.
-                assert reporter is None, name
-                success = get_finally_task(pipeline, f"{provider}-set-success-status")
-                failure = get_finally_task(pipeline, f"{provider}-set-failure-status")
-                assert bool(success) == bool(failure), name
-                continue
-            assert reporter is not None, name
-            assert "when" not in reporter, name
-            assert get_param(reporter, "PIPELINE_STATUS") == "$(tasks.status)", name
-            # The reporter must be the only status finally task; the guarded pair
-            # it replaces must be gone.
+            # Review and build pipelines report through one aggregate-driven
+            # task; the guarded success/failure pair must not exist anywhere.
             assert get_finally_task(pipeline, f"{provider}-set-success-status") is None, name
             assert get_finally_task(pipeline, f"{provider}-set-failure-status") is None, name
+            if "-review" in name:
+                assert reporter is not None, name
+            if reporter is None:
+                continue
+            assert "when" not in reporter, name
+            assert get_param(reporter, "PIPELINE_STATUS") == "$(tasks.status)", name
             checked += 1
 
-    assert checked > 0, "no review pipelines with a status reporter rendered"
+    assert checked > 0, "no pipelines with a status reporter rendered"

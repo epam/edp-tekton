@@ -33,20 +33,8 @@ spec:
     - name: CODEBASEBRANCH_NAME
       description: "Codebasebranch name"
       type: string
-    - name: TICKET_NAME_PATTERN
-      description: "Ticket name pattern"
-      default: ""
-    - name: COMMIT_MESSAGE_PATTERN
-      description: "Pattern to validate a commit message"
-      default: ""
     - name: COMMIT_MESSAGE
       description: "Commit message"
-      default: ""
-    - name: JIRA_ISSUE_METADATA_PAYLOAD
-      description: "Jira Payload"
-      default: ""
-    - name: JIRA_SERVER
-      description: "Jira server name"
       default: ""
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
@@ -188,7 +176,6 @@ spec:
         - name: IMAGE_TAG
           value: $(tasks.get-version.results.VCS_TAG)
 
-{{ include "finally-block-default" . | nindent 2 }}
 
 {{ end }}
 {{ end }}

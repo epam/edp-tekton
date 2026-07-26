@@ -45,20 +45,8 @@ spec:
       default: '{{ include "edp-tekton.registry" . }}/epamedp/tekton-python-make:0.1.7'
       description: "go image version"
       type: string
-    - name: TICKET_NAME_PATTERN
-      description: "Ticket name pattern"
-      default: ""
-    - name: COMMIT_MESSAGE_PATTERN
-      description: "Pattern to validate a commit message"
-      default: ""
     - name: COMMIT_MESSAGE
       description: "Commit message"
-      default: ""
-    - name: JIRA_ISSUE_METADATA_PAYLOAD
-      description: "Jira Payload"
-      default: ""
-    - name: JIRA_SERVER
-      description: "Jira server name"
       default: ""
 
 {{- include "build-result" $ | nindent 2 }}
@@ -84,7 +72,7 @@ spec:
 
 {{ include "build-pipeline-end" . | nindent 4 }}
 
-{{ include "finally-block-default" . | nindent 2 }}
+  finally:
 
 {{ include "gitlab-build-vote" . | nindent 4 }}
 

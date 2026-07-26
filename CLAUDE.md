@@ -159,7 +159,7 @@ Build Pipelines:
     → [Language Tasks: compile/test/sonar/build] → push-artifact
     → container-build (kaniko) → save-cache
     → git-tag → update-codebasebranch
-    → finally: report-status (JIRA, VCS)
+    → finally: update-codebasebranch, report-status (VCS)
 
 Review Pipelines:
   Init (fetch PR) → get-cache
@@ -177,7 +177,7 @@ Review Pipelines:
 | Artifact Push | Pushes to registry (Maven, npm, PyPI) | No push (validation only) |
 | Container Build | Builds and pushes container image | Skipped |
 | Git Operations | Creates VCS tag, updates CodebaseBranch | No git modifications |
-| Status Reporting | JIRA ticket update | VCS status update (GitHub status, GitLab MR comment) |
+| Status Reporting | VCS commit status update | VCS status update (GitHub status, GitLab MR comment) |
 
 #### Pipeline Structure
 
@@ -202,8 +202,8 @@ spec:
         - name: GOALS
           value: [compile, test, package]
   finally:                     # Runs regardless of task success/failure
-    - name: report
-      taskRef: push-to-jira
+    - name: update-cbb
+      taskRef: update-cbb
 ```
 
 **Reusable Components:**
@@ -212,7 +212,7 @@ spec:
   - `github-build-start`, `gitlab-review-start` - VCS-specific initialization
   - `get-cache`, `save-cache` - Artifact caching
   - `build-pipeline-end` - Git tagging and CodebaseBranch updates
-  - `finally-block-default`, `finally-block-semver` - Status reporting
+  - `finally-block-semver` - CodebaseBranch build-counter update for semver pipelines
 - **Language-Specific Includes** (from `charts/pipelines-library/templates/pipelines/`):
   - `_common_java.yaml` - Maven/Gradle task sequences
   - `_common_javascript.yaml` - npm/pnpm task sequences

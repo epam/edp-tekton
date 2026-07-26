@@ -21,21 +21,12 @@ spec:
       value: "$(extensions.codebase)"
     - name: codebasebranch
       value: "$(extensions.codebasebranch)"
-    # commitMessage is used for 'push-to-jira' Task
+    # commitMessage is used for the 'commit-validate' Task
     - name: commitMessage
       value: "$(body.change.commitMessage)"
     # commitMessagePattern is used for 'commit-validate' Tasks
     - name: commitMessagePattern
       value: "$(extensions.spec.commitMessagePattern)"
-    # jiraIssueMetadataPayload is used for 'push-to-jira' Task
-    - name: jiraIssueMetadataPayload
-      value: "$(extensions.spec.jiraIssueMetadataPayload)"
-    # ticketNamePattern is used for 'push-to-jira' Task
-    - name: ticketNamePattern
-      value: "$(extensions.spec.ticketNamePattern)"
-    # jiraServer is used for 'push-to-jira' Task
-    - name: jiraServer
-      value: "$(extensions.spec.jiraServer)"
     # get the pipeline name from the codebasebranch spec
     - name: pipelineName
       value: $(extensions.pipelines.build)

@@ -50,7 +50,7 @@ global:
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "finally" not in r["pipeline"][gerrit_build_pipeline_def]["spec"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -72,7 +72,6 @@ global:
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_javascript_antora_pipelines_harbor_github():
     config = """
@@ -127,9 +126,7 @@ global:
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
                 assert "github-set-pending-status" in btedp[0]["name"]
@@ -150,9 +147,7 @@ global:
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_javascript_antora_pipelines_harbor_gitlab():
     config = """
@@ -208,9 +203,7 @@ global:
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -232,9 +225,7 @@ global:
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_javascript_antora_pipelines_harbor_bitbucket():
     config = """
@@ -290,9 +281,7 @@ global:
                 assert "save-cache" in btd[8]["name"]
                 assert "git-tag" in btd[9]["name"]
                 assert "update-cbis" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
@@ -314,6 +303,4 @@ global:
                 assert "git-tag" in btedp[9]["name"]
                 assert "update-cbis" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]

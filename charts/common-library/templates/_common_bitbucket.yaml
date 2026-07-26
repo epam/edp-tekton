@@ -61,28 +61,19 @@
 
 # final section for bitbucket build pipelines
 {{- define "bitbucket-build-vote" -}}
-- name: bitbucket-set-success-status
-  when:
-    - input: "$(tasks.status)"
-      operator: in
-      values: ["Succeeded"]
-    - input: $(params.COMMIT_MESSAGE)
-      operator: notin
-      values: [""]
+- name: bitbucket-report-pipeline-status
   taskRef:
     kind: Task
     name: bitbucket-set-status
   params:
+    - name: PIPELINE_STATUS
+      value: "$(tasks.status)"
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)
     - name: SHA
       value: "$(params.gitsha)"
     - name: TARGET_URL
       value: $(params.pipelineUrl)
-    - name: DESCRIPTION
-      value: "Build Pipeline"
-    - name: STATE
-      value: "SUCCESSFUL"
     - name: BITBUCKET_TOKEN_SECRET_NAME
       value: ci-bitbucket
     - name: BITBUCKET_TOKEN_SECRET_KEY
@@ -90,38 +81,7 @@
     - name: KEY
       value: "build"
     - name: NAME
-      value: "Pipeline (PASSED)"
-
-- name: bitbucket-set-failure-status
-  when:
-    - input: "$(tasks.status)"
-      operator: in
-      values: ["Failed"]
-    - input: $(params.COMMIT_MESSAGE)
-      operator: notin
-      values: [""]
-  taskRef:
-    kind: Task
-    name: bitbucket-set-status
-  params:
-  - name: REPO_FULL_NAME
-    value: $(params.gitfullrepositoryname)
-  - name: SHA
-    value: "$(params.gitsha)"
-  - name: TARGET_URL
-    value: $(params.pipelineUrl)
-  - name: DESCRIPTION
-    value: "Build Pipeline"
-  - name: STATE
-    value: "FAILED"
-  - name: BITBUCKET_TOKEN_SECRET_NAME
-    value: ci-bitbucket
-  - name: BITBUCKET_TOKEN_SECRET_KEY
-    value: token
-  - name: KEY
-    value: "build"
-  - name: NAME
-    value: "Pipeline (FAILED)"
+      value: "Build Pipeline"
 {{- end -}}
 
 
@@ -157,7 +117,7 @@ finally:
 {{- define "bitbucket-build-start" -}}
 - name: bitbucket-set-pending-status
   when:
-    - input: $(params.COMMIT_MESSAGE)
+    - input: $(params.gitsha)
       operator: notin
       values: [""]
   taskRef:

@@ -36,20 +36,8 @@ spec:
       description: Change number from Merge Request
       default: ""
       type: string
-    - name: TICKET_NAME_PATTERN
-      description: "Ticket name pattern"
-      default: ""
-    - name: COMMIT_MESSAGE_PATTERN
-      description: "Pattern to validate a commit message"
-      default: ""
     - name: COMMIT_MESSAGE
       description: "Commit message"
-      default: ""
-    - name: JIRA_ISSUE_METADATA_PAYLOAD
-      description: "Jira Payload"
-      default: ""
-    - name: JIRA_SERVER
-      description: "Jira server name"
       default: ""
     - name: CHART_DIR
       description: "The directory in source that contains the helm chart"
@@ -66,10 +54,6 @@ spec:
       taskRef:
         kind: Task
         name: gitlab-set-status
-      when:
-        - input: $(params.COMMIT_MESSAGE)
-          operator: notin
-          values: [""]
       params:
         - name: "STATE"
           value: "pending"

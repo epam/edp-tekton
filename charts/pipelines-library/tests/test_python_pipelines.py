@@ -77,7 +77,7 @@ pipelines:
                 if cbtype == "lib":
                     assert "save-cache" in btd[9]["name"]
                     assert "git-tag" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "finally" not in r["pipeline"][gerrit_build_pipeline_def]["spec"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -104,7 +104,6 @@ pipelines:
                     assert "save-cache" in btedp[9]["name"]
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 
 def test_python_common_pipelines_harbor_github():
@@ -181,9 +180,7 @@ pipelines:
                 if cbtype == "lib":
                     assert "save-cache" in btd[9]["name"]
                     assert "git-tag" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -210,9 +207,7 @@ pipelines:
                     assert "save-cache" in btedp[9]["name"]
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 
 def test_python_common_pipelines_harbor_gitlab():
@@ -289,9 +284,7 @@ pipelines:
                 if cbtype == "lib":
                     assert "save-cache" in btd[9]["name"]
                     assert "git-tag" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -318,9 +311,7 @@ pipelines:
                     assert "save-cache" in btedp[9]["name"]
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_python_common_pipelines_harbor_bitbucket():
     config = """
@@ -396,9 +387,7 @@ pipelines:
                 if cbtype == "lib":
                     assert "save-cache" in btd[9]["name"]
                     assert "git-tag" in btd[10]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
@@ -425,9 +414,7 @@ pipelines:
                     assert "save-cache" in btedp[9]["name"]
                     assert "git-tag" in btedp[10]["name"]
                 assert "update-cbb" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 
 @pytest.mark.parametrize("framework", ["fastapi", "flask"])
@@ -488,7 +475,6 @@ pipelines:
     assert "save-cache" in bd[10]["name"]
     assert "git-tag" in bd[11]["name"]
     assert "update-cbis" in bd[12]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
     # build with semver versioning
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -511,7 +497,6 @@ pipelines:
     assert "git-tag" in bedp[11]["name"]
     assert "update-cbis" in bedp[12]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 
 @pytest.mark.parametrize("framework", ["fastapi", "flask"])
@@ -571,9 +556,7 @@ pipelines:
     assert "save-cache" in bd[10]["name"]
     assert "git-tag" in bd[11]["name"]
     assert "update-cbis" in bd[12]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-    assert "gitlab-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-    assert "gitlab-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+    assert "gitlab-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
     # build with semver versioning
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -596,9 +579,7 @@ pipelines:
     assert "git-tag" in bedp[11]["name"]
     assert "update-cbis" in bedp[12]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "gitlab-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "gitlab-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "gitlab-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 @pytest.mark.parametrize("framework", ["fastapi", "flask"])
 def test_python_pipelines_harbor_bitbucket(framework):
@@ -657,9 +638,7 @@ pipelines:
     assert "save-cache" in bd[10]["name"]
     assert "git-tag" in bd[11]["name"]
     assert "update-cbis" in bd[12]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-    assert "bitbucket-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-    assert "bitbucket-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+    assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
     # build with semver versioning
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -682,9 +661,7 @@ pipelines:
     assert "git-tag" in bedp[11]["name"]
     assert "update-cbis" in bedp[12]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "bitbucket-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "bitbucket-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 
 @pytest.mark.parametrize("framework", ["fastapi", "flask"])
@@ -744,9 +721,7 @@ pipelines:
     assert "save-cache" in bd[10]["name"]
     assert "git-tag" in bd[11]["name"]
     assert "update-cbis" in bd[12]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-    assert "github-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-    assert "github-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+    assert "github-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
     # build with semver versioning
     bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -769,9 +744,7 @@ pipelines:
     assert "git-tag" in bedp[11]["name"]
     assert "update-cbis" in bedp[12]["name"]
     assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-    assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-    assert "github-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-    assert "github-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+    assert "github-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 from .helpers import helm_template
 
@@ -823,7 +796,7 @@ pipelines:
                 assert "ansible-lint" in btd[4]["name"]
                 assert "ansible-tests" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_def]["spec"]["finally"][0]["name"]
+                assert "finally" not in r["pipeline"][gerrit_build_pipeline_def]["spec"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gerrit_build_pipeline_edp]["spec"]["tasks"]
@@ -836,7 +809,6 @@ pipelines:
                 assert "ansible-tests" in btedp[5]["name"]
                 assert "git-tag" in btedp[6]["name"]
                 assert "update-cbb" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gerrit_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_ansible_pipelines_github():
     config = """
@@ -885,9 +857,7 @@ pipelines:
                 assert "ansible-lint" in btd[4]["name"]
                 assert "ansible-tests" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
@@ -900,9 +870,7 @@ pipelines:
                 assert "ansible-tests" in btedp[5]["name"]
                 assert "git-tag" in btedp[6]["name"]
                 assert "update-cbb" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "github-set-success-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "github-set-failure-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "github-report-pipeline-status" in r["pipeline"][github_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_ansible_pipelines_gitlab():
     config = """
@@ -951,9 +919,7 @@ pipelines:
                 assert "ansible-lint" in btd[4]["name"]
                 assert "ansible-tests" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
@@ -966,9 +932,7 @@ pipelines:
                 assert "ansible-tests" in btedp[5]["name"]
                 assert "git-tag" in btedp[6]["name"]
                 assert "update-cbb" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "gitlab-set-success-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "gitlab-set-failure-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "gitlab-report-pipeline-status" in r["pipeline"][gitlab_build_pipeline_edp]["spec"]["finally"][1]["name"]
 
 def test_ansible_pipelines_bitbucket():
     config = """
@@ -1017,9 +981,7 @@ pipelines:
                 assert "ansible-lint" in btd[4]["name"]
                 assert "ansible-tests" in btd[5]["name"]
                 assert "git-tag" in btd[6]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][2]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_def]["spec"]["finally"][0]["name"]
 
                 # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
@@ -1032,6 +994,4 @@ pipelines:
                 assert "ansible-tests" in btedp[5]["name"]
                 assert "git-tag" in btedp[6]["name"]
                 assert "update-cbb" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][0]["name"]
-                assert "push-to-jira" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]
-                assert "bitbucket-set-success-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][2]["name"]
-                assert "bitbucket-set-failure-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][3]["name"]
+                assert "bitbucket-report-pipeline-status" in r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["finally"][1]["name"]

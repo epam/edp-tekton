@@ -75,7 +75,6 @@ pipelines:
             if cbtype == "lib":
                 assert "save-cache" in bd[8]["name"]
                 assert "git-tag" in bd[9]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
             # build with semver versioning
             bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -101,7 +100,6 @@ pipelines:
                 assert "save-cache" in bedp[9]["name"]
                 assert "git-tag" in bedp[10]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 
 def test_dotnet_pipelines_harbor_gitlab():
@@ -177,9 +175,7 @@ pipelines:
             if cbtype == "lib":
                 assert "save-cache" in bd[8]["name"]
                 assert "git-tag" in bd[9]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-            assert "gitlab-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-            assert "gitlab-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+            assert "gitlab-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
             # build with semver versioning
             bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -205,9 +201,7 @@ pipelines:
                 assert "save-cache" in bedp[9]["name"]
                 assert "git-tag" in bedp[10]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-            assert "gitlab-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-            assert "gitlab-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+            assert "gitlab-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 
 def test_dotnet_pipelines_harbor_github():
@@ -283,9 +277,7 @@ pipelines:
             if cbtype == "lib":
                 assert "save-cache" in bd[8]["name"]
                 assert "git-tag" in bd[9]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-            assert "github-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-            assert "github-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+            assert "github-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
             # build with semver versioning
             bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -311,9 +303,7 @@ pipelines:
                 assert "save-cache" in bedp[9]["name"]
                 assert "git-tag" in bedp[10]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-            assert "github-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-            assert "github-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+            assert "github-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
 
 def test_dotnet_pipelines_harbor_bitbucket():
     config = """
@@ -388,9 +378,7 @@ pipelines:
             if cbtype == "lib":
                 assert "save-cache" in bd[8]["name"]
                 assert "git-tag" in bd[9]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
-            assert "bitbucket-set-success-status" in ht["pipeline"][build_default]["spec"]["finally"][1]["name"]
-            assert "bitbucket-set-failure-status" in ht["pipeline"][build_default]["spec"]["finally"][2]["name"]
+            assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_default]["spec"]["finally"][0]["name"]
 
             # build with semver versioning
             bedp = ht["pipeline"][build_edp]["spec"]["tasks"]
@@ -416,6 +404,4 @@ pipelines:
                 assert "save-cache" in bedp[9]["name"]
                 assert "git-tag" in bedp[10]["name"]
             assert "update-cbb" in ht["pipeline"][build_edp]["spec"]["finally"][0]["name"]
-            assert "push-to-jira" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]
-            assert "bitbucket-set-success-status" in ht["pipeline"][build_edp]["spec"]["finally"][2]["name"]
-            assert "bitbucket-set-failure-status" in ht["pipeline"][build_edp]["spec"]["finally"][3]["name"]
+            assert "bitbucket-report-pipeline-status" in ht["pipeline"][build_edp]["spec"]["finally"][1]["name"]

@@ -12,10 +12,6 @@
   taskRef:
     kind: Task
     name: gitlab-set-status
-  when:
-    - input: $(params.COMMIT_MESSAGE)
-      operator: notin
-      values: [""]
   params:
     - name: "STATE"
       value: "pending"
@@ -159,20 +155,13 @@ finally:
 
 
 {{- define "gitlab-build-vote" -}}
-- name: gitlab-set-success-status
-  when:
-    - input: "$(tasks.status)"
-      operator: in
-      values: ["Succeeded"]
-    - input: $(params.COMMIT_MESSAGE)
-      operator: notin
-      values: [""]
+- name: gitlab-report-pipeline-status
   taskRef:
     kind: Task
     name: gitlab-set-status
   params:
-    - name: "STATE"
-      value: "success"
+    - name: "PIPELINE_STATUS"
+      value: "$(tasks.status)"
     - name: "GITLAB_HOST_URL"
       value: "$(params.git-source-url)"
     - name: "REPO_FULL_NAME"
@@ -187,37 +176,4 @@ finally:
       value: $(params.pipelineUrl)
     - name: "CONTEXT"
       value: "Build Pipeline"
-    - name: "DESCRIPTION"
-      value: "PASSED"
-
-- name: gitlab-set-failure-status
-  when:
-    - input: "$(tasks.status)"
-      operator: in
-      values: ["Failed"]
-    - input: $(params.COMMIT_MESSAGE)
-      operator: notin
-      values: [""]
-  taskRef:
-    kind: Task
-    name: gitlab-set-status
-  params:
-    - name: "STATE"
-      value: "failed"
-    - name: "GITLAB_HOST_URL"
-      value: "$(params.git-source-url)"
-    - name: "REPO_FULL_NAME"
-      value: "$(params.gitfullrepositoryname)"
-    - name: "GITLAB_TOKEN_SECRET_NAME"
-      value: ci-gitlab
-    - name: "GITLAB_TOKEN_SECRET_KEY"
-      value: token
-    - name: "SHA"
-      value: "$(params.git-source-revision)"
-    - name: "TARGET_URL"
-      value: $(params.pipelineUrl)
-    - name: "CONTEXT"
-      value: "Build Pipeline"
-    - name: "DESCRIPTION"
-      value: "FAILED"
 {{- end -}}

@@ -99,46 +99,92 @@ spec:
       script: |
         set -e
 
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # --- SonarCloud path ---
+          # SonarCloud root URL returns HTTP 307 (redirect to login page).
+          # /api/system/status always returns 200 with JSON when the service is reachable.
+          SONAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SONAR_HOST_URL}/api/system/status") || SONAR_STATUS="503"
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo "SonarCloud is not available (HTTP ${SONAR_STATUS}). Please check the URL and token."
+            exit 1
+          fi
+          echo "SonarCloud mode: project auto-creation skipped. The project must exist in SonarCloud UI."
         else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+          # --- SonarQube (self-hosted) path — unchanged ---
+          SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
+            exit 1
+          fi
+
+          # Check if project exists
+          SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
+
+          # Check token is valid
+          if [[ -z "$SONAR_RESPONSE" ]]; then
+            echo "Token isn't valid or not defined"
+            exit 1
+          fi
+
+          # Create project if it doesn't exist or skip if it does
+          if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
+            default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+            echo "Create project ${SONAR_PROJECT_KEY}"
+            curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
           else
-            echo "Unknown Response format"
+            if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
+              echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+            else
+              echo "Unknown Response format"
+            fi
           fi
         fi
+    - name: prepare-sonar-override
+      image: $(params.step_prepare_project_image)
+      workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
+      env:
+        - name: SONAR_HOST_URL
+          valueFrom:
+            secretKeyRef:
+              name: $(params.ci-sonarqube)
+              key: url
+      script: |
+        #!/bin/bash
+        set -e
+
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # SonarQube only: projectKey comes from pipeline param via EXTRA_COMMANDS.
+          # For SonarCloud, the key follows the "<org-key>_<codebase-name>" pattern
+          # that the pipeline param (plain codebase name) does not match.
+          # We read the correct key from pom.xml and append it at the end of the
+          # mvn command so it overrides the pipeline param value (last -D wins in JVM).
+          SONAR_KEY=$(grep -o '<sonar\.projectKey>[^<]*</sonar\.projectKey>' pom.xml \
+            | sed 's|<[^>]*>||g' | tr -d '[:space:]')
+          if [[ -z "$SONAR_KEY" ]]; then
+            echo "ERROR: sonar.projectKey not found in pom.xml <properties>."
+            echo "For SonarCloud, add <sonar.projectKey><org-key>_<codebase-name></sonar.projectKey>."
+            exit 1
+          fi
+          echo "SonarCloud mode: will override projectKey with '${SONAR_KEY}' from pom.xml."
+          echo "-Dsonar.projectKey=${SONAR_KEY}" > $(workspaces.source.path)/.sonar-key-override
+        else
+          echo "" > $(workspaces.source.path)/.sonar-key-override
+        fi
+
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)
       volumeMounts:
         - name: settings-maven
           mountPath: /var/configmap
       workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
-      command: ["/usr/bin/mvn"]
+      command: ["/bin/sh", "-c"]
       args:
-        - -s
-        - /var/configmap/settings.xml
-        - "$(params.EXTRA_COMMANDS)"
+        - |
+          SONAR_KEY_OVERRIDE=$(cat $(workspaces.source.path)/.sonar-key-override 2>/dev/null)
+          /usr/bin/mvn -s /var/configmap/settings.xml "$@" ${SONAR_KEY_OVERRIDE}
+        - "--"
+        - $(params.EXTRA_COMMANDS[*])
       env:
         - name: HOME
           value: $(workspaces.source.path)

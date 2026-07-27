@@ -94,33 +94,45 @@ spec:
       script: |
         set -e
 
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # --- SonarCloud path ---
+          # SonarCloud root URL returns HTTP 307 (redirect to login page).
+          # /api/system/status always returns 200 with JSON when the service is reachable.
+          SONAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SONAR_HOST_URL}/api/system/status") || SONAR_STATUS="503"
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo "SonarCloud is not available (HTTP ${SONAR_STATUS}). Please check the URL and token."
+            exit 1
+          fi
+          echo "SonarCloud mode: project auto-creation skipped. The project must exist in SonarCloud UI."
         else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+          # --- SonarQube (self-hosted) path — unchanged ---
+          SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
+            exit 1
+          fi
+
+          # Check if project exists
+          SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
+
+          # Check token is valid
+          if [[ -z "$SONAR_RESPONSE" ]]; then
+            echo "Token isn't valid or not defined"
+            exit 1
+          fi
+
+          # Create project if it doesn't exist or skip if it does
+          if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
+            default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+            echo "Create project ${SONAR_PROJECT_KEY}"
+            curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
           else
-            echo "Unknown Response format"
+            if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
+              echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+            else
+              echo "Unknown Response format"
+            fi
           fi
         fi
     - name: gradle-tasks
@@ -138,11 +150,51 @@ spec:
         #!/bin/bash
         set -e
 
+        SONAR_ARGS="-Dsonar.host.url=${SONAR_HOST_URL}"
+        SONAR_INIT=""
+
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # SonarCloud: EXTRA_COMMANDS passes the codebase name as projectKey
+          # (plain name, no org prefix). We read the correct values from
+          # sonar-project.properties and write a Gradle init script that calls
+          # System.setProperty — init scripts run before tasks and override -D args.
+          SONAR_KEY=`grep 'sonar\.projectKey=' sonar-project.properties 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]'`
+          SONAR_ORG=`grep 'sonar\.organization=' sonar-project.properties 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]'`
+          if [[ -z "$SONAR_KEY" ]] || [[ -z "$SONAR_ORG" ]]; then
+            echo "ERROR: sonar.projectKey and sonar.organization must be set in sonar-project.properties."
+            echo "Add to the repository root:"
+            echo "  sonar.projectKey=<org-key>_<codebase-name>"
+            echo "  sonar.organization=<org-key>"
+            exit 1
+          fi
+          echo "SonarCloud mode: using projectKey='${SONAR_KEY}', organization='${SONAR_ORG}' from sonar-project.properties."
+          echo "System.setProperty('sonar.projectKey', '${SONAR_KEY}')" > /tmp/sonar-init.gradle
+          echo "System.setProperty('sonar.organization', '${SONAR_ORG}')" >> /tmp/sonar-init.gradle
+          SONAR_INIT="-I /tmp/sonar-init.gradle"
+        else
+          # SonarQube only: override projectKey from pipeline param.
+          SONAR_ARGS="${SONAR_ARGS} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.projectName=${SONAR_PROJECT_NAME}"
+        fi
+
+        if [[ -n "${SONAR_QUALITYGATE_WAIT}" ]]; then
+          SONAR_ARGS="${SONAR_ARGS} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT}"
+        fi
+
+        if [[ -n "${BRANCH}" ]]; then
+          SONAR_ARGS="${SONAR_ARGS} -Dsonar.branch.name=${BRANCH}"
+        fi
+
+        if [[ -n "${KEY_ID}" ]]; then
+          SONAR_ARGS="${SONAR_ARGS} -Dsonar.pullrequest.key=${KEY_ID} -Dsonar.pullrequest.branch=${SOURCE_BRANCH} -Dsonar.pullrequest.base=${TARGET_BRANCH}"
+        fi
+
         gradle \
           -I \
           /var/configmap/init.gradle \
+          ${SONAR_INIT} \
           -PnexusLogin=${CI_USERNAME} \
           -PnexusPassword=${CI_PASSWORD} \
+          ${SONAR_ARGS} \
           $(params.EXTRA_COMMANDS)
       env:
         - name: XDG_CONFIG_HOME
@@ -161,6 +213,20 @@ spec:
             secretKeyRef:
               name: $(params.ci-sonarqube)
               key: url
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
+        - name: SONAR_PROJECT_NAME
+          value: "$(params.SONAR_PROJECT_NAME)"
+        - name: SONAR_QUALITYGATE_WAIT
+          value: "$(params.SONAR_QUALITYGATE_WAIT)"
+        - name: BRANCH
+          value: "$(params.branch)"
+        - name: TARGET_BRANCH
+          value: "$(params.target-branch)"
+        - name: SOURCE_BRANCH
+          value: "$(params.source-branch)"
+        - name: KEY_ID
+          value: "$(params.key-id)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

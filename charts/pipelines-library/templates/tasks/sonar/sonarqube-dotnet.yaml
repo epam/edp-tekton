@@ -19,6 +19,11 @@ spec:
 
     Task will run sonar-scanner for scanning after preparing the sonar-project.properties file.
 
+    Supports both self-hosted SonarQube and SonarCloud. The target is detected
+    automatically from the URL stored in the CI secret: if it contains
+    "sonarcloud.io" the task uses the SonarCloud path (no project auto-creation);
+    otherwise the standard SonarQube path is used (project auto-creation enabled).
+
   workspaces:
     - name: source
   params:
@@ -86,33 +91,45 @@ spec:
       script: |
         set -e
 
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # --- SonarCloud path ---
+          # SonarCloud root URL returns HTTP 307 (redirect to login page).
+          # /api/system/status always returns 200 with JSON when the service is reachable.
+          SONAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SONAR_HOST_URL}/api/system/status") || SONAR_STATUS="503"
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo "SonarCloud is not available (HTTP ${SONAR_STATUS}). Please check the URL and token."
+            exit 1
+          fi
+          echo "SonarCloud mode: project auto-creation skipped. The project must exist in SonarCloud UI."
         else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+          # --- SonarQube (self-hosted) path — unchanged ---
+          SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
+            exit 1
+          fi
+
+          # Check if project exists
+          SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
+
+          # Check token is valid
+          if [[ -z "$SONAR_RESPONSE" ]]; then
+            echo "Token isn't valid or not defined"
+            exit 1
+          fi
+
+          # Create project if it doesn't exist or skip if it does
+          if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
+            default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+            echo "Create project ${SONAR_PROJECT_KEY}"
+            curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
           else
-            echo "Unknown Response format"
+            if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
+              echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+            else
+              echo "Unknown Response format"
+            fi
           fi
         fi
     - name: sonar-scanner
@@ -148,6 +165,40 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
+
+        case "$SONAR_HOST_URL" in
+          *sonarcloud.io*)
+            # SonarCloud requires /o:<organization> in 'dotnet sonarscanner begin'.
+            # Pipeline params only provide the codebase name (no org prefix), so we read
+            # sonar.projectKey and sonar.organization from sonar-project.properties.
+            SONAR_KEY=$(grep 'sonar\.projectKey=' sonarcloud.properties 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]')
+            SONAR_ORG=$(grep 'sonar\.organization=' sonarcloud.properties 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]')
+            if [ -z "$SONAR_KEY" ] || [ -z "$SONAR_ORG" ]; then
+              echo "ERROR: sonar.projectKey and sonar.organization must be set in sonarcloud.properties."
+              echo "For SonarCloud, add:"
+              echo "  sonar.projectKey=<org-key>_<codebase-name>"
+              echo "  sonar.organization=<org-key>"
+              exit 1
+            fi
+            echo "SonarCloud mode: projectKey='${SONAR_KEY}', organization='${SONAR_ORG}'"
+            SONAR_PROJECT_KEY="$SONAR_KEY"
+            # Wrap the real dotnet binary to inject /o:<org> into 'dotnet sonarscanner begin'
+            # so that EXTRA_COMMANDS needs no modification.
+            REAL_DOTNET=$(which dotnet)
+            cat > /tmp/dotnet << WRAPPER
+        #!/bin/sh
+        if [ "\$1" = "sonarscanner" ] && [ "\$2" = "begin" ]; then
+          shift 2
+          exec $REAL_DOTNET sonarscanner begin /o:$SONAR_ORG "\$@"
+        else
+          exec $REAL_DOTNET "\$@"
+        fi
+        WRAPPER
+            chmod +x /tmp/dotnet
+            export PATH="/tmp:$PATH"
+            ;;
+        esac
+
         $(params.EXTRA_COMMANDS)
 {{- include "resources" . | nindent 6 }}
 {{ end }}

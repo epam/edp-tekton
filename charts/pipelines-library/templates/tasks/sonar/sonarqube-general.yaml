@@ -19,14 +19,26 @@ spec:
 
     Task will run sonar-scanner for scanning after preparing the sonar-project.properties file.
 
+    Supports both self-hosted SonarQube and SonarCloud. The target is detected
+    automatically from the URL stored in the CI secret: if it contains
+    "sonarcloud.io" the task uses the SonarCloud path (no project auto-creation,
+    sonar.projectKey and sonar.organization preserved from sonar-project.properties);
+    otherwise the standard SonarQube path is used (project auto-creation enabled,
+    sonar.projectKey and sonar.projectName set from pipeline params).
+
   workspaces:
     - name: source
   params:
     - name: SONAR_PROJECT_KEY
-      description: Project's unique key
+      description: >-
+        Project's unique key. Used for self-hosted SonarQube only.
+        Ignored when the CI secret URL contains "sonarcloud.io" — in that case
+        sonar.projectKey is read from sonar-project.properties as-is.
       default: ""
     - name: SONAR_PROJECT_NAME
-      description: Project's unique name
+      description: >-
+        Project's unique name. Used for self-hosted SonarQube only.
+        Ignored when the CI secret URL contains "sonarcloud.io".
       default: ""
     - name: SONAR_QUALITYGATE_WAIT
       description: Forces the analysis step to poll the SonarQube instance and wait for the Quality Gate status.
@@ -76,35 +88,48 @@ spec:
       script: |
         set -e
 
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+        if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+          # --- SonarCloud path ---
+          # SonarCloud root URL returns HTTP 307 (redirect to login page).
+          # /api/system/status always returns 200 with JSON when the service is reachable.
+          SONAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SONAR_HOST_URL}/api/system/status") || SONAR_STATUS="503"
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo "SonarCloud is not available (HTTP ${SONAR_STATUS}). Please check the URL and token."
+            exit 1
+          fi
+          echo "SonarCloud mode: project auto-creation skipped. The project must exist in SonarCloud UI."
         else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+          # --- SonarQube (self-hosted) path — unchanged ---
+          SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+
+          if [[ "$SONAR_STATUS" != "200" ]]; then
+            echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
+            exit 1
+          fi
+
+          # Check if project exists
+          SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
+
+          # Check token is valid
+          if [[ -z "$SONAR_RESPONSE" ]]; then
+            echo "Token isn't valid or not defined"
+            exit 1
+          fi
+
+          # Create project if it doesn't exist or skip if it does
+          if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
+            default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+            echo "Create project ${SONAR_PROJECT_KEY}"
+            curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
           else
-            echo "Unknown Response format"
+            if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
+              echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+            else
+              echo "Unknown Response format"
+            fi
           fi
         fi
+
     - image: registry.access.redhat.com/ubi8/ubi-minimal:8.8
       name: prepare-sonar-project-properties
       computeResources: {}
@@ -151,12 +176,20 @@ spec:
           if [[ -n "${SONAR_HOST_URL}" ]]; then
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.host.url ${SONAR_HOST_URL}
           fi
-          if [[ -n "${SONAR_PROJECT_KEY}" ]]; then
-            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectKey ${SONAR_PROJECT_KEY}
+
+          if [[ "$SONAR_HOST_URL" != *"sonarcloud.io"* ]]; then
+            # SonarQube only: override projectKey and projectName from pipeline params.
+            # For SonarCloud these values are intentionally left as-is from the file,
+            # because the key follows the "<org-key>_<codebase-name>" pattern that
+            # the pipeline param (plain codebase name) does not match.
+            if [[ -n "${SONAR_PROJECT_KEY}" ]]; then
+              replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectKey ${SONAR_PROJECT_KEY}
+            fi
+            if [[ -n "${SONAR_PROJECT_NAME}" ]]; then
+              replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectName ${SONAR_PROJECT_NAME}
+            fi
           fi
-          if [[ -n "${SONAR_PROJECT_NAME}" ]]; then
-            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectName ${SONAR_PROJECT_NAME}
-          fi
+
           if [[ -n "${SONAR_QUALITYGATE_WAIT}" ]]; then
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.qualitygate.wait ${SONAR_QUALITYGATE_WAIT}
           fi
@@ -176,6 +209,12 @@ spec:
           echo "sonar.working.directory=/tmp/.scannerwork" >> $(workspaces.source.path)/sonar-project.properties
 
         else
+          if [[ "$SONAR_HOST_URL" == *"sonarcloud.io"* ]]; then
+            echo "ERROR: sonar-project.properties not found in the repository root."
+            echo "For SonarCloud, add it with sonar.projectKey (e.g. <org-key>_<codebase-name>) and sonar.organization."
+            exit 1
+          fi
+
           touch sonar-project.properties
           test -z "${SONAR_HOST_URL}" || echo "sonar.host.url=${SONAR_HOST_URL}" >> sonar-project.properties
           test -z "${SONAR_PROJECT_KEY}" || echo "sonar.projectKey=${SONAR_PROJECT_KEY}" >> sonar-project.properties

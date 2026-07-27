@@ -42,7 +42,7 @@ spec:
       default: ""
       type: string
     - name: image
-      default: '{{ $registry }}/golang:1.24-bookworm'
+      default: '{{ $registry }}/golang:1.25-trixie'
       description: "go image version"
       type: string
     - name: COMMIT_MESSAGE

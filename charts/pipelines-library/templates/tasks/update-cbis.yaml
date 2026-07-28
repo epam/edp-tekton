@@ -20,7 +20,7 @@ spec:
     - name: BASE_IMAGE
       description: The base image for the task.
       type: string
-      default: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.1
+      default: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.2
   steps:
     - name: update-cbis
       image: $(params.BASE_IMAGE)

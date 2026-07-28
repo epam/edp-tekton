@@ -51,7 +51,7 @@ spec:
       default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
     - name: BASE_IMAGE_KUBECTL
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.1"
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.2"
     - name: BASE_IMAGE
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"

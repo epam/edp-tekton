@@ -167,21 +167,24 @@ spec:
         cancel_reason = os.getenv("QUEUE_CANCEL_REASON", "")
 
         if pipeline_status:
-            # Single-reporter mode: derive the state from the aggregate, so every
-            # terminal shape is covered and no when-guard gap can leave the commit
-            # status unreported. The commit status API has no canceled state, so
-            # cancellations are reported as `error` + description.
+            # Single-reporter mode: derive the state from the aggregate. The commit
+            # status API has no canceled state, so cancellations are reported as
+            # `error` + description.
             if pipeline_status == "Succeeded":
                 state, description = "success", "Pipeline (PASSED)"
-            elif pipeline_status == "Failed" and not cancel_reason:
-                state, description = "failure", "Pipeline (FAILED)"
-            elif pipeline_status in ("Failed", "Completed"):
-                # Failed with a stamped cancel reason: the cancellation caught a task
-                # mid-flight. Completed: the cancellation landed between tasks (review
-                # pipelines have no when-skipped regular tasks, so Completed can only
-                # mean cancellation; manual cancels carry no annotation and land here).
+            elif cancel_reason:
+                # The queue stamped a cancel reason: Failed means the cancellation
+                # caught a task mid-flight, Completed means it landed between tasks.
                 state = "error"
                 description = "SUPERSEDED BY NEWER COMMIT" if cancel_reason == "superseded" else "CANCELED"
+            elif pipeline_status == "Failed":
+                state, description = "failure", "Pipeline (FAILED)"
+            elif pipeline_status == "Completed":
+                # Tasks were skipped by when-guards but none failed - a legitimate
+                # success shape for build pipelines. Manual cancels that land between
+                # tasks carry no annotation and are reported as success; accepted
+                # trade-off, see the clone-result-voting design doc.
+                state, description = "success", "Pipeline (PASSED)"
             else:
                 # None: no aggregate available; not expected in a finally task.
                 state, description = "failure", "Pipeline (UNKNOWN)"

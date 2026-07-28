@@ -48,8 +48,10 @@ def assert_cancellation_env(step):
 
 def test_set_status_tasks_derive_state_from_aggregate():
     # Single-reporter mode: the review finally task passes $(tasks.status) and the
-    # script derives the state, covering success, failure and cancellation (caught
-    # mid-task -> Failed, landed between tasks -> Completed) with no guard gaps.
+    # script derives the state from the aggregate. A cancel-reason annotation wins
+    # regardless of whether the aggregate landed on Failed (caught mid-task) or
+    # Completed (landed between tasks); absent a cancel reason, Completed is a
+    # legitimate when-guard-skip success shape, not a cancellation.
     r = helm_template(ALL_PROVIDERS)
 
     canceled_states = {
@@ -57,14 +59,21 @@ def test_set_status_tasks_derive_state_from_aggregate():
         "github-set-status": 'state = "error"',
         "bitbucket-set-status": '"STOPPED"',
     }
+    completed_as_success = {
+        "gitlab-set-status": 'STATE, DESCRIPTION = "success", "PASSED"',
+        "github-set-status": 'state, description = "success", "Pipeline (PASSED)"',
+        "bitbucket-set-status": 'state, name, description = "SUCCESSFUL", "Pipeline (PASSED)", "Review Pipeline"',
+    }
     for task_name, canceled_state in canceled_states.items():
         step = get_set_status_step(r["task"][task_name])
         assert_cancellation_env(step)
         assert "PIPELINE_STATUS" in step["script"], task_name
         assert '"Succeeded"' in step["script"], task_name
-        assert '("Failed", "Completed")' in step["script"], task_name
+        assert "CANCEL_REASON" in step["script"] or "cancel_reason" in step["script"], task_name
         assert canceled_state in step["script"], task_name
         assert SUPERSEDED_DESCRIPTION in step["script"], task_name
+        # Completed without a cancel reason derives success, not a cancellation.
+        assert step["script"].count(completed_as_success[task_name]) >= 1, task_name
 
 
 def test_pipelines_use_single_status_reporter():

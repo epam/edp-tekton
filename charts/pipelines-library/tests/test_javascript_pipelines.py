@@ -156,8 +156,8 @@ global:
 
                 # build with default versioning
                 btd = r["pipeline"][github_build_pipeline_def]["spec"]["tasks"]
-                assert "github-set-pending-status" in btd[0]["name"]
-                assert "fetch-repository" in btd[1]["name"]
+                assert "fetch-repository" in btd[0]["name"]
+                assert "github-set-pending-status" in btd[1]["name"]
                 assert "init-values" in btd[2]["name"]
                 # ensure we have default versioning
                 assert "get-version" in btd[3]["name"]
@@ -185,8 +185,8 @@ global:
 
                 # build with semver versioning
                 btedp = r["pipeline"][github_build_pipeline_edp]["spec"]["tasks"]
-                assert "github-set-pending-status" in btedp[0]["name"]
-                assert "fetch-repository" in btedp[1]["name"]
+                assert "fetch-repository" in btedp[0]["name"]
+                assert "github-set-pending-status" in btedp[1]["name"]
                 assert "init-values" in btedp[2]["name"]
                 assert "get-version" in btedp[3]["name"]
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
@@ -262,8 +262,8 @@ global:
 
                 # build with default versioning
                 btd = r["pipeline"][gitlab_build_pipeline_def]["spec"]["tasks"]
-                assert "report-pipeline-start-to-gitlab" in btd[0]["name"]
-                assert "fetch-repository" in btd[1]["name"]
+                assert "fetch-repository" in btd[0]["name"]
+                assert "report-pipeline-start-to-gitlab" in btd[1]["name"]
                 assert "init-values" in btd[2]["name"]
                 # ensure we have default versioning
                 assert "get-version" in btd[3]["name"]
@@ -291,8 +291,8 @@ global:
 
                 # build with semver versioning
                 btedp = r["pipeline"][gitlab_build_pipeline_edp]["spec"]["tasks"]
-                assert "report-pipeline-start-to-gitlab" in btedp[0]["name"]
-                assert "fetch-repository" in btedp[1]["name"]
+                assert "fetch-repository" in btedp[0]["name"]
+                assert "report-pipeline-start-to-gitlab" in btedp[1]["name"]
                 assert "init-values" in btedp[2]["name"]
                 assert "get-version" in btedp[3]["name"]
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]
@@ -368,8 +368,8 @@ global:
 
                 # build with default versioning
                 btd = r["pipeline"][bitbucket_build_pipeline_def]["spec"]["tasks"]
-                assert "bitbucket-set-pending-status" in btd[0]["name"]
-                assert "fetch-repository" in btd[1]["name"]
+                assert "fetch-repository" in btd[0]["name"]
+                assert "bitbucket-set-pending-status" in btd[1]["name"]
                 assert "init-values" in btd[2]["name"]
                 # ensure we have default versioning
                 assert "get-version" in btd[3]["name"]
@@ -397,8 +397,8 @@ global:
 
                 # build with semver versioning
                 btedp = r["pipeline"][bitbucket_build_pipeline_edp]["spec"]["tasks"]
-                assert "bitbucket-set-pending-status" in btedp[0]["name"]
-                assert "fetch-repository" in btedp[1]["name"]
+                assert "fetch-repository" in btedp[0]["name"]
+                assert "bitbucket-set-pending-status" in btedp[1]["name"]
                 assert "init-values" in btedp[2]["name"]
                 assert "get-version" in btedp[3]["name"]
                 assert "get-version-edp" == btedp[3]["taskRef"]["name"]

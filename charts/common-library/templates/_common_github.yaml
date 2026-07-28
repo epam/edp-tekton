@@ -1,33 +1,5 @@
 # The init section for github build pipeline
 {{- define "github-build-start" -}}
-- name: github-set-pending-status
-  taskRef:
-    kind: Task
-    name: github-set-status
-  when:
-    - input: $(params.gitsha)
-      operator: notin
-      values: ["$(tt.params.gitsha)"]
-  params:
-    - name: REPO_FULL_NAME
-      value: $(params.gitfullrepositoryname)
-    - name: DESCRIPTION
-      value: "Pipeline (IN PROGRESS)"
-    - name: STATE
-      value: "pending"
-    - name: CONTEXT
-      value: "Build Pipeline"
-    - name: AUTH_TYPE
-      value: Token
-    - name: GITHUB_TOKEN_SECRET_NAME
-      value: ci-github
-    - name: GITHUB_TOKEN_SECRET_KEY
-      value: token
-    - name: SHA
-      value: $(params.gitsha)
-    - name: TARGET_URL
-      value: $(params.pipelineUrl)
-
 - name: fetch-repository
   taskRef:
     kind: Task
@@ -44,6 +16,33 @@
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
+
+# Votes on the commit the clone actually checked out: consuming the clone's
+# `commit` result both orders this task after fetch-repository and skips it
+# structurally when no commit was cloned - no when-guard needed.
+- name: github-set-pending-status
+  taskRef:
+    kind: Task
+    name: github-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.gitfullrepositoryname)
+    - name: DESCRIPTION
+      value: "Pipeline (IN PROGRESS)"
+    - name: STATE
+      value: "pending"
+    - name: CONTEXT
+      value: "Build Pipeline"
+    - name: AUTH_TYPE
+      value: Token
+    - name: GITHUB_TOKEN_SECRET_NAME
+      value: ci-github
+    - name: GITHUB_TOKEN_SECRET_KEY
+      value: token
+    - name: SHA
+      value: $(tasks.fetch-repository.results.commit)
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
 
 - name: init-values
   taskRef:
@@ -167,7 +166,7 @@ finally:
     - name: GITHUB_TOKEN_SECRET_KEY
       value: token
     - name: SHA
-      value: $(params.gitsha)
+      value: $(tasks.fetch-repository.results.commit)
     - name: TARGET_URL
       value: $(params.pipelineUrl)
 {{- end -}}

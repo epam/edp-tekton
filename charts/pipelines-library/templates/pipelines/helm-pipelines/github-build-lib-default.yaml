@@ -50,53 +50,14 @@ spec:
 
   tasks:
 
-    - name: github-set-pending-status
-      taskRef:
-        kind: Task
-        name: github-set-status
-      params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: DESCRIPTION
-          value: "Pipeline (IN PROGRESS)"
-        - name: STATE
-          value: "pending"
-        - name: CONTEXT
-          value: "Build Pipeline"
-        - name: AUTH_TYPE
-          value: Token
-        - name: GITHUB_TOKEN_SECRET_NAME
-          value: ci-github
-        - name: GITHUB_TOKEN_SECRET_KEY
-          value: token
-        - name: SHA
-          value: $(params.gitsha)
-        - name: TARGET_URL
-          value: $(params.pipelineUrl)
-
-    - name: fetch-repository
-      taskRef:
-        kind: Task
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: subdirectory
-          value: source
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{- include "github-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
         name: get-version-default
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: BRANCH_NAME
           value: $(params.git-source-revision)

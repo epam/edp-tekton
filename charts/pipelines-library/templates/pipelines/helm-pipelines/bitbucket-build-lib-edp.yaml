@@ -53,53 +53,14 @@ spec:
 
   tasks:
 
-    - name: bitbucket-set-pending-status
-      taskRef:
-        kind: Task
-        name: bitbucket-set-status
-      params:
-        - name: REPO_FULL_NAME
-          value: $(params.gitfullrepositoryname)
-        - name: SHA
-          value: "$(params.git-source-revision)"
-        - name: TARGET_URL
-          value: $(params.pipelineUrl)
-        - name: DESCRIPTION
-          value: "Build Pipeline"
-        - name: STATE
-          value: "INPROGRESS"
-        - name: BITBUCKET_TOKEN_SECRET_NAME
-          value: ci-bitbucket
-        - name: BITBUCKET_TOKEN_SECRET_KEY
-          value: token
-        - name: KEY
-          value: "build"
-        - name: NAME
-          value: "Pipeline"
-
-    - name: fetch-repository
-      taskRef:
-        kind: Task
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: subdirectory
-          value: source
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{- include "bitbucket-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
         name: get-version-edp
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: CODEBASEBRANCH_NAME
           value: $(params.CODEBASEBRANCH_NAME)

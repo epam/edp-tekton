@@ -279,3 +279,19 @@ https://{{ include "edp-tekton.portalHost" . }}/c/{{ $.Values.clusterName | defa
         status: PipelineRunPending
 {{- end }}
 {{- end -}}
+
+# PipelineRun spec.timeouts for review and build runs.
+#
+# Guarded on both fields: Tekton only derives a tasks budget (`pipeline - finally`), and
+# only cancels tasks still running when it expires, once both are set. Emitting just one
+# would read as protection while leaving the reporter skippable, so a half-config is
+# dropped rather than half-applied.
+{{- define "edp-tekton.pipelineRunTimeouts" -}}
+{{- with (.Values.pipelines).timeouts }}
+{{- if and .pipeline .finally }}
+        timeouts:
+          pipeline: {{ .pipeline }}
+          finally: {{ .finally }}
+{{- end }}
+{{- end }}
+{{- end -}}

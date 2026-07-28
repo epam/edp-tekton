@@ -55,6 +55,7 @@ spec:
             "app.edp.epam.com/git-author": "$(tt.params.gitauthor)"}
       spec:
 {{- include "edp-tekton.reviewPipelineRunPending" . }}
+{{- include "edp-tekton.pipelineRunTimeouts" . }}
         taskRunTemplate:
           serviceAccountName: tekton
           {{ if .Values.pipelines.podTemplate }}

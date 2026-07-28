@@ -92,6 +92,19 @@ pipelines:
     #     operator: Equal
     #     value: tekton
 
+  # Timeouts for review and build PipelineRuns. Set both or neither - Tekton derives the
+  # tasks budget as `pipeline - finally`, and without that reservation the tasks can
+  # consume the whole budget and the finally status reporter is skipped, leaving the VCS
+  # commit status stuck IN PROGRESS with nothing left to update it.
+  timeouts:
+    # -- Maximum duration of the whole PipelineRun, tasks and finally combined. The
+    # default is the 60m tasks get from Tekton's default-timeout-minutes plus the
+    # `finally` reservation, so the reporter's headroom does not shorten existing builds.
+    pipeline: 1h10m0s
+    # -- Duration reserved for finally tasks; the remainder is the tasks budget. Only
+    # needs to fit the status reporter, so it can stay small. Must be less than `pipeline`.
+    finally: 10m0s
+
   # -- Cancel in-progress review PipelineRuns when a new commit is pushed to the same
   # Pull Request / Merge Request / Gerrit change. Handled entirely by the KRCI
   # interceptor - no extra components are required. Cancellation is graceful

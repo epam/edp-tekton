@@ -9,7 +9,7 @@ docker.io/anchore/grype:v0.109.0-debug
 docker.io/antora/antora:3.1.4
 docker.io/aquasec/trivy:0.69.2
 docker.io/busybox:1.37.0
-docker.io/epamedp/kubectl:0.1.1
+docker.io/epamedp/kubectl:0.1.2
 docker.io/epamedp/tekton-ansible:0.1.1
 docker.io/epamedp/tekton-autotest:0.1.8
 docker.io/epamedp/tekton-cd-pipeline:0.1.5

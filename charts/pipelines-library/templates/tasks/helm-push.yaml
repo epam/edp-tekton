@@ -17,6 +17,8 @@ spec:
           - key: .dockerconfigjson
             path: config.json
         optional: true
+    - name: ecr-token
+      emptyDir: {}
   params:
     - name: image-tag
       description: Image tag
@@ -46,28 +48,34 @@ spec:
             configMapKeyRef:
               name: krci-config
               key: container_registry_type
+      volumeMounts:
+        - mountPath: /ecr
+          name: ecr-token
       script: |
           if [[ "$CONTAINER_REGISTRY_TYPE" == "ecr" ]]; then
             REPO_NAME=$(awk '/^name:/ {print $2}' ${CHART_DIR}/Chart.yaml)
             aws ecr describe-repositories --repository-names "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}" || aws ecr create-repository --repository-name "${CONTAINER_REGISTRY_SPACE}/${REPO_NAME}";
+
+            set +x
+            umask 077
+            aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" > /ecr/token
+            if [ ! -s /ecr/token ]; then
+              echo '[ERROR] Failed to obtain an ECR login token';
+              exit 1;
+            fi
+            echo 'ECR login token stored for the push step';
           else
             echo 'Registry not ECR, stage skipped';
           fi
 
     - name: push-helm-chart
-      image: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.1
+      image: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.2
       workingDir: $(workspaces.source.path)
       env:
         - name: IMAGE_TAG
           value: "$(params.image-tag)"
         - name: CHART_DIR
           value: $(params.chart-dir)
-        - name: AWS_DEFAULT_REGION
-          valueFrom:
-            configMapKeyRef:
-              name: krci-config
-              key: aws_region
-              optional: true
         - name: CONTAINER_REGISTRY_TYPE
           valueFrom:
             configMapKeyRef:
@@ -107,7 +115,9 @@ spec:
         fi
 
         if [ "$CONTAINER_REGISTRY_TYPE" = "ecr" ]; then
-          aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | helm registry login --username AWS --password-stdin ${CONTAINER_REGISTRY_URL}
+          set +x
+          helm registry login --username AWS --password-stdin ${CONTAINER_REGISTRY_URL} < /ecr/token
+          set -x
         fi
 
         $helm_push_command
@@ -120,5 +130,7 @@ spec:
       volumeMounts:
         - mountPath: /.config/helm/registry
           name: dockerconfig
+        - mountPath: /ecr
+          name: ecr-token
 {{- include "resources" . | nindent 6 }}
 {{ end }}

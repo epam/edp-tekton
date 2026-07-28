@@ -8,30 +8,6 @@
 
 # The init section for gitlab build pipeline
 {{- define "gitlab-build-start" -}}
-- name: report-pipeline-start-to-gitlab
-  taskRef:
-    kind: Task
-    name: gitlab-set-status
-  params:
-    - name: "STATE"
-      value: "pending"
-    - name: "GITLAB_HOST_URL"
-      value: "$(params.git-source-url)"
-    - name: "REPO_FULL_NAME"
-      value: "$(params.gitfullrepositoryname)"
-    - name: "GITLAB_TOKEN_SECRET_NAME"
-      value: ci-gitlab
-    - name: "GITLAB_TOKEN_SECRET_KEY"
-      value: token
-    - name: "SHA"
-      value: "$(params.git-source-revision)"
-    - name: "TARGET_URL"
-      value: $(params.pipelineUrl)
-    - name: "CONTEXT"
-      value: "Build Pipeline"
-    - name: "DESCRIPTION"
-      value: "IN PROGRESS"
-      
 - name: fetch-repository
   taskRef:
     kind: Task
@@ -48,6 +24,33 @@
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
+
+# Votes on the commit the clone actually checked out: consuming the clone's
+# `commit` result both orders this task after fetch-repository and skips it
+# structurally when no commit was cloned - no when-guard needed.
+- name: report-pipeline-start-to-gitlab
+  taskRef:
+    kind: Task
+    name: gitlab-set-status
+  params:
+    - name: "STATE"
+      value: "pending"
+    - name: "GITLAB_HOST_URL"
+      value: "$(params.git-source-url)"
+    - name: "REPO_FULL_NAME"
+      value: "$(params.gitfullrepositoryname)"
+    - name: "GITLAB_TOKEN_SECRET_NAME"
+      value: ci-gitlab
+    - name: "GITLAB_TOKEN_SECRET_KEY"
+      value: token
+    - name: "SHA"
+      value: "$(tasks.fetch-repository.results.commit)"
+    - name: "TARGET_URL"
+      value: $(params.pipelineUrl)
+    - name: "CONTEXT"
+      value: "Build Pipeline"
+    - name: "DESCRIPTION"
+      value: "IN PROGRESS"
 
 - name: init-values
   taskRef:
@@ -171,7 +174,7 @@ finally:
     - name: "GITLAB_TOKEN_SECRET_KEY"
       value: token
     - name: "SHA"
-      value: "$(params.git-source-revision)"
+      value: "$(tasks.fetch-repository.results.commit)"
     - name: "TARGET_URL"
       value: $(params.pipelineUrl)
     - name: "CONTEXT"

@@ -51,53 +51,14 @@ spec:
 
   tasks:
 
-    - name: report-pipeline-start-to-gitlab
-      taskRef:
-        kind: Task
-        name: gitlab-set-status
-      params:
-        - name: "STATE"
-          value: "pending"
-        - name: "GITLAB_HOST_URL"
-          value: "$(params.git-source-url)"
-        - name: "REPO_FULL_NAME"
-          value: "$(params.gitfullrepositoryname)"
-        - name: "GITLAB_TOKEN_SECRET_NAME"
-          value: ci-gitlab
-        - name: "GITLAB_TOKEN_SECRET_KEY"
-          value: token
-        - name: "SHA"
-          value: "$(params.git-source-revision)"
-        - name: "TARGET_URL"
-          value: $(params.pipelineUrl)
-        - name: "CONTEXT"
-          value: "Build Pipeline"
-        - name: "DESCRIPTION"
-          value: "IN PROGRESS"
-
-    - name: fetch-repository
-      taskRef:
-        kind: Task
-        name: git-clone
-      params:
-        - name: url
-          value: $(params.git-source-url)
-        - name: revision
-          value: $(params.git-source-revision)
-        - name: subdirectory
-          value: source
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: ssh-creds
+{{- include "gitlab-build-start" . | nindent 4 }}
 
     - name: get-version
       taskRef:
         kind: Task
         name: get-version-default
       runAfter:
-        - fetch-repository
+        - init-values
       params:
         - name: BRANCH_NAME
           value: $(params.targetBranch)

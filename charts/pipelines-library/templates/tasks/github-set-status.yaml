@@ -149,12 +149,20 @@ spec:
         import sys
         import http.client
 
+        sha = os.getenv("SHA")
+        if not sha or sha.startswith("$("):
+            # No real commit to report against (e.g. a Portal-triggered manual
+            # build has no webhook-resolved SHA): skip instead of sending a
+            # status update GitHub will reject as malformed.
+            print("No real commit SHA to report against ('{sha}'), skipping status update".format(sha=sha))
+            sys.exit(0)
+
         github_token_filename = "/etc/github-set-status/" + \
             os.getenv("GITHUB_TOKEN_SECRET_KEY")
         github_token = open(github_token_filename, "r").read()
 
         status_url = os.getenv("API_PATH_PREFIX") + "/repos/" + \
-            os.getenv("REPO_FULL_NAME") + "/statuses/" + os.getenv("SHA")
+            os.getenv("REPO_FULL_NAME") + "/statuses/" + sha
 
         state = os.getenv("STATE")
         description = os.getenv("DESCRIPTION")

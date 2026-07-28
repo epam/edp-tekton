@@ -155,13 +155,21 @@ spec:
         import sys
         import http.client
 
+        sha = os.getenv("SHA")
+        if not sha or sha.startswith("$("):
+            # No real commit to report against (e.g. a Portal-triggered manual
+            # build has no webhook-resolved SHA): skip instead of sending a
+            # status update Bitbucket will reject as malformed.
+            print("No real commit SHA to report against ('{sha}'), skipping status update".format(sha=sha))
+            sys.exit(0)
+
         # Load the token
         bitbucket_token_filename = "/etc/bitbucket-set-status/" + \
             os.getenv("BITBUCKET_TOKEN_SECRET_KEY")
         bitbucket_token = open(bitbucket_token_filename, "r").read().strip()
 
         # Form the status URL
-        status_url = os.getenv("API_PATH_PREFIX") + os.getenv("REPO_FULL_NAME") + "/commit/" + os.getenv("SHA") + "/statuses/build"
+        status_url = os.getenv("API_PATH_PREFIX") + os.getenv("REPO_FULL_NAME") + "/commit/" + sha + "/statuses/build"
 
         state = os.getenv("STATE")
         description = os.getenv("DESCRIPTION")

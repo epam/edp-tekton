@@ -71,7 +71,7 @@
     - name: REPO_FULL_NAME
       value: $(params.gitfullrepositoryname)
     - name: SHA
-      value: "$(params.gitsha)"
+      value: "$(tasks.fetch-repository.results.commit)"
     - name: TARGET_URL
       value: $(params.pipelineUrl)
     - name: BITBUCKET_TOKEN_SECRET_NAME
@@ -115,34 +115,6 @@ finally:
 
 # The init section for bitbucket build pipeline
 {{- define "bitbucket-build-start" -}}
-- name: bitbucket-set-pending-status
-  when:
-    - input: $(params.gitsha)
-      operator: notin
-      values: [""]
-  taskRef:
-    kind: Task
-    name: bitbucket-set-status
-  params:
-    - name: REPO_FULL_NAME
-      value: $(params.gitfullrepositoryname)
-    - name: SHA
-      value: "$(params.gitsha)"
-    - name: TARGET_URL
-      value: $(params.pipelineUrl)
-    - name: DESCRIPTION
-      value: "Build Pipeline"
-    - name: STATE
-      value: "INPROGRESS"
-    - name: BITBUCKET_TOKEN_SECRET_NAME
-      value: ci-bitbucket
-    - name: BITBUCKET_TOKEN_SECRET_KEY
-      value: token
-    - name: KEY
-      value: "build"
-    - name: NAME
-      value: "Pipeline"
-
 - name: fetch-repository
   taskRef:
     kind: Task
@@ -159,6 +131,33 @@ finally:
       workspace: shared-workspace
     - name: ssh-directory
       workspace: ssh-creds
+
+# Votes on the commit the clone actually checked out: consuming the clone's
+# `commit` result both orders this task after fetch-repository and skips it
+# structurally when no commit was cloned - no when-guard needed.
+- name: bitbucket-set-pending-status
+  taskRef:
+    kind: Task
+    name: bitbucket-set-status
+  params:
+    - name: REPO_FULL_NAME
+      value: $(params.gitfullrepositoryname)
+    - name: SHA
+      value: "$(tasks.fetch-repository.results.commit)"
+    - name: TARGET_URL
+      value: $(params.pipelineUrl)
+    - name: DESCRIPTION
+      value: "Build Pipeline"
+    - name: STATE
+      value: "INPROGRESS"
+    - name: BITBUCKET_TOKEN_SECRET_NAME
+      value: ci-bitbucket
+    - name: BITBUCKET_TOKEN_SECRET_KEY
+      value: token
+    - name: KEY
+      value: "build"
+    - name: NAME
+      value: "Pipeline"
 
 - name: init-values
   taskRef:

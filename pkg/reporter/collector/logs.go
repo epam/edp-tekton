@@ -16,12 +16,10 @@ type PodLogFetcher struct {
 	client kubernetes.Interface
 }
 
-// NewPodLogFetcher creates a LogFetcher backed by the typed Kubernetes clientset.
 func NewPodLogFetcher(client kubernetes.Interface) *PodLogFetcher {
 	return &PodLogFetcher{client: client}
 }
 
-// GetLogs returns the last tailLines lines of the given container's log.
 func (f *PodLogFetcher) GetLogs(
 	ctx context.Context,
 	namespace, podName, container string,

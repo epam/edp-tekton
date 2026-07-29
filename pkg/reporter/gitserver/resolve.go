@@ -28,13 +28,11 @@ var tokenRequiredProviders = map[string]struct{}{
 	codebaseApi.GitProviderBitbucket: {},
 }
 
-// Info is the resolved git provider connection info for a Codebase.
 type Info struct {
 	// Provider is one of the codebaseApi.GitProvider* constants (github, gitlab, bitbucket, gerrit).
 	Provider string
 	// Host is the git server host, e.g. github.com.
-	Host string
-	// Token is the provider API access token.
+	Host  string
 	Token string
 }
 

@@ -34,7 +34,6 @@ type Config struct {
 	PortalBaseURL string
 }
 
-// LoadConfig reads the reporter configuration from environment variables.
 func LoadConfig() (*Config, error) {
 	cfg := &Config{
 		Namespace:       os.Getenv("SYSTEM_NAMESPACE"),

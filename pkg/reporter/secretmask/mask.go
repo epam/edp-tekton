@@ -89,7 +89,6 @@ func encodedForms(v string) []string {
 	}
 }
 
-// Mask replaces every occurrence of a known secret value with a placeholder.
 func (m *Masker) Mask(text string) string {
 	for _, v := range m.values {
 		text = strings.ReplaceAll(text, v, replacement)

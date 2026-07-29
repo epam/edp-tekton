@@ -43,24 +43,54 @@ func TestFormat(t *testing.T) {
 		Format(report, "<!-- marker -->", Options{TailLines: 100, CollapsibleSections: true})
 
 	require.True(t, strings.HasPrefix(body, "<!-- marker -->\n"), "comment must start with the marker")
-	assert.Contains(t, body, "❌ Failed")
+	assert.Contains(t, body, "✗ Failed")
 	assert.Contains(t, body,
 		"[`review-my-app-xyz`](https://portal.example.com/c/main/cicd/pipelineruns/krci/review-my-app-xyz)")
 
 	// Tasks are ordered by start time: fetch-repository ran first.
-	fetchIdx := strings.Index(body, "| ✅ | fetch-repository | 5s |")
-	buildIdx := strings.Index(body, "| ❌ | build | 1m32s |")
+	fetchIdx := strings.Index(body, "| ✓ Passed | fetch-repository | 5s |")
+	buildIdx := strings.Index(body, "| ✗ Failed | build | 1m32s |")
 
 	require.GreaterOrEqual(t, fetchIdx, 0)
 	require.GreaterOrEqual(t, buildIdx, 0)
 	assert.Less(t, fetchIdx, buildIdx)
 
-	assert.Contains(t, body, "<details><summary>❌ <b>build</b> / npm-build (exit code 1, last 100 log lines)</summary>")
+	assert.Contains(t, body, "<details><summary>✗ <b>build / npm-build</b> — exit code 1, last 100 log lines</summary>")
 	assert.Contains(t, body, "npm ERR! build failed")
 	// Steps without a log tail (cascading skips) get no details section.
 	assert.NotContains(t, body, "skipped-after")
 	// Successful tasks get no details section.
 	assert.Equal(t, 1, strings.Count(body, "<details>"))
+}
+
+func TestFormatRetriggerNotice(t *testing.T) {
+	t.Parallel()
+
+	report := &collector.Report{
+		PipelineRunName: "review-my-app-xyz",
+		Succeeded:       false,
+		Tasks: []collector.TaskResult{{
+			Name:      "build",
+			Succeeded: false,
+			Steps:     []collector.StepResult{{Name: "npm-build", ExitCode: 1, LogTail: "npm ERR!"}},
+		}},
+	}
+
+	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", Options{TailLines: 100})
+
+	assert.Contains(t, body, "To re-run it without new commits, comment `/recheck`.")
+
+	// The notice sits between the table and the failed-step logs so tail
+	// truncation of long logs cannot cut it off.
+	noticeIdx := strings.Index(body, "comment `/recheck`")
+	rowIdx := strings.Index(body, "| ✗ Failed | build |")
+	logsIdx := strings.Index(body, "npm ERR!")
+
+	require.GreaterOrEqual(t, noticeIdx, 0)
+	require.GreaterOrEqual(t, rowIdx, 0)
+	require.GreaterOrEqual(t, logsIdx, 0)
+	assert.Less(t, rowIdx, noticeIdx)
+	assert.Less(t, noticeIdx, logsIdx)
 }
 
 func TestFormatWithoutCollapsibleSections(t *testing.T) {
@@ -84,7 +114,7 @@ func TestFormatWithoutCollapsibleSections(t *testing.T) {
 	assert.NotContains(t, body, "<details>")
 	assert.NotContains(t, body, "<summary>")
 	assert.NotContains(t, body, "<b>")
-	assert.Contains(t, body, "❌ **test / mvn-goals** (exit code 1, last 100 log lines)")
+	assert.Contains(t, body, "✗ **test / mvn-goals** — exit code 1, last 100 log lines")
 	assert.Contains(t, body, "```\nBUILD FAILURE\n```")
 }
 
@@ -99,7 +129,7 @@ func TestFormatSucceededWithoutLinks(t *testing.T) {
 
 	body := New(PortalLinkBuilder{}).Format(report, "<!-- marker -->", Options{TailLines: 100, CollapsibleSections: true})
 
-	assert.Contains(t, body, "## Pipeline `review-ok` ✅ Passed")
+	assert.Contains(t, body, "## Pipeline `review-ok` — ✓ Passed")
 	assert.NotContains(t, body, "<details>")
 	assert.NotContains(t, body, "](")
 }

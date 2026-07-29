@@ -29,7 +29,6 @@ type Provider struct {
 	client *resty.Client
 }
 
-// New creates a GitLab provider for the given host (e.g. gitlab.com).
 // Transient API failures are retried per the shared retry policy.
 func New(host, token string) *Provider {
 	client := retry.ConfigureResty(resty.New().

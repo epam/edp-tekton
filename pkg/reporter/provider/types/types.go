@@ -3,7 +3,6 @@ package types
 
 import "context"
 
-// PullRequestRef identifies a pull/merge request.
 type PullRequestRef struct {
 	// RepoFullName is the full repository path, e.g. org/repo or group/subgroup/repo.
 	RepoFullName string
@@ -11,7 +10,6 @@ type PullRequestRef struct {
 	Number int
 }
 
-// Comment is a report comment to publish.
 type Comment struct {
 	// Marker is a hidden HTML comment identifying report comments, used to
 	// find and update a previously published report.
@@ -37,7 +35,6 @@ type CollapsibleSectionsSupport interface {
 	SupportsCollapsibleSections() bool
 }
 
-// CommitRef identifies a commit.
 type CommitRef struct {
 	// RepoFullName is the full repository path, e.g. org/repo or group/subgroup/repo.
 	RepoFullName string

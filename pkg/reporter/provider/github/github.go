@@ -85,7 +85,6 @@ func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, 
 	return nil
 }
 
-// SetCommitStatus posts a commit status via the GitHub commit statuses API.
 func (p *Provider) SetCommitStatus(ctx context.Context, ref types.CommitRef, status types.CommitStatus) error {
 	owner, repo, err := splitRepo(ref.RepoFullName)
 	if err != nil {

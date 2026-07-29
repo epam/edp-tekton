@@ -196,7 +196,7 @@ func TestReconcilePublishesReportAndMarksPipelineRun(t *testing.T) {
 	comment := gitProvider.comments[0]
 	assert.True(t, comment.Update)
 	assert.Contains(t, comment.Body, "<!-- krci-pipeline-report codebase=my-app -->")
-	assert.Contains(t, comment.Body, "| ❌ | build | 30s |")
+	assert.Contains(t, comment.Body, "| ✗ Failed | build | 30s |")
 	assert.Contains(t, comment.Body, "log tail of step-npm-build")
 	assert.Contains(t, comment.Body, "secret=*****", "git token must be masked in logs")
 	assert.NotContains(t, comment.Body, "gh-token")

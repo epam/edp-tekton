@@ -11,29 +11,37 @@ import (
 	"github.com/epam/edp-tekton/pkg/reporter/collector"
 )
 
+// U+2713/U+2717 have no emoji presentation form, so renderers draw them
+// monochrome in the text font. Each mark is paired with its label to keep the
+// outcome readable without relying on the glyph.
 const (
-	statusPassed = "✅"
-	statusFailed = "❌"
+	markPassed  = "✓"
+	markFailed  = "✗"
+	labelPassed = "Passed"
+	labelFailed = "Failed"
 )
+
+// retriggerNotice tells the reviewer how to re-run the pipeline. It sits
+// directly under the task table rather than at the end of the comment so
+// Truncate, which cuts oversized bodies from the tail, cannot drop it.
+const retriggerNotice = "\n> Pushing new commits re-runs this pipeline automatically.\n" +
+	"> To re-run it without new commits, comment `/recheck`.\n"
 
 // LinkBuilder renders links to pipeline details. Implementations returning an
 // empty string produce plain text instead of a link.
 type LinkBuilder interface {
-	// PipelineRunURL returns a link to the PipelineRun details page.
 	PipelineRunURL(namespace, name string) string
 	// TaskURL returns a link to a single task of the PipelineRun. Reserved for
 	// per-task deep links; return "" to render the task name as plain text.
 	TaskURL(namespace, pipelineRunName, taskName string) string
 }
 
-// PortalLinkBuilder builds links to the KubeRocketCI portal.
 type PortalLinkBuilder struct {
 	// BaseURL is the portal pipelineruns base, e.g.
 	// https://portal.example.com/c/cluster/cicd/pipelineruns. Empty disables links.
 	BaseURL string
 }
 
-// PipelineRunURL returns the portal PipelineRun details URL.
 func (b PortalLinkBuilder) PipelineRunURL(namespace, name string) string {
 	if b.BaseURL == "" {
 		return ""
@@ -47,12 +55,10 @@ func (b PortalLinkBuilder) TaskURL(_, _, _ string) string {
 	return ""
 }
 
-// Formatter renders reports as markdown comments.
 type Formatter struct {
 	links LinkBuilder
 }
 
-// New creates a Formatter with the given link builder.
 func New(links LinkBuilder) *Formatter {
 	return &Formatter{links: links}
 }
@@ -85,9 +91,9 @@ func (f *Formatter) Format(report *collector.Report, marker string, opts Options
 	})
 
 	for _, task := range tasks {
-		status := statusPassed
+		status := fmt.Sprintf("%s %s", markPassed, labelPassed)
 		if !task.Succeeded {
-			status = statusFailed
+			status = fmt.Sprintf("%s %s", markFailed, labelFailed)
 		}
 
 		name := task.Name
@@ -97,6 +103,8 @@ func (f *Formatter) Format(report *collector.Report, marker string, opts Options
 
 		fmt.Fprintf(&b, "| %s | %s | %s |\n", status, name, formatDuration(task.Duration))
 	}
+
+	b.WriteString(retriggerNotice)
 
 	for _, task := range tasks {
 		if task.Succeeded {
@@ -108,14 +116,14 @@ func (f *Formatter) Format(report *collector.Report, marker string, opts Options
 				continue
 			}
 
-			tmpl := "\n%s **%s / %s** (exit code %d, last %d log lines)\n\n```\n%s\n```\n"
+			tmpl := "\n%s **%s / %s** — exit code %d, last %d log lines\n\n```\n%s\n```\n"
 			if opts.CollapsibleSections {
-				tmpl = "\n<details><summary>%s <b>%s</b> / %s (exit code %d, last %d log lines)</summary>" +
+				tmpl = "\n<details><summary>%s <b>%s / %s</b> — exit code %d, last %d log lines</summary>" +
 					"\n\n```\n%s\n```\n</details>\n"
 			}
 
 			fmt.Fprintf(&b, tmpl,
-				statusFailed, task.Name, step.Name, step.ExitCode, opts.TailLines, sanitizeCodeFence(step.LogTail),
+				markFailed, task.Name, step.Name, step.ExitCode, opts.TailLines, sanitizeCodeFence(step.LogTail),
 			)
 		}
 	}
@@ -124,9 +132,9 @@ func (f *Formatter) Format(report *collector.Report, marker string, opts Options
 }
 
 func (f *Formatter) header(report *collector.Report) string {
-	status := fmt.Sprintf("%s Passed", statusPassed)
+	status := fmt.Sprintf("%s %s", markPassed, labelPassed)
 	if !report.Succeeded {
-		status = fmt.Sprintf("%s Failed", statusFailed)
+		status = fmt.Sprintf("%s %s", markFailed, labelFailed)
 	}
 
 	name := fmt.Sprintf("`%s`", report.PipelineRunName)
@@ -134,7 +142,7 @@ func (f *Formatter) header(report *collector.Report) string {
 		name = fmt.Sprintf("[`%s`](%s)", report.PipelineRunName, url)
 	}
 
-	return fmt.Sprintf("## Pipeline %s %s", name, status)
+	return fmt.Sprintf("## Pipeline %s — %s", name, status)
 }
 
 // codeFenceRun matches any run of three or more backticks; a plain

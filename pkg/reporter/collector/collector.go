@@ -20,7 +20,6 @@ import (
 // root-cause information and are not worth publishing.
 const cascadingSkipSuffix = "Skipping step because a previous step failed"
 
-// StepResult describes the outcome of a single step within a task.
 type StepResult struct {
 	Name      string
 	Container string
@@ -31,7 +30,6 @@ type StepResult struct {
 	LogTail string
 }
 
-// TaskResult describes the outcome of a single pipeline task.
 type TaskResult struct {
 	Name      string
 	Succeeded bool
@@ -40,7 +38,6 @@ type TaskResult struct {
 	Steps     []StepResult
 }
 
-// Report is the aggregated result of a PipelineRun.
 type Report struct {
 	PipelineRunName      string
 	PipelineRunNamespace string
@@ -57,14 +54,13 @@ type LogFetcher interface {
 	GetLogs(ctx context.Context, namespace, podName, container string, tailLines int64) (string, error)
 }
 
-// Collector builds a Report from a finished PipelineRun.
 type Collector struct {
 	reader     ctrlClient.Reader
 	logFetcher LogFetcher
 	tailLines  int64
 }
 
-// New creates a Collector. The reader is used for direct (uncached) TaskRun reads.
+// The reader must be an uncached reader: TaskRuns are read directly, never watched.
 func New(reader ctrlClient.Reader, logFetcher LogFetcher, tailLines int64) *Collector {
 	return &Collector{
 		reader:     reader,

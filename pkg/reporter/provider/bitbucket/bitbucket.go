@@ -15,7 +15,6 @@ import (
 
 const cloudAPIBaseURL = "https://api.bitbucket.org/2.0"
 
-// Provider posts report comments via the Bitbucket Cloud pull request comments API.
 type Provider struct {
 	client *resty.Client
 	token  string
@@ -95,7 +94,6 @@ func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, 
 	return nil
 }
 
-// SetCommitStatus posts a build status via the Bitbucket Cloud commit statuses API.
 func (p *Provider) SetCommitStatus(ctx context.Context, ref types.CommitRef, status types.CommitStatus) error {
 	state, err := apiState(status.State)
 	if err != nil {

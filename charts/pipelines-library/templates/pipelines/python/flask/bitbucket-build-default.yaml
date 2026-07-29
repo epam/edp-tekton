@@ -26,9 +26,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "master"
       type: string
-    - name: gitsha
-      description: git revision to vote (sha)
-      type: string
     - name: CODEBASE_NAME
       default: "python-app"
       description: "Project name"

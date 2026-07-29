@@ -67,8 +67,6 @@ spec:
             value: $(tt.params.gitrepositoryurl)
           - name: git-source-revision
             value: $(tt.params.gitrevision)
-          - name: gitsha
-            value: $(tt.params.gitsha)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: CODEBASE_NAME

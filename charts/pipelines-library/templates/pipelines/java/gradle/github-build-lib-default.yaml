@@ -49,9 +49,6 @@ spec:
       default: '{{ $image  }}'
       description: "gradle image version"
       type: string
-    - name: gitsha
-      description: "commit sha"
-      type: string
     - name: gitfullrepositoryname
       description: "repository full name"
       type: string

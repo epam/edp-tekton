@@ -34,9 +34,6 @@ spec:
       description: 'git revision to checkout (branch, tag, sha, ref…)'
       default: "edp"
       type: string
-    - name: gitsha
-      description: git revision to vote (sha)
-      type: string
     - name: CODEBASE_NAME
       default: '{{ $framework }}-gradle'
       description: "Project name"

@@ -72,8 +72,6 @@ spec:
             value: $(tt.params.codebasebranch)
           - name: changeNumber
             value: $(tt.params.changeNumber)
-          - name: gitsha
-            value: $(tt.params.gitsha)
           - name: gitfullrepositoryname
             value: $(tt.params.gitfullrepositoryname)
           - name: COMMIT_MESSAGE_PATTERN

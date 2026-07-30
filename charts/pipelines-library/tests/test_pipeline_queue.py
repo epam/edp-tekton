@@ -91,24 +91,19 @@ def get_gitlab_review_start_state(r, pipeline_name):
     return {p["name"]: p["value"] for p in start["params"]}["STATE"]
 
 
-def test_gitlab_review_start_status_follows_queue():
-    # GitLab rejects a pending -> pending transition in the same context, so with
-    # the queue enabled (interceptor posts pending/QUEUED first) the review start
-    # task must post `running`. Without it the long-standing `pending` default
-    # is preserved for existing installations.
+def test_gitlab_review_start_status_always_running():
+    # GitLab has a true `running` state, and it also avoids the pending -> pending
+    # transition GitLab rejects when the queue interceptor has already posted a
+    # pending/QUEUED status in the same context — so start tasks always post
+    # `running`, with or without the queue.
     pipelines = ["gitlab-go-gin-app-review", "gitlab-helm-charts-lib-review"]
 
-    default = helm_template(
+    for values in (
         """
 global:
   gitProviders:
     - gitlab
-    """
-    )
-    for pipeline_name in pipelines:
-        assert get_gitlab_review_start_state(default, pipeline_name) == "pending", pipeline_name
-
-    queued = helm_template(
+    """,
         """
 global:
   gitProviders:
@@ -116,10 +111,11 @@ global:
 pipelines:
   queue:
     enabled: true
-    """
-    )
-    for pipeline_name in pipelines:
-        assert get_gitlab_review_start_state(queued, pipeline_name) == "running", pipeline_name
+    """,
+    ):
+        rendered = helm_template(values)
+        for pipeline_name in pipelines:
+            assert get_gitlab_review_start_state(rendered, pipeline_name) == "running", pipeline_name
 
 
 def test_queue_combines_with_cancel_in_progress():

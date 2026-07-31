@@ -5,7 +5,8 @@ metadata:
   name: init-values
 spec:
   description: >-
-   This task initializes pipeline values by generating a tenant name, a normalized branch name, and a formatted codebase image name based on provided parameters.
+   This task normalizes the branch name for use in resource names, and orders the pipeline: the
+   build and scan tasks run after it.
   params:
     - name: CODEBASE_NAME
       type: string
@@ -20,8 +21,6 @@ spec:
       type: string
       default: {{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.2
   results:
-    - name: TENANT_NAME
-      description: "krci name"
     - name: NORMALIZED_BRANCH
       description: "Branch name without '/' symbols and lowercase"
   steps:
@@ -35,9 +34,6 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
-
-        tenantName=$(kubectl get cm krci-config -o jsonpath='{.data.edp_name}')
-        echo "${tenantName}" | tr -d '\n' | tee $(results.TENANT_NAME.path)
 
         normalizedBranch=$(printf '%s' "$BRANCH" | sed 's/[^a-zA-Z0-9.]/-/g' | tr '[:upper:]' '[:lower:]')
         printf "%s" "${normalizedBranch}" > "$(results.NORMALIZED_BRANCH.path)"

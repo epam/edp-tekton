@@ -34,11 +34,3 @@ rules:
       - argoproj.io
     resources:
       - applications
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - ""
-    resources:
-      - secrets

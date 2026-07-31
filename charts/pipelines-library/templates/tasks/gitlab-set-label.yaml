@@ -1,0 +1,189 @@
+{{ if .Values.pipelines.deployableResources.tasks }}
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: gitlab-set-label
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/categories: Git
+    tekton.dev/tags: gitlab, git
+    tekton.dev/displayName: "Set Gitlab merge request labels"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task adds and removes labels on a GitLab merge request in a single
+    atomic update, so a CI system can record its verdict as a label that is
+    visible and filterable in the MR list.
+
+    Labels are namespaced by LABEL_PREFIX and callers pass bare suffixes, which
+    lets several CI systems vote on the same merge request without evicting each
+    other's labels. GitLab CE does not enforce scoped-label exclusivity, so
+    mutual exclusion is expressed by the caller: every vote adds its own label
+    and removes the sibling labels in the same vocabulary.
+
+    Intended call pattern, using the `running`/`passed`/`failed` vocabulary:
+
+    - start of pipeline - a regular task with ADD_LABELS `running` and
+      REMOVE_LABELS `passed,failed`;
+
+    - end of pipeline - two `finally` tasks guarded on the aggregate, one with
+      `when` `$(tasks.status)` in [Succeeded, Completed] using ADD_LABELS
+      `passed` / REMOVE_LABELS `running,failed`, and one with `$(tasks.status)`
+      in [Failed, None] using ADD_LABELS `failed` / REMOVE_LABELS
+      `running,passed`. Covering all four aggregate values matters: if no
+      terminal vote runs, the merge request keeps the `running` label forever.
+
+    - multiple CI systems - each uses its own LABEL_PREFIX. Note that GitLab
+      Premium treats everything before the last `::` as the exclusivity scope,
+      so per-system separation belongs in the prefix (`krci-sanity::passed`,
+      `krci-build::passed`) and not in the suffix (`krci::sanity-passed`,
+      `krci::build-passed`), which would make the two systems evict each other
+      once scoped labels are available.
+
+    Labels that do not exist yet are created by GitLab on first use, with a
+    colour it picks. Set deliberate colours once per project, out of band.
+  params:
+    - name: GITLAB_HOST_URL
+      description: |
+        The GitLab host, adjust this if you run a GitLab enterprise. In KRCI we use git_ssh_url
+        value from the event payload, format: "git@example.com:mike/diaspora.git"
+      default: "gitlab.com"
+      type: string
+    - name: API_PATH_PREFIX
+      description: |
+        The API path prefix, GitLab Enterprise has a prefix e.g. /api/v4
+      default: "/api/v4"
+      type: string
+    - name: REPO_FULL_NAME
+      description: |
+        The GitLab repository full name, e.g.: tektoncd/catalog
+      type: string
+    - name: GITLAB_TOKEN_SECRET_NAME
+      description: |
+        The name of the kubernetes secret that contains the GitLab token, default: gitlab-api-secret
+      type: string
+      default: gitlab-api-secret
+    - name: GITLAB_TOKEN_SECRET_KEY
+      description: |
+        The key within the kubernetes secret that contains the GitLab token, default: token
+      type: string
+      default: token
+    - name: MR_IID
+      description: |
+        The internal id (iid) of the merge request to label, as shown in the MR
+        URL and in the webhook payload. Not the global merge request id.
+      type: string
+    - name: LABEL_PREFIX
+      description: |
+        Namespace prepended to every entry of ADD_LABELS and REMOVE_LABELS, so
+        that labels of one CI system cannot collide with another's. The
+        separator is part of the value: use "krci-sanity::" for GitLab-scoped
+        label names, or "krci-sanity-" for flat ones.
+      type: string
+      default: "krci::"
+    - name: ADD_LABELS
+      description: |
+        Comma-separated label suffixes to add, e.g. "passed". Each is prefixed
+        with LABEL_PREFIX. Label names cannot contain a comma.
+      type: string
+      default: ""
+    - name: REMOVE_LABELS
+      description: |
+        Comma-separated label suffixes to remove, e.g. "running,failed". Each is
+        prefixed with LABEL_PREFIX. Removing a label that is not set is a no-op.
+      type: string
+      default: ""
+
+  steps:
+    - name: set-label
+      image: registry.access.redhat.com/ubi8/python-38@sha256:af6f93b81f9313de95966e8cd681edb9dbcb5fdbddc5a4cc365af8e4534096ef
+      script: |
+        #!/usr/libexec/platform-python
+
+        import os
+        import sys
+        import json
+        import http.client
+        import urllib.parse
+
+        GITLAB_TOKEN = os.getenv("GITLAB_TOKEN")
+        GITLAB_HOST_URL = "ssh://$(params.GITLAB_HOST_URL)"
+        API_PATH_PREFIX = "$(params.API_PATH_PREFIX)"
+        REPO_FULL_NAME = "$(params.REPO_FULL_NAME)"
+        MR_IID = "$(params.MR_IID)"
+        LABEL_PREFIX = "$(params.LABEL_PREFIX)"
+        ADD_LABELS = "$(params.ADD_LABELS)"
+        REMOVE_LABELS = "$(params.REMOVE_LABELS)"
+
+        if not REPO_FULL_NAME or not MR_IID:
+            print("REPO_FULL_NAME and MR_IID are required")
+            sys.exit(1)
+
+
+        def prefixed(raw):
+            return [LABEL_PREFIX + name.strip() for name in raw.split(",") if name.strip()]
+
+
+        add_labels = prefixed(ADD_LABELS)
+        remove_labels = prefixed(REMOVE_LABELS)
+
+        if not add_labels and not remove_labels:
+            print("Neither ADD_LABELS nor REMOVE_LABELS is set, nothing to do")
+            sys.exit(0)
+
+        headers = {
+            "User-Agent": "TektonCD, the peaceful cat",
+            "Authorization": f"Bearer {GITLAB_TOKEN}",
+        }
+
+        URLENCODED_REPO_NAME = urllib.parse.quote(REPO_FULL_NAME, safe="")
+
+        # One request carries both sides of the swap, so the merge request never
+        # transiently shows two verdicts of the same vocabulary, and no read of the
+        # current label set is needed - which would race with other MR writers.
+        params = {
+            "add_labels": ",".join(add_labels),
+            "remove_labels": ",".join(remove_labels),
+        }
+
+        encoded_params = urllib.parse.urlencode(params)
+
+        api_url = f"{API_PATH_PREFIX}/projects/{URLENCODED_REPO_NAME}/merge_requests/{MR_IID}?{encoded_params}"
+
+        # we need to adapt to KRCI approach and extract the host from the git_ssh_url
+        # which is in the format: git@example.com:mike/diaspora.git
+        GITLAB_HOST_URL = urllib.parse.urlparse(GITLAB_HOST_URL).hostname
+
+        print(f"PUT to {GITLAB_HOST_URL}{api_url}")
+
+        conn = http.client.HTTPSConnection(GITLAB_HOST_URL)
+        try:
+            conn.request("PUT", api_url, headers=headers)
+
+            resp = conn.getresponse()
+            body = resp.read().decode()
+
+            if not str(resp.status).startswith("2"):
+                print(f"{resp.status} | Unable to set labels")
+                try:
+                    print(json.dumps(json.loads(body), indent=4))
+                except ValueError:
+                    print(body)
+                sys.exit(1)
+
+            print(
+                f"Just updated labels of {REPO_FULL_NAME}!{MR_IID}: "
+                f"added [{','.join(add_labels)}], removed [{','.join(remove_labels)}]"
+            )
+        finally:
+            conn.close()
+
+      env:
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.GITLAB_TOKEN_SECRET_NAME)
+              key: $(params.GITLAB_TOKEN_SECRET_KEY)
+{{ end }}

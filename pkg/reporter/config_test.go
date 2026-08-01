@@ -17,6 +17,7 @@ func TestLoadConfigDefaults(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, int64(defaultTailLines), cfg.TailLines)
+	assert.False(t, cfg.LogsEnabled)
 	assert.Equal(t, CommentStrategyUpdate, cfg.CommentStrategy)
 	assert.Equal(t, MaxCommentBytes, 65536)
 	assert.Empty(t, cfg.Namespace)
@@ -27,6 +28,7 @@ func TestLoadConfigOverrides(t *testing.T) {
 	t.Setenv("SYSTEM_NAMESPACE", "krci")
 	t.Setenv("PORTAL_BASE_URL", "https://portal.example.com/c/cluster/cicd/pipelineruns")
 	t.Setenv("REPORTER_TAIL_LINES", "50")
+	t.Setenv("REPORTER_LOGS_ENABLED", "true")
 	t.Setenv("REPORTER_COMMENT_STRATEGY", CommentStrategyNew)
 
 	cfg, err := LoadConfig()
@@ -35,7 +37,27 @@ func TestLoadConfigOverrides(t *testing.T) {
 	assert.Equal(t, "krci", cfg.Namespace)
 	assert.Equal(t, "https://portal.example.com/c/cluster/cicd/pipelineruns", cfg.PortalBaseURL)
 	assert.Equal(t, int64(50), cfg.TailLines)
+	assert.True(t, cfg.LogsEnabled)
 	assert.Equal(t, CommentStrategyNew, cfg.CommentStrategy)
+}
+
+func TestLoadConfigInvalidLogsEnabled(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{name: "not a boolean", value: "maybe"},
+		{name: "set but empty", value: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("REPORTER_LOGS_ENABLED", tt.value)
+
+			_, err := LoadConfig()
+			assert.ErrorContains(t, err, "REPORTER_LOGS_ENABLED must be a boolean")
+		})
+	}
 }
 
 func TestLoadConfigInvalidTailLines(t *testing.T) {

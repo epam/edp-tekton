@@ -22,6 +22,7 @@ global:
 
     env = {e["name"]: e.get("value") for e in container["env"]}
     assert env["REPORTER_TAIL_LINES"] == "100"
+    assert env["REPORTER_LOGS_ENABLED"] == "false"
     assert env["REPORTER_COMMENT_STRATEGY"] == "update"
     assert env["PORTAL_BASE_URL"] == "https://krci-portal-ns.example.com/c/example/cicd/pipelineruns"
 
@@ -125,15 +126,44 @@ global:
 
     assert by_resource["pipelineruns"] == ["get", "list", "patch", "watch"]
     assert by_resource["taskruns"] == ["get", "list", "watch"]
-    assert by_resource["pods/log"] == ["get"]
     assert by_resource["secrets"] == ["get"]
     assert by_resource["codebases"] == ["get", "list", "watch"]
     assert by_resource["gitservers"] == ["get", "list", "watch"]
     assert "leases" in by_resource
 
+    # The pods/log grant exists only when logsReporting is enabled.
+    assert "pods/log" not in by_resource
+
+    # Log fetching uses only the pods/log subresource; a grant on pods itself
+    # would be standing access nothing reads.
+    assert "pods" not in by_resource
+
     binding = r["rolebinding"]["tekton-reporter"]
     assert binding["roleRef"]["name"] == "tekton-reporter"
     assert binding["subjects"][0]["name"] == "tekton-reporter"
+
+
+def test_reporter_logs_reporting_enabled():
+    config = """
+global:
+  dnsWildCard: "example.com"
+reporter:
+  logsReporting: true
+    """
+
+    r = helm_template(config)
+
+    container = r["deployment"]["tekton-reporter"]["spec"]["template"]["spec"]["containers"][0]
+    env = {e["name"]: e.get("value") for e in container["env"]}
+    assert env["REPORTER_LOGS_ENABLED"] == "true"
+
+    rules = r["role"]["tekton-reporter"]["rules"]
+    by_resource = {}
+    for rule in rules:
+        for resource in rule["resources"]:
+            by_resource[resource] = sorted(rule["verbs"])
+    assert by_resource["pods/log"] == ["get"]
+    assert "pods" not in by_resource
 
 
 def reporter_secret_rules(r):

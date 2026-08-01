@@ -25,20 +25,14 @@ rules:
     resources:
       - taskruns
 
-  - verbs:
-      - get
-      - list
-    apiGroups:
-      - ''
-    resources:
-      - pods
-
+{{- if .Values.reporter.logsReporting }}
   - verbs:
       - get
     apiGroups:
       - ''
     resources:
       - pods/log
+{{- end }}
 
   # Dropped rather than emitted empty: an empty resourceNames grants every
   # secret in the namespace, not none.

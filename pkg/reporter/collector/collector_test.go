@@ -144,6 +144,49 @@ func TestCollect(t *testing.T) {
 	assert.True(t, fetch.Succeeded)
 }
 
+func TestNoopLogFetcherReturnsEmpty(t *testing.T) {
+	t.Parallel()
+
+	// The zero and negative cases are the ones that matter: PodLogOptions
+	// reads an unset tail as "the whole log", and the noop must be immune to
+	// that interpretation.
+	tests := []struct {
+		name      string
+		tailLines int64
+	}{
+		{name: "regular tail", tailLines: 100},
+		{name: "single line", tailLines: 1},
+		{name: "zero", tailLines: 0},
+		{name: "negative", tailLines: -1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			logs, err := NoopLogFetcher{}.GetLogs(context.Background(), "krci", "pod", "container", tt.tailLines)
+			assert.NoError(t, err)
+			assert.Empty(t, logs)
+		})
+	}
+}
+
+func TestCollectWithNoopFetcherKeepsFailedStepsWithoutLogs(t *testing.T) {
+	t.Parallel()
+
+	failedTaskRun := newTaskRun("build", false, []tektonpipelineApi.StepState{terminatedStep("npm-build", 1)})
+
+	reader := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(failedTaskRun).Build()
+
+	report, err := New(reader, NoopLogFetcher{}, 100).
+		Collect(context.Background(), newPipelineRun("build"))
+	require.NoError(t, err)
+
+	require.Len(t, report.Tasks, 1)
+	assert.False(t, report.Tasks[0].Steps[0].Succeeded, "step outcome is still reported")
+	assert.Empty(t, report.Tasks[0].Steps[0].LogTail, "no log tail is published when log reporting is disabled")
+}
+
 func TestCollectLogFetchErrorDegradesGracefully(t *testing.T) {
 	t.Parallel()
 

@@ -29,12 +29,24 @@ rules:
     resourceNames:
       - tekton-edp-interceptor-certs
 
+  # The git server token is read by name: the interceptor resolves a Codebase to
+  # its GitServer and reads GitServer.spec.nameSshKeySecret. The rule is omitted
+  # entirely when no name is known, because an empty resourceNames grants every
+  # secret in the namespace rather than none. A GitServer created with a custom
+  # nameSshKeySecret must be listed in interceptor.extraSecretNames.
+{{- $gitServerSecrets := include "edp-tekton-interceptor.gitServerSecretNames" . | fromJsonArray }}
+{{- if $gitServerSecrets }}
   - verbs:
       - get
     apiGroups:
       - ''
     resources:
       - secrets
+    resourceNames:
+      {{- range $gitServerSecrets }}
+      - {{ . | quote }}
+      {{- end }}
+{{- end }}
 
   - verbs:
       - get

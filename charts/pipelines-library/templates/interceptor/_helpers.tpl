@@ -55,3 +55,39 @@ Create the name of the service account to use
 {{- define "edp-tekton-interceptor.serviceAccountName" -}}
 {{- default (include "edp-tekton-interceptor.name" .) .Values.interceptor.serviceAccount.name }}
 {{- end }}
+
+{{/*
+Git server secret names the interceptor is allowed to read, as a JSON array.
+
+The interceptor resolves a Codebase to its GitServer and then reads the secret
+named by GitServer.spec.nameSshKeySecret, so the RBAC rule has to enumerate
+every name that field can hold. Three sources cover it:
+
+  1. GitServers this chart creates - the expression MUST stay identical to
+     templates/resources/gitservers/gitserver.yaml, or RBAC silently stops
+     matching the CR it is meant to authorise.
+  2. GitServers the portal creates - it derives the name by convention,
+     "gerrit-ciuser-sshkey" for gerrit and "ci-<provider>" for the rest.
+  3. interceptor.extraSecretNames - the escape hatch for a nameSshKeySecret
+     that was overridden by hand, which no template can predict.
+
+Callers must drop the whole rule when this list is empty: an empty
+resourceNames means "every secret", not "none".
+*/}}
+{{- define "edp-tekton-interceptor.gitServerSecretNames" -}}
+{{- $names := list -}}
+{{- $providers := .Values.global.gitProviders | default list -}}
+{{- range $name, $server := .Values.gitServers -}}
+{{- if has $server.gitProvider $providers -}}
+{{- $names = append $names (default (printf "ci-%s" $server.gitProvider) $server.nameSshKeySecret) -}}
+{{- end -}}
+{{- end -}}
+{{- range $provider := $providers -}}
+{{- $names = append $names (printf "ci-%s" $provider) -}}
+{{- if eq $provider "gerrit" -}}
+{{- $names = append $names "gerrit-ciuser-sshkey" -}}
+{{- end -}}
+{{- end -}}
+{{- $names = concat $names (.Values.interceptor.extraSecretNames | default list) -}}
+{{- $names | uniq | sortAlpha | toJson -}}
+{{- end }}

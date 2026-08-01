@@ -396,6 +396,15 @@ interceptor:
     # -- If not set, a name is generated using the fullname template
     name: ""
 
+  # The interceptor may only read the git server secrets it is granted by name.
+  # Names created by this chart and the default names the portal generates
+  # ("ci-<provider>", "gerrit-ciuser-sshkey" for gerrit) are covered already.
+  # List a secret here only when a GitServer was given a custom
+  # nameSshKeySecret, otherwise the interceptor cannot read its token and
+  # webhook processing fails for that git server.
+  # -- Additional git server secret names the interceptor is allowed to read
+  extraSecretNames: []
+
   podAnnotations: {}
 
   podSecurityContext: {}

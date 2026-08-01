@@ -5,16 +5,6 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   name: tekton-pipeline-role
 rules:
-  # allow to get configs for KRCI from configmap
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-    verbs:
-      - get
-      - list
-      - watch
-
   # baseline operations with codebase and cbis
   - apiGroups:
       - 'v2.edp.epam.com'

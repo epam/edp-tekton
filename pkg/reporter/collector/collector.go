@@ -43,9 +43,6 @@ type Report struct {
 	PipelineRunNamespace string
 	Succeeded            bool
 	Tasks                []TaskResult
-	// TaskRuns are the child TaskRuns backing Tasks, kept so callers can
-	// inspect step specs (e.g. secret env references) without re-fetching.
-	TaskRuns []*tektonpipelineApi.TaskRun
 }
 
 // LogFetcher reads the trailing log lines of a container. It is an interface
@@ -99,7 +96,6 @@ func (c *Collector) Collect(ctx context.Context, pipelineRun *tektonpipelineApi.
 		}
 
 		report.Tasks = append(report.Tasks, c.collectTask(ctx, child.PipelineTaskName, taskRun))
-		report.TaskRuns = append(report.TaskRuns, taskRun)
 	}
 
 	return report, nil

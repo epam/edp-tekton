@@ -125,7 +125,6 @@ func TestCollect(t *testing.T) {
 
 	assert.False(t, report.Succeeded)
 	require.Len(t, report.Tasks, 2)
-	require.Len(t, report.TaskRuns, 2)
 
 	build := report.Tasks[0]
 	assert.Equal(t, "task-build", build.Name)

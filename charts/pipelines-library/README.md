@@ -77,7 +77,9 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | ctLint.validateMaintainers | bool | `false` |  |
 | fullnameOverride | string | `""` |  |
 | gitServers | object | `{}` |  |
-| githubOwners | object | `{"checkType":"all","enabled":true}` | Enabling this feature ensures that Tekton pipelines trigger only when the repo owner creates a PR. More information: https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests |
+| githubAcl | object | `{"allowedAssociations":["OWNER","MEMBER","COLLABORATOR"],"enabled":true}` | Restrict who can trigger GitHub review PipelineRuns, based on the author_association field of the webhook payload: the PR author for pull_request opened/synchronize events, the comment author for /recheck and /ok-to-test issue_comment events (Prow-style: an allowed member can approve an external contributor's PR by commenting /ok-to-test). |
+| githubAcl.allowedAssociations | list | `["OWNER","MEMBER","COLLABORATOR"]` | GitHub author_association values allowed to trigger review pipelines. Valid values: OWNER, MEMBER, COLLABORATOR, CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE. |
+| githubOwners | object | `{"checkType":"all","enabled":false}` | DEPRECATED in favor of githubAcl. Enables the upstream Tekton Triggers owners validation (OWNERS file / public org members / collaborators) on pull_request events. WARNING: when enabled, the /recheck comment command stops working for everyone because the upstream interceptor only lets /ok-to-test comments through. More information: https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests |
 | global.dnsWildCard | string | `""` | a cluster DNS wildcard name |
 | global.dockerRegistry.type | string | `"ecr"` | Define Image Registry that will to be used in Pipelines. Can be ecr (default), harbor, dockerhub |
 | global.dockerRegistry.url | string | `"<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/<registry_space>"` | Docker Registry endpoint. In dockerhub case the URL must be specified in accordance with the Kaniko name convention (docker.io/<registry_space>) |

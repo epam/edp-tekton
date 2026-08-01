@@ -271,6 +271,23 @@ https://{{ include "edp-tekton.portalHost" . }}/c/{{ $.Values.clusterName | defa
 {{- end }}
 {{- end -}}
 
+# CEL filter for the GitHub review Trigger. With githubAcl enabled it gates events on
+# the GitHub-computed author_association payload field: the PR author for pull_request
+# opened/synchronize, the comment author for issue_comment created (so only allowed
+# members can /recheck or /ok-to-test an external contributor's PR). Comments on plain
+# issues are excluded via has(body.issue.pull_request).
+{{- define "edp-tekton.githubReviewCelFilter" -}}
+{{- if .Values.githubAcl.enabled -}}
+{{- if not .Values.githubAcl.allowedAssociations -}}
+{{- fail "githubAcl.allowedAssociations must be a non-empty list when githubAcl.enabled is true (an empty list would block all review pipeline triggers, including /ok-to-test)" -}}
+{{- end -}}
+{{- $allowed := .Values.githubAcl.allowedAssociations | toJson -}}
+(body.action in ['opened', 'synchronize'] && has(body.pull_request) && body.pull_request.author_association in {{ $allowed }}) || (body.action == 'created' && has(body.comment) && has(body.issue.pull_request) && body.comment.author_association in {{ $allowed }})
+{{- else -}}
+body.action in ['opened', 'synchronize', 'created']
+{{- end -}}
+{{- end -}}
+
 # PipelineRun spec.status for review runs: born Pending when
 # pipelines.queue.pendingPipelineRun is set, so a PipelineRunQueue decides when
 # they start.

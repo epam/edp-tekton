@@ -134,3 +134,44 @@ global:
     binding = r["rolebinding"]["tekton-reporter"]
     assert binding["roleRef"]["name"] == "tekton-reporter"
     assert binding["subjects"][0]["name"] == "tekton-reporter"
+
+
+def reporter_secret_rules(r):
+    return [
+        rule
+        for rule in r["role"]["tekton-reporter"]["rules"]
+        if "secrets" in rule["resources"]
+    ]
+
+
+def test_reporter_reads_only_named_secrets():
+    config = """
+global:
+  dnsWildCard: "example.com"
+    """
+
+    r = helm_template(config)
+
+    # Only the git server token it authenticates with: the reporter never reads
+    # a pipeline's secrets, so nothing else belongs here.
+    rules = reporter_secret_rules(r)
+    assert len(rules) == 1
+    assert rules[0]["resourceNames"] == [
+        "ci-bitbucket",
+        "ci-gerrit",
+        "ci-github",
+        "ci-gitlab",
+        "gerrit-ciuser-sshkey",
+    ]
+
+
+def test_reporter_drops_secret_rule_when_no_names_are_known():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders: []
+    """
+
+    r = helm_template(config)
+
+    assert reporter_secret_rules(r) == []

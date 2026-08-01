@@ -40,12 +40,21 @@ rules:
     resources:
       - pods/log
 
+  # Dropped rather than emitted empty: an empty resourceNames grants every
+  # secret in the namespace, not none.
+{{- $reporterSecrets := include "edp-tekton-reporter.secretNames" . | fromJsonArray }}
+{{- if $reporterSecrets }}
   - verbs:
       - get
     apiGroups:
       - ''
     resources:
       - secrets
+    resourceNames:
+      {{- range $reporterSecrets }}
+      - {{ . | quote }}
+      {{- end }}
+{{- end }}
 
   - verbs:
       - get

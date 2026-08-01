@@ -176,9 +176,7 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 		return err
 	}
 
-	masker := secretmask.NewMasker(
-		secretmask.CollectSecretValues(ctx, r.reader, report.TaskRuns, gitInfo.Token),
-	)
+	masker := secretmask.NewMasker([]string{gitInfo.Token})
 
 	for taskIdx := range report.Tasks {
 		for stepIdx := range report.Tasks[taskIdx].Steps {

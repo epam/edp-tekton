@@ -227,6 +227,7 @@ reporter:
   # -- Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment
   commentStrategy: update
 
+
   image:
     repository: epamedp/edp-tekton
     pullPolicy: IfNotPresent
@@ -396,12 +397,10 @@ interceptor:
     # -- If not set, a name is generated using the fullname template
     name: ""
 
-  # The interceptor may only read the git server secrets it is granted by name.
-  # Names created by this chart and the default names the portal generates
-  # ("ci-<provider>", "gerrit-ciuser-sshkey" for gerrit) are covered already.
-  # List a secret here only when a GitServer was given a custom
-  # nameSshKeySecret, otherwise the interceptor cannot read its token and
-  # webhook processing fails for that git server.
+  # Names this chart creates, and the defaults the portal generates, are
+  # covered already. Add a name here when a GitServer was given a custom
+  # nameSshKeySecret, or the interceptor cannot read its token and webhook
+  # processing fails for that git server.
   # -- Additional git server secret names the interceptor is allowed to read
   extraSecretNames: []
 

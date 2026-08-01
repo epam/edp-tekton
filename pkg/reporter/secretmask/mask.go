@@ -1,18 +1,15 @@
-// Package secretmask hides Kubernetes Secret values referenced by a
-// PipelineRun's steps from published log snippets.
+// Package secretmask hides known secret values from published log snippets.
+//
+// It masks only values the reporter already holds, never values it fetches:
+// reading a secret to hide it would hand the reporter the very access that
+// publishing logs makes dangerous.
 package secretmask
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/hex"
 	"sort"
 	"strings"
-
-	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -95,63 +92,4 @@ func (m *Masker) Mask(text string) string {
 	}
 
 	return text
-}
-
-// CollectSecretValues gathers the values of all Secrets referenced via
-// SecretKeyRef env vars by the given TaskRuns' steps, plus the extra secret
-// values passed in (e.g. the git provider token used by the reporter itself).
-func CollectSecretValues(
-	ctx context.Context,
-	reader ctrlClient.Reader,
-	taskRuns []*tektonpipelineApi.TaskRun,
-	extra ...string,
-) []string {
-	secretNames := map[types.NamespacedName]struct{}{}
-
-	for _, taskRun := range taskRuns {
-		if taskRun.Status.TaskSpec == nil {
-			continue
-		}
-
-		for _, step := range taskRun.Status.TaskSpec.Steps {
-			for _, env := range step.Env {
-				if env.ValueFrom == nil || env.ValueFrom.SecretKeyRef == nil {
-					continue
-				}
-
-				secretNames[types.NamespacedName{
-					Namespace: taskRun.Namespace,
-					Name:      env.ValueFrom.SecretKeyRef.Name,
-				}] = struct{}{}
-			}
-
-			for _, envFrom := range step.EnvFrom {
-				if envFrom.SecretRef == nil {
-					continue
-				}
-
-				secretNames[types.NamespacedName{
-					Namespace: taskRun.Namespace,
-					Name:      envFrom.SecretRef.Name,
-				}] = struct{}{}
-			}
-		}
-	}
-
-	values := make([]string, 0, len(secretNames)+len(extra))
-	values = append(values, extra...)
-
-	for name := range secretNames {
-		secret := &corev1.Secret{}
-		// A secret that cannot be read cannot leak into the logs either; skip it.
-		if err := reader.Get(ctx, name, secret); err != nil {
-			continue
-		}
-
-		for _, data := range secret.Data {
-			values = append(values, string(data))
-		}
-	}
-
-	return values
 }

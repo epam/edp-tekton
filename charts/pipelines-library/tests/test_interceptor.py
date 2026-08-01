@@ -16,9 +16,7 @@ def granted_secret_names(r):
 
 
 def assert_no_unrestricted_secret_rule(r):
-    # An empty or absent resourceNames grants every secret in the namespace
-    # rather than none, so a rule that loses its names silently restores the
-    # blanket access this scoping removed.
+    # A rule that loses its names silently restores blanket access.
     unrestricted = [rule for rule in secret_rules(r) if not rule.get("resourceNames")]
     assert unrestricted == []
 
@@ -178,8 +176,7 @@ global:
 
 def test_interceptor_drops_git_server_secret_rule_when_providers_are_null():
     # An explicit null reaches the template as nil rather than an empty list,
-    # which ranges differently - the rule must still be omitted, not emitted
-    # with an empty resourceNames that would match every secret.
+    # which ranges differently.
     config = """
 global:
   dnsWildCard: "example.com"
@@ -212,8 +209,6 @@ interceptor:
 
 
 def test_interceptor_deduplicates_secret_names():
-    # An operator repeating a convention name must not produce a duplicated
-    # resourceNames entry.
     config = """
 global:
   dnsWildCard: "example.com"

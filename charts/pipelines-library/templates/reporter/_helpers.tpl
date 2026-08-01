@@ -38,6 +38,10 @@ Create the name of the service account to use
 {{- default (include "edp-tekton-reporter.name" .) .Values.reporter.serviceAccount.name }}
 {{- end }}
 
+{{- define "edp-tekton-reporter.secretNames" -}}
+{{- include "edp-tekton.gitServerSecretNames" . -}}
+{{- end }}
+
 {{/*
 Portal host. Defaults to the krci-portal chart's default ingress host
 (krci-portal-<namespace>.<global.dnsWildCard>); override .Values.portalHost when

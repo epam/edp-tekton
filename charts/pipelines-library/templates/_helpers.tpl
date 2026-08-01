@@ -295,3 +295,28 @@ https://{{ include "edp-tekton.portalHost" . }}/c/{{ $.Values.clusterName | defa
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Secret names held by GitServer.spec.nameSshKeySecret, as a JSON array.
+
+The chart branch must stay identical to the expression in
+templates/resources/gitservers/gitserver.yaml, or RBAC silently stops matching
+the CR it authorises. The provider branch mirrors the names the portal derives
+for GitServers it creates itself.
+*/}}
+{{- define "edp-tekton.gitServerSecretNames" -}}
+{{- $names := list -}}
+{{- $providers := .Values.global.gitProviders | default list -}}
+{{- range $name, $server := .Values.gitServers -}}
+{{- if has $server.gitProvider $providers -}}
+{{- $names = append $names (default (printf "ci-%s" $server.gitProvider) $server.nameSshKeySecret) -}}
+{{- end -}}
+{{- end -}}
+{{- range $provider := $providers -}}
+{{- $names = append $names (printf "ci-%s" $provider) -}}
+{{- if eq $provider "gerrit" -}}
+{{- $names = append $names "gerrit-ciuser-sshkey" -}}
+{{- end -}}
+{{- end -}}
+{{- $names | uniq | sortAlpha | toJson -}}
+{{- end -}}

@@ -93,6 +93,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | grafana.serviceMonitor.prometheusReleaseLabels.release | string | `"prom"` |  |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true |
+| interceptor.extraSecretNames | list | `[]` | Additional git server secret names the interceptor is allowed to read |
 | interceptor.extraVolumeMounts | list | `[]` | Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it |
 | interceptor.extraVolumes | list | `[]` | Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS (required for pipelines.queue.enabled against such servers) |
 | interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |

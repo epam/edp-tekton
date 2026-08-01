@@ -570,6 +570,12 @@ gitServers: {}
 #   my-github:
 #     gitProvider: github
 #     host: github.com
+#     # -- Annotations set on the GitServer resource. For example, disable
+#     # failed-step log publishing in pull request comments for everything
+#     # reported through this git server (effective only when
+#     # reporter.logsReporting is enabled):
+#     annotations:
+#       app.edp.epam.com/reporter-logs: "false"
 #     quickLink:
 #       enabled: false
 #     webhook:

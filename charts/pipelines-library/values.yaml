@@ -209,24 +209,25 @@ tekton-cache:
 # clusterName values.
 #
 # SECURITY NOTE: published logs come from pipeline steps that execute the pull
-# request's own code. Secret values referenced by those steps are masked on a
-# best-effort basis (raw value plus common base64/hex encodings), but this is
-# not a hard security boundary — a malicious author can print an arbitrarily
-# transformed secret that masking cannot recognise. Only enable this for
-# pipelines whose secret-bearing steps do not run untrusted code, or whose
-# injected secrets have a blast radius limited to the build itself.
+# request's own code, and are republished verbatim apart from masking the git
+# provider token the reporter itself authenticates with. A step that prints a
+# secret it holds leaks it into the pull request comment. Log publishing is
+# therefore off by default; enable logsReporting only for pipelines whose
+# steps do not print secrets.
 reporter:
   # -- Deploy the Tekton Reporter as a part of the pipeline library when true. Default: true
   enabled: true
 
   nameOverride: "tekton-reporter"
 
-  # -- Number of trailing log lines published for every failed step
+  # -- Publish trailing log lines of failed steps in pull request report comments. Disabled by default so pipeline output, which may carry secrets, is not republished to the VCS; the reporter then also stops reading pod logs and is not granted pods/log access. Default: false
+  logsReporting: false
+
+  # -- Number of trailing log lines published for every failed step (used only when logsReporting is true)
   tailLines: 100
 
   # -- Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment
   commentStrategy: update
-
 
   image:
     repository: epamedp/edp-tekton

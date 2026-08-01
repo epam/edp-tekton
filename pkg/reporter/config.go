@@ -27,6 +27,11 @@ type Config struct {
 	Namespace string
 	// TailLines is the number of trailing log lines fetched for every failed step.
 	TailLines int64
+	// LogsEnabled controls whether trailing log lines of failed steps are
+	// published in the pull request comment. Disabled by default: pipeline
+	// output may carry secrets, and not republishing it to the VCS is the
+	// point.
+	LogsEnabled bool
 	// CommentStrategy is either CommentStrategyUpdate or CommentStrategyNew.
 	CommentStrategy string
 	// PortalBaseURL is the base URL of the KubeRocketCI portal used to render
@@ -38,6 +43,7 @@ func LoadConfig() (*Config, error) {
 	cfg := &Config{
 		Namespace:       os.Getenv("SYSTEM_NAMESPACE"),
 		TailLines:       defaultTailLines,
+		LogsEnabled:     false,
 		CommentStrategy: CommentStrategyUpdate,
 		PortalBaseURL:   os.Getenv("PORTAL_BASE_URL"),
 	}
@@ -49,6 +55,15 @@ func LoadConfig() (*Config, error) {
 		}
 
 		cfg.TailLines = lines
+	}
+
+	if v, ok := os.LookupEnv("REPORTER_LOGS_ENABLED"); ok {
+		enabled, err := strconv.ParseBool(v)
+		if err != nil {
+			return nil, fmt.Errorf("REPORTER_LOGS_ENABLED must be a boolean, got %q", v)
+		}
+
+		cfg.LogsEnabled = enabled
 	}
 
 	if v, ok := os.LookupEnv("REPORTER_COMMENT_STRATEGY"); ok {

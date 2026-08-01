@@ -37,6 +37,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: REPORTER_TAIL_LINES
               value: {{ .Values.reporter.tailLines | quote }}
+            - name: REPORTER_LOGS_ENABLED
+              value: {{ .Values.reporter.logsReporting | quote }}
             - name: REPORTER_COMMENT_STRATEGY
               value: {{ .Values.reporter.commentStrategy | quote }}
             - name: PORTAL_BASE_URL

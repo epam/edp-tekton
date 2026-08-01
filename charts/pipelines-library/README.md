@@ -155,6 +155,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | reporter.image.repository | string | `"epamedp/edp-tekton"` |  |
 | reporter.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | reporter.imagePullSecrets | list | `[]` |  |
+| reporter.logsReporting | bool | `false` | Publish trailing log lines of failed steps in pull request report comments. Disabled by default so pipeline output, which may carry secrets, is not republished to the VCS; the reporter then also stops reading pod logs and is not granted pods/log access. Default: false |
 | reporter.nameOverride | string | `"tekton-reporter"` |  |
 | reporter.nodeSelector | object | `{}` | Node labels for pod assignment |
 | reporter.podAnnotations | object | `{}` |  |
@@ -168,7 +169,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | reporter.securityContext.runAsUser | int | `65532` |  |
 | reporter.serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | reporter.serviceAccount.name | string | `""` | If not set, a name is generated using the fullname template |
-| reporter.tailLines | int | `100` | Number of trailing log lines published for every failed step |
+| reporter.tailLines | int | `100` | Number of trailing log lines published for every failed step (used only when logsReporting is true) |
 | reporter.tolerations | list | `[]` | Toleration labels for pod assignment |
 | tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
 | tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |

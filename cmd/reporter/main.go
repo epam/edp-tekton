@@ -101,10 +101,17 @@ func main() {
 		log.Fatalf("Failed to create Kubernetes client: %v", err)
 	}
 
+	// With log reporting disabled the pods/log API must never be hit (RBAC does
+	// not grant it), so the real fetcher is not even constructed.
+	var logFetcher collector.LogFetcher = collector.NoopLogFetcher{}
+	if config.LogsEnabled {
+		logFetcher = collector.NewPodLogFetcher(typedClient)
+	}
+
 	reconciler := controller.NewPipelineRunReconciler(
 		mgr.GetClient(),
 		mgr.GetAPIReader(),
-		collector.New(mgr.GetAPIReader(), collector.NewPodLogFetcher(typedClient), config.TailLines),
+		collector.New(mgr.GetAPIReader(), logFetcher, config.TailLines),
 		formatter.New(formatter.PortalLinkBuilder{BaseURL: config.PortalBaseURL}),
 		provider.New,
 		config,

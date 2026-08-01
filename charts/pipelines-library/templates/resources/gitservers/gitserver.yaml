@@ -4,6 +4,10 @@ apiVersion: v2.edp.epam.com/v1
 kind: GitServer
 metadata:
   name: {{ $name }}
+  {{- with $server.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "edp-tekton.labels" $ | nindent 4 }}
 spec:

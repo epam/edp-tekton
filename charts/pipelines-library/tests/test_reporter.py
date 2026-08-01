@@ -143,6 +143,60 @@ global:
     assert binding["subjects"][0]["name"] == "tekton-reporter"
 
 
+def test_gitserver_annotations_passthrough():
+    # The reporter honors the app.edp.epam.com/reporter-logs annotation on a
+    # GitServer; the chart must let values declare it (and any other
+    # annotation) on GitServers it manages.
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - github
+gitServers:
+  my-github:
+    gitProvider: github
+    host: github.com
+    annotations:
+      app.edp.epam.com/reporter-logs: "false"
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: false
+      ingress:
+        enabled: false
+    """
+
+    r = helm_template(config)
+
+    gitserver = r["gitserver"]["my-github"]
+    assert gitserver["metadata"]["annotations"] == {
+        "app.edp.epam.com/reporter-logs": "false"
+    }
+
+
+def test_gitserver_without_annotations_renders_none():
+    config = """
+global:
+  dnsWildCard: "example.com"
+  gitProviders:
+    - github
+gitServers:
+  my-github:
+    gitProvider: github
+    host: github.com
+    webhook:
+      skipWebhookSSLVerification: false
+    eventListener:
+      enabled: false
+      ingress:
+        enabled: false
+    """
+
+    r = helm_template(config)
+
+    assert "annotations" not in r["gitserver"]["my-github"]["metadata"]
+
+
 def test_reporter_logs_reporting_enabled():
     config = """
 global:

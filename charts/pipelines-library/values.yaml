@@ -300,12 +300,28 @@ kaniko:
   customCert: false
 
 
-# -- Enabling this feature ensures that Tekton pipelines trigger only when the repo owner creates a PR.
-# More information: https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests
+# -- DEPRECATED in favor of githubAcl. Enables the upstream Tekton Triggers owners validation
+# (OWNERS file / public org members / collaborators) on pull_request events. WARNING: when enabled,
+# the /recheck comment command stops working for everyone because the upstream interceptor only
+# lets /ok-to-test comments through. More information:
+# https://tekton.dev/docs/triggers/interceptors/#owners-validation-for-pull-requests
 githubOwners:
-  enabled: true
+  enabled: false
   # This value is needed for private repos or when checkType is set to orgMembers or repoMembers or all
   checkType: "all"
+
+# -- Restrict who can trigger GitHub review PipelineRuns, based on the author_association
+# field of the webhook payload: the PR author for pull_request opened/synchronize events,
+# the comment author for /recheck and /ok-to-test issue_comment events (Prow-style:
+# an allowed member can approve an external contributor's PR by commenting /ok-to-test).
+githubAcl:
+  enabled: true
+  # -- GitHub author_association values allowed to trigger review pipelines.
+  # Valid values: OWNER, MEMBER, COLLABORATOR, CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE.
+  allowedAssociations:
+    - OWNER
+    - MEMBER
+    - COLLABORATOR
 
 # Tekton configuration section
 tekton:

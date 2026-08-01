@@ -32,7 +32,7 @@ spec:
         kind: ClusterInterceptor
       params:
         - name: "filter"
-          value: "body.action in ['opened', 'synchronize', 'created']"
+          value: {{ include "edp-tekton.githubReviewCelFilter" . | quote }}
     - ref:
         name: "edp"
         kind: NamespacedInterceptor

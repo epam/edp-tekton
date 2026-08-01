@@ -16,7 +16,7 @@ seLinuxContext:
 users:
   - system:serviceaccount:{{ .Release.Namespace }}:{{ include "edp-tekton-interceptor.serviceAccountName" . }}
 allowHostDirVolumePlugin: false
-allowHostIPC: true
+allowHostIPC: false
 allowHostNetwork: false
 allowHostPID: false
 allowHostPorts: false

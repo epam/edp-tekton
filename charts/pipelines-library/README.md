@@ -155,7 +155,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | reporter.image.repository | string | `"epamedp/edp-tekton"` |  |
 | reporter.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
 | reporter.imagePullSecrets | list | `[]` |  |
-| reporter.logsReporting | bool | `false` | Publish trailing log lines of failed steps in pull request report comments. Disabled by default so pipeline output, which may carry secrets, is not republished to the VCS; the reporter then also stops reading pod logs and is not granted pods/log access. Default: false |
+| reporter.logsReporting | bool | `false` | Publish trailing log lines of failed steps in pull request report comments. Disabled by default so pipeline output, which may carry secrets, is not republished to the VCS; the reporter then also stops reading pod logs and is not granted pods/log access. When enabled, a single PipelineRun or a whole GitServer can still opt out (or back in) via the `app.edp.epam.com/reporter-logs: "true"/"false"` annotation; the PipelineRun annotation wins over the GitServer one. Default: false |
 | reporter.nameOverride | string | `"tekton-reporter"` |  |
 | reporter.nodeSelector | object | `{}` | Node labels for pod assignment |
 | reporter.podAnnotations | object | `{}` |  |

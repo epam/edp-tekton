@@ -18,11 +18,14 @@ import (
 )
 
 type stubLogFetcher struct {
-	logs map[string]string
-	err  error
+	logs   map[string]string
+	err    error
+	called bool
 }
 
 func (s *stubLogFetcher) GetLogs(_ context.Context, _, _, container string, _ int64) (string, error) {
+	s.called = true
+
 	if s.err != nil {
 		return "", s.err
 	}
@@ -120,7 +123,11 @@ func TestCollect(t *testing.T) {
 	}}
 
 	// The PipelineRun references a pruned TaskRun as well; it must be skipped.
-	report, err := New(reader, fetcher, 100).Collect(context.Background(), newPipelineRun("build", "fetch", "pruned"))
+	report, err := New(reader, fetcher).Collect(
+		context.Background(),
+		newPipelineRun("build", "fetch", "pruned"),
+		Options{FetchLogs: true, TailLines: 100},
+	)
 	require.NoError(t, err)
 
 	assert.False(t, report.Succeeded)
@@ -178,13 +185,32 @@ func TestCollectWithNoopFetcherKeepsFailedStepsWithoutLogs(t *testing.T) {
 
 	reader := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(failedTaskRun).Build()
 
-	report, err := New(reader, NoopLogFetcher{}, 100).
-		Collect(context.Background(), newPipelineRun("build"))
+	report, err := New(reader, NoopLogFetcher{}).
+		Collect(context.Background(), newPipelineRun("build"), Options{FetchLogs: true, TailLines: 100})
 	require.NoError(t, err)
 
 	require.Len(t, report.Tasks, 1)
 	assert.False(t, report.Tasks[0].Steps[0].Succeeded, "step outcome is still reported")
 	assert.Empty(t, report.Tasks[0].Steps[0].LogTail, "no log tail is published when log reporting is disabled")
+}
+
+func TestCollectFetchLogsDisabledSkipsFetcher(t *testing.T) {
+	t.Parallel()
+
+	failedTaskRun := newTaskRun("build", false, []tektonpipelineApi.StepState{terminatedStep("npm-build", 1)})
+
+	reader := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(failedTaskRun).Build()
+
+	fetcher := &stubLogFetcher{logs: map[string]string{"step-npm-build": "should not be fetched"}}
+
+	report, err := New(reader, fetcher).
+		Collect(context.Background(), newPipelineRun("build"), Options{FetchLogs: false, TailLines: 100})
+	require.NoError(t, err)
+
+	require.Len(t, report.Tasks, 1)
+	assert.False(t, report.Tasks[0].Steps[0].Succeeded)
+	assert.Empty(t, report.Tasks[0].Steps[0].LogTail, "log tail must stay empty when FetchLogs is false")
+	assert.False(t, fetcher.called, "log fetcher must not be called when FetchLogs is false")
 }
 
 func TestCollectLogFetchErrorDegradesGracefully(t *testing.T) {
@@ -194,8 +220,8 @@ func TestCollectLogFetchErrorDegradesGracefully(t *testing.T) {
 
 	reader := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(failedTaskRun).Build()
 
-	report, err := New(reader, &stubLogFetcher{err: errors.New("pod is gone")}, 100).
-		Collect(context.Background(), newPipelineRun("build"))
+	report, err := New(reader, &stubLogFetcher{err: errors.New("pod is gone")}).
+		Collect(context.Background(), newPipelineRun("build"), Options{FetchLogs: true, TailLines: 100})
 	require.NoError(t, err)
 
 	require.Len(t, report.Tasks, 1)

@@ -171,7 +171,10 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 		return permanent(err)
 	}
 
-	report, err := r.collector.Collect(ctx, pipelineRun)
+	fetchLogs := resolveLogsReporting(ctx, r.config, gitInfo, pipelineRun)
+	collectOpts := collector.Options{FetchLogs: fetchLogs, TailLines: r.config.TailLines}
+
+	report, err := r.collector.Collect(ctx, pipelineRun, collectOpts)
 	if err != nil {
 		return err
 	}
@@ -236,6 +239,56 @@ func (r *PipelineRunReconciler) markHandled(
 	}
 
 	return nil
+}
+
+// resolveLogsReporting decides whether failed-step log tails are fetched for
+// this PipelineRun. The global config flag is a hard ceiling: when it is off,
+// the reporter has no pods/log RBAC, so annotations are never consulted. When
+// it is on, a PipelineRun override wins over a GitServer override, which wins
+// over the global default (enabled).
+func resolveLogsReporting(
+	ctx context.Context,
+	cfg *reporter.Config,
+	gitInfo *gitserver.Info,
+	pipelineRun *tektonpipelineApi.PipelineRun,
+) bool {
+	if !cfg.LogsEnabled {
+		return false
+	}
+
+	if v := logsOverride(ctx, pipelineRun.Annotations, "PipelineRun "+pipelineRun.Name); v != nil {
+		return *v
+	}
+
+	if v := logsOverride(ctx, gitInfo.Annotations, "GitServer"); v != nil {
+		return *v
+	}
+
+	return true
+}
+
+// logsOverride reads the logs-reporting override annotation from an object's
+// annotations. A malformed value is logged and treated as absent, so a typo
+// falls through the cascade instead of failing the report.
+func logsOverride(ctx context.Context, annotations map[string]string, subject string) *bool {
+	raw, ok := annotations[reporter.LogsReportingAnnotation]
+	if !ok {
+		return nil
+	}
+
+	value, err := strconv.ParseBool(raw)
+	if err != nil {
+		log.FromContext(ctx).Info(
+			"Malformed logs-reporting annotation, falling through",
+			"annotation", reporter.LogsReportingAnnotation,
+			"value", raw,
+			"subject", subject,
+		)
+
+		return nil
+	}
+
+	return &value
 }
 
 // pullRequestRef extracts the repository full name and pull request number

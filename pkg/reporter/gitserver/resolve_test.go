@@ -13,6 +13,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
+
+	"github.com/epam/edp-tekton/pkg/reporter"
 )
 
 func newReader(t *testing.T, objects ...ctrlClient.Object) ctrlClient.Reader {
@@ -84,6 +86,19 @@ func TestResolveGerritWithoutTokenSucceeds(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, &Info{Provider: codebaseApi.GitProviderGerrit, Host: "gerrit.example.com", Token: ""}, info)
+}
+
+func TestResolveGitServerPassesAnnotationsThrough(t *testing.T) {
+	t.Parallel()
+
+	annotations := map[string]string{reporter.LogsReportingAnnotation: "false"}
+
+	objects := testObjects()
+	objects[1].(*codebaseApi.GitServer).Annotations = annotations
+
+	info, err := ResolveGitServer(context.Background(), newReader(t, objects...), "krci", "github")
+	require.NoError(t, err)
+	assert.Equal(t, annotations, info.Annotations)
 }
 
 func TestResolveErrors(t *testing.T) {

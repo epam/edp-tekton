@@ -111,7 +111,7 @@ func main() {
 	reconciler := controller.NewPipelineRunReconciler(
 		mgr.GetClient(),
 		mgr.GetAPIReader(),
-		collector.New(mgr.GetAPIReader(), logFetcher, config.TailLines),
+		collector.New(mgr.GetAPIReader(), logFetcher),
 		formatter.New(formatter.PortalLinkBuilder{BaseURL: config.PortalBaseURL}),
 		provider.New,
 		config,

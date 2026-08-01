@@ -369,33 +369,3 @@ gitServers:
 
     assert "httproute" not in r
     assert "event-listener-my-github" in r["ingress"]
-
-
-def test_pruner_disabled():
-    config = """
-tekton:
-  pruner:
-    create: false
-    """
-
-    r = helm_template(config)
-
-    assert "cronjob" not in r
-    assert "tekton-resource-pruner" not in r["serviceaccount"]
-    assert "tekton-resource-pruner" not in r["role"]
-    assert "tekton-resource-pruner" not in r["rolebinding"]
-
-
-def test_pruner_enabled():
-    config = """
-tekton:
-  pruner:
-    create: true
-    schedule: "0 * * * *"
-    recentMinutes: "30"
-    """
-
-    r = helm_template(config)
-
-    assert "0 * * * *" in r["cronjob"]["tekton-resource-pruner"]["spec"]["schedule"]
-    assert "/scripts/tekton-prune.sh" in r["cronjob"]["tekton-resource-pruner"]["spec"]["jobTemplate"]["spec"]["template"]["spec"]["containers"][0]["command"][1]

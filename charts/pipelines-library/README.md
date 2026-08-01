@@ -19,7 +19,6 @@ Tekton Pipelines are implemented and packaged using the [helm-chart](./charts/pi
   - KubeRocketCI has [two types of Pipelines](https://docs.kuberocketci.io/docs/operator-guide/ci/tekton-overview): `CodeReview` - triggers on Review, `Build` - triggers on Merged Event.
 - `Triggers`, `TriggerBindings`, `TriggerTemplates` - defines the logic for specific VCS Events (Gerrit, GitHub, GitLab, BitBucket) and Pipelines.
 - `Resources` - Kubernetes resources, that are used from Pipelines, e.g. `ServiceAccount` with [IRSA Enablement](https://docs.kuberocketci.io/docs/developer-guide/aws-reference-architecture#iam-roles-for-service-accounts-irsa), `ConfigMaps` for Maven/Gradle Pipelines, Tekton cache, CodeNarc, CTLint, and PVC to share resources between Tasks.
-- `Tekton Pipeline pruner` - created as a cron job, it is designed to clear outdated pipelines.
 
 ### EDP Interceptor
 
@@ -178,10 +177,5 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.containerBuildTool | string | `"kaniko"` | Defines which image build and verification tools Tekton pipelines use. buildTool options: kaniko | buildkit |
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
-| tekton.pruner.create | bool | `true` | Specifies whether a cronjob should be created |
-| tekton.pruner.image | string | `"docker.io/epamedp/kubectl:0.1.2"` | Docker image to run the pruner, expected to have kubectl and jq |
-| tekton.pruner.imagePullSecrets | list | `[]` | List of ImagePullSecrets to be used by the pruner CronJob |
-| tekton.pruner.resources | object | `{"limits":{"cpu":"100m","memory":"70Mi"},"requests":{"cpu":"50m","memory":"50Mi"}}` | Pod resources for Tekton pruner job |
-| tekton.pruner.schedule | string | `"0 10 */1 * *"` | How often to clean up resources |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |
 | tekton.workspaceSize | string | `"7Gi"` | Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines |

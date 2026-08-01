@@ -20,7 +20,6 @@ Tekton Pipelines are implemented and packaged using the [helm-chart](./charts/pi
   - KubeRocketCI has [two types of Pipelines](https://docs.kuberocketci.io/docs/operator-guide/ci/tekton-overview): `CodeReview` - triggers on Review, `Build` - triggers on Merged Event.
 - `Triggers`, `TriggerBindings`, `TriggerTemplates` - defines the logic for specific VCS Events (Gerrit, GitHub, GitLab, BitBucket) and Pipelines.
 - `Resources` - Kubernetes resources, that are used from Pipelines, e.g. `ServiceAccount` with [IRSA Enablement](https://docs.kuberocketci.io/docs/developer-guide/aws-reference-architecture#iam-roles-for-service-accounts-irsa), `ConfigMaps` for Maven/Gradle Pipelines, Tekton cache, CodeNarc, CTLint, and PVC to share resources between Tasks.
-- `Tekton Pipeline pruner` - created as a cron job, it is designed to clear outdated pipelines.
 
 ### EDP Interceptor
 

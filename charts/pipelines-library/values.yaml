@@ -356,25 +356,6 @@ tekton:
     # -- Default configuration maps for provisioning nuget.config file.
     nugetConfigMap: "custom-nuget-settings"
 
-  # Pruner provides auto clean up feature for the Tekton resources
-  pruner:
-    # -- Specifies whether a cronjob should be created
-    create: true
-    # -- How often to clean up resources
-    schedule: "0 10 */1 * *"
-    # -- Docker image to run the pruner, expected to have kubectl and jq
-    image: docker.io/epamedp/kubectl:0.1.2
-    # -- List of ImagePullSecrets to be used by the pruner CronJob
-    imagePullSecrets: []
-    # -- Pod resources for Tekton pruner job
-    resources:
-      limits:
-        cpu: "100m"
-        memory: "70Mi"
-      requests:
-        cpu: "50m"
-        memory: "50Mi"
-
   # -- Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines
   workspaceSize: "7Gi"
   # -- The resource limits and requests for the Tekton Tasks

@@ -95,9 +95,13 @@ spec:
 
         # Create project if it doesn't exist of skip if it does
         if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          default_branch=$(kubectl get codebase $SONAR_PROJECT_NAME -o jsonpath='{.spec.defaultBranch}')
+          # mainBranch is deliberately not sent. SonarQube then names the main branch from its own
+          # sonar.projects.defaultBranchName setting, which keeps that setting authoritative and
+          # means this task needs no access to the Kubernetes API to read the Codebase resource.
+          # It must be omitted rather than sent empty: an empty value creates a branch whose name
+          # is the empty string.
           echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}&mainBranch=${default_branch}"
+          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
         else
           if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
             echo "Project \"$SONAR_PROJECT_KEY\" already exists"

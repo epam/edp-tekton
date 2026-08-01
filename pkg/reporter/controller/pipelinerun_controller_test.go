@@ -157,13 +157,13 @@ func newReconciler(
 	t.Helper()
 
 	if config == nil {
-		config = &reporter.Config{TailLines: 100, CommentStrategy: reporter.CommentStrategyUpdate}
+		config = &reporter.Config{TailLines: 100, CommentStrategy: reporter.CommentStrategyUpdate, LogsEnabled: true}
 	}
 
 	return NewPipelineRunReconciler(
 		client,
 		client,
-		collector.New(client, stubLogFetcher{}, config.TailLines),
+		collector.New(client, stubLogFetcher{}),
 		formatter.New(formatter.PortalLinkBuilder{}),
 		func(_, _, _ string) (providerTypes.Provider, error) {
 			return gitProvider, nil
@@ -204,6 +204,29 @@ func TestReconcilePublishesReportAndMarksPipelineRun(t *testing.T) {
 	updated := &tektonpipelineApi.PipelineRun{}
 	require.NoError(t, client.Get(context.Background(), reconcileRequest().NamespacedName, updated))
 	assert.Equal(t, "true", updated.Annotations[reporter.ReportedAnnotation])
+}
+
+func TestReconcilePublishesReportWithoutLogsWhenAnnotationDisablesThem(t *testing.T) {
+	t.Parallel()
+
+	pipelineRun := newPipelineRun()
+	pipelineRun.Annotations[reporter.LogsReportingAnnotation] = "false"
+
+	objects := append(gitObjects(), pipelineRun, newTaskRun())
+	client := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(objects...).Build()
+	gitProvider := &fakeProvider{}
+
+	r := newReconciler(t, client, gitProvider, nil)
+
+	_, err := r.Reconcile(context.Background(), reconcileRequest())
+	require.NoError(t, err)
+
+	require.Len(t, gitProvider.comments, 1)
+
+	comment := gitProvider.comments[0]
+	assert.Contains(t, comment.Body, "| ✗ Failed | build | 30s |")
+	assert.NotContains(t, comment.Body, "log tail of step-npm-build",
+		"log tail must be omitted when the PipelineRun opts out")
 }
 
 func TestReconcileSkipsAlreadyReported(t *testing.T) {

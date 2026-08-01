@@ -29,4 +29,9 @@ const (
 	// GitChangeNumberAnnotation is the key inside ResultAnnotationsKey JSON with
 	// the pull/merge request number.
 	GitChangeNumberAnnotation = "app.edp.epam.com/git-change-number"
+
+	// LogsReportingAnnotation overrides log publishing for a single PipelineRun
+	// or a whole GitServer ("true"/"false"). Consulted only when the reporter's
+	// global logsReporting flag is enabled - globally disabled is a hard ceiling.
+	LogsReportingAnnotation = "app.edp.epam.com/reporter-logs"
 )

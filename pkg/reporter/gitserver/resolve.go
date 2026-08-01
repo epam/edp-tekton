@@ -34,6 +34,10 @@ type Info struct {
 	// Host is the git server host, e.g. github.com.
 	Host  string
 	Token string
+	// Annotations are the GitServer object's annotations, passed through so
+	// callers can interpret their own feature overrides without this shared
+	// package knowing about them.
+	Annotations map[string]string
 }
 
 // Resolve looks up the Codebase by name, follows its GitServer reference and
@@ -75,8 +79,9 @@ func ResolveGitServer(ctx context.Context, reader ctrlClient.Reader, namespace, 
 	}
 
 	return &Info{
-		Provider: gitServer.Spec.GitProvider,
-		Host:     gitServer.Spec.GitHost,
-		Token:    token,
+		Provider:    gitServer.Spec.GitProvider,
+		Host:        gitServer.Spec.GitHost,
+		Token:       token,
+		Annotations: gitServer.Annotations,
 	}, nil
 }

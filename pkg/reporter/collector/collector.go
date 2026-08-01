@@ -51,24 +51,37 @@ type LogFetcher interface {
 	GetLogs(ctx context.Context, namespace, podName, container string, tailLines int64) (string, error)
 }
 
+// Options controls per-call Collect behavior. FetchLogs varies per
+// PipelineRun (log publishing can be overridden by annotation); TailLines is
+// the operator-configured tail size, kept separate from FetchLogs so a zero
+// tail can never double as an off switch.
+type Options struct {
+	// FetchLogs controls whether failed steps get a log tail at all.
+	FetchLogs bool
+	// TailLines is the number of trailing lines per failed step.
+	TailLines int64
+}
+
 type Collector struct {
 	reader     ctrlClient.Reader
 	logFetcher LogFetcher
-	tailLines  int64
 }
 
 // The reader must be an uncached reader: TaskRuns are read directly, never watched.
-func New(reader ctrlClient.Reader, logFetcher LogFetcher, tailLines int64) *Collector {
+func New(reader ctrlClient.Reader, logFetcher LogFetcher) *Collector {
 	return &Collector{
 		reader:     reader,
 		logFetcher: logFetcher,
-		tailLines:  tailLines,
 	}
 }
 
 // Collect walks the PipelineRun child TaskRuns and returns the per-task,
-// per-step outcome with trailing logs for failed steps.
-func (c *Collector) Collect(ctx context.Context, pipelineRun *tektonpipelineApi.PipelineRun) (*Report, error) {
+// per-step outcome, with trailing logs for failed steps when opts.FetchLogs.
+func (c *Collector) Collect(
+	ctx context.Context,
+	pipelineRun *tektonpipelineApi.PipelineRun,
+	opts Options,
+) (*Report, error) {
 	report := &Report{
 		PipelineRunName:      pipelineRun.Name,
 		PipelineRunNamespace: pipelineRun.Namespace,
@@ -95,7 +108,7 @@ func (c *Collector) Collect(ctx context.Context, pipelineRun *tektonpipelineApi.
 			return nil, fmt.Errorf("failed to get TaskRun %s: %w", child.Name, err)
 		}
 
-		report.Tasks = append(report.Tasks, c.collectTask(ctx, child.PipelineTaskName, taskRun))
+		report.Tasks = append(report.Tasks, c.collectTask(ctx, child.PipelineTaskName, taskRun, opts))
 	}
 
 	return report, nil
@@ -105,6 +118,7 @@ func (c *Collector) collectTask(
 	ctx context.Context,
 	pipelineTaskName string,
 	taskRun *tektonpipelineApi.TaskRun,
+	opts Options,
 ) TaskResult {
 	task := TaskResult{
 		Name:      pipelineTaskName,
@@ -130,8 +144,8 @@ func (c *Collector) collectTask(
 			stepResult.ExitCode = step.Terminated.ExitCode
 		}
 
-		if !stepResult.Succeeded {
-			stepResult.LogTail = c.fetchStepLog(ctx, taskRun, step.Container)
+		if !stepResult.Succeeded && opts.FetchLogs && opts.TailLines > 0 {
+			stepResult.LogTail = c.fetchStepLog(ctx, taskRun, step.Container, opts.TailLines)
 		}
 
 		task.Steps = append(task.Steps, stepResult)
@@ -142,12 +156,17 @@ func (c *Collector) collectTask(
 
 // fetchStepLog returns the trailing log of a failed step, or empty when the
 // log is unavailable (pod pruned) or the step is a cascading skip.
-func (c *Collector) fetchStepLog(ctx context.Context, taskRun *tektonpipelineApi.TaskRun, container string) string {
+func (c *Collector) fetchStepLog(
+	ctx context.Context,
+	taskRun *tektonpipelineApi.TaskRun,
+	container string,
+	tailLines int64,
+) string {
 	if taskRun.Status.PodName == "" {
 		return ""
 	}
 
-	logTail, err := c.logFetcher.GetLogs(ctx, taskRun.Namespace, taskRun.Status.PodName, container, c.tailLines)
+	logTail, err := c.logFetcher.GetLogs(ctx, taskRun.Namespace, taskRun.Status.PodName, container, tailLines)
 	if err != nil {
 		// The comment is still valuable without this snippet (e.g. the pod is
 		// already garbage collected), so degrade gracefully.

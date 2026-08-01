@@ -21,3 +21,10 @@
 .idea/
 *.tmproj
 .vscode/
+# Chart unit tests (pytest) and their caches. The packaged chart is embedded
+# in the Helm release Secret, which etcd caps at 1MiB - test code and
+# __pycache__ left behind by a prior `make test-chart` run push it over.
+tests/
+__pycache__/
+.pytest_cache/
+*.pyc

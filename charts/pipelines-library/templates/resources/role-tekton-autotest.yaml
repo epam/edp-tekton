@@ -5,22 +5,25 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   name: tekton-autotests-role
 rules:
+  # init-autotests starts autotest pipelines with `tkn pipeline start`, which
+  # reads the Pipeline and creates a PipelineRun; wait-autotest polls the run
   - verbs:
-      - create
       - get
-      - list
-      - watch
-      - patch
-      - update
     apiGroups:
       - tekton.dev
     resources:
       - pipelines
+  - verbs:
+      - create
+      - get
+    apiGroups:
+      - tekton.dev
+    resources:
       - pipelineruns
+  # init-autotests resolves quality gates from the stage, then the autotest
+  # codebases and their git servers by name
   - verbs:
       - get
-      - list
-      - watch
     apiGroups:
       - v2.edp.epam.com
     resources:

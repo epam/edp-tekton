@@ -54,7 +54,9 @@ global:
         if rule.get("resourceNames") == ["tekton-edp-interceptor-certs"]
     ]
     assert len(certs) == 1
-    assert sorted(certs[0]["verbs"]) == ["create", "get", "list", "update", "watch"]
+    # No create: RBAC cannot name-scope create requests, so the verb never
+    # authorized anything; the chart ships the empty secret instead.
+    assert sorted(certs[0]["verbs"]) == ["get", "update"]
 
     git_server = [
         rule

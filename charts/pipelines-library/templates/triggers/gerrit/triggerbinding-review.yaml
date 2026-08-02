@@ -32,4 +32,6 @@ spec:
       value: $(extensions.pipelines.review)
     - name: gitauthor
       value: "$(body.patchSet.uploader.username)"
+    - name: serviceAccount
+      value: "$(extensions.serviceAccounts.review)"
 {{ end }}

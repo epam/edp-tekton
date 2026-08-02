@@ -6,6 +6,8 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gerrit-dotnet-{{ $framework }}-lib-build-default
+  annotations:
+    app.edp.epam.com/service-account: tekton
   labels:
     app.edp.epam.com/pipelinetype: build
     app.edp.epam.com/triggertemplate: gerrit-build-template

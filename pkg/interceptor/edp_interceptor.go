@@ -45,6 +45,7 @@ type EDPInterceptor struct {
 	statusSetterFactory commitStatusSetterFactory
 	portalBaseURL       string
 	deduper             *reviewDeduper
+	defaultSA           string
 }
 
 // NewEDPInterceptor creates a new EDPInterceptor.
@@ -66,6 +67,7 @@ func NewEDPInterceptor(
 		statusSetterFactory: provider.NewCommitStatusSetter,
 		portalBaseURL:       os.Getenv(portalBaseURLEnv),
 		deduper:             newReviewDeduper(),
+		defaultSA:           newDefaultServiceAccount(),
 	}
 }
 
@@ -205,12 +207,13 @@ func (i *EDPInterceptor) Process(
 	return &triggersv1.InterceptorResponse{
 		Continue: trigger,
 		Extensions: map[string]any{
-			"spec":           event.Codebase.Spec,
-			"codebase":       event.Codebase.Name,
-			"targetBranch":   event.TargetBranch,
-			"pullRequest":    event.PullRequest,
-			"codebasebranch": getCodebaseBranchNameOrEmpty(codebaseBranch),
-			"pipelines":      getCodeBaseBranchPipelinesOrEmpty(codebaseBranch),
+			"spec":            event.Codebase.Spec,
+			"codebase":        event.Codebase.Name,
+			"targetBranch":    event.TargetBranch,
+			"pullRequest":     event.PullRequest,
+			"codebasebranch":  getCodebaseBranchNameOrEmpty(codebaseBranch),
+			"pipelines":       getCodeBaseBranchPipelinesOrEmpty(codebaseBranch),
+			"serviceAccounts": i.resolveServiceAccounts(ctx, log, ns, codebaseBranch),
 		},
 	}
 }

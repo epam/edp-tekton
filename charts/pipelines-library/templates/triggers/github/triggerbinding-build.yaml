@@ -42,4 +42,6 @@ spec:
       value: "$(extensions.pullRequest.authorAvatarUrl)"
     - name: gitchangeurl
       value: "$(extensions.pullRequest.url)"
+    - name: serviceAccount
+      value: "$(extensions.serviceAccounts.build)"
 {{ end }}

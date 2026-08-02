@@ -32,4 +32,6 @@ spec:
       value: $(extensions.pipelines.build)
     - name: gitauthor
       value: "$(body.change.owner.username)"
+    - name: serviceAccount
+      value: "$(extensions.serviceAccounts.build)"
 {{ end }}

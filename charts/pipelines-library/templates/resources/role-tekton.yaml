@@ -5,14 +5,11 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
   name: tekton-pipeline-role
 rules:
-  # named reads of the CRs pipeline params reference (promote-images,
-  # init-autotests, get-version)
+  # get-version reads the branch version and release flag
   - apiGroups:
       - 'v2.edp.epam.com'
     resources:
-      - cdpipelines
       - codebasebranches
-      - codebases
     verbs:
       - get
 
@@ -35,24 +32,6 @@ rules:
       - get
       - list
       - patch
-
-  # promote-images annotates the stage with the promoted image tags
-  - apiGroups:
-      - 'v2.edp.epam.com'
-    resources:
-      - stages
-    verbs:
-      - get
-      - patch
-
-  # deploy tasks read the ApplicationSet and merge-patch new image tags into it
-  - verbs:
-      - get
-      - patch
-    apiGroups:
-      - argoproj.io
-    resources:
-      - applicationsets
 
 {{- if .Values.pipelines.argocdDiffPreview.enabled }}
   # the gitops review diff preview exports the Applications affected by an MR

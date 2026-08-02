@@ -8,6 +8,8 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: gerrit-pnpm-{{ $framework }}-lib-build-semver
+  annotations:
+    app.edp.epam.com/service-account: tekton
   labels:
     app.edp.epam.com/pipelinetype: build
     app.edp.epam.com/triggertemplate: gerrit-build-template

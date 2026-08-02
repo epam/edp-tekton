@@ -6,22 +6,23 @@ metadata:
   labels:
     {{- include "edp-tekton-interceptor.labels" . | nindent 4 }}
 rules:
+  # At startup the interceptor reads its own Interceptor registration and
+  # writes the generated CA bundle into spec.clientConfig.caBundle.
   - verbs:
       - get
-      - list
-      - watch
       - update
     apiGroups:
       - triggers.tekton.dev
     resources:
       - interceptors
 
+  # Startup-only: populate the chart-created serving-cert secret. No `create`:
+  # RBAC cannot name-scope create requests, so the verb here never authorized
+  # anything, and the chart ships the (empty) secret so the create path in the
+  # binary is never taken under a Helm install.
   - verbs:
       - get
-      - list
-      - watch
       - update
-      - create
     apiGroups:
       - ''
     resources:
@@ -45,44 +46,25 @@ rules:
       {{- end }}
 {{- end }}
 
+  # Webhook enrichment: codebases are matched by repo path and branches by
+  # label (list), git servers are fetched by name. Plain reads return spec and
+  # status inline, so no subresource grants are needed, and the binary opens no
+  # watches (direct client, no informer cache).
   - verbs:
       - get
       - list
-      - watch
     apiGroups:
       - v2.edp.epam.com
     resources:
       - codebases
-      - codebases/status
-      - codebases/finalizers
-
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - v2.edp.epam.com
-    resources:
       - codebasebranches
-      - codebasebranches/status
-      - codebasebranches/finalizers
-
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - v2.edp.epam.com
-    resources:
       - gitservers
-      - gitservers/status
-      - gitservers/finalizers
 
 {{- if .Values.pipelines.cancelInProgress }}
+  # Cancel-in-progress lists sibling runs by label and merge-patches them
+  # to Cancelled
   - verbs:
-      - get
       - list
-      - watch
       - patch
     apiGroups:
       - tekton.dev

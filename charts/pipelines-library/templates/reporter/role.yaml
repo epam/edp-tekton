@@ -16,10 +16,10 @@ rules:
     resources:
       - pipelineruns
 
+  # TaskRuns are fetched one by one from the PipelineRun's childReferences via
+  # an uncached reader; the reporter never lists or watches them.
   - verbs:
       - get
-      - list
-      - watch
     apiGroups:
       - tekton.dev
     resources:
@@ -50,27 +50,16 @@ rules:
       {{- end }}
 {{- end }}
 
+  # The git server (and its owning codebase) is resolved by name through an
+  # uncached reader, so only get is needed; plain reads return status inline
+  # without subresource grants.
   - verbs:
       - get
-      - list
-      - watch
     apiGroups:
       - v2.edp.epam.com
     resources:
       - codebases
-      - codebases/status
-      - codebases/finalizers
-
-  - verbs:
-      - get
-      - list
-      - watch
-    apiGroups:
-      - v2.edp.epam.com
-    resources:
       - gitservers
-      - gitservers/status
-      - gitservers/finalizers
 
   # Leader election.
   - verbs:

@@ -125,11 +125,17 @@ global:
             by_resource[resource] = sorted(rule["verbs"])
 
     assert by_resource["pipelineruns"] == ["get", "list", "patch", "watch"]
-    assert by_resource["taskruns"] == ["get", "list", "watch"]
+    # Everything but the cached PipelineRun watch is a named read through an
+    # uncached reader, so get alone is enough.
+    assert by_resource["taskruns"] == ["get"]
     assert by_resource["secrets"] == ["get"]
-    assert by_resource["codebases"] == ["get", "list", "watch"]
-    assert by_resource["gitservers"] == ["get", "list", "watch"]
+    assert by_resource["codebases"] == ["get"]
+    assert by_resource["gitservers"] == ["get"]
     assert "leases" in by_resource
+    # Plain reads return status inline; subresource grants would be standing
+    # access nothing exercises.
+    assert "codebases/status" not in by_resource
+    assert "codebases/finalizers" not in by_resource
 
     # The pods/log grant exists only when logsReporting is enabled.
     assert "pods/log" not in by_resource

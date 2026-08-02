@@ -29,7 +29,7 @@ spec:
         pipelineRef:
           name: image-scan-remote
         taskRunTemplate:
-          serviceAccountName: tekton
+          serviceAccountName: tekton-unprivileged
           {{- if .Values.pipelines.podTemplate }}
           podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
           {{- end }}

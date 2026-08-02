@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	triggersv1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -32,6 +33,7 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
+	require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
 
 	codebaseBranch := &codebaseApi.CodebaseBranch{
 		ObjectMeta: metav1.ObjectMeta{
@@ -100,6 +102,10 @@ func TestEDPInterceptor_Execute(t *testing.T) {
 						"review": "review-pipeline",
 						"build":  "build-pipeline",
 					},
+					"serviceAccounts": map[string]string{
+						"build":  defaultSA,
+						"review": defaultSA,
+					},
 				},
 				Continue: true,
 			},
@@ -151,6 +157,7 @@ func TestEDPInterceptor_Process(t *testing.T) {
 
 	scheme := runtime.NewScheme()
 	require.NoError(t, codebaseApi.AddToScheme(scheme))
+	require.NoError(t, tektonpipelineApi.AddToScheme(scheme))
 
 	type fields struct {
 		gitHubProcessor    func(t *testing.T) event_processor.Processor
@@ -274,6 +281,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						"review": "review-pipeline",
 						"build":  "build-pipeline",
 					},
+					"serviceAccounts": map[string]string{
+						"build":  defaultSA,
+						"review": defaultSA,
+					},
 				},
 				Continue: true,
 			},
@@ -382,6 +393,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						"review": "review-pipeline",
 						"build":  "build-pipeline",
 					},
+					"serviceAccounts": map[string]string{
+						"build":  defaultSA,
+						"review": defaultSA,
+					},
 				},
 				Continue: true,
 			},
@@ -478,6 +493,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 						"review": "review-pipeline",
 						"build":  "build-pipeline",
 					},
+					"serviceAccounts": map[string]string{
+						"build":  defaultSA,
+						"review": defaultSA,
+					},
 				},
 				Continue: true,
 			},
@@ -553,6 +572,10 @@ func TestEDPInterceptor_Process(t *testing.T) {
 					"targetBranch":   "master",
 					"pullRequest":    event_processor.EventInfo{}.PullRequest,
 					"pipelines":      codebaseApi.CodebaseBranchSpec{}.Pipelines,
+					"serviceAccounts": map[string]string{
+						"build":  defaultSA,
+						"review": defaultSA,
+					},
 				},
 				Continue: false,
 			},

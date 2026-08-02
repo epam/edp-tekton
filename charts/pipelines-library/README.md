@@ -179,6 +179,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | tekton.configs.nugetConfigMap | string | `"custom-nuget-settings"` | Default configuration maps for provisioning nuget.config file. |
 | tekton.configs.pythonConfigMap | string | `"custom-python-settings"` | Default configuration maps for provisioning PIP_TRUSTED_HOST, PIP_INDEX_PATH, PIP_INDEX_URL_PATH, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables for Python tasks. |
 | tekton.containerBuildTool | string | `"kaniko"` | Defines which image build and verification tools Tekton pipelines use. buildTool options: kaniko | buildkit |
+| tekton.defaultServiceAccount | string | `"tekton-unprivileged"` | Default ServiceAccount for PipelineRuns. A Pipeline can override it via the app.edp.epam.com/service-account annotation; library build pipelines ship annotated with `tekton`. |
 | tekton.packageRegistriesSecret.enabled | bool | `false` | Set this as `true` if the secret should be available in Pipelines |
 | tekton.packageRegistriesSecret.name | string | `"package-registries-auth-secret"` | Secret name that will be used in Pipelines. Default: package-registries-auth-secret |
 | tekton.resources | object | `{"limits":{"cpu":"2","memory":"3Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}` | The resource limits and requests for the Tekton Tasks |

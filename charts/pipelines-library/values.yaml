@@ -374,6 +374,10 @@ tekton:
     # -- Default configuration maps for provisioning nuget.config file.
     nugetConfigMap: "custom-nuget-settings"
 
+  # -- Default ServiceAccount for PipelineRuns. A Pipeline can override it via
+  # the app.edp.epam.com/service-account annotation; library build pipelines
+  # ship annotated with `tekton`.
+  defaultServiceAccount: "tekton-unprivileged"
   # -- Tekton workspace size. Most cases 1Gi is enough. It's common for all pipelines
   workspaceSize: "7Gi"
   # -- The resource limits and requests for the Tekton Tasks

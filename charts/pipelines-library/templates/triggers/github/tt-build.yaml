@@ -31,6 +31,9 @@ spec:
       description: Commit message
     - name: pipelineName
       description: Pipeline to trigger. Populated by krci interceptor from codebasebranch spec
+    - name: serviceAccount
+      description: ServiceAccount for the PipelineRun. Populated by krci interceptor
+      default: {{ .Values.tekton.defaultServiceAccount }}
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
@@ -55,7 +58,7 @@ spec:
       spec:
 {{- include "edp-tekton.pipelineRunTimeouts" . }}
         taskRunTemplate:
-          serviceAccountName: tekton
+          serviceAccountName: $(tt.params.serviceAccount)
           {{ if .Values.pipelines.podTemplate }}
           podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
           {{ end }}

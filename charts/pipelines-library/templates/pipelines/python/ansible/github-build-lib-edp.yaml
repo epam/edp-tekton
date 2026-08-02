@@ -4,6 +4,8 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: github-python-ansible-lib-build-semver
+  annotations:
+    app.edp.epam.com/service-account: tekton
   labels:
     app.edp.epam.com/pipelinetype: build
     app.edp.epam.com/triggertemplate: github-build-template

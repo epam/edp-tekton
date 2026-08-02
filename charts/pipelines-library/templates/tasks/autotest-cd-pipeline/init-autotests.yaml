@@ -109,7 +109,7 @@ spec:
             print("[TEKTON][DEBUG]: Autotest step - " + autotestsStep[count])
             command = "tkn pipeline start autotests-" + autotestBuildTool[count] + " \
             --use-param-defaults \
-            --serviceaccount tekton \
+            --serviceaccount tekton-unprivileged \
             -p git-source-url=" + gitAutotestUrl[count] + " \
             -p git-source-revision=" + autotestsBranch[count] + " \
             -p stage-name=" + stage +" \

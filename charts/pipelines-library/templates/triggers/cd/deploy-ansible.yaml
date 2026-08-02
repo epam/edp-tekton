@@ -27,7 +27,7 @@ spec:
           app.edp.epam.com/pipelinetype: deploy
       spec:
         taskRunTemplate:
-          serviceAccountName: tekton
+          serviceAccountName: tekton-cd
           {{ if .Values.pipelines.podTemplate }}
           podTemplate: {{ .Values.pipelines.podTemplate | toYaml | nindent 12 }}
           {{ end }}

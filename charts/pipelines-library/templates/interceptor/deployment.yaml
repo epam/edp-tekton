@@ -39,6 +39,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
+            - name: TEKTON_SA_DEFAULT
+              value: {{ .Values.tekton.defaultServiceAccount }}
             - name: CONFIG_LOGGING_NAME
               value: config-logging-triggers
             - name: CONFIG_OBSERVABILITY_NAME

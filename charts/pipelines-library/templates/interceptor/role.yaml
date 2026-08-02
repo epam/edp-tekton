@@ -60,6 +60,15 @@ rules:
       - codebasebranches
       - gitservers
 
+  # ServiceAccount discovery: read the app.edp.epam.com/service-account
+  # annotation from the Pipeline resolved for the event
+  - verbs:
+      - get
+    apiGroups:
+      - tekton.dev
+    resources:
+      - pipelines
+
 {{- if .Values.pipelines.cancelInProgress }}
   # Cancel-in-progress lists sibling runs by label and merge-patches them
   # to Cancelled

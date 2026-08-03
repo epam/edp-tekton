@@ -126,7 +126,7 @@ func (r *PipelineRunReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if err := r.report(ctx, pipelineRun); err != nil {
 		permErr := &permanentError{}
 		if errors.As(err, &permErr) {
-			logger.Error(err, "Skipping PipelineRun report: not recoverable")
+			logger.Info("Skipping PipelineRun report: not supported", "reason", err.Error())
 
 			// Mark it handled so an unsupported/misconfigured run (e.g. a Gerrit
 			// review, which has no provider yet) is not re-reconciled and

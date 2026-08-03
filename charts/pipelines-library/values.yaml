@@ -27,6 +27,17 @@ pipelines:
   #   - name: regcred
   imagePullSecrets: []
 
+  # Temporary `krci-autotests-tmp` ServiceAccount for the PipelineRuns the test automation
+  # framework creates. Those are built outside the trigger path, so the per-pipeline account the
+  # interceptor resolves never reaches them and the framework names one itself; a suite starts
+  # build and deploy pipelines in the same run, so it needs one account covering both. The rules
+  # are the union of tekton-pipeline-role, tekton-cd and tekton-security.
+  autotestsServiceAccount:
+    # -- Create the `krci-autotests-tmp` ServiceAccount. Enable only on environments the test
+    # automation framework runs against; it has no consumer anywhere else. Remove together with
+    # the constant in the framework, once that resolves the account the way the trigger path does.
+    enabled: false
+
   # -- This section contains the list of pipelines and tasks that will be installed.
   deployableResources:
     # -- This flag control the installation of the tasks.

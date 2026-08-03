@@ -23,6 +23,8 @@ reporter:
 pipelines:
   argocdDiffPreview:
     enabled: true
+  autotestsServiceAccount:
+    enabled: true
 """
 
 # Resources no role may reach through the Kubernetes API at all, mapped to the
@@ -72,6 +74,13 @@ pipelines:
 global:
   dnsWildCard: "example.com"
   platform: openshift
+    """,
+    "autotests-service-account": """
+global:
+  dnsWildCard: "example.com"
+pipelines:
+  autotestsServiceAccount:
+    enabled: true
     """,
 }
 

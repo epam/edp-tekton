@@ -100,7 +100,7 @@ func (p *EventProcessor) processMergeEvent(
 
 	repoPath := event_processor.ConvertRepositoryPath(*gitHubEvent.Repo.FullName)
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}
@@ -160,7 +160,7 @@ func (p *EventProcessor) processCommentEvent(
 
 	repoPath := event_processor.ConvertRepositoryPath(event.GetRepo().GetFullName())
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
 	}

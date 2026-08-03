@@ -3,10 +3,10 @@ module github.com/epam/edp-tekton
 go 1.25.8
 
 require (
-	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20260116090828-b355af57b2b3
+	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20260803131927-4152c01011c5
 	github.com/epam/edp-common v0.0.0-20230710145648-344bbce4120e
 	github.com/go-logr/logr v1.4.3
-	github.com/go-resty/resty/v2 v2.17.1
+	github.com/go-resty/resty/v2 v2.17.2
 	github.com/google/go-github/v81 v81.0.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/stretchr/testify v1.11.1
@@ -73,7 +73,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect

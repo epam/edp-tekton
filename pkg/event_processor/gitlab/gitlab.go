@@ -57,7 +57,7 @@ func (p *EventProcessor) processMergeEvent(
 
 	repoPath := event_processor.ConvertRepositoryPath(gitLabEvent.Project.PathWithNamespace)
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}
@@ -103,7 +103,7 @@ func (p *EventProcessor) processCommentEvent(
 
 	repoPath := event_processor.ConvertRepositoryPath(gitLabEvent.Project.PathWithNamespace)
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}

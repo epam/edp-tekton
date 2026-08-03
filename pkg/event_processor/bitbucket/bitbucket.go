@@ -66,7 +66,7 @@ func (p *EventProcessor) Process(
 
 	repoPath := event_processor.ConvertRepositoryPath(bitbucketEvent.Repository.FullName)
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
 	}

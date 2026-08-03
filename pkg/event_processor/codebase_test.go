@@ -2,10 +2,14 @@ package event_processor
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
+	"github.com/epam/edp-codebase-operator/v2/pkg/util/gitpathlabel"
 )
 
 func TestConvertRepositoryPath(t *testing.T) {
@@ -170,7 +175,7 @@ func TestGetCodebaseByRepoPath(t *testing.T) {
 				WithObjects(tt.kubeObjects...).
 				Build()
 
-			got, err := GetCodebaseByRepoPath(context.Background(), k8sClient, tt.namespace, tt.repoPath)
+			got, err := GetCodebaseByRepoPath(context.Background(), k8sClient, tt.namespace, tt.repoPath, nil)
 			tt.wantErr(t, err)
 
 			if tt.want != nil {
@@ -339,5 +344,166 @@ func createTestSecret(name, namespace, token string) *corev1.Secret {
 		Data: map[string][]byte{
 			GitServerTokenField: []byte(token),
 		},
+	}
+}
+
+func TestGetCodebaseByRepoPath_NilLoggerIsSafe(t *testing.T) {
+	scheme := runtime.NewScheme()
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
+
+	k8sClient := fake.NewClientBuilder().
+		WithScheme(scheme).
+		WithObjects(
+			createTestCodebase("codebase-a", "default", "github", "/shared/repo"),
+			createTestCodebase("codebase-b", "default", "github", "/Shared/Repo"),
+		).
+		Build()
+
+	got, err := GetCodebaseByRepoPath(context.Background(), k8sClient, "default", "/shared/repo", nil)
+	require.NoError(t, err)
+	require.Equal(t, "codebase-a", got.Name)
+}
+
+// createLabeledTestCodebase mimics a Codebase reconciled by an operator
+// that stamps the gitUrlPathHash label.
+func createLabeledTestCodebase(name, gitUrlPath string) *codebaseApi.Codebase {
+	cb := createTestCodebase(name, "default", "github", gitUrlPath)
+	cb.Labels = map[string]string{
+		codebaseApi.GitUrlPathHashLabel: gitpathlabel.Hash(gitUrlPath),
+	}
+
+	return cb
+}
+
+func TestGetCodebaseByRepoPath_LabelSelectedLookup(t *testing.T) {
+	scheme := runtime.NewScheme()
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
+
+	const ns = "default"
+
+	tests := []struct {
+		name         string
+		kubeObjects  []client.Object
+		repoPath     string
+		wantName     string
+		wantErr      bool
+		wantFallback bool
+		wantResolved bool
+		wantWarnSubs []string
+	}{
+		{
+			name: "labeled codebase resolved without fallback",
+			kubeObjects: []client.Object{
+				createLabeledTestCodebase("codebase-a", "/Org/Repo"),
+				createLabeledTestCodebase("codebase-other", "/org/other"),
+			},
+			repoPath: "/org/repo",
+			wantName: "codebase-a",
+		},
+		{
+			name: "unlabeled codebase resolved via fallback (pre-upgrade operator)",
+			kubeObjects: []client.Object{
+				createTestCodebase("codebase-a", ns, "github", "/org/repo"),
+			},
+			repoPath:     "/org/repo",
+			wantName:     "codebase-a",
+			wantFallback: true,
+			wantResolved: true,
+		},
+		{
+			name: "impostor label rejected by spec verification, real codebase found via fallback",
+			kubeObjects: []client.Object{
+				// Correct hash label for /org/repo but the spec points elsewhere.
+				func() *codebaseApi.Codebase {
+					cb := createTestCodebase("impostor", ns, "github", "/evil/other")
+					cb.Labels = map[string]string{
+						codebaseApi.GitUrlPathHashLabel: gitpathlabel.Hash("/org/repo"),
+					}
+
+					return cb
+				}(),
+				createTestCodebase("codebase-real", ns, "github", "/org/repo"),
+			},
+			repoPath:     "/org/repo",
+			wantName:     "codebase-real",
+			wantFallback: true,
+			wantResolved: true,
+		},
+		{
+			name: "case-insensitive duplicates warn on the label path without fallback",
+			kubeObjects: []client.Object{
+				createLabeledTestCodebase("codebase-a", "/Shared/Repo"),
+				createLabeledTestCodebase("codebase-b", "/shared/repo"),
+			},
+			repoPath: "/shared/repo",
+			wantName: "codebase-a",
+			wantWarnSubs: []string{
+				"codebase-a", "codebase-b", "/shared/repo",
+			},
+		},
+		{
+			name: "not found goes through both paths",
+			kubeObjects: []client.Object{
+				createLabeledTestCodebase("codebase-a", "/org/repo"),
+			},
+			repoPath:     "/org/nonexistent",
+			wantErr:      true,
+			wantFallback: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			core, logs := observer.New(zapcore.InfoLevel)
+			logger := zap.New(core).Sugar()
+
+			k8sClient := fake.NewClientBuilder().
+				WithScheme(scheme).
+				WithObjects(tt.kubeObjects...).
+				Build()
+
+			got, err := GetCodebaseByRepoPath(context.Background(), k8sClient, ns, tt.repoPath, logger)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "not found")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.wantName, got.Name)
+			}
+
+			var gotFallback, gotResolved bool
+
+			var dupWarns []string
+
+			for _, entry := range logs.All() {
+				if entry.Level == zapcore.InfoLevel && strings.Contains(entry.Message, "falling back to full scan") {
+					gotFallback = true
+				}
+
+				if entry.Level == zapcore.WarnLevel && strings.Contains(entry.Message, "resolved via full scan") {
+					gotResolved = true
+				}
+
+				if entry.Level == zapcore.WarnLevel && strings.Contains(entry.Message, "Multiple Codebases") {
+					dupWarns = append(dupWarns, entry.Message)
+				}
+			}
+
+			assert.Equal(t, tt.wantFallback, gotFallback, "fallback log mismatch: %v", logs.All())
+			assert.Equal(t, tt.wantResolved, gotResolved, "fallback-resolved warning mismatch: %v", logs.All())
+
+			if len(tt.wantWarnSubs) == 0 {
+				assert.Empty(t, dupWarns, "unexpected duplicate warning")
+
+				return
+			}
+
+			require.Len(t, dupWarns, 1, "expected exactly one duplicate warning")
+
+			for _, sub := range tt.wantWarnSubs {
+				assert.Contains(t, dupWarns[0], sub)
+			}
+		})
 	}
 }

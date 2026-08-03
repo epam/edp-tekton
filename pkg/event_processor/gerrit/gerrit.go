@@ -42,7 +42,7 @@ func (p *EventProcessor) Process(ctx context.Context, body []byte, ns, _ string)
 
 	repoPath := event_processor.ConvertRepositoryPath(gerritEvent.Project.Name)
 
-	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath)
+	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase: %w", err)
 	}

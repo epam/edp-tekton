@@ -46,10 +46,11 @@ rules:
       {{- end }}
 {{- end }}
 
-  # Webhook enrichment: codebases are matched by repo path and branches by
-  # label (list), git servers are fetched by name. Plain reads return spec and
-  # status inline, so no subresource grants are needed, and the binary opens no
-  # watches (direct client, no informer cache).
+  # Webhook enrichment: codebases and branches are selected by label (list);
+  # codebases fall back to a full list-and-scan while codebases without the
+  # gitUrlPathHash label exist. Git servers are fetched by name. Plain reads
+  # return spec and status inline, so no subresource grants are needed, and
+  # the binary opens no watches (direct client, no informer cache).
   - verbs:
       - get
       - list

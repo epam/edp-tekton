@@ -13,10 +13,11 @@ import (
 )
 
 // New returns the types.Provider implementation for the given git provider
-// type (codebaseApi.GitProvider* constants). Implementations are idempotent
-// with respect to Comment.Marker: when updating is requested they find a prior
-// comment carrying the same marker and edit it instead of creating a
-// duplicate. Gerrit is not supported yet.
+// type (codebaseApi.GitProvider* constants). Implementations key on
+// Comment.Marker: the update strategy finds a prior comment carrying the same
+// marker and edits it instead of creating a duplicate, the recreate strategy
+// creates a new comment and deletes the marked stale ones. Gerrit is not
+// supported yet.
 func New(gitProvider, host, token string) (types.Provider, error) {
 	switch gitProvider {
 	case codebaseApi.GitProviderGithub:

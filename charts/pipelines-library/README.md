@@ -147,7 +147,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | pipelines.timeouts.pipeline | string | `"1h10m0s"` | Maximum duration of the whole PipelineRun, tasks and finally combined. The default is the 60m tasks get from Tekton's default-timeout-minutes plus the `finally` reservation, so the reporter's headroom does not shorten existing builds. |
 | portalHost | string | `""` | Portal host used to build pipeline links in commit statuses and reporter PR comments. Set this when the krci-portal ingress uses a custom host. If left empty, defaults to the krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>. |
 | reporter.affinity | object | `{}` | Affinity settings for pod assignment |
-| reporter.commentStrategy | string | `"update"` | Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment |
+| reporter.commentStrategy | string | `"update"` | Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment, 'recreate' creates a new comment at the bottom of the thread and deletes the previous report comments |
 | reporter.enabled | bool | `true` | Deploy the Tekton Reporter as a part of the pipeline library when true. Default: true |
 | reporter.extraVolumeMounts | list | `[]` | Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it |
 | reporter.extraVolumes | list | `[]` | Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS |

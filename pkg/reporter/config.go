@@ -4,15 +4,21 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/epam/edp-tekton/pkg/reporter/provider/types"
 )
 
 const (
 	// CommentStrategyUpdate finds the previous report comment by its hidden
 	// marker and edits it in place.
-	CommentStrategyUpdate = "update"
+	CommentStrategyUpdate = types.CommentStrategyUpdate
 
 	// CommentStrategyNew always creates a new comment.
-	CommentStrategyNew = "new"
+	CommentStrategyNew = types.CommentStrategyNew
+
+	// CommentStrategyRecreate creates a new comment at the bottom of the
+	// thread and deletes the previous report comments.
+	CommentStrategyRecreate = types.CommentStrategyRecreate
 
 	// MaxCommentBytes is the comment body size cap. GitHub allows 65536
 	// characters per comment and it is the strictest of the supported providers.
@@ -32,8 +38,9 @@ type Config struct {
 	// output may carry secrets, and not republishing it to the VCS is the
 	// point.
 	LogsEnabled bool
-	// CommentStrategy is either CommentStrategyUpdate or CommentStrategyNew.
-	CommentStrategy string
+	// CommentStrategy is one of CommentStrategyUpdate, CommentStrategyNew or
+	// CommentStrategyRecreate.
+	CommentStrategy types.CommentStrategy
 	// PortalBaseURL is the base URL of the KubeRocketCI portal used to render
 	// links to PipelineRun details. Links are omitted when empty.
 	PortalBaseURL string
@@ -67,12 +74,13 @@ func LoadConfig() (*Config, error) {
 	}
 
 	if v, ok := os.LookupEnv("REPORTER_COMMENT_STRATEGY"); ok {
-		if v != CommentStrategyUpdate && v != CommentStrategyNew {
-			return nil, fmt.Errorf("REPORTER_COMMENT_STRATEGY must be %q or %q, got %q",
-				CommentStrategyUpdate, CommentStrategyNew, v)
+		strategy := types.CommentStrategy(v)
+		if strategy != CommentStrategyUpdate && strategy != CommentStrategyNew && strategy != CommentStrategyRecreate {
+			return nil, fmt.Errorf("REPORTER_COMMENT_STRATEGY must be %q, %q or %q, got %q",
+				CommentStrategyUpdate, CommentStrategyNew, CommentStrategyRecreate, v)
 		}
 
-		cfg.CommentStrategy = v
+		cfg.CommentStrategy = strategy
 	}
 
 	return cfg, nil

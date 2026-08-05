@@ -10,18 +10,50 @@ type PullRequestRef struct {
 	Number int
 }
 
+// CommentStrategy selects how the report comment is published to the pull
+// request thread. It is defined here rather than in the reporter config so
+// provider implementations can branch on it without depending on
+// configuration loading.
+type CommentStrategy string
+
+const (
+	// CommentStrategyUpdate finds the previous report comment by its hidden
+	// marker and edits it in place.
+	CommentStrategyUpdate CommentStrategy = "update"
+
+	// CommentStrategyNew always creates a new comment.
+	CommentStrategyNew CommentStrategy = "new"
+
+	// CommentStrategyRecreate creates a new comment and then deletes every
+	// previous comment carrying the same marker, so exactly one report stays
+	// visible at the bottom of the thread. Create-first ordering guarantees
+	// the pull request is never left without a report when cleanup fails.
+	CommentStrategyRecreate CommentStrategy = "recreate"
+)
+
 type Comment struct {
 	// Marker is a hidden HTML comment identifying report comments, used to
-	// find and update a previously published report.
+	// find, update or delete a previously published report.
 	Marker string
 	// Body is the full, already-truncated markdown body (including the marker).
 	Body string
-	// Update requests editing an existing comment with the same Marker instead
-	// of always creating a new one.
-	Update bool
+
+	Strategy CommentStrategy
 }
 
-// Provider posts or updates a pull request comment.
+// CleanupError reports that the new comment was published but deleting stale
+// report comments failed. Publishing succeeded, so callers must treat the
+// report as delivered — retrying UpsertComment would duplicate it — and rely
+// on the next run's recreate pass to sweep the leftovers.
+type CleanupError struct {
+	Err error
+}
+
+func (e *CleanupError) Error() string { return e.Err.Error() }
+
+func (e *CleanupError) Unwrap() error { return e.Err }
+
+// Provider posts, updates or recreates a pull request comment.
 type Provider interface {
 	UpsertComment(ctx context.Context, ref PullRequestRef, comment Comment) error
 }

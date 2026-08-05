@@ -226,7 +226,7 @@ reporter:
   # -- Number of trailing log lines published for every failed step (used only when logsReporting is true)
   tailLines: 100
 
-  # -- Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment
+  # -- Report comment strategy: 'update' edits the previous report comment of the same pull request, 'new' always creates a new comment, 'recreate' creates a new comment at the bottom of the thread and deletes the previous report comments
   commentStrategy: update
 
   image:

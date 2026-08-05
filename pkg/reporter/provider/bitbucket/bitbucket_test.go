@@ -3,6 +3,7 @@ package bitbucket
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,7 +62,7 @@ func TestUpsertCommentUpdatesExisting(t *testing.T) {
 	p := newTestProvider(t, mux)
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "ws/repo", Number: 3},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.Equal(t, "<!-- m -->\nnew", updated)
 }
@@ -99,9 +100,73 @@ func TestUpsertCommentFollowsPaginationThenCreates(t *testing.T) {
 	p := NewWithClient(resty.New().SetBaseURL(server.URL), "token")
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "ws/repo", Number: 3},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.True(t, created)
+}
+
+func TestUpsertCommentRecreateDeletesStaleComments(t *testing.T) {
+	t.Parallel()
+
+	var deleted []string
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repositories/ws/repo/pullrequests/3/comments", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(newComment(100, "<!-- m -->\nnew"))
+	})
+	mux.HandleFunc("GET /repositories/ws/repo/pullrequests/3/comments", func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(commentsPage{Values: []comment{
+			newComment(100, "<!-- m -->\nnew"),
+			newComment(9, "<!-- m -->\nold"),
+			newComment(4, "<!-- m -->\nolder"),
+			newComment(1, "unrelated"),
+		}})
+	})
+	deleteComment := func(w http.ResponseWriter, r *http.Request) {
+		deleted = append(deleted, r.PathValue("id"))
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+	mux.HandleFunc("DELETE /repositories/ws/repo/pullrequests/3/comments/{id}", deleteComment)
+
+	p := newTestProvider(t, mux)
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "ws/repo", Number: 3},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyRecreate})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"9", "4"}, deleted, "must delete stale marker comments but keep the new one")
+}
+
+func TestUpsertCommentRecreateCleanupFailureReturnsCleanupError(t *testing.T) {
+	t.Parallel()
+
+	created := false
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repositories/ws/repo/pullrequests/3/comments", func(w http.ResponseWriter, _ *http.Request) {
+		created = true
+
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(newComment(100, "<!-- m -->\nnew"))
+	})
+	mux.HandleFunc("GET /repositories/ws/repo/pullrequests/3/comments", func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(commentsPage{Values: []comment{newComment(9, "<!-- m -->\nold")}})
+	})
+	mux.HandleFunc("DELETE /repositories/ws/repo/pullrequests/3/comments/9", func(w http.ResponseWriter, _ *http.Request) {
+		// 403 is permanent, so the client-level retry policy does not kick in.
+		w.WriteHeader(http.StatusForbidden)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "ws/repo", Number: 3},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyRecreate})
+	require.Error(t, err)
+
+	cleanupErr := &types.CleanupError{}
+	assert.True(t, errors.As(err, &cleanupErr), "cleanup failure after a successful create must be a CleanupError")
+	assert.True(t, created, "the new comment must be created before cleanup runs")
 }
 
 func TestUpsertCommentPropagatesAPIError(t *testing.T) {
@@ -115,7 +180,7 @@ func TestUpsertCommentPropagatesAPIError(t *testing.T) {
 	p := newTestProvider(t, mux)
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "ws/repo", Number: 3},
-		types.Comment{Marker: "<!-- m -->", Body: "b", Update: false})
+		types.Comment{Marker: "<!-- m -->", Body: "b", Strategy: types.CommentStrategyNew})
 	assert.Error(t, err)
 }
 

@@ -29,7 +29,7 @@ func TestLoadConfigOverrides(t *testing.T) {
 	t.Setenv("PORTAL_BASE_URL", "https://portal.example.com/c/cluster/cicd/pipelineruns")
 	t.Setenv("REPORTER_TAIL_LINES", "50")
 	t.Setenv("REPORTER_LOGS_ENABLED", "true")
-	t.Setenv("REPORTER_COMMENT_STRATEGY", CommentStrategyNew)
+	t.Setenv("REPORTER_COMMENT_STRATEGY", string(CommentStrategyNew))
 
 	cfg, err := LoadConfig()
 	require.NoError(t, err)
@@ -80,6 +80,14 @@ func TestLoadConfigInvalidTailLines(t *testing.T) {
 			assert.ErrorContains(t, err, "REPORTER_TAIL_LINES must be a positive integer")
 		})
 	}
+}
+
+func TestLoadConfigRecreateCommentStrategy(t *testing.T) {
+	t.Setenv("REPORTER_COMMENT_STRATEGY", string(CommentStrategyRecreate))
+
+	cfg, err := LoadConfig()
+	require.NoError(t, err)
+	assert.Equal(t, CommentStrategyRecreate, cfg.CommentStrategy)
 }
 
 func TestLoadConfigInvalidCommentStrategy(t *testing.T) {

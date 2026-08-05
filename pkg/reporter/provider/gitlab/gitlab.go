@@ -52,37 +52,43 @@ type note struct {
 	Body string `json:"body"`
 }
 
-// UpsertComment creates the report note or, when comment.Update is set, edits
-// the previous report note identified by the marker.
+// UpsertComment publishes the report note per comment.Strategy: update edits
+// the previous report note identified by the marker, recreate posts a new
+// note and then deletes the stale ones (create-first, so a cleanup failure
+// never leaves the merge request without a report), new always posts.
 func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, comment types.Comment) error {
 	project := url.PathEscape(ref.RepoFullName)
 
-	if comment.Update {
-		existingID, err := p.findNote(ctx, project, ref.Number, comment.Marker)
+	if comment.Strategy == types.CommentStrategyUpdate {
+		existingIDs, err := p.findNotes(ctx, project, ref.Number, comment.Marker, false)
 		if err != nil {
 			return err
 		}
 
-		if existingID != 0 {
+		if len(existingIDs) != 0 {
 			resp, err := p.client.R().
 				SetContext(ctx).
 				SetBody(map[string]string{"body": comment.Body}).
-				Put(fmt.Sprintf("/projects/%s/merge_requests/%d/notes/%d", project, ref.Number, existingID))
+				Put(fmt.Sprintf("/projects/%s/merge_requests/%d/notes/%d", project, ref.Number, existingIDs[0]))
 			if err != nil {
-				return fmt.Errorf("failed to update GitLab note %d: %w", existingID, err)
+				return fmt.Errorf("failed to update GitLab note %d: %w", existingIDs[0], err)
 			}
 
 			if resp.IsError() {
-				return fmt.Errorf("failed to update GitLab note %d: status %s", existingID, resp.Status())
+				return fmt.Errorf("failed to update GitLab note %d: status %s", existingIDs[0], resp.Status())
 			}
 
 			return nil
 		}
 	}
 
+	var created note
+
 	resp, err := p.client.R().
 		SetContext(ctx).
+		ForceContentType("application/json").
 		SetBody(map[string]string{"body": comment.Body}).
+		SetResult(&created).
 		Post(fmt.Sprintf("/projects/%s/merge_requests/%d/notes", project, ref.Number))
 	if err != nil {
 		return fmt.Errorf("failed to create GitLab note: %w", err)
@@ -90,6 +96,47 @@ func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, 
 
 	if resp.IsError() {
 		return fmt.Errorf("failed to create GitLab note: status %s", resp.Status())
+	}
+
+	if comment.Strategy == types.CommentStrategyRecreate {
+		if err := p.deleteStaleNotes(ctx, project, ref.Number, comment.Marker, created.ID); err != nil {
+			return &types.CleanupError{Err: err}
+		}
+	}
+
+	return nil
+}
+
+// deleteStaleNotes removes every marker note except the just-created one
+// (keepID). Deletes are idempotent and cleanup failures are non-fatal, so
+// leftovers are swept on the next recreate pass.
+func (p *Provider) deleteStaleNotes(
+	ctx context.Context,
+	project string,
+	mergeRequestIID int,
+	marker string,
+	keepID int,
+) error {
+	ids, err := p.findNotes(ctx, project, mergeRequestIID, marker, true)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range ids {
+		if id == keepID {
+			continue
+		}
+
+		resp, err := p.client.R().
+			SetContext(ctx).
+			Delete(fmt.Sprintf("/projects/%s/merge_requests/%d/notes/%d", project, mergeRequestIID, id))
+		if err != nil {
+			return fmt.Errorf("failed to delete GitLab note %d: %w", id, err)
+		}
+
+		if resp.IsError() {
+			return fmt.Errorf("failed to delete GitLab note %d: status %s", id, resp.Status())
+		}
 	}
 
 	return nil
@@ -235,8 +282,22 @@ func apiState(state types.CommitState) (string, error) {
 	}
 }
 
-func (p *Provider) findNote(ctx context.Context, project string, mergeRequestIID int, marker string) (int, error) {
+// findNotes returns the IDs of notes carrying the marker, newest updated
+// first. With all set it walks every page so the recreate strategy sweeps the
+// full backlog (including notes accumulated under the new strategy); without
+// it the scan stops at the first match — the report note is touched on every
+// run, so the update strategy finds it on the first page even in long
+// comment threads.
+func (p *Provider) findNotes(
+	ctx context.Context,
+	project string,
+	mergeRequestIID int,
+	marker string,
+	all bool,
+) ([]int, error) {
 	page := 1
+
+	var ids []int
 
 	for {
 		var notes []note
@@ -247,30 +308,32 @@ func (p *Provider) findNote(ctx context.Context, project string, mergeRequestIID
 			SetQueryParams(map[string]string{
 				"per_page": "100",
 				"page":     strconv.Itoa(page),
-				// Most-recently-updated first: the report note is edited on
-				// every run, so it is found on the first page.
 				"order_by": "updated_at",
 				"sort":     "desc",
 			}).
 			SetResult(&notes).
 			Get(fmt.Sprintf("/projects/%s/merge_requests/%d/notes", project, mergeRequestIID))
 		if err != nil {
-			return 0, fmt.Errorf("failed to list GitLab notes: %w", err)
+			return nil, fmt.Errorf("failed to list GitLab notes: %w", err)
 		}
 
 		if resp.IsError() {
-			return 0, fmt.Errorf("failed to list GitLab notes: status %s", resp.Status())
+			return nil, fmt.Errorf("failed to list GitLab notes: status %s", resp.Status())
 		}
 
 		for _, n := range notes {
 			if strings.Contains(n.Body, marker) {
-				return n.ID, nil
+				ids = append(ids, n.ID)
+
+				if !all {
+					return ids, nil
+				}
 			}
 		}
 
 		nextPage := resp.Header().Get("X-Next-Page")
 		if nextPage == "" || len(notes) == 0 {
-			return 0, nil
+			return ids, nil
 		}
 
 		page++

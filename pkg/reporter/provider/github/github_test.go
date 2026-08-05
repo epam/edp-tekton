@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +56,7 @@ func TestUpsertCommentCreatesWhenNoMarkerFound(t *testing.T) {
 	p := newTestProvider(t, mux)
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "org/repo", Number: 7},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.Equal(t, "<!-- m -->\nreport", created)
 }
@@ -86,7 +87,7 @@ func TestUpsertCommentUpdatesExisting(t *testing.T) {
 	p := newTestProvider(t, mux)
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "org/repo", Number: 7},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew report", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew report", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.Equal(t, "<!-- m -->\nnew report", updated)
 }
@@ -112,9 +113,73 @@ func TestUpsertCommentAlwaysCreatesWithoutUpdate(t *testing.T) {
 	p := newTestProvider(t, mux)
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "org/repo", Number: 7},
-		types.Comment{Marker: "<!-- m -->", Body: "report", Update: false})
+		types.Comment{Marker: "<!-- m -->", Body: "report", Strategy: types.CommentStrategyNew})
 	require.NoError(t, err)
 	assert.Equal(t, 1, createCalls)
+}
+
+func TestUpsertCommentRecreateDeletesStaleComments(t *testing.T) {
+	t.Parallel()
+
+	var deleted []string
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/issues/7/comments", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(&github.IssueComment{ID: github.Ptr(int64(100))})
+	})
+	mux.HandleFunc("GET /repos/org/repo/issues/7/comments", func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode([]*github.IssueComment{
+			{ID: github.Ptr(int64(100)), Body: github.Ptr("<!-- m -->\nnew report")},
+			{ID: github.Ptr(int64(42)), Body: github.Ptr("<!-- m -->\nold report")},
+			{ID: github.Ptr(int64(43)), Body: github.Ptr("<!-- m -->\nolder report")},
+			{ID: github.Ptr(int64(7)), Body: github.Ptr("unrelated comment")},
+		})
+	})
+	mux.HandleFunc("DELETE /repos/org/repo/issues/comments/{id}", func(w http.ResponseWriter, r *http.Request) {
+		deleted = append(deleted, r.PathValue("id"))
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "org/repo", Number: 7},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew report", Strategy: types.CommentStrategyRecreate})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"42", "43"}, deleted, "must delete stale marker comments but keep the new one")
+}
+
+func TestUpsertCommentRecreateCleanupFailureReturnsCleanupError(t *testing.T) {
+	t.Parallel()
+
+	created := false
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /repos/org/repo/issues/7/comments", func(w http.ResponseWriter, _ *http.Request) {
+		created = true
+
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(&github.IssueComment{ID: github.Ptr(int64(100))})
+	})
+	mux.HandleFunc("GET /repos/org/repo/issues/7/comments", func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode([]*github.IssueComment{
+			{ID: github.Ptr(int64(42)), Body: github.Ptr("<!-- m -->\nold report")},
+		})
+	})
+	mux.HandleFunc("DELETE /repos/org/repo/issues/comments/42", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	})
+
+	p := newTestProvider(t, mux)
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "org/repo", Number: 7},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew report", Strategy: types.CommentStrategyRecreate})
+	require.Error(t, err)
+
+	cleanupErr := &types.CleanupError{}
+	assert.True(t, errors.As(err, &cleanupErr), "cleanup failure after a successful create must be a CleanupError")
+	assert.True(t, created, "the new comment must be created before cleanup runs")
 }
 
 func TestSplitRepoInvalid(t *testing.T) {

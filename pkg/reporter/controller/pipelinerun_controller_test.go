@@ -194,7 +194,7 @@ func TestReconcilePublishesReportAndMarksPipelineRun(t *testing.T) {
 	assert.Equal(t, providerTypes.PullRequestRef{RepoFullName: "org/my-app", Number: 7}, gitProvider.refs[0])
 
 	comment := gitProvider.comments[0]
-	assert.True(t, comment.Update)
+	assert.Equal(t, providerTypes.CommentStrategyUpdate, comment.Strategy)
 	assert.Contains(t, comment.Body, "<!-- krci-pipeline-report codebase=my-app -->")
 	assert.Contains(t, comment.Body, "| ✗ Failed | build | 30s |")
 	assert.Contains(t, comment.Body, "log tail of step-npm-build")
@@ -342,5 +342,44 @@ func TestReconcileNewCommentStrategy(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, gitProvider.comments, 1)
-	assert.False(t, gitProvider.comments[0].Update)
+	assert.Equal(t, providerTypes.CommentStrategyNew, gitProvider.comments[0].Strategy)
+}
+
+func TestReconcileRecreateCommentStrategy(t *testing.T) {
+	t.Parallel()
+
+	objects := append(gitObjects(), newPipelineRun(), newTaskRun())
+	client := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(objects...).Build()
+	gitProvider := &fakeProvider{}
+
+	config := &reporter.Config{TailLines: 100, CommentStrategy: reporter.CommentStrategyRecreate}
+	r := newReconciler(t, client, gitProvider, config)
+
+	_, err := r.Reconcile(context.Background(), reconcileRequest())
+	require.NoError(t, err)
+
+	require.Len(t, gitProvider.comments, 1)
+	assert.Equal(t, providerTypes.CommentStrategyRecreate, gitProvider.comments[0].Strategy)
+}
+
+func TestReconcileCleanupErrorStillMarksReported(t *testing.T) {
+	t.Parallel()
+
+	objects := append(gitObjects(), newPipelineRun(), newTaskRun())
+	client := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(objects...).Build()
+
+	// The report was published; only the stale-comment sweep failed. Requeueing
+	// would duplicate the report, so the run must be marked reported.
+	gitProvider := &fakeProvider{err: &providerTypes.CleanupError{Err: errors.New("delete failed")}}
+
+	config := &reporter.Config{TailLines: 100, CommentStrategy: reporter.CommentStrategyRecreate}
+	r := newReconciler(t, client, gitProvider, config)
+
+	result, err := r.Reconcile(context.Background(), reconcileRequest())
+	require.NoError(t, err)
+	assert.Zero(t, result.RequeueAfter)
+
+	current := &tektonpipelineApi.PipelineRun{}
+	require.NoError(t, client.Get(context.Background(), reconcileRequest().NamespacedName, current))
+	assert.Equal(t, "true", current.Annotations[reporter.ReportedAnnotation])
 }

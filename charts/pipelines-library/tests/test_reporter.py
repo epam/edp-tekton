@@ -70,6 +70,22 @@ reporter:
     assert env["PORTAL_BASE_URL"] == "https://krci-portal-ns.example.com/c/prod-cluster/cicd/pipelineruns"
 
 
+def test_reporter_recreate_comment_strategy():
+    config = """
+global:
+  dnsWildCard: "example.com"
+reporter:
+  commentStrategy: recreate
+    """
+
+    r = helm_template(config)
+
+    container = r["deployment"]["tekton-reporter"]["spec"]["template"]["spec"]["containers"][0]
+
+    env = {e["name"]: e.get("value") for e in container["env"]}
+    assert env["REPORTER_COMMENT_STRATEGY"] == "recreate"
+
+
 def test_reporter_custom_portal_host():
     config = """
 global:

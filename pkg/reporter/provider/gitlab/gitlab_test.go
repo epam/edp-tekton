@@ -3,6 +3,7 @@ package gitlab
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -64,7 +65,7 @@ func TestUpsertCommentUpdatesExistingNote(t *testing.T) {
 	})
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "group/repo", Number: 5},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.Equal(t, "<!-- m -->\nnew", updated)
 }
@@ -89,9 +90,77 @@ func TestUpsertCommentCreatesNote(t *testing.T) {
 	})
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "group/repo", Number: 5},
-		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Update: true})
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nreport", Strategy: types.CommentStrategyUpdate})
 	require.NoError(t, err)
 	assert.Equal(t, "<!-- m -->\nreport", created)
+}
+
+func TestUpsertCommentRecreateDeletesStaleNotes(t *testing.T) {
+	t.Parallel()
+
+	var deleted []string
+
+	deleteNote := func(id string) http.HandlerFunc {
+		return func(w http.ResponseWriter, _ *http.Request) {
+			deleted = append(deleted, id)
+
+			w.WriteHeader(http.StatusNoContent)
+		}
+	}
+
+	p := newTestProvider(t, map[route]http.HandlerFunc{
+		{http.MethodPost, "/projects/group%2Frepo/merge_requests/5/notes"}: func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(note{ID: 100, Body: "<!-- m -->\nnew"})
+		},
+		{http.MethodGet, "/projects/group%2Frepo/merge_requests/5/notes"}: func(w http.ResponseWriter, _ *http.Request) {
+			_ = json.NewEncoder(w).Encode([]note{
+				{ID: 100, Body: "<!-- m -->\nnew"},
+				{ID: 33, Body: "<!-- m -->\nold"},
+				{ID: 21, Body: "<!-- m -->\nolder"},
+				{ID: 1, Body: "unrelated"},
+			})
+		},
+		{http.MethodDelete, "/projects/group%2Frepo/merge_requests/5/notes/33"}: deleteNote("33"),
+		{http.MethodDelete, "/projects/group%2Frepo/merge_requests/5/notes/21"}: deleteNote("21"),
+	})
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "group/repo", Number: 5},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyRecreate})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"33", "21"}, deleted, "must delete stale marker notes but keep the new one")
+}
+
+func TestUpsertCommentRecreateCleanupFailureReturnsCleanupError(t *testing.T) {
+	t.Parallel()
+
+	created := false
+
+	// 403 is permanent, so the client-level retry policy does not kick in.
+	forbidden := func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	}
+
+	p := newTestProvider(t, map[route]http.HandlerFunc{
+		{http.MethodPost, "/projects/group%2Frepo/merge_requests/5/notes"}: func(w http.ResponseWriter, _ *http.Request) {
+			created = true
+
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(note{ID: 100, Body: "<!-- m -->\nnew"})
+		},
+		{http.MethodGet, "/projects/group%2Frepo/merge_requests/5/notes"}: func(w http.ResponseWriter, _ *http.Request) {
+			_ = json.NewEncoder(w).Encode([]note{{ID: 33, Body: "<!-- m -->\nold"}})
+		},
+		{http.MethodDelete, "/projects/group%2Frepo/merge_requests/5/notes/33"}: forbidden,
+	})
+
+	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "group/repo", Number: 5},
+		types.Comment{Marker: "<!-- m -->", Body: "<!-- m -->\nnew", Strategy: types.CommentStrategyRecreate})
+	require.Error(t, err)
+
+	cleanupErr := &types.CleanupError{}
+	assert.True(t, errors.As(err, &cleanupErr), "cleanup failure after a successful create must be a CleanupError")
+	assert.True(t, created, "the new note must be created before cleanup runs")
 }
 
 // statusesRoute is the commit statuses read the state-machine pre-check performs.
@@ -368,7 +437,7 @@ func TestUpsertCommentPropagatesAPIError(t *testing.T) {
 	})
 
 	err := p.UpsertComment(context.Background(), types.PullRequestRef{RepoFullName: "group/repo", Number: 5},
-		types.Comment{Marker: "<!-- m -->", Body: "b", Update: false})
+		types.Comment{Marker: "<!-- m -->", Body: "b", Strategy: types.CommentStrategyNew})
 	assert.Error(t, err)
 }
 

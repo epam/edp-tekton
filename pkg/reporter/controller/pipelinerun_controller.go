@@ -204,10 +204,21 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 	)
 
 	if err := gitProvider.UpsertComment(ctx, pullRequest, types.Comment{
-		Marker: marker,
-		Body:   body,
-		Update: r.config.CommentStrategy == reporter.CommentStrategyUpdate,
+		Marker:   marker,
+		Body:     body,
+		Strategy: r.config.CommentStrategy,
 	}); err != nil {
+		// A CleanupError means the report itself was published and only the
+		// recreate strategy's stale-comment sweep failed. Requeueing would
+		// publish a duplicate report, so treat the run as reported; the next
+		// recreate pass deletes the leftovers.
+		cleanupErr := &types.CleanupError{}
+		if errors.As(err, &cleanupErr) {
+			log.FromContext(ctx).Error(err, "Failed to clean up stale report comments")
+
+			return nil
+		}
+
 		return fmt.Errorf("failed to publish report comment: %w", err)
 	}
 

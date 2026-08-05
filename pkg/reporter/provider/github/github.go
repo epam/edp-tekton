@@ -49,37 +49,74 @@ func NewWithClient(client *github.Client) *Provider {
 // (<details>/<summary>) inside markdown comments.
 func (p *Provider) SupportsCollapsibleSections() bool { return true }
 
-// UpsertComment creates the report comment or, when comment.Update is set,
-// edits the previous report comment identified by the marker.
+// UpsertComment publishes the report comment per comment.Strategy: update
+// edits the previous report comment identified by the marker, recreate posts
+// a new comment and then deletes the stale ones (create-first, so a cleanup
+// failure never leaves the pull request without a report), new always posts.
 func (p *Provider) UpsertComment(ctx context.Context, ref types.PullRequestRef, comment types.Comment) error {
 	owner, repo, err := splitRepo(ref.RepoFullName)
 	if err != nil {
 		return err
 	}
 
-	if comment.Update {
-		existingID, err := p.findComment(ctx, owner, repo, ref.Number, comment.Marker)
+	if comment.Strategy == types.CommentStrategyUpdate {
+		existingIDs, err := p.findComments(ctx, owner, repo, ref.Number, comment.Marker, false)
 		if err != nil {
 			return err
 		}
 
-		if existingID != 0 {
-			_, _, err = p.client.Issues.EditComment(ctx, owner, repo, existingID, &github.IssueComment{
+		if len(existingIDs) != 0 {
+			_, _, err = p.client.Issues.EditComment(ctx, owner, repo, existingIDs[0], &github.IssueComment{
 				Body: github.Ptr(comment.Body),
 			})
 			if err != nil {
-				return fmt.Errorf("failed to update GitHub comment %d: %w", existingID, err)
+				return fmt.Errorf("failed to update GitHub comment %d: %w", existingIDs[0], err)
 			}
 
 			return nil
 		}
 	}
 
-	_, _, err = p.client.Issues.CreateComment(ctx, owner, repo, ref.Number, &github.IssueComment{
+	created, _, err := p.client.Issues.CreateComment(ctx, owner, repo, ref.Number, &github.IssueComment{
 		Body: github.Ptr(comment.Body),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create GitHub comment: %w", err)
+	}
+
+	if comment.Strategy == types.CommentStrategyRecreate {
+		if err := p.deleteStaleComments(ctx, owner, repo, ref.Number, comment.Marker, created.GetID()); err != nil {
+			return &types.CleanupError{Err: err}
+		}
+	}
+
+	return nil
+}
+
+// deleteStaleComments removes every marker comment except the just-created
+// one (keepID). Unlike the resty-based providers, GitHub comment calls carry
+// no client-level retry; deletes are idempotent and cleanup failures are
+// non-fatal, so leftovers are swept on the next recreate pass.
+func (p *Provider) deleteStaleComments(
+	ctx context.Context,
+	owner, repo string,
+	number int,
+	marker string,
+	keepID int64,
+) error {
+	ids, err := p.findComments(ctx, owner, repo, number, marker, true)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range ids {
+		if id == keepID {
+			continue
+		}
+
+		if _, err := p.client.Issues.DeleteComment(ctx, owner, repo, id); err != nil {
+			return fmt.Errorf("failed to delete GitHub comment %d: %w", id, err)
+		}
 	}
 
 	return nil
@@ -148,29 +185,45 @@ func apiState(state types.CommitState) (string, error) {
 	}
 }
 
-func (p *Provider) findComment(ctx context.Context, owner, repo string, number int, marker string) (int64, error) {
-	// Most-recently-updated first: the report comment is edited on every run,
-	// so it is found on the first page even in long comment threads.
+// findComments returns the IDs of comments carrying the marker, newest
+// updated first. With all set it walks every page so the recreate strategy
+// sweeps the full backlog (including comments accumulated under the new
+// strategy); without it the scan stops at the first match — the report
+// comment is touched on every run, so the update strategy finds it on the
+// first page even in long comment threads.
+func (p *Provider) findComments(
+	ctx context.Context,
+	owner, repo string,
+	number int,
+	marker string,
+	all bool,
+) ([]int64, error) {
 	opts := &github.IssueListCommentsOptions{
 		Sort:        github.Ptr("updated"),
 		Direction:   github.Ptr("desc"),
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
 
+	var ids []int64
+
 	for {
 		comments, resp, err := p.client.Issues.ListComments(ctx, owner, repo, number, opts)
 		if err != nil {
-			return 0, fmt.Errorf("failed to list GitHub comments: %w", err)
+			return nil, fmt.Errorf("failed to list GitHub comments: %w", err)
 		}
 
 		for _, c := range comments {
 			if strings.Contains(c.GetBody(), marker) {
-				return c.GetID(), nil
+				ids = append(ids, c.GetID())
+
+				if !all {
+					return ids, nil
+				}
 			}
 		}
 
 		if resp.NextPage == 0 {
-			return 0, nil
+			return ids, nil
 		}
 
 		opts.Page = resp.NextPage

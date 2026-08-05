@@ -91,14 +91,17 @@ func (f *Formatter) Format(report *collector.Report, marker string, opts Options
 	})
 
 	for _, task := range tasks {
-		status := fmt.Sprintf("%s %s", markPassed, labelPassed)
-		if !task.Succeeded {
-			status = fmt.Sprintf("%s %s", markFailed, labelFailed)
-		}
-
 		name := task.Name
 		if url := f.links.TaskURL(report.PipelineRunNamespace, report.PipelineRunName, task.Name); url != "" {
 			name = fmt.Sprintf("[%s](%s)", task.Name, url)
+		}
+
+		status := fmt.Sprintf("%s %s", markPassed, labelPassed)
+		if !task.Succeeded {
+			// Failed rows are bold so the one row that matters stands out in a
+			// long, mostly-green table; renderers do not color the glyphs.
+			status = fmt.Sprintf("**%s %s**", markFailed, labelFailed)
+			name = fmt.Sprintf("**%s**", name)
 		}
 
 		fmt.Fprintf(&b, "| %s | %s | %s |\n", status, name, formatDuration(task.Duration))

@@ -49,7 +49,7 @@ func TestFormat(t *testing.T) {
 
 	// Tasks are ordered by start time: fetch-repository ran first.
 	fetchIdx := strings.Index(body, "| ✓ Passed | fetch-repository | 5s |")
-	buildIdx := strings.Index(body, "| ✗ Failed | build | 1m32s |")
+	buildIdx := strings.Index(body, "| **✗ Failed** | **build** | 1m32s |")
 
 	require.GreaterOrEqual(t, fetchIdx, 0)
 	require.GreaterOrEqual(t, buildIdx, 0)
@@ -83,7 +83,7 @@ func TestFormatRetriggerNotice(t *testing.T) {
 	// The notice sits between the table and the failed-step logs so tail
 	// truncation of long logs cannot cut it off.
 	noticeIdx := strings.Index(body, "comment `/recheck`")
-	rowIdx := strings.Index(body, "| ✗ Failed | build |")
+	rowIdx := strings.Index(body, "| **✗ Failed** | **build** |")
 	logsIdx := strings.Index(body, "npm ERR!")
 
 	require.GreaterOrEqual(t, noticeIdx, 0)

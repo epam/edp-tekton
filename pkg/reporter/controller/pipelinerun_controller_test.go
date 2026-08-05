@@ -196,7 +196,7 @@ func TestReconcilePublishesReportAndMarksPipelineRun(t *testing.T) {
 	comment := gitProvider.comments[0]
 	assert.Equal(t, providerTypes.CommentStrategyUpdate, comment.Strategy)
 	assert.Contains(t, comment.Body, "<!-- krci-pipeline-report codebase=my-app -->")
-	assert.Contains(t, comment.Body, "| ✗ Failed | build | 30s |")
+	assert.Contains(t, comment.Body, "| **✗ Failed** | **build** | 30s |")
 	assert.Contains(t, comment.Body, "log tail of step-npm-build")
 	assert.Contains(t, comment.Body, "secret=*****", "git token must be masked in logs")
 	assert.NotContains(t, comment.Body, "gh-token")
@@ -224,7 +224,7 @@ func TestReconcilePublishesReportWithoutLogsWhenAnnotationDisablesThem(t *testin
 	require.Len(t, gitProvider.comments, 1)
 
 	comment := gitProvider.comments[0]
-	assert.Contains(t, comment.Body, "| ✗ Failed | build | 30s |")
+	assert.Contains(t, comment.Body, "| **✗ Failed** | **build** | 30s |")
 	assert.NotContains(t, comment.Body, "log tail of step-npm-build",
 		"log tail must be omitted when the PipelineRun opts out")
 }

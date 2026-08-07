@@ -89,10 +89,6 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.gerritHost | string | `"gerrit"` | Gerrit Host URL, must be specified if gerrit is enabled |
 | global.gitProviders | list | `["bitbucket","gerrit","github","gitlab"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
-| grafana.dashboards.labelKey | string | `"grafana_dashboard"` |  |
-| grafana.dashboards.labelValue | string | `"1"` |  |
-| grafana.enabled | bool | `false` |  |
-| grafana.serviceMonitor.prometheusReleaseLabels.release | string | `"prom"` |  |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true |
 | interceptor.extraSecretNames | list | `[]` | Additional git server secret names the interceptor is allowed to read |

@@ -31,6 +31,24 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Image reference of one of the chart's own components, the interceptor or the reporter.
+Both are entrypoints of the same image, so the chart-wide image.* values hold the repository,
+tag and digest, and a component may override any of them in its own section. Resolution order
+is component value, then chart-wide value, then the chart appVersion for the tag.
+Call as:
+  {{ include "edp-tekton.componentImage" (dict "root" $ "component" .Values.reporter.image) }}
+*/}}
+{{- define "edp-tekton.componentImage" -}}
+{{- $root := .root -}}
+{{- $component := .component | default dict -}}
+{{- $repository := $component.repository | default $root.Values.image.repository -}}
+{{- $tag := $component.tag | default $root.Values.image.tag | default $root.Chart.AppVersion -}}
+{{- $digest := $component.digest | default $root.Values.image.digest -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- with $digest }}@{{ . }}{{ end -}}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "edp-tekton.labels" -}}

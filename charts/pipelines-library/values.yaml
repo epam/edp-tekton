@@ -14,6 +14,20 @@ clusterName: ""
 # krci-portal chart's default host krci-portal-<namespace>.<global.dnsWildCard>.
 portalHost: ""
 
+# Container image of the chart's own components. The interceptor and the reporter are two
+# entrypoints of the same image, so these values describe both, and they are the values the
+# KubeRocketCI deploy flow sets. Either component can still override any of them in its own
+# section below.
+image:
+  # -- KubeRocketCI edp-tekton Docker image name. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/edp-tekton)
+  repository: epamedp/edp-tekton
+  # -- Defines the policy with which the pod requests its image.
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  # -- Image digest for an immutable reference (e.g. sha256:abc123...). If set, deployed as :tag@digest.
+  digest: ""
+
 pipelines:
   image:
     # -- Registry for tekton pipelines images. Default: docker.io
@@ -230,10 +244,14 @@ reporter:
   commentStrategy: update
 
   image:
-    repository: epamedp/edp-tekton
-    pullPolicy: IfNotPresent
-    # -- Overrides the image tag whose default is the chart appVersion.
-    tag:
+    # -- Overrides the chart-wide image.repository for the reporter only.
+    repository: ""
+    # -- Overrides the chart-wide image.pullPolicy for the reporter only.
+    pullPolicy: ""
+    # -- Overrides the chart-wide image.tag, whose own default is the chart appVersion.
+    tag: ""
+    # -- Overrides the chart-wide image.digest for the reporter only.
+    digest: ""
 
   imagePullSecrets: []
 
@@ -404,10 +422,14 @@ interceptor:
   nameOverride: "tekton-interceptor"
 
   image:
-    repository: epamedp/edp-tekton
-    pullPolicy: IfNotPresent
-    # -- Overrides the image tag whose default is the chart appVersion.
-    tag:
+    # -- Overrides the chart-wide image.repository for the interceptor only.
+    repository: ""
+    # -- Overrides the chart-wide image.pullPolicy for the interceptor only.
+    pullPolicy: ""
+    # -- Overrides the chart-wide image.tag, whose own default is the chart appVersion.
+    tag: ""
+    # -- Overrides the chart-wide image.digest for the interceptor only.
+    digest: ""
 
   imagePullSecrets: []
 

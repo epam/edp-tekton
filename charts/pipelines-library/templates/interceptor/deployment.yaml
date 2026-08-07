@@ -56,8 +56,8 @@ spec:
           name: tekton-triggers-edp-interceptor
           securityContext:
             {{- toYaml .Values.interceptor.securityContext | nindent 12 }}
-          image: "{{ .Values.interceptor.image.repository }}:{{ .Values.interceptor.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.interceptor.image.pullPolicy }}
+          image: {{ include "edp-tekton.componentImage" (dict "root" $ "component" .Values.interceptor.image) | quote }}
+          imagePullPolicy: {{ .Values.interceptor.image.pullPolicy | default .Values.image.pullPolicy }}
           ports:
             - name: https
               containerPort: 8443

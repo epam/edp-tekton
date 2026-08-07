@@ -46,8 +46,8 @@ spec:
           name: tekton-reporter
           securityContext:
             {{- toYaml .Values.reporter.securityContext | nindent 12 }}
-          image: "{{ .Values.reporter.image.repository }}:{{ .Values.reporter.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.reporter.image.pullPolicy }}
+          image: {{ include "edp-tekton.componentImage" (dict "root" $ "component" .Values.reporter.image) | quote }}
+          imagePullPolicy: {{ .Values.reporter.image.pullPolicy | default .Values.image.pullPolicy }}
           ports:
             - name: metrics
               containerPort: 8080

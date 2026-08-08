@@ -1,4 +1,4 @@
-{{ if and .Values.pipelines.deployableResources.tasks .Values.pipelines.argocdDiffPreview.enabled }}
+{{ if include "edp-tekton.argocdDiffPreview.enabled" $ }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:

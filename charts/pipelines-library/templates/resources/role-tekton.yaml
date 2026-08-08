@@ -33,7 +33,7 @@ rules:
       - list
       - patch
 
-{{- if .Values.pipelines.argocdDiffPreview.enabled }}
+{{- if include "edp-tekton.argocdDiffPreview.enabled" $ }}
   # the gitops review diff preview exports the Applications affected by an MR
   # (resolved by name from the changed GitOps file paths) to render the diff
   - verbs:

@@ -89,14 +89,19 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | global.gerritHost | string | `"gerrit"` | Gerrit Host URL, must be specified if gerrit is enabled |
 | global.gitProviders | list | `["bitbucket","gerrit","github","gitlab"]` | Deploy Kubernetes Resources for the specific Git Provider. Can be gerrit, gitlab, github (default) |
 | global.platform | string | `"kubernetes"` | platform type that can be "kubernetes" or "openshift" |
+| image.digest | string | `""` | Image digest for an immutable reference (e.g. sha256:abc123...). If set, deployed as :tag@digest. |
+| image.pullPolicy | string | `"IfNotPresent"` | Defines the policy with which the pod requests its image. |
+| image.repository | string | `"epamedp/edp-tekton"` | KubeRocketCI edp-tekton Docker image name. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/edp-tekton) |
+| image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | interceptor.affinity | object | `{}` | Affinity settings for pod assignment |
 | interceptor.enabled | bool | `true` | Deploy KubeRocketCI interceptor as a part of pipeline library when true. Default: true |
 | interceptor.extraSecretNames | list | `[]` | Additional git server secret names the interceptor is allowed to read |
 | interceptor.extraVolumeMounts | list | `[]` | Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it |
 | interceptor.extraVolumes | list | `[]` | Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS (required for pipelines.queue.enabled against such servers) |
-| interceptor.image.pullPolicy | string | `"IfNotPresent"` |  |
-| interceptor.image.repository | string | `"epamedp/edp-tekton"` |  |
-| interceptor.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
+| interceptor.image.digest | string | `""` | Overrides the chart-wide image.digest for the interceptor only. |
+| interceptor.image.pullPolicy | string | `""` | Overrides the chart-wide image.pullPolicy for the interceptor only. |
+| interceptor.image.repository | string | `""` | Overrides the chart-wide image.repository for the interceptor only. |
+| interceptor.image.tag | string | `""` | Overrides the chart-wide image.tag, whose own default is the chart appVersion. |
 | interceptor.imagePullSecrets | list | `[]` |  |
 | interceptor.logLevel | string | `"info"` | Interceptor log level (debug, info, warn, error). debug additionally logs the full webhook request/response payloads. |
 | interceptor.nameOverride | string | `"tekton-interceptor"` |  |
@@ -147,9 +152,10 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | reporter.enabled | bool | `true` | Deploy the Tekton Reporter as a part of the pipeline library when true. Default: true |
 | reporter.extraVolumeMounts | list | `[]` | Additional volume mounts, e.g. mount a private CA into /etc/ssl/certs to trust it |
 | reporter.extraVolumes | list | `[]` | Additional volumes, e.g. a ConfigMap with a private CA certificate for git servers with self-signed TLS |
-| reporter.image.pullPolicy | string | `"IfNotPresent"` |  |
-| reporter.image.repository | string | `"epamedp/edp-tekton"` |  |
-| reporter.image.tag | string | `nil` | Overrides the image tag whose default is the chart appVersion. |
+| reporter.image.digest | string | `""` | Overrides the chart-wide image.digest for the reporter only. |
+| reporter.image.pullPolicy | string | `""` | Overrides the chart-wide image.pullPolicy for the reporter only. |
+| reporter.image.repository | string | `""` | Overrides the chart-wide image.repository for the reporter only. |
+| reporter.image.tag | string | `""` | Overrides the chart-wide image.tag, whose own default is the chart appVersion. |
 | reporter.imagePullSecrets | list | `[]` |  |
 | reporter.logsReporting | bool | `false` | Publish trailing log lines of failed steps in pull request report comments. Disabled by default so pipeline output, which may carry secrets, is not republished to the VCS; the reporter then also stops reading pod logs and is not granted pods/log access. When enabled, a single PipelineRun or a whole GitServer can still opt out (or back in) via the `app.edp.epam.com/reporter-logs: "true"/"false"` annotation; the PipelineRun annotation wins over the GitServer one. Default: false |
 | reporter.nameOverride | string | `"tekton-reporter"` |  |

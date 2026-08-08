@@ -338,3 +338,17 @@ for GitServers it creates itself.
 {{- $names | uniq | sortAlpha | toJson -}}
 {{- end -}}
 
+
+{{/*
+Whether the Argo CD diff preview is active.
+
+Both flags must be set: the gitops review pipeline references the
+argocd-diff-preview Task by name, so rendering the step while the tasks are
+not installed would leave an unresolvable taskRef and fail the review
+pipeline - the opposite of the step's best-effort contract.
+*/}}
+{{- define "edp-tekton.argocdDiffPreview.enabled" -}}
+{{- if and .Values.pipelines.deployableResources.tasks .Values.pipelines.argocdDiffPreview.enabled -}}
+true
+{{- end -}}
+{{- end -}}

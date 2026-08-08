@@ -122,10 +122,14 @@ pipelines:
     # operator; without it Pending PipelineRuns never start.
     pendingPipelineRun: false
 
-  # -- Argo CD Diff Preview settings for the GitOps review pipelines. When enabled, the
-  # gitops review pipeline renders an MR manifest diff via the standing argocd-diff-preview
-  # vcluster (installed by the argocd-diff-preview cluster addon) and posts it as an MR
-  # comment; it stays best-effort at runtime and skips silently if the addon is unhealthy.
+  # -- Argo CD Diff Preview settings for the GitOps review pipelines (ALPHA, GitLab only).
+  # When enabled, the gitops review pipeline renders an MR manifest diff via the standing
+  # argocd-diff-preview vcluster (installed by the argocd-diff-preview cluster addon) and
+  # posts it as an MR comment; it stays best-effort at runtime and skips silently if the
+  # addon is unhealthy. Enabling the feature takes TWO flags - this one and
+  # `argocd-diff-preview.enable` in the edp-cluster-add-ons App-of-Apps values. This chart
+  # also owns the addon's namespace, so the App-of-Apps entry must keep
+  # `createNamespace: false`.
   argocdDiffPreview:
     # -- Install the diff-preview task and wire it into the gitops review pipeline. Enable
     # this together with the argocd-diff-preview cluster addon; leave disabled otherwise.

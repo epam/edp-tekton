@@ -28,7 +28,7 @@ spec:
         Refspec to fetch before checking out revision. When the diff preview is
         enabled, branch heads are fetched so it can reconstruct the MR target
         branch locally.
-      default: {{ if .Values.pipelines.argocdDiffPreview.enabled }}"+refs/heads/*:refs/remotes/origin/*"{{ else }}""{{ end }}
+      default: {{ if include "edp-tekton.argocdDiffPreview.enabled" $ }}"+refs/heads/*:refs/remotes/origin/*"{{ else }}""{{ end }}
       type: string
     - name: CODEBASE_NAME
       default: krci-gitops
@@ -59,7 +59,7 @@ spec:
           subPath: source
           workspace: shared-workspace
 
-{{- if .Values.pipelines.argocdDiffPreview.enabled }}
+{{- if include "edp-tekton.argocdDiffPreview.enabled" $ }}
     - name: argocd-diff-preview
       runAfter:
         - yaml-lint

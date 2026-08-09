@@ -50,12 +50,12 @@ def test_reporter_custom_configuration():
 global:
   dnsWildCard: "example.com"
 clusterName: "prod-cluster"
+image:
+  repository: custom/reporter
+  tag: 1.2.3
 reporter:
   tailLines: 50
   commentStrategy: new
-  image:
-    repository: custom/reporter
-    tag: 1.2.3
     """
 
     r = helm_template(config)

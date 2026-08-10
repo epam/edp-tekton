@@ -2,6 +2,64 @@
 ## [Unreleased]
 
 
+<a name="v0.27.0"></a>
+## [v0.27.0] - 2026-08-10
+### Features
+
+- bold failed task rows in the report comment table
+- add a recreate report comment strategy
+- resolve Codebases via gitUrlPathHash label with full-scan fallback
+- resolve PipelineRun ServiceAccount from a Pipeline annotation
+- pass gitServers annotations through to the GitServer resource
+- allow disabling log publishing per PipelineRun or GitServer
+- add a reporter flag to publish failed-step logs, off by default
+- restrict GitHub review pipeline triggers to allowed authors
+- add gitlab-set-label task for merge request label voting
+- add re-run hint to report comments, drop emoji status icons
+- add best-effort Argo CD diff preview to the GitOps review pipeline
+
+### Bug Fixes
+
+- resolve the interceptor and reporter images from chart-wide image values
+- remove the legacy Grafana/Prometheus integration from pipelines-library
+- log permanent report skips at info level
+- reduce pipeline, interceptor and reporter roles to exercised verbs
+- exclude chart tests and python caches from the packaged chart
+- scope every role to named secrets and drop configmap access
+- restrict interceptor secret reads to known git server secrets
+- deny host IPC access in the interceptor SCC
+- remove blanket secret read access from tekton autotests role
+- always post running as the GitLab start commit status
+- report Completed aggregate without cancel reason as success
+- bitbucket build reporters vote on the cloned commit
+- github build reporters vote on the cloned commit
+- gitlab build reporters vote on the cloned commit
+- reserve a finally budget so timed-out pipelines report commit status
+- restore Helm chart publishing to ECR
+- skip Bitbucket review retriggers on metadata-only PR updates
+
+### Code Refactoring
+
+- gate the diff preview on a single condition
+- drop the unused TENANT_NAME result from init-values
+- create SonarQube projects without the Kubernetes API
+- remove dead gitsha param from build pipelines and trigger templates ([#684](https://github.com/epam/edp-tekton/issues/684))
+- remove Jira integration from Tekton pipelines
+
+### Testing
+
+- align pipeline tests with clone-first reporter order
+- pin build reporters to clone-result voting (red)
+
+### Routine
+
+- remove the Tekton pruner in favor of Tekton Results
+- normalize CRLF line endings to LF
+- bump common-library to 0.3.21 and refresh docs
+- bump Go base image to golang:1.25-trixie
+- Update current development version
+
+
 <a name="v0.26.0"></a>
 ## [v0.26.0] - 2026-07-20
 ### Features
@@ -914,7 +972,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.26.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.27.0...HEAD
+[v0.27.0]: https://github.com/epam/edp-tekton/compare/v0.26.0...v0.27.0
 [v0.26.0]: https://github.com/epam/edp-tekton/compare/v0.25.0...v0.26.0
 [v0.25.0]: https://github.com/epam/edp-tekton/compare/v0.24.0...v0.25.0
 [v0.24.0]: https://github.com/epam/edp-tekton/compare/v0.23.0...v0.24.0

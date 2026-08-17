@@ -36,6 +36,9 @@ spec:
       type: string
       description: name of the secret for the Nexus integration
       default: ci-nexus
+    - name: CACHE_DIR
+      default: "/workspace/source/cache"
+      description: The path to the cache directory.
   steps:
     - name: npm
       image: $(params.BASE_IMAGE)
@@ -68,6 +71,8 @@ spec:
             secretKeyRef:
               name: $(params.ci-nexus)
               key: url
+        - name: NPM_CACHE_DIR
+          value: $(params.CACHE_DIR)
       script: |
         #!/usr/bin/env sh
         set -e

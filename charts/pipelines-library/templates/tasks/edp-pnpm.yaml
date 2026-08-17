@@ -79,6 +79,10 @@ spec:
         #!/usr/bin/env sh
         set -e
 
+        export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
+        export npm_config_userconfig=/var/configmap/.npmrc-ci
+        export NEXUS_HOST="//${NEXUS_HOST_URL#*://}"
+
         corepack enable
         pnpm config set store-dir "$(params.CACHE_DIR)"
         pnpm i

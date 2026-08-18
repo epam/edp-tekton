@@ -78,23 +78,22 @@ spec:
         - name: PIP_INDEX_PATH
           valueFrom:
             configMapKeyRef:
-              name: custom-python-settings
+              name: {{ .Values.tekton.configs.pythonConfigMap }}
               key: PIP_INDEX_PATH
-              optional: true
         - name: PIP_INDEX_URL_PATH
           valueFrom:
             configMapKeyRef:
-              name: custom-python-settings
+              name: {{ .Values.tekton.configs.pythonConfigMap }}
               key: PIP_INDEX_URL_PATH
         - name: REPOSITORY_SNAPSHOTS_PATH
           valueFrom:
             configMapKeyRef:
-              name: custom-python-settings
+              name: {{ .Values.tekton.configs.pythonConfigMap }}
               key: REPOSITORY_SNAPSHOTS_PATH
         - name: REPOSITORY_RELEASES_PATH
           valueFrom:
             configMapKeyRef:
-              name: custom-python-settings
+              name: {{ .Values.tekton.configs.pythonConfigMap }}
               key: REPOSITORY_RELEASES_PATH
       script: |
         #!/usr/bin/env sh

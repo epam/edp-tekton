@@ -156,14 +156,26 @@ func newReconciler(
 ) *PipelineRunReconciler {
 	t.Helper()
 
+	return newReconcilerWithReader(t, client, client, gitProvider, config)
+}
+
+func newReconcilerWithReader(
+	t *testing.T,
+	client ctrlClient.Client,
+	reader ctrlClient.Reader,
+	gitProvider providerTypes.Provider,
+	config *reporter.Config,
+) *PipelineRunReconciler {
+	t.Helper()
+
 	if config == nil {
 		config = &reporter.Config{TailLines: 100, CommentStrategy: reporter.CommentStrategyUpdate, LogsEnabled: true}
 	}
 
 	return NewPipelineRunReconciler(
 		client,
-		client,
-		collector.New(client, stubLogFetcher{}),
+		reader,
+		collector.New(reader, stubLogFetcher{}),
 		formatter.New(formatter.PortalLinkBuilder{}),
 		func(_, _, _ string) (providerTypes.Provider, error) {
 			return gitProvider, nil
@@ -243,6 +255,56 @@ func TestReconcileSkipsAlreadyReported(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), reconcileRequest())
 	require.NoError(t, err)
 	assert.Empty(t, gitProvider.comments)
+}
+
+func TestReconcileStaleCacheDoesNotRepublish(t *testing.T) {
+	t.Parallel()
+
+	// The window right after a previous reconcile published and patched the run:
+	// the cache still serves a copy without the reported annotation, while the
+	// API server already has it. The live re-read must win and skip the publish.
+	stale := newPipelineRun()
+
+	fresh := newPipelineRun()
+	fresh.Annotations[reporter.ReportedAnnotation] = "true"
+
+	// The git fixtures keep the publish path viable: if the live-read guard
+	// breaks, the reconcile publishes a comment and the assertion below fails,
+	// instead of erroring earlier on a missing Codebase and passing falsely.
+	cachedObjects := append(gitObjects(), stale, newTaskRun())
+	cachedClient := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(cachedObjects...).Build()
+	liveReader := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(fresh).Build()
+
+	gitProvider := &fakeProvider{}
+	r := newReconcilerWithReader(t, cachedClient, liveReader, gitProvider, nil)
+
+	_, err := r.Reconcile(context.Background(), reconcileRequest())
+	require.NoError(t, err)
+	assert.Empty(t, gitProvider.comments)
+}
+
+func TestReconcileSkipsCancelledRun(t *testing.T) {
+	t.Parallel()
+
+	pipelineRun := newPipelineRun()
+	pipelineRun.Status.Conditions = duckv1.Conditions{{
+		Type:   apis.ConditionSucceeded,
+		Status: corev1.ConditionFalse,
+		Reason: tektonpipelineApi.PipelineRunReasonCancelled.String(),
+	}}
+
+	client := fake.NewClientBuilder().WithScheme(newScheme(t)).WithObjects(pipelineRun).Build()
+	gitProvider := &fakeProvider{}
+
+	r := newReconciler(t, client, gitProvider, nil)
+
+	_, err := r.Reconcile(context.Background(), reconcileRequest())
+	require.NoError(t, err)
+	assert.Empty(t, gitProvider.comments)
+
+	current := &tektonpipelineApi.PipelineRun{}
+	require.NoError(t, client.Get(context.Background(), reconcileRequest().NamespacedName, current))
+	assert.Equal(t, reportSkipped, current.Annotations[reporter.ReportedAnnotation])
 }
 
 func TestReconcileSkipsRunningAndNonReviewRuns(t *testing.T) {

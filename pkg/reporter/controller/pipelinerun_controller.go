@@ -11,6 +11,8 @@ import (
 
 	tektonpipelineApi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
+	k8sTypes "k8s.io/apimachinery/pkg/types"
+	"knative.dev/pkg/apis"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,8 +36,9 @@ type ProviderFactory func(gitProvider, host, token string) (types.Provider, erro
 type PipelineRunReconciler struct {
 	// client is the cached client, backed by the label-filtered PipelineRun watch.
 	client ctrlClient.Client
-	// reader performs direct (uncached) reads of TaskRuns, Secrets, Codebases
-	// and GitServers, so the reporter never opens watches on those types.
+	// reader performs direct (uncached) reads: TaskRuns, Secrets, Codebases and
+	// GitServers (no watches on those types), plus the authoritative PipelineRun
+	// re-read before publishing.
 	reader      ctrlClient.Reader
 	collector   *collector.Collector
 	formatter   *formatter.Formatter
@@ -110,17 +113,29 @@ func isReportable(pipelineRun *tektonpipelineApi.PipelineRun) bool {
 func (r *PipelineRunReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
+	// Cheap gate on the cached copy first; the uncached confirmation below is
+	// only paid for runs that still look reportable.
 	pipelineRun := &tektonpipelineApi.PipelineRun{}
-	if err := r.client.Get(ctx, req.NamespacedName, pipelineRun); err != nil {
-		if k8sErrors.IsNotFound(err) {
-			return ctrl.Result{}, nil
-		}
 
-		return ctrl.Result{}, fmt.Errorf("failed to get PipelineRun: %w", err)
+	ok, err := getReportable(ctx, r.client, req.NamespacedName, pipelineRun)
+	if err != nil || !ok {
+		return ctrl.Result{}, err
 	}
 
-	if !isReportable(pipelineRun) {
-		return ctrl.Result{}, nil
+	// The informer cache can lag behind this controller's own reported-annotation
+	// patch; a stale copy here would publish the report a second time. The live
+	// read is authoritative.
+	ok, err = getReportable(ctx, r.reader, req.NamespacedName, pipelineRun)
+	if err != nil || !ok {
+		return ctrl.Result{}, err
+	}
+
+	// A cancelled run carries no review signal: the trigger auto-cancels runs
+	// superseded by a newer commit, and the replacement run posts its own report.
+	if isCancelled(pipelineRun) {
+		logger.Info("Skipping report for cancelled PipelineRun")
+
+		return ctrl.Result{}, r.markHandled(ctx, pipelineRun, reportSkipped)
 	}
 
 	if err := r.report(ctx, pipelineRun); err != nil {
@@ -225,6 +240,37 @@ func (r *PipelineRunReconciler) report(ctx context.Context, pipelineRun *tektonp
 	return nil
 }
 
+// getReportable treats a missing run as nothing-to-report, not an error.
+func getReportable(
+	ctx context.Context,
+	reader ctrlClient.Reader,
+	key k8sTypes.NamespacedName,
+	pipelineRun *tektonpipelineApi.PipelineRun,
+) (bool, error) {
+	if err := reader.Get(ctx, key, pipelineRun); err != nil {
+		if k8sErrors.IsNotFound(err) {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("failed to get PipelineRun: %w", err)
+	}
+
+	return isReportable(pipelineRun), nil
+}
+
+// isCancelled checks both the cancel request (spec.status) and the processed
+// result (condition reason): depending on how far Tekton got with the cancel,
+// either can be present without the other.
+func isCancelled(pipelineRun *tektonpipelineApi.PipelineRun) bool {
+	if pipelineRun.IsCancelled() || pipelineRun.IsGracefullyCancelled() || pipelineRun.IsGracefullyStopped() {
+		return true
+	}
+
+	condition := pipelineRun.Status.GetCondition(apis.ConditionSucceeded)
+
+	return condition != nil && condition.Reason == tektonpipelineApi.PipelineRunReasonCancelled.String()
+}
+
 // Report outcomes recorded in the reported annotation. isReportable only checks
 // for the annotation's presence, so the value is informational.
 const (
@@ -232,20 +278,36 @@ const (
 	reportSkipped   = "skipped"
 )
 
+const fieldManager = "edp-tekton-reporter"
+
 func (r *PipelineRunReconciler) markHandled(
 	ctx context.Context,
 	pipelineRun *tektonpipelineApi.PipelineRun,
 	outcome string,
 ) error {
-	patch := ctrlClient.MergeFrom(pipelineRun.DeepCopy())
-
-	if pipelineRun.Annotations == nil {
-		pipelineRun.Annotations = map[string]string{}
+	// Server-side apply scoped to the single annotation the reporter owns:
+	// tekton-chains and tekton-results apply their own annotation sets at the
+	// same moment the run finishes, and disjoint field ownership never conflicts.
+	patch := map[string]any{
+		"apiVersion": tektonpipelineApi.SchemeGroupVersion.String(),
+		"kind":       "PipelineRun",
+		"metadata": map[string]any{
+			"name":      pipelineRun.Name,
+			"namespace": pipelineRun.Namespace,
+			"annotations": map[string]string{
+				reporter.ReportedAnnotation: outcome,
+			},
+		},
 	}
 
-	pipelineRun.Annotations[reporter.ReportedAnnotation] = outcome
+	data, err := json.Marshal(patch)
+	if err != nil {
+		return fmt.Errorf("failed to marshal the reported-annotation patch: %w", err)
+	}
 
-	if err := r.client.Patch(ctx, pipelineRun, patch); err != nil {
+	err = r.client.Patch(ctx, pipelineRun, ctrlClient.RawPatch(k8sTypes.ApplyPatchType, data),
+		ctrlClient.FieldOwner(fieldManager), ctrlClient.ForceOwnership)
+	if err != nil {
 		return fmt.Errorf("failed to mark PipelineRun as reported: %w", err)
 	}
 

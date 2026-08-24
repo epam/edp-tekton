@@ -352,3 +352,10 @@ pipeline - the opposite of the step's best-effort contract.
 true
 {{- end -}}
 {{- end -}}
+
+{{/*
+EventListener ServiceAccount name.
+*/}}
+{{- define "edp-tekton.eventListenerServiceAccount" -}}
+{{- printf "tekton-triggers-sa-%s" .Release.Namespace -}}
+{{- end -}}

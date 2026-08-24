@@ -16,7 +16,7 @@ spec:
       spec:
         template:
           spec:
-            serviceAccountName: tekton-triggers-sa-{{ $.Release.Namespace }}
+            serviceAccountName: {{ include "edp-tekton.eventListenerServiceAccount" $ }}
             containers:
               - name: ''
                 resources:

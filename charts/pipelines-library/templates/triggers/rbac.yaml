@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: tekton-triggers-sa-{{ .Release.Namespace }}
+  name: {{ include "edp-tekton.eventListenerServiceAccount" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
@@ -15,7 +15,7 @@ metadata:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: tekton-triggers-sa-{{ .Release.Namespace }}
+    name: {{ include "edp-tekton.eventListenerServiceAccount" . }}
     namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -23,16 +23,33 @@ roleRef:
   name: tekton-triggers-eventlistener-roles
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: edp-tekton-eventlistener-{{ .Release.Namespace }}
+  labels:
+    {{- include "edp-tekton.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clustertriggerbindings
+      - clusterinterceptors
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: tekton-triggers-eventlistener-clusterbinding-{{ .Release.Namespace }}
+  name: edp-tekton-eventlistener-{{ .Release.Namespace }}
   labels:
     {{- include "edp-tekton.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: tekton-triggers-sa-{{ .Release.Namespace }}
+    name: {{ include "edp-tekton.eventListenerServiceAccount" . }}
     namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-triggers-eventlistener-clusterroles
+  name: edp-tekton-eventlistener-{{ .Release.Namespace }}

@@ -18,8 +18,21 @@ kaniko:
     assert "ns" in r["rolebinding"]["tekton-triggers-eventlistener-binding-ns"]["metadata"]["namespace"]
     assert "ns" in r["rolebinding"]["tekton-triggers-eventlistener-binding-ns"]["subjects"][0]["namespace"]
 
-    assert "tekton-triggers-eventlistener-clusterbinding-ns" in r["clusterrolebinding"]
-    assert "ns" in r["clusterrolebinding"]["tekton-triggers-eventlistener-clusterbinding-ns"]["subjects"][0]["namespace"]
+    cluster_role = r["clusterrole"]["edp-tekton-eventlistener-ns"]
+    assert cluster_role["rules"] == [
+        {
+            "apiGroups": ["triggers.tekton.dev"],
+            "resources": ["clustertriggerbindings", "clusterinterceptors"],
+            "verbs": ["get", "list", "watch"],
+        }
+    ]
+
+    crb = r["clusterrolebinding"]["edp-tekton-eventlistener-ns"]
+    assert crb["roleRef"]["name"] == "edp-tekton-eventlistener-ns"
+    assert crb["subjects"][0]["name"] == "tekton-triggers-sa-ns"
+    assert crb["subjects"][0]["namespace"] == "ns"
+
+    assert not any("secrets" in rule.get("resources", []) for rule in cluster_role["rules"])
 
 
 def test_ingress_for_gitlab_el():

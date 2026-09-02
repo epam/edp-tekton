@@ -24,6 +24,10 @@ spec:
       description: "Base image"
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
       type: string
+    - name: CACHE_MAX_AGE_DAYS
+      description: "Maximum age (in days) of the existing cache archive before it is considered stale and re-uploaded. Set to 0 to always upload."
+      default: "1"
+      type: string
   steps:
     - name: save-cache
       image: $(params.BASE_IMAGE)
@@ -39,10 +43,10 @@ spec:
         }
 
         lm="$(curl -fsI ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst|sed -n '/Last-Modified/ { s/Last-Modified: //;s/\r//; p}')"
-        if [ -n "${lm}" ];then
-          expired=$(python -c "import datetime, sys;print(datetime.datetime.now() > datetime.datetime.strptime(sys.argv[1], '%a, %d %b %Y %X %Z') + datetime.timedelta(days=1))" "${lm}")
+        if [ -n "${lm}" ] && [ "${CACHE_MAX_AGE_DAYS}" != "0" ]; then
+          expired=$(python -c "import datetime, sys;print(datetime.datetime.now() > datetime.datetime.strptime(sys.argv[1], '%a, %d %b %Y %X %Z') + datetime.timedelta(days=int(sys.argv[2])))" "${lm}" "${CACHE_MAX_AGE_DAYS}")
           if [ "${expired}" = "False" ]; then
-              echo "Cache is younger than a day"
+              echo "Cache is younger than ${CACHE_MAX_AGE_DAYS} day(s)"
               exit
           fi
         fi
@@ -69,6 +73,8 @@ spec:
               optional: true
         - name: CACHE_NAME
           value: "$(params.CACHE_NAME)"
+        - name: CACHE_MAX_AGE_DAYS
+          value: "$(params.CACHE_MAX_AGE_DAYS)"
 
       computeResources:
         limits:

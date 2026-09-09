@@ -88,7 +88,7 @@ spec:
         kind: Task
         name: helm-library-docs
       runAfter:
-        - gerrit-notify
+        - fetch-repository
       params:
         - name: CHART_DIR
           value: $(params.CHART_DIR)

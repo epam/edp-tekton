@@ -84,6 +84,18 @@ spec:
         Failed, Completed, None) instead of using STATE/DESCRIPTION.
       type: string
       default: ""
+    - name: REF
+      description: |
+        Git ref the status is reported on, passed as the GitLab `ref` query
+        parameter. Empty: GitLab attaches the status to the newest pipeline
+        for SHA on any branch, else creates a pipeline on the first branch
+        containing the commit. Set refs/merge-requests/<iid>/head only for
+        repositories that run GitLab CI merge request pipelines; a repository
+        without one gets a pipeline the merge request never shows. Not
+        compatible with pipelines.queue.enabled: the QUEUED status is posted
+        without a ref and would stay pending on another pipeline.
+      type: string
+      default: ""
 
   steps:
     - name: set-status
@@ -106,6 +118,7 @@ spec:
         CONTEXT = "$(params.CONTEXT)"
         TARGET_URL = "$(params.TARGET_URL)"
         DESCRIPTION = "$(params.DESCRIPTION)"
+        REF = "$(params.REF)"
 
         PIPELINE_STATUS = "$(params.PIPELINE_STATUS)"
         # The cancel-reason annotation the pipeline queue (or the interceptor) stamps
@@ -157,6 +170,9 @@ spec:
             "description": DESCRIPTION
         }
 
+        if REF:
+            params["ref"] = REF
+
         encoded_params = urllib.parse.urlencode(params)
 
         api_url = f"{API_PATH_PREFIX}/projects/{URLENCODED_REPO_NAME}/statuses/{SHA}?{encoded_params}"
@@ -197,7 +213,7 @@ spec:
                         print(body)
                     sys.exit(1)
             else:
-                print(f"Just set status of {REPO_FULL_NAME}#{SHA} to {STATE}")
+                print(f"Just set status of {REPO_FULL_NAME}#{SHA} to {STATE} (ref: {REF or 'gitlab default'})")
         finally:
             conn.close()
 

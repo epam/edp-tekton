@@ -162,8 +162,9 @@ spec:
         #!/usr/bin/env sh
         set -e
 
-        if [ -z "$DD_HOST_URL" ]
-        then
+        if [ -z "$DD_HOST_URL" ]; then
+          echo "[INFO] DefectDojo URL not configured, skipping upload"
+          printf "" > "$(results.SCAN_REPORT_URL.path)"
           exit 0
         fi
 

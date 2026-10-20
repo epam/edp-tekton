@@ -2,6 +2,30 @@
 ## [Unreleased]
 
 
+<a name="v0.28.0"></a>
+## [v0.28.0] - 2026-10-20
+### Features
+
+- allow gitlab-set-status to target a git ref
+- make save-cache freshness window configurable
+
+### Bug Fixes
+
+- write an empty security scan report URL when DefectDojo is not configured
+- derive dotnet default VERSION from the project version
+- run helm-docs after the checkout in Gerrit helm reviews
+- drop cluster-wide secret read from the EventListener ServiceAccount
+- publish each review pipeline report exactly once and skip cancelled runs
+- point the Python task's ConfigMap references at the configurable pythonConfigMap value
+- export NPM_CACHE_DIR in the shared npm Task so cache paths resolve correctly
+- point pnpm at the mounted npm settings ConfigMap
+
+### Routine
+
+- bump Go to 1.26.9
+- Update current development version
+
+
 <a name="v0.27.0"></a>
 ## [v0.27.0] - 2026-08-10
 ### Features
@@ -972,7 +996,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.27.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.28.0...HEAD
+[v0.28.0]: https://github.com/epam/edp-tekton/compare/v0.27.0...v0.28.0
 [v0.27.0]: https://github.com/epam/edp-tekton/compare/v0.26.0...v0.27.0
 [v0.26.0]: https://github.com/epam/edp-tekton/compare/v0.25.0...v0.26.0
 [v0.25.0]: https://github.com/epam/edp-tekton/compare/v0.24.0...v0.25.0

@@ -87,7 +87,7 @@ spec:
 
 {{ include "js-npm-build-common" . | nindent 4 }}
 
-{{- include "save-cache" $ | nindent 4 }}
+{{- include "save-cache-after" "push" | nindent 4 }}
 
 {{ include "build-pipeline-lib-end" . | nindent 4 }}
 

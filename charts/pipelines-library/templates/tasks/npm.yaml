@@ -17,6 +17,9 @@ spec:
     npm scripts.
   workspaces:
     - name: source
+      description: >-
+        The workspace root, with the package in PATH_CONTEXT. HOME and CACHE_DIR
+        point into the workspace, so bind the root, not the package directory.
   volumes:
     - name: settings-npm
       configMap:

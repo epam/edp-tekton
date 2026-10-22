@@ -40,6 +40,8 @@
   params:
     - name: BASE_IMAGE
       value: $(params.image)
+    - name: PATH_CONTEXT
+      value: source
     - name: EXTRA_COMMANDS
       value: |
         export upBase64=$(echo -n ${CI_USERNAME}:${CI_PASSWORD} | base64)
@@ -60,7 +62,6 @@
   workspaces:
     - name: source
       workspace: shared-workspace
-      subPath: source
 {{- end -}}
 
 {{- define "js-pnpm-review-common" -}}

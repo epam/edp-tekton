@@ -14,13 +14,13 @@
       subPath: cache
 {{- end -}}
 
-{{- define "save-cache" -}}
+{{- define "save-cache-after" -}}
 - name: save-cache
   taskRef:
     kind: Task
     name: save-cache
   runAfter:
-    - build
+    - {{ . }}
   params:
     - name: CACHE_NAME
       value: $(params.CODEBASE_NAME)
@@ -28,6 +28,10 @@
     - name: cache
       workspace: shared-workspace
       subPath: cache
+{{- end -}}
+
+{{- define "save-cache" -}}
+{{- include "save-cache-after" "build" -}}
 {{- end -}}
 
 {{- define "helm-docs" -}}

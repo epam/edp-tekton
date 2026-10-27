@@ -121,7 +121,8 @@ spec:
                 SCAN_TYPE="Anchore Grype"
             fi
 
-            curl -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
+            HTTP_CODE=$(curl -sS -o /tmp/dd-response.json -w '%{http_code}' \
+                -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
                 -H "accept: application/json" \
                 -H "Authorization: Token ${DD_TOKEN}" \
                 -H "Content-Type: multipart/form-data" \
@@ -140,6 +141,9 @@ spec:
                 -F "environment=Development" \
                 -F "test_title=${SCAN_TYPE}" \
                 ${DD_VERSION_ARG} \
-                ${DD_BRANCH_TAG_ARG}
+                ${DD_BRANCH_TAG_ARG})
+
+            # ${HTTP_CODE%??} drops the last two digits: only 2xx passes
+            [ "${HTTP_CODE%??}" = 2 ] || { echo "[ERROR] DefectDojo returned HTTP ${HTTP_CODE} for ${SCAN_TYPE}"; cat /tmp/dd-response.json; exit 1; }
         done
 {{ end }}

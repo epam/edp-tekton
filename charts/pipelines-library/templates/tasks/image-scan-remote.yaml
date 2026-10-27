@@ -117,7 +117,7 @@ spec:
 
           echo "[INFO] Uploading Trivy Scan for: ${IMAGE} -> engagement: ${ENGAGEMENT_NAME}"
 
-          HTTP_CODE=$(curl -s -o /tmp/dd-response.json -w '%{http_code}' \
+          HTTP_CODE=$(curl -sS -o /tmp/dd-response.json -w '%{http_code}' \
             -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \
@@ -158,7 +158,8 @@ spec:
           --data-urlencode "name_exact=$(params.CODEBASE_NAME)" \
           -H "accept: application/json" \
           -H "Authorization: Token ${DD_TOKEN}" \
-          | jq -r '.results[0].id')
+          | jq -r '.results[0].id // empty')
+        [ -n "${PRODUCT_ID}" ] || { echo "[ERROR] Could not find DefectDojo product $(params.CODEBASE_NAME)"; exit 1; }
 
         if [ "$#" -gt 1 ]; then
           SCAN_REPORT_URL="${DD_HOST_URL}/product/${PRODUCT_ID}"
@@ -168,7 +169,8 @@ spec:
             --data-urlencode "name=${LAST_ENGAGEMENT_NAME}" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \
-            | jq -r '.results[0].id')
+            | jq -r '.results[0].id // empty')
+          [ -n "${ENGAGEMENT_ID}" ] || { echo "[ERROR] Could not find DefectDojo engagement ${LAST_ENGAGEMENT_NAME}"; exit 1; }
           SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
         fi
 

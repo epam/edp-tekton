@@ -281,7 +281,8 @@ spec:
 
             echo "[INFO] Uploading ${SCAN_TYPE} for: ${IMAGE} -> engagement: ${ENGAGEMENT_NAME}"
 
-            curl -s -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
+            HTTP_CODE=$(curl -sS -o /tmp/dd-response.json -w '%{http_code}' \
+              -X POST "${DD_HOST_URL}/api/v2/reimport-scan/" \
               -H "accept: application/json" \
               -H "Authorization: Token ${DD_TOKEN}" \
               -H "Content-Type: multipart/form-data" \
@@ -300,7 +301,10 @@ spec:
               -F "environment=Development" \
               -F "test_title=${SCAN_TYPE}" \
               ${DD_VERSION_ARG} \
-              ${DD_BRANCH_TAG_ARG}
+              ${DD_BRANCH_TAG_ARG})
+
+            # ${HTTP_CODE%??} drops the last two digits: only 2xx passes
+            [ "${HTTP_CODE%??}" = 2 ] || { echo "[ERROR] DefectDojo returned HTTP ${HTTP_CODE} for ${SCAN_TYPE} of ${IMAGE}"; cat /tmp/dd-response.json; exit 1; }
 
             UPLOADED=$((UPLOADED + 1))
             LAST_ENGAGEMENT_NAME="${ENGAGEMENT_NAME}"
@@ -319,7 +323,8 @@ spec:
           --data-urlencode "name_exact=$(params.CODEBASE_NAME)" \
           -H "accept: application/json" \
           -H "Authorization: Token ${DD_TOKEN}" \
-          | jq -r '.results[0].id')
+          | jq -r '.results[0].id // empty')
+        [ -n "${PRODUCT_ID}" ] || { echo "[ERROR] Could not find DefectDojo product $(params.CODEBASE_NAME)"; exit 1; }
 
         IMAGE_COUNT=$(wc -l < /workspace/images.txt | tr -d ' ')
         if [ "${IMAGE_COUNT}" -gt 1 ]; then
@@ -330,7 +335,8 @@ spec:
             --data-urlencode "name=${LAST_ENGAGEMENT_NAME}" \
             -H "accept: application/json" \
             -H "Authorization: Token ${DD_TOKEN}" \
-            | jq -r '.results[0].id')
+            | jq -r '.results[0].id // empty')
+          [ -n "${ENGAGEMENT_ID}" ] || { echo "[ERROR] Could not find DefectDojo engagement ${LAST_ENGAGEMENT_NAME}"; exit 1; }
           SCAN_REPORT_URL="${DD_HOST_URL}/engagement/${ENGAGEMENT_ID}"
         fi
 

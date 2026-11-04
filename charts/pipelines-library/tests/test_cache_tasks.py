@@ -124,6 +124,7 @@ def test_save_cache_does_not_pack_a_cache_archive(scripts, env, tmp_path):
     workspace = tmp_path / "workspace"
     (workspace / "github.com").mkdir(parents=True)
     (workspace / "github.com" / "module.go").write_text("package module\n")
+    (workspace / "github.com" / f"{name}.tar.zst").write_bytes(b"cached data")
     (workspace / f"{name}.tar.zst").write_bytes(b"stray cache archive")
 
     _run(scripts["save-cache"], workspace, env)
@@ -132,4 +133,7 @@ def test_save_cache_does_not_pack_a_cache_archive(scripts, env, tmp_path):
     assert "./github.com/module.go" in members
     assert f"./{name}.tar.zst" not in members, (
         "save-cache must not pack the cache archive into itself"
+    )
+    assert f"./github.com/{name}.tar.zst" in members, (
+        "save-cache must pack a cached file that only shares the name of the archive"
     )

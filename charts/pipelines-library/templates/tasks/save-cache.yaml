@@ -53,6 +53,7 @@ spec:
 
         tar c \
           -I "zstd -T1 -1" \
+          --exclude="./${CACHE_NAME}.tar.zst" \
           -f /tmp/${CACHE_NAME}.tar.zst \
           .
 

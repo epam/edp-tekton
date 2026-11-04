@@ -135,14 +135,14 @@ jobs:
       max-parallel: 1
 
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v6
+
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GOLANG_VERSION }}
           check-latest: true
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v6
 
       - name: "install kuttl"
         run: ./hack/install-kuttl.sh

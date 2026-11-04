@@ -1,6 +1,6 @@
 module github.com/epam/edp-tekton
 
-go 1.26.9
+go 1.27.3
 
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20260803131927-4152c01011c5

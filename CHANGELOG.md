@@ -1,5 +1,8 @@
 <a name="unreleased"></a>
 ## [Unreleased]
+### Routine
+
+- bump default Go build image to golang:1.27-trixie (codebases whose go.mod `go` directive is above 1.27 will fail to build, as the image sets GOTOOLCHAIN=local)
 
 
 <a name="v0.28.0"></a>

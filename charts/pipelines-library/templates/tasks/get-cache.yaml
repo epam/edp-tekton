@@ -39,11 +39,18 @@ spec:
               exit 0
         }
 
+        # Keep the archive outside the workspace: save-cache packs the whole workspace.
+        archive="$(mktemp -d)/${CACHE_NAME}.tar.zst"
+
         echo "Getting cache"
-        curl -O ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst
+        curl -f -o "${archive}" ${CACHE_SERVER_URL}/${CACHE_NAME}.tar.zst
 
         echo "Extracting cache archive"
-        tar -x --zstd -f ${CACHE_NAME}.tar.zst
+        tar -x --zstd -f "${archive}"
+        rm -f "${archive}"
+
+        # Drop a cache archive restored from inside the archive.
+        rm -f "./${CACHE_NAME}.tar.zst"
       env:
         - name: CACHE_SERVER_URL
           valueFrom:

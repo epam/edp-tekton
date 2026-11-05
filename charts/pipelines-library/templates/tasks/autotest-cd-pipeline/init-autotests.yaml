@@ -96,7 +96,11 @@ spec:
               autotestsBranch.append(element["branchName"])
               autotestsStep.append(f"{cdPipelineName}-{stage}-{element['stepName']}")
               autotest = json.loads(subprocess.check_output(["kubectl", "get", "codebase", element["autotestName"], "-o=jsonpath='{.spec}'"]).decode("utf-8").strip("'"))
-              gitAutotestUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitserver['gitHost'] + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
+              gitHost = gitserver['gitHost']
+              # Bitbucket Cloud SSH endpoint: ssh.bitbucket.org.
+              if gitserver.get('gitProvider') == "bitbucket" and gitHost.lower() == "bitbucket.org":
+                  gitHost = "ssh.bitbucket.org"
+              gitAutotestUrl.append("ssh://" + gitserver['gitUser'] + "@" + gitHost + ":" + str(gitserver['sshPort']) + autotest['gitUrlPath'])
               autotestBuildTool.append(autotest["buildTool"])
               autotestFramework.append(autotest["framework"])
 

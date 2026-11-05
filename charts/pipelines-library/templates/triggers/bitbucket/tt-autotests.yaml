@@ -18,7 +18,7 @@ spec:
       spec:
         params:
           - name: git-source-url
-            value: "git@bitbucket.org:<org-or-account-name>/autotests.git"
+            value: "git@ssh.bitbucket.org:<org-or-account-name>/autotests.git"
           - name: git-source-revision
             value: "main"
           - name: makefile-target

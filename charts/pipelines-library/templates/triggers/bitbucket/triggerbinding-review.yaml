@@ -10,7 +10,7 @@ spec:
     - name: gitrevision
       value: "$(extensions.pullRequest.headSha)"
     - name: gitrepositoryurl
-      value: "git@bitbucket.org:$(body.repository.full_name).git"
+      value: "git@ssh.bitbucket.org:$(body.repository.full_name).git"
     - name: gitrepositoryname
       value: "$(body.repository.name)"
     - name: gitfullrepositoryname

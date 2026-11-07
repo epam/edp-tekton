@@ -1,8 +1,32 @@
 <a name="unreleased"></a>
 ## [Unreleased]
+
 ### Routine
 
+- Update current development version
+
+
+<a name="v0.29.0"></a>
+## [v0.29.0] - 2026-11-07
+### Bug Fixes
+
+- fail the DefectDojo upload step when the upload is rejected
+- Clone Bitbucket Cloud repositories over ssh.bitbucket.org
+- stop packing the cache archive into the next cache archive
+- check out code before setup-go in e2e jobs
+- publish npm and pnpm packages without the cache and HOME files
+
+### Testing
+
+- run get-cache against a local cache server
+
+### Routine
+
+- Align tekton-cache chart version
+- Align tekton-cache with krci-cache 0.4.0
+- Bump Go to 1.27.3
 - bump default Go build image to golang:1.27-trixie (codebases whose go.mod `go` directive is above 1.27 will fail to build, as the image sets GOTOOLCHAIN=local)
+- Update current development version
 
 
 <a name="v0.28.0"></a>
@@ -999,7 +1023,8 @@ to CD Pipeline
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-08-18
 
-[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.28.0...HEAD
+[Unreleased]: https://github.com/epam/edp-tekton/compare/v0.29.0...HEAD
+[v0.29.0]: https://github.com/epam/edp-tekton/compare/v0.28.0...v0.29.0
 [v0.28.0]: https://github.com/epam/edp-tekton/compare/v0.27.0...v0.28.0
 [v0.27.0]: https://github.com/epam/edp-tekton/compare/v0.26.0...v0.27.0
 [v0.26.0]: https://github.com/epam/edp-tekton/compare/v0.25.0...v0.26.0

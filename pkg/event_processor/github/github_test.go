@@ -143,6 +143,9 @@ func createGitHubCommentTestCase(
 				"action": "created",
 				"issue": map[string]interface{}{
 					"number": 1,
+					"pull_request": map[string]interface{}{
+						"url": "https://api.github.com/repos/o/r/pulls/1",
+					},
 				},
 				"comment": map[string]interface{}{
 					"body": commentBody,
@@ -199,6 +202,18 @@ func createGitHubCommentTestCase(
 	}
 }
 
+// mockGitHubNoRequests returns a GitHub API server that fails the test on any request.
+func mockGitHubNoRequests(t *testing.T) (URL string, teardown func()) {
+	t.Helper()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected GitHub API request: %s %s", r.Method, r.URL.Path)
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+
+	return server.URL, server.Close
+}
+
 // runGitHubEventProcessorTest is a helper function to run GitHub event processor tests.
 func runGitHubEventProcessorTest(
 	t *testing.T,
@@ -242,7 +257,7 @@ func runGitHubEventProcessorTest(
 	})
 }
 
-func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
+func TestGitHubEventProcessor_Process_CommentEvent(t *testing.T) {
 	t.Parallel()
 
 	scheme := runtime.NewScheme()
@@ -262,6 +277,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": event_processor.OkToTestComment,
@@ -349,12 +367,15 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			false,
 		),
 		{
-			name: "comment event - should skip none pull request event",
+			name: "comment event - pull request not found",
 			args: gitHubTestArgs{
 				body: map[string]interface{}{
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -379,11 +400,11 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				return server.URL, server.Close
 			},
 			kubeObjects: createTestKubeObjects(),
-			wantErr:     require.NoError,
-			want: &event_processor.EventInfo{
-				GitProvider:        event_processor.GitProviderGitHub,
-				Type:               event_processor.EventTypeReviewComment,
-				HasPipelineRecheck: false,
+			wantErr: func(t require.TestingT, err error, i ...interface{}) {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), "failed to get GitHub pull request")
+				require.Contains(t, err.Error(), "/repos/o/p/pulls/1")
+				require.Contains(t, err.Error(), "404")
 			},
 		},
 		{
@@ -393,6 +414,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "/recheck",
@@ -453,6 +477,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "/recheck",
@@ -508,6 +535,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -544,6 +574,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -606,6 +639,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -662,6 +698,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -709,6 +748,9 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					"action": "created",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -738,12 +780,15 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 			},
 		},
 		{
-			name: "comment event - wrong comment action",
+			name: "comment event - deleted action is skipped",
 			args: gitHubTestArgs{
 				body: map[string]interface{}{
 					"action": "deleted",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "fix it",
@@ -757,21 +802,41 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			mockhttp: func(t *testing.T) (URL string, teardown func()) {
-				apiHandler := http.NewServeMux()
-				apiHandler.HandleFunc("/repos/o/p/pulls/1", func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusBadRequest)
-				})
-
-				server := httptest.NewServer(apiHandler)
-
-				return server.URL, server.Close
-			},
-			wantErr: require.NoError,
+			mockhttp:    mockGitHubNoRequests,
+			kubeObjects: createTestKubeObjects(),
+			wantErr:     require.NoError,
 			want: &event_processor.EventInfo{
-				GitProvider:        event_processor.GitProviderGitHub,
-				Type:               event_processor.EventTypeReviewComment,
-				HasPipelineRecheck: false,
+				GitProvider: event_processor.GitProviderGitHub,
+				RepoPath:    "/o/r",
+				Type:        event_processor.EventTypeReviewComment,
+			},
+		},
+		{
+			name: "comment event - not on a pull request is skipped",
+			args: gitHubTestArgs{
+				body: map[string]interface{}{
+					"action": "created",
+					"issue": map[string]interface{}{
+						"number": 1,
+					},
+					"comment": map[string]interface{}{
+						"body": "/recheck",
+					},
+					"repository": map[string]interface{}{
+						"full_name": "o/r",
+						"name":      "p",
+						"owner": map[string]interface{}{
+							"login": "o",
+						},
+					},
+				},
+			},
+			mockhttp: mockGitHubNoRequests,
+			wantErr:  require.NoError,
+			want: &event_processor.EventInfo{
+				GitProvider: event_processor.GitProviderGitHub,
+				RepoPath:    "/o/r",
+				Type:        event_processor.EventTypeReviewComment,
 			},
 		},
 	}
@@ -787,13 +852,13 @@ func TestGitHubEventProcessor_processCommentEvent(t *testing.T) {
 				body []byte,
 				namespace string,
 			) (*event_processor.EventInfo, error) {
-				return p.processCommentEvent(ctx, body, namespace)
+				return p.Process(ctx, body, namespace, event_processor.GitHubEventTypeCommentAdded)
 			},
 		)
 	}
 }
 
-func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
+func TestGitHubEventProcessor_Process_MergeEvent(t *testing.T) {
 	t.Parallel()
 
 	scheme := runtime.NewScheme()
@@ -1103,7 +1168,7 @@ func TestGitHubEventProcessor_processMergeEvent(t *testing.T) {
 				body []byte,
 				namespace string,
 			) (*event_processor.EventInfo, error) {
-				return p.processMergeEvent(ctx, body, namespace)
+				return p.Process(ctx, body, namespace, "pull_request")
 			},
 		)
 	}
@@ -1239,6 +1304,9 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 					"action": "deleted",
 					"issue": map[string]interface{}{
 						"number": 1,
+						"pull_request": map[string]interface{}{
+							"url": "https://api.github.com/repos/o/r/pulls/1",
+						},
 					},
 					"comment": map[string]interface{}{
 						"body": "/recheck",
@@ -1257,9 +1325,9 @@ func TestGitHubEventProcessor_Process(t *testing.T) {
 			},
 			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
-				GitProvider:        event_processor.GitProviderGitHub,
-				Type:               event_processor.EventTypeReviewComment,
-				HasPipelineRecheck: false,
+				GitProvider: event_processor.GitProviderGitHub,
+				RepoPath:    "/o/r",
+				Type:        event_processor.EventTypeReviewComment,
 			},
 		},
 	}

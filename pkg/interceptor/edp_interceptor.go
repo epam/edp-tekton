@@ -129,7 +129,7 @@ func (i *EDPInterceptor) Process(
 
 	event, err := i.processEvent(ctx, r)
 	if err != nil {
-		return interceptors.Fail(codes.InvalidArgument, err.Error())
+		return fail(log, codes.InvalidArgument, err)
 	}
 
 	log = log.With("repo", event.RepoPath, "branch", event.TargetBranch, "type", event.Type)
@@ -165,7 +165,7 @@ func (i *EDPInterceptor) Process(
 	codebaseBranch, err := i.getCodebaseBranch(ctx, event.Codebase.Name, event.TargetBranch, ns)
 	if err != nil {
 		if !errors.Is(err, ErrCodebasesBranchNotFound) {
-			return interceptors.Fail(codes.Internal, err.Error())
+			return fail(log, codes.Internal, err)
 		}
 
 		trigger = false
@@ -216,6 +216,14 @@ func (i *EDPInterceptor) Process(
 			"serviceAccounts": i.resolveServiceAccounts(ctx, log, ns, codebaseBranch),
 		},
 	}
+}
+
+// fail logs err and returns a response that stops trigger processing.
+// The EventListener logs interceptor failures at debug level only.
+func fail(log *zap.SugaredLogger, code codes.Code, err error) *triggersv1.InterceptorResponse {
+	log.Errorw("Failed to process webhook event", "error", err)
+
+	return interceptors.Fail(code, err.Error())
 }
 
 // processEvent returns event info from interceptor request.

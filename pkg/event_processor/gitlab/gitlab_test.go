@@ -373,7 +373,7 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 			},
 		},
 		{
-			name: "comment event with no target branch",
+			name: "note not on a merge request is skipped without a codebase",
 			args: args{
 				body: event_processor.GitLabCommentEvent{
 					Project: event_processor.GitLabProject{
@@ -381,21 +381,11 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 					},
 				},
 			},
-			kubeObjects: []client.Object{createTestCodebase()},
-			wantErr:     require.NoError,
+			wantErr: require.NoError,
 			want: &event_processor.EventInfo{
 				GitProvider: event_processor.GitProviderGitLab,
+				RepoPath:    "/o/r",
 				Type:        event_processor.EventTypeReviewComment,
-				Codebase: &codebaseApi.Codebase{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:            "test-codebase",
-						Namespace:       "default",
-						ResourceVersion: "999",
-					},
-					Spec: codebaseApi.CodebaseSpec{
-						GitUrlPath: "/o/r",
-					},
-				},
 			},
 		},
 		{
@@ -404,6 +394,9 @@ func TestGitLabEventProcessor_processCommentEvent(t *testing.T) {
 				body: event_processor.GitLabCommentEvent{
 					Project: event_processor.GitLabProject{
 						PathWithNamespace: "/o/r",
+					},
+					MergeRequest: event_processor.GitLabMergeRequest{
+						TargetBranch: "master",
 					},
 				},
 			},

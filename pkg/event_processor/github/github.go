@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/google/go-github/v81/github"
 	"go.uber.org/zap"
@@ -71,8 +70,7 @@ func (p *EventProcessor) Process(
 	}
 }
 
-// processCommentEvent processes GitHub comment event.
-// nolint:cyclop // function is not complex
+// processMergeEvent processes GitHub pull request event.
 func (p *EventProcessor) processMergeEvent(
 	ctx context.Context,
 	body []byte,
@@ -102,7 +100,7 @@ func (p *EventProcessor) processMergeEvent(
 
 	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get codebase %s for GitHub IssueCommentEvent: %w", repoPath, err)
+		return nil, fmt.Errorf("failed to get codebase %s for GitHub PullRequestEvent: %w", repoPath, err)
 	}
 
 	gitServerToken, err := event_processor.GetGitServerToken(ctx, p.ksClient, codebase)
@@ -154,11 +152,16 @@ func (p *EventProcessor) processCommentEvent(
 		return nil, fmt.Errorf("failed to unmarshal GitHub IssueCommentEvent: %w", err)
 	}
 
-	if event.GetAction() != "created" {
-		return createEventInfoWithoutRecheck(), nil
-	}
-
 	repoPath := event_processor.ConvertRepositoryPath(event.GetRepo().GetFullName())
+
+	// GitHub sets issue.pull_request only for comments on a pull request.
+	if event.GetAction() != "created" || event.GetIssue().GetPullRequestLinks() == nil {
+		return &event_processor.EventInfo{
+			GitProvider: event_processor.GitProviderGitHub,
+			RepoPath:    repoPath,
+			Type:        event_processor.EventTypeReviewComment,
+		}, nil
+	}
 
 	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
@@ -179,12 +182,6 @@ func (p *EventProcessor) processCommentEvent(
 		event.GetIssue().GetNumber(),
 	)
 	if err != nil {
-		if isPRNotFoundErr(err) {
-			p.logger.Info("GitHub pull request not found")
-
-			return createEventInfoWithoutRecheck(), nil
-		}
-
 		return nil, fmt.Errorf("failed to get GitHub pull request: %w", err)
 	}
 
@@ -250,23 +247,4 @@ func (*EventProcessor) getCommitMessage(
 	}
 
 	return *m, nil
-}
-
-func createEventInfoWithoutRecheck() *event_processor.EventInfo {
-	return &event_processor.EventInfo{
-		GitProvider:        event_processor.GitProviderGitHub,
-		Type:               event_processor.EventTypeReviewComment,
-		HasPipelineRecheck: false,
-	}
-}
-
-func isPRNotFoundErr(err error) bool {
-	var responseErr *github.ErrorResponse
-	if errors.As(err, &responseErr) {
-		if responseErr.Response.StatusCode == http.StatusNotFound {
-			return true
-		}
-	}
-
-	return false
 }

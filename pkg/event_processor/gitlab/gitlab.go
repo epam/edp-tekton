@@ -103,20 +103,18 @@ func (p *EventProcessor) processCommentEvent(
 
 	repoPath := event_processor.ConvertRepositoryPath(gitLabEvent.Project.PathWithNamespace)
 
+	// TargetBranch is empty for a note that is not on a merge request.
+	if gitLabEvent.MergeRequest.TargetBranch == "" {
+		return &event_processor.EventInfo{
+			GitProvider: event_processor.GitProviderGitLab,
+			RepoPath:    repoPath,
+			Type:        event_processor.EventTypeReviewComment,
+		}, nil
+	}
+
 	codebase, err := event_processor.GetCodebaseByRepoPath(ctx, p.ksClient, ns, repoPath, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get codebase by repo path: %w", err)
-	}
-
-	// The comment was added not to the merge request if TargetBranch is empty.
-	// Skip processing such events.
-	if gitLabEvent.MergeRequest.TargetBranch == "" {
-		return &event_processor.EventInfo{
-			GitProvider:        event_processor.GitProviderGitLab,
-			Type:               event_processor.EventTypeReviewComment,
-			Codebase:           codebase,
-			HasPipelineRecheck: false,
-		}, nil
 	}
 
 	return &event_processor.EventInfo{

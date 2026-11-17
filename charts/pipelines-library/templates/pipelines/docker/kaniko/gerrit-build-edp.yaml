@@ -37,7 +37,7 @@ spec:
       description: "Codebasebranch name"
       type: string
     - name: image
-      default: 'ghcr.io/hadolint/hadolint:v2.10.0-alpine'
+      default: "{{ include "edp-tekton.registry" . }}/hadolint/hadolint:v2.12.0-alpine"
       description: "kaniko image version"
       type: string
     - name: COMMIT_MESSAGE

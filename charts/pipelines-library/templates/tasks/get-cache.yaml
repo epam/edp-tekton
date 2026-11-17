@@ -55,7 +55,7 @@ spec:
         - name: CACHE_SERVER_URL
           valueFrom:
             configMapKeyRef:
-              name: tekton-cache
+              name: krci-cache
               key: url
               optional: true
         - name: CACHE_NAME

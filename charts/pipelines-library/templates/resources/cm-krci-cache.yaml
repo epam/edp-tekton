@@ -1,0 +1,8 @@
+{{ if index .Values "krci-cache" "url" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: krci-cache
+data:
+  url: {{ index .Values "krci-cache" "url" }}
+{{ end }}

@@ -64,7 +64,7 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 
 | Repository | Name | Version |
 |------------|------|---------|
-| @epamedp | tekton-cache | 0.4.6 |
+| @epamedp | krci-cache | 0.5.0 |
 | file://../common-library | edp-tekton-common-library | 0.3.23 |
 
 ## Values
@@ -118,6 +118,8 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | kaniko.image.repository | string | `"gcr.io/kaniko-project/executor"` |  |
 | kaniko.image.tag | string | `"v1.12.1"` |  |
 | kaniko.roleArn | string | `""` | AWS IAM role to be used for kaniko pod service account (IRSA). Format: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<AWS_IAM_ROLE_NAME> |
+| krci-cache.enabled | bool | `true` | Enables the krci-cache subchart. |
+| krci-cache.url | string | `"http://krci-cache:8080"` | Defines the URL to the krci-cache. Default: http://krci-cache:8080 |
 | nameOverride | string | `""` |  |
 | pipelines.argocdDiffPreview | object | `{"commentImage":"python:3.12-alpine","enabled":false,"innerArgocdNamespace":"argocd","kubeconfigSecret":"vc-argocd-diff-preview","namespace":"argocd-diff-preview","renderTimeoutSeconds":"300","toolImage":"dagandersen/argocd-diff-preview:v0.2.11","utilImage":"alpine/k8s:1.33.4"}` | Argo CD Diff Preview settings for the GitOps review pipelines (ALPHA, GitLab only). When enabled, the gitops review pipeline renders an MR manifest diff via the standing argocd-diff-preview vcluster (installed by the argocd-diff-preview cluster addon) and posts it as an MR comment; it stays best-effort at runtime and skips silently if the addon is unhealthy. Enabling the feature takes TWO flags - this one and `argocd-diff-preview.enable` in the edp-cluster-add-ons App-of-Apps values. This chart also owns the addon's namespace, so the App-of-Apps entry must keep `createNamespace: false`. |
 | pipelines.argocdDiffPreview.commentImage | string | `"python:3.12-alpine"` | Python image for posting the MR comment. |
@@ -165,8 +167,6 @@ Follows [Tekton Interceptor](https://tekton.dev/vault/triggers-main/clusterinter
 | reporter.serviceAccount.name | string | `""` | If not set, a name is generated using the fullname template |
 | reporter.tailLines | int | `100` | Number of trailing log lines published for every failed step (used only when logsReporting is true) |
 | reporter.tolerations | list | `[]` | Toleration labels for pod assignment |
-| tekton-cache.enabled | bool | `true` | Enables the Tekton-cache subchart. |
-| tekton-cache.url | string | `"http://tekton-cache:8080"` | Defines the URL to the tekton-cache. Default: http://tekton-cache:8080 |
 | tekton.configs.gradleConfigMap | string | `"custom-gradle-settings"` | Default configuration maps for provisioning init.gradle file, REPOSITORY_SNAPSHOTS_PATH and REPOSITORY_RELEASES_PATH environment variables. |
 | tekton.configs.mavenConfigMap | string | `"custom-maven-settings"` | Default configuration map for provisioning Maven settings.xml file. To use custom Maven settings.xml configuration file, the user should prepare another configuration map and update "mavenConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-maven-settings.yaml |
 | tekton.configs.npmConfigMap | string | `"custom-npm-settings"` | Default configuration maps for provisioning NPM .npmrc files. To use custom NPM .npmrc configuration file, the user should prepare another configuration map and update "npmConfigMap". For reference see https://github.com/epam/edp-tekton/blob/master/charts/pipelines-library/templates/resources/cm-npm-settings.yaml |

@@ -60,8 +60,7 @@ Details are in the `Makefile`.
   └── event_processor/     # VCS-specific event processing (github/gitlab/gerrit/bitbucket)
 /charts/
   ├── pipelines-library/   # Main Helm chart (pipelines, tasks, triggers)
-  ├── common-library/      # Shared Helm templates for all VCS providers
-  └── tekton-cache/        # Pipelines caching service
+  └── common-library/      # Shared Helm templates for all VCS providers
 /tests/e2e/                # KUTTL-based integration tests per VCS
 /hack/                     # Development utilities (Python validation, KinD configs)
 ```
@@ -234,7 +233,7 @@ Key `values.yaml` sections in `charts/pipelines-library/`:
 
 - `deployableResources` - Toggle which pipelines/tasks to install
 - `global.gitProviders` - Select VCS systems (array: bitbucket, gerrit, github, gitlab)
-- `tekton-cache.enabled` - Enable artifact caching
+- `krci-cache.enabled` - Install the `krci-cache` subchart (`@epamedp`, source: KubeRocketCI/krci-cache `deploy-templates/`); tasks read the cache URL from ConfigMap `krci-cache`
 - `kaniko.*` - Container image build configuration
 - `tekton.configs.*` - Maven/Gradle/npm/Python settings (ConfigMaps)
 

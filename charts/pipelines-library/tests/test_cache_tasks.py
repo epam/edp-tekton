@@ -76,7 +76,7 @@ def env(tmp_path):
         **os.environ,
         "PATH": f"{bin_dir}:{os.environ['PATH']}",
         "FAKE_CACHE_SERVER": str(server),
-        "CACHE_SERVER_URL": "http://tekton-cache:8080",
+        "CACHE_SERVER_URL": "http://krci-cache:8080",
         "CACHE_NAME": name,
         "CACHE_MAX_AGE_DAYS": "0",
     }

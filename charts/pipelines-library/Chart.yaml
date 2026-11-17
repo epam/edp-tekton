@@ -40,7 +40,7 @@ dependencies:
   - name: edp-tekton-common-library
     version: 0.3.23
     repository: "file://../common-library"
-  - name: tekton-cache
-    version: 0.4.6
+  - name: krci-cache
+    version: 0.5.0
     repository: "@epamedp"
-    condition: tekton-cache.enabled
+    condition: krci-cache.enabled

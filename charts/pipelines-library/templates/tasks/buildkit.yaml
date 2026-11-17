@@ -46,7 +46,7 @@ spec:
       default: "image_tar"
     - name: builder-image
       description: The image on which builds will run
-      default: epamedp/buildkit:0.1.2
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/buildkit:0.1.2"
     - name: dockerfile
       description: Dockerfile name.
       default: "Dockerfile"

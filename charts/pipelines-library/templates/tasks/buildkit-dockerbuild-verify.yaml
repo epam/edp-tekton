@@ -40,7 +40,7 @@ spec:
       default: ./
     - name: builder-image
       description: The image on which builds will run
-      default: epamedp/buildkit:0.1.1
+      default: "{{ include "edp-tekton.registry" . }}/epamedp/buildkit:0.1.2"
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.

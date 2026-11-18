@@ -74,13 +74,13 @@ Node.js image (registry + tag) for all npm/pnpm pipelines and tasks
 {{- $mavenVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java17 }}
-    {{- $mavenVersions = set $mavenVersions "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry)  }}
+    {{- $mavenVersions = set $mavenVersions "java17" (printf "%s/maven:3.9.16-eclipse-temurin-17" $registry)  }}
   {{- end }}
   {{- if .java21 }}
-    {{- $mavenVersions = set $mavenVersions "java21" (printf "%s/maven:3.9.9-eclipse-temurin-21" $registry)  }}
+    {{- $mavenVersions = set $mavenVersions "java21" (printf "%s/maven:3.9.16-eclipse-temurin-21" $registry)  }}
   {{- end }}
   {{- if .java25 }}
-    {{- $mavenVersions = set $mavenVersions "java25" (printf "%s/maven:3.9.11-eclipse-temurin-25" $registry)  }}
+    {{- $mavenVersions = set $mavenVersions "java25" (printf "%s/maven:3.9.16-eclipse-temurin-25" $registry)  }}
   {{- end }}
 {{- end }}
 {{- $mavenVersions | toYaml -}}
@@ -91,13 +91,13 @@ Node.js image (registry + tag) for all npm/pnpm pipelines and tasks
 {{- $sonarVersions := dict -}}
 {{- with .Values.pipelines.deployableResources.java -}}
   {{- if .java17 }}
-    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/maven:3.9.0-eclipse-temurin-17" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java17" (printf "%s/maven:3.9.16-eclipse-temurin-17" $registry) }}
   {{- end }}
   {{- if .java21 }}
-    {{- $sonarVersions = set $sonarVersions "java21" (printf "%s/maven:3.9.9-eclipse-temurin-21" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java21" (printf "%s/maven:3.9.16-eclipse-temurin-21" $registry) }}
   {{- end }}
   {{- if .java25 }}
-    {{- $sonarVersions = set $sonarVersions "java25" (printf "%s/maven:3.9.11-eclipse-temurin-25" $registry) }}
+    {{- $sonarVersions = set $sonarVersions "java25" (printf "%s/maven:3.9.16-eclipse-temurin-25" $registry) }}
   {{- end }}
 {{- end }}
 {{- $sonarVersions | toYaml -}}

@@ -23,7 +23,7 @@ spec:
       description: Normalized version
   steps:
     - name: get-timestamp
-      image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+      image: {{ include "edp-tekton.registry" . }}/alpine:3.24.4
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         nts=$(date "+%Y%m%d.%H%M%S")

@@ -42,13 +42,13 @@ spec:
       default: "http://trivy-service.trivy-system:4954"
     - name: BASE_IMAGE_HELM
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:4.1.1"
+      default: "{{ include "edp-tekton.registry" . }}/alpine/helm:4.3.2"
     - name: BASE_IMAGE_TRIVY
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.69.2"
+      default: "{{ include "edp-tekton.registry" . }}/aquasec/trivy:0.76.2"
     - name: BASE_IMAGE_GRYPE
       type: string
-      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.109.0-debug"
+      default: "{{ include "edp-tekton.registry" . }}/anchore/grype:v0.122.0-debug"
     - name: BASE_IMAGE_KUBECTL
       type: string
       default: "{{ include "edp-tekton.registry" . }}/epamedp/kubectl:0.1.2"

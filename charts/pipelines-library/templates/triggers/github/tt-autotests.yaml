@@ -24,7 +24,7 @@ spec:
           - name: makefile-target
             value: "dev"
           - name: base-image
-            value: "maven:3.9.9-eclipse-temurin-21"
+            value: "maven:3.9.16-eclipse-temurin-21"
         pipelineRef:
           name: github-run-autotests
         taskRunTemplate:

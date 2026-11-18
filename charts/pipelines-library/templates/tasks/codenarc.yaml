@@ -79,7 +79,7 @@ spec:
               name: $(params.ci-nexus)
               key: url
     - name: codenarc-report
-      image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+      image: {{ include "edp-tekton.registry" . }}/alpine:3.24.4
       workingDir: $(workspaces.source.path)/$(params.PROJECT_DIR)
       script: |
         cat /workspace/source/build/reports/codenarc/main.html

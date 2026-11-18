@@ -60,7 +60,7 @@ spec:
       description: URL of the image just built.
   steps:
     - name: init-repository
-      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.7.35
+      image: {{ include "edp-tekton.registry" . }}/amazon/aws-cli:2.41.0
       env:
         - name: CODEBASE_NAME
           value: "$(params.codebase-name)"
@@ -165,7 +165,7 @@ spec:
 
         echo "IMAGE_DIGEST - $(cat /tekton/results/IMAGE_DIGEST)"
 {{- include "resources" . | nindent 6 }}
-    - image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+    - image: {{ include "edp-tekton.registry" . }}/alpine:3.24.4
       name: write-url
       env:
         - name: CODEBASE_NAME

@@ -27,7 +27,7 @@ spec:
       default: "dev"
       description: "Makefile target to execute for running autotests."
     - name: base-image
-      default: "maven:3.9.9-eclipse-temurin-21"
+      default: "maven:3.9.16-eclipse-temurin-21"
       description: "Docker image that must include all required tools for running autotests and the 'make' command."
   tasks:
     - name: fetch-repository

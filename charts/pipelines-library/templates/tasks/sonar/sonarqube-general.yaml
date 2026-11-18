@@ -109,7 +109,7 @@ spec:
             echo "Unknown Response format"
           fi
         fi
-    - image: registry.access.redhat.com/ubi8/ubi-minimal:8.8
+    - image: registry.access.redhat.com/ubi8/ubi-minimal:8.10
       name: prepare-sonar-project-properties
       computeResources: {}
       workingDir: $(workspaces.source.path)
@@ -195,7 +195,7 @@ spec:
         echo "---------------------------"
         cat $(workspaces.source.path)/sonar-project.properties
 
-    - image: {{ include "edp-tekton.registry" . }}/sonarsource/sonar-scanner-cli:12.0.0.3214_8.0.1
+    - image: {{ include "edp-tekton.registry" . }}/sonarsource/sonar-scanner-cli:12.4.0.4321_8.4.0
       name: sonar-scanner
       workingDir: $(workspaces.source.path)
       securityContext:

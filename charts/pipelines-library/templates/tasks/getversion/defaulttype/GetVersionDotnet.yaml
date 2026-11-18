@@ -22,14 +22,14 @@ spec:
       description: Current timestamp
   steps:
     - name: get-timestamp
-      image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+      image: {{ include "edp-tekton.registry" . }}/alpine:3.24.4
       script: |
         ts=$(date "+%Y%m%d-%H%M%S")
         echo "Current Timestamp: ${ts}"
         printf "%s" "${ts}" > "$(results.TIMESTAMP.path)"
 
     - name: get-version
-      image: {{ include "edp-tekton.registry" . }}/alpine:3.18.9
+      image: {{ include "edp-tekton.registry" . }}/alpine:3.24.4
       workingDir: $(workspaces.source.path)
       script: |
         set -e

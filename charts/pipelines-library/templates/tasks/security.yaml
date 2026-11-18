@@ -20,11 +20,11 @@ spec:
     - name: BASE_IMAGE_SEMGREP
       type: string
       description: Semgrep image
-      default: {{ include "edp-tekton.registry" . }}/returntocorp/semgrep:1.150.0
+      default: {{ include "edp-tekton.registry" . }}/semgrep/semgrep:1.186.0
     - name: BASE_IMAGE_GITLEAKS
       type: string
       description: Gitleaks image
-      default: {{ include "edp-tekton.registry" . }}/zricethezav/gitleaks:v8.30.0
+      default: {{ include "edp-tekton.registry" . }}/zricethezav/gitleaks:v8.30.1
     - name: BASE_IMAGE_CDXGEN
       type: string
       description: CycloneDX cdxgen image

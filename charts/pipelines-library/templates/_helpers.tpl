@@ -359,3 +359,41 @@ EventListener ServiceAccount name.
 {{- define "edp-tekton.eventListenerServiceAccount" -}}
 {{- printf "tekton-triggers-sa-%s" .Release.Namespace -}}
 {{- end -}}
+
+{{/*
+POSIX sh functions that name an image reference the way the krci-security-operator
+does (NormalizeImage and Image.Version in pkg/trivy/image.go). Only parameter
+expansion, printf and tr; they run in the busybox sh of the scan step images.
+
+image_name prints the lower-case registry host and repository without tag and
+digest. A registry port stays; a Docker Hub host (docker.io, index.docker.io,
+registry-1.docker.io) and a leading library/ are dropped.
+
+image_version prints the tag, else the algorithm and the first 12 characters of
+the digest (sha256:<12 hex>), else nothing.
+
+A step script includes the definitions once, with nindent 8, before it calls them.
+*/}}
+{{- define "edp-tekton.imageReference" -}}
+image_name() {
+  ref=${1%%@*}
+  last=${ref##*/}
+  ref=${ref%"${last}"}${last%%:*}
+  ref=$(printf '%s' "${ref}" | tr '[:upper:]' '[:lower:]')
+  case "${ref}" in
+    docker.io/* | index.docker.io/* | registry-1.docker.io/*) ref=${ref#*/} ;;
+  esac
+  printf '%s\n' "${ref#library/}"
+}
+image_version() {
+  last=${1%%@*}
+  last=${last##*/}
+  case "${last}" in
+    *:?*) printf '%s\n' "${last#*:}"; return ;;
+  esac
+  case "$1" in
+    *@*:*) digest=${1#*@}; printf '%s:%.12s\n' "${digest%%:*}" "${digest#*:}" ;;
+    *@?*) printf 'sha256:%.12s\n' "${1#*@}" ;;
+  esac
+}
+{{- end -}}

@@ -50,6 +50,7 @@ spec:
           value: "$(params.TRIVY_SERVER_URL)"
       script: |
         #!/usr/bin/env sh
+        {{- include "edp-tekton.imageReference" . | nindent 8 }}
 
         SERVER_ARG=""
         if [ -n "${TRIVY_SERVER_URL}" ]; then
@@ -60,7 +61,7 @@ spec:
         FAILED=0
 
         for IMAGE in "$@"; do
-          IMAGE_NAME="${IMAGE%:*}"
+          IMAGE_NAME=$(image_name "${IMAGE}")
           REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
           REPORT_FILE="trivy-report-${REPORT_KEY}.json"
 
@@ -94,13 +95,14 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -e
+        {{- include "edp-tekton.imageReference" . | nindent 8 }}
 
         UPLOADED=0
         LAST_ENGAGEMENT_NAME=""
 
         for IMAGE in "$@"; do
-          IMAGE_NAME="${IMAGE%:*}"
-          IMAGE_VER="${IMAGE##*:}"
+          IMAGE_NAME=$(image_name "${IMAGE}")
+          IMAGE_VER=$(image_version "${IMAGE}")
           REPORT_KEY=$(echo "${IMAGE_NAME}" | tr '/' '_')
           REPORT_FILE="trivy-report-${REPORT_KEY}.json"
           ENGAGEMENT_NAME="image:${IMAGE_NAME}"
@@ -111,7 +113,7 @@ spec:
           fi
 
           DD_VERSION_ARG=""
-          if [ "${IMAGE_VER}" != "${IMAGE}" ]; then
+          if [ -n "${IMAGE_VER}" ]; then
             DD_VERSION_ARG="-F version=${IMAGE_VER}"
           fi
 

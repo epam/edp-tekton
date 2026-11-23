@@ -68,6 +68,8 @@ spec:
           value: $(params.CODEBASE_NAME)
         - name: CODEBASE_BRANCH
           value: $(params.git-source-revision)
+        - name: COMMIT_HASH
+          value: $(tasks.fetch-repository.results.commit)
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -86,6 +88,8 @@ spec:
           value: $(params.git-source-revision)
         - name: IMAGE_TAG
           value: $(params.IMAGE_TAG)
+        - name: COMMIT_HASH
+          value: $(tasks.fetch-repository.results.commit)
       workspaces:
         - name: source
           workspace: shared-workspace

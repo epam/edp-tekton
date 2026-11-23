@@ -17,8 +17,12 @@ global:
 """
 
 CODEBASE = "shop"
+NAMESPACE = "krci-ci"
+COMMIT = "0f1e2d3c4b5a69788796a5b4c3d2e1f001122334"
 DD_URL = "http://defectdojo.example"
 REIMPORT_URL = f"{DD_URL}/api/v2/reimport-scan/"
+CODEBASE_TAG = f"app.edp.epam.com/codebase:{CODEBASE}"
+TENANT_TAG = f"app.edp.epam.com/tenant:{NAMESPACE}"
 
 HEX = "8fb099199b9f2d70342674bd9dbccd3ed03a258f26bbd1d556822c6dfc60c317"
 DIGEST = f"sha256:{HEX}"
@@ -154,6 +158,54 @@ SHELLS = [
 ]
 
 TASKS = ["image-scan-remote", "image-scan-chart"]
+UPLOAD_TASKS = [*TASKS, "security"]
+
+# (image reference, oci-image tag value): the cases of TestNormalizeImage in
+# krci-security-operator pkg/trivy/image_test.go, whose result is the oci-image tag
+# of a runtime test.
+OPERATOR_IMAGE_NAMES = [
+    pytest.param(
+        "registry.example.com:5000/krci/app:1.0.0",
+        "registry.example.com:5000/krci/app",
+        id="registry-with-port-and-tag",
+    ),
+    pytest.param(
+        "registry.example.com:5000/krci/app",
+        "registry.example.com:5000/krci/app",
+        id="registry-with-port",
+    ),
+    pytest.param(
+        "registry.example.com/krci/app@sha256:abc",
+        "registry.example.com/krci/app",
+        id="digest",
+    ),
+    pytest.param(
+        "registry.example.com/krci/app:1.0.0@sha256:abc",
+        "registry.example.com/krci/app",
+        id="tag-and-digest",
+    ),
+    pytest.param(
+        "Registry.Example.com/KRCI/App:1",
+        "registry.example.com/krci/app",
+        id="upper-case",
+    ),
+    pytest.param("docker.io/library/nginx:1.27", "nginx", id="docker-io-library"),
+    pytest.param(
+        "index.docker.io/library/postgres", "postgres", id="index-docker-io-library"
+    ),
+    pytest.param(
+        "registry-1.docker.io/valkey/valkey:9",
+        "valkey/valkey",
+        id="registry-1-docker-io",
+    ),
+    pytest.param(
+        "docker.io/epamedp/cd-pipeline-operator:2.35.0",
+        "epamedp/cd-pipeline-operator",
+        id="docker-io-user-image",
+    ),
+    pytest.param("nginx:1.27", "nginx", id="implicit-docker-hub"),
+    pytest.param("quay.io/library/app", "quay.io/library/app", id="non-hub-library"),
+]
 
 
 @pytest.fixture(scope="module")
@@ -168,6 +220,16 @@ class Pipeline:
     def __init__(self, tmp_path, task, shell):
         self.task = task
         self.shell = shell
+        self.namespace = NAMESPACE
+        self.params = {p["name"]: p.get("default", "") for p in task["spec"]["params"]}
+        given = {
+            "CODEBASE_NAME": CODEBASE,
+            "CODEBASE_BRANCH": "master",
+            "COMMIT_HASH": COMMIT,
+        }
+        self.params.update(
+            {name: value for name, value in given.items() if name in self.params}
+        )
         self.root = tmp_path
         self.workdir = tmp_path / "source"
         self.workdir.mkdir()
@@ -184,22 +246,28 @@ class Pipeline:
     def is_chart(self):
         return self.task["metadata"]["name"] == "image-scan-chart"
 
+    @property
+    def is_security(self):
+        return self.task["metadata"]["name"] == "security"
+
     def script(self, step_name):
         step = next(s for s in self.task["spec"]["steps"] if s["name"] == step_name)
-        params = {p["name"]: p.get("default", "") for p in self.task["spec"]["params"]}
-        params.update(CODEBASE_NAME=CODEBASE, CODEBASE_BRANCH="master")
         script = re.sub(
-            r"\$\(params\.([\w-]+)\)", lambda m: params[m.group(1)], step["script"]
+            r"\$\(params\.([\w-]+)\)",
+            lambda m: self.params[m.group(1)],
+            step["script"],
         )
         script = (
-            script.replace(
+            script.replace("$(context.taskRun.namespace)", self.namespace)
+            .replace(
                 "$(results.SCAN_REPORT_URL.path)", str(self.root / "scan-report-url")
             )
             .replace("/workspace/", f"{self.root}/")
             .replace("/tmp/dd-response.json", str(self.root / "dd-response.json"))
             .replace("/grype ", f"{self.bin}/grype ")
         )
-        assert "$(params." not in script and "$(results." not in script, step_name
+        for variable in ("$(params.", "$(results.", "$(context."):
+            assert variable not in script, f"{step_name}: {variable}"
         return script
 
     def run(self, step_name, *args):
@@ -223,9 +291,12 @@ class Pipeline:
             result.returncode == 0
         ), f"{step_name} failed:\n{result.stdout}\n{result.stderr}"
 
-    def scan(self, images):
-        """Scan and upload the images the way the Task does."""
-        if self.is_chart:
+    def scan(self, images=()):
+        """Scan and upload the images the way the Task does; the security task
+        uploads the reports of its source scanners."""
+        if self.is_security:
+            steps = [("upload-report", ())]
+        elif self.is_chart:
             (self.root / "images.txt").write_text("".join(f"{i}\n" for i in images))
             steps = [("trivy", ()), ("grype", ()), ("upload-report", ())]
         else:
@@ -270,6 +341,21 @@ def task_name(request):
 @pytest.fixture(params=SHELLS)
 def pipeline(request, tasks, task_name, tmp_path):
     return Pipeline(tmp_path, tasks[task_name], request.param)
+
+
+@pytest.fixture(params=UPLOAD_TASKS)
+def upload_task_name(request):
+    return request.param
+
+
+@pytest.fixture(params=SHELLS)
+def upload_pipeline(request, tasks, upload_task_name, tmp_path):
+    return Pipeline(tmp_path, tasks[upload_task_name], request.param)
+
+
+@pytest.fixture(params=SHELLS)
+def security_pipeline(request, tasks, tmp_path):
+    return Pipeline(tmp_path, tasks["security"], request.param)
 
 
 @pytest.mark.parametrize("reference,engagement,version", EXAMPLES)
@@ -332,3 +418,84 @@ def test_two_images_of_one_registry_with_a_port_get_two_report_files(pipeline):
         "image:reg.example.com:5000/app-a",
         "image:reg.example.com:5000/app-b",
     }
+
+
+def test_upload_tags_the_test(upload_pipeline):
+    upload_pipeline.scan(["reg.example.com/shop/app:2.4.1"])
+
+    tags = [CODEBASE_TAG, TENANT_TAG]
+    if not upload_pipeline.is_security:
+        tags.append("oci-image:reg.example.com/shop/app")
+    uploads = upload_pipeline.uploads()
+    assert uploads
+    for upload in uploads:
+        assert sorted(upload["tags"]) == sorted(tags)
+
+
+@pytest.mark.parametrize("name", UPLOAD_TASKS)
+def test_tasks_declare_the_params_their_steps_use(tasks, name):
+    spec = tasks[name]["spec"]
+    declared = {param["name"] for param in spec["params"]}
+    used = set(re.findall(r"\$\(params\.([\w-]+)", json.dumps(spec["steps"])))
+
+    assert {"CODEBASE_NAME", "COMMIT_HASH"} <= used
+    assert used <= declared, f"{name} uses undeclared params {sorted(used - declared)}"
+
+
+def test_security_upload_keeps_its_branch_product_and_engagement(security_pipeline):
+    security_pipeline.scan()
+
+    uploads = security_pipeline.uploads()
+    assert [upload["scan_type"] for upload in uploads] == [
+        ["Semgrep JSON Report"],
+        ["Gitleaks Scan"],
+    ]
+    for upload in uploads:
+        assert upload["product_name"] == [CODEBASE]
+        assert upload["engagement_name"] == ["code-security-master"]
+        assert upload["branch_tag"] == ["master"]
+        assert upload["test_title"] == upload["scan_type"]
+        assert "version" not in upload
+
+
+@pytest.mark.parametrize("reference,name", OPERATOR_IMAGE_NAMES)
+def test_image_tests_carry_the_oci_image_tag_of_the_operator(pipeline, reference, name):
+    pipeline.scan([reference])
+
+    uploads = pipeline.uploads()
+    assert len(uploads) == pipeline.scans_per_image
+    for upload in uploads:
+        assert f"oci-image:{name}" in upload["tags"]
+
+
+def test_upload_sends_the_commit_hash(upload_pipeline):
+    upload_pipeline.scan(["reg.example.com/shop/app:2.4.1"])
+
+    uploads = upload_pipeline.uploads()
+    assert uploads
+    for upload in uploads:
+        assert upload["commit_hash"] == [COMMIT]
+
+
+def test_upload_without_a_commit_sends_no_commit_hash(upload_pipeline):
+    upload_pipeline.params["COMMIT_HASH"] = ""
+
+    upload_pipeline.scan(["reg.example.com/shop/app:2.4.1"])
+
+    uploads = upload_pipeline.uploads()
+    assert uploads
+    for upload in uploads:
+        assert "commit_hash" not in upload
+
+
+def test_codebase_and_tenant_tags_are_lower_case(upload_pipeline):
+    upload_pipeline.params["CODEBASE_NAME"] = "Shop-API"
+    upload_pipeline.namespace = "Krci-CI"
+
+    upload_pipeline.scan(["reg.example.com/shop/app:2.4.1"])
+
+    uploads = upload_pipeline.uploads()
+    assert uploads
+    for upload in uploads:
+        assert "app.edp.epam.com/codebase:shop-api" in upload["tags"]
+        assert "app.edp.epam.com/tenant:krci-ci" in upload["tags"]

@@ -19,10 +19,14 @@ spec:
       default: ""
     - name: CODEBASE_NAME
       type: string
-      description: Name of the codebase. Used as the DefectDojo product name.
+      description: Name of the codebase. Used as the DefectDojo product name and in the codebase tag.
     - name: CODEBASE_BRANCH
       type: string
       description: Git branch being scanned. Used as DefectDojo branch_tag.
+      default: ""
+    - name: COMMIT_HASH
+      type: string
+      description: Commit SHA of the scanned source. Used as DefectDojo commit_hash.
       default: ""
     - name: CHART_DIR
       type: string
@@ -238,6 +242,7 @@ spec:
         #!/usr/bin/env sh
         set -e
         {{- include "edp-tekton.imageReference" . | nindent 8 }}
+        {{- include "edp-tekton.defectdojoReimportFields" . | nindent 8 }}
 
         if [ -z "$DD_HOST_URL" ]; then
           echo "[INFO] DefectDojo URL not configured, skipping upload"
@@ -303,7 +308,11 @@ spec:
               -F "push_to_jira=false" \
               -F "environment=Development" \
               -F "test_title=${SCAN_TYPE}" \
+              -F "tags=${DD_CODEBASE_TAG}" \
+              -F "tags=${DD_TENANT_TAG}" \
+              -F "tags=oci-image:${IMAGE_NAME}" \
               ${DD_VERSION_ARG} \
+              ${DD_COMMIT_HASH_ARG} \
               ${DD_BRANCH_TAG_ARG})
 
             # ${HTTP_CODE%??} drops the last two digits: only 2xx passes

@@ -10,7 +10,7 @@ spec:
     - name: IMAGE_NAMES
       description: Array of container images to scan.
     - name: CODEBASE_NAME
-      description: Name of the codebase/component. Used as the DefectDojo product name.
+      description: Name of the codebase/component. Used as the DefectDojo product name and in the codebase tag.
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun

@@ -397,3 +397,21 @@ image_version() {
   esac
 }
 {{- end -}}
+
+{{/*
+POSIX sh that sets the values of the DefectDojo reimport request that the CI
+upload tasks share: DD_CODEBASE_TAG and DD_TENANT_TAG, the codebase and the run
+namespace tags in lower case, the case DefectDojo stores, and DD_COMMIT_HASH_ARG,
+the commit_hash form field, empty when the COMMIT_HASH param is empty.
+
+A step script includes it once, with nindent 8, before the upload. The task
+declares the CODEBASE_NAME and COMMIT_HASH params.
+*/}}
+{{- define "edp-tekton.defectdojoReimportFields" -}}
+DD_CODEBASE_TAG=$(printf 'app.edp.epam.com/codebase:%s' "$(params.CODEBASE_NAME)" | tr '[:upper:]' '[:lower:]')
+DD_TENANT_TAG=$(printf 'app.edp.epam.com/tenant:%s' "$(context.taskRun.namespace)" | tr '[:upper:]' '[:lower:]')
+DD_COMMIT_HASH_ARG=""
+if [ -n "$(params.COMMIT_HASH)" ]; then
+  DD_COMMIT_HASH_ARG="-F commit_hash=$(params.COMMIT_HASH)"
+fi
+{{- end -}}

@@ -59,66 +59,19 @@ spec:
       name: prepare-project
       workingDir: $(workspaces.source.path)
       env:
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: token
+{{- include "edp-tekton.sonar.secretEnv" . | nindent 8 }}
         - name: SONAR_PROJECT_KEY
           value: "$(params.SONAR_PROJECT_KEY)"
         - name: SONAR_PROJECT_NAME
           value: "$(params.SONAR_PROJECT_NAME)"
       script: |
-        set -e
-
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          # mainBranch is deliberately not sent. SonarQube then names the main branch from its own
-          # sonar.projects.defaultBranchName setting, which keeps that setting authoritative and
-          # means this task needs no access to the Kubernetes API to read the Codebase resource.
-          # It must be omitted rather than sent empty: an empty value creates a branch whose name
-          # is the empty string.
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
-        else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
-          else
-            echo "Unknown Response format"
-          fi
-        fi
+        {{ include "edp-tekton.sonar.prepareProject" . | nindent 8 }}
     - image: registry.access.redhat.com/ubi8/ubi-minimal:8.10
       name: prepare-sonar-project-properties
       computeResources: {}
       workingDir: $(workspaces.source.path)
       env:
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
+{{- include "edp-tekton.sonar.urlEnv" . | nindent 8 }}
         - name: SONAR_PROJECT_KEY
           value: "$(params.SONAR_PROJECT_KEY)"
         - name: SONAR_PROJECT_NAME
@@ -135,6 +88,7 @@ spec:
           value: "$(params.branch)"
       script: |
         #!/usr/bin/env bash
+{{ include "edp-tekton.sonar.resolve" . | nindent 8 }}
 
         replaceValues() {
           filename=$1
@@ -152,10 +106,15 @@ spec:
         }
 
         if [[ -f $(workspaces.source.path)/sonar-project.properties ]]; then
-          if [[ -n "${SONAR_HOST_URL}" ]]; then
+          # In the SonarCloud US region the scanner needs sonar.region and must not get sonar.host.url.
+          if [[ -n "${SONAR_HOST_URL}" && -z "${SONAR_REGION}" ]]; then
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.host.url ${SONAR_HOST_URL}
           fi
-          if [[ -n "${SONAR_PROJECT_KEY}" ]]; then
+          if [[ -n "${SONAR_REGION}" ]]; then
+            replaceValues $(workspaces.source.path)/sonar-project.properties sonar.region ${SONAR_REGION}
+          fi
+          # In SonarCloud mode the project key comes from the file: the codebase name must not replace it.
+          if [[ -n "${SONAR_PROJECT_KEY}" && "${SONAR_MODE}" != "sonarcloud" ]]; then
             replaceValues $(workspaces.source.path)/sonar-project.properties sonar.projectKey ${SONAR_PROJECT_KEY}
           fi
           if [[ -n "${SONAR_PROJECT_NAME}" ]]; then
@@ -180,6 +139,10 @@ spec:
           echo "sonar.working.directory=/tmp/.scannerwork" >> $(workspaces.source.path)/sonar-project.properties
 
         else
+          if [[ "${SONAR_MODE}" == "sonarcloud" ]]; then
+            echo "ERROR: SonarCloud needs sonar-project.properties in the repository root with sonar.organization and sonar.projectKey."
+            exit 1
+          fi
           touch sonar-project.properties
           test -z "${SONAR_HOST_URL}" || echo "sonar.host.url=${SONAR_HOST_URL}" >> sonar-project.properties
           test -z "${SONAR_PROJECT_KEY}" || echo "sonar.projectKey=${SONAR_PROJECT_KEY}" >> sonar-project.properties
@@ -190,6 +153,15 @@ spec:
           test -z "${SOURCE_BRANCH}" || echo "sonar.pullrequest.branch=${SOURCE_BRANCH}" >> sonar-project.properties
           test -z "${TARGET_BRANCH}" || echo "sonar.pullrequest.base=${TARGET_BRANCH}" >> sonar-project.properties
           echo "sonar.working.directory=/tmp/.scannerwork" >> sonar-project.properties
+        fi
+
+        if [[ "${SONAR_MODE}" == "sonarcloud" ]]; then
+          for key in sonar.organization sonar.projectKey; do
+            if [[ -z "$(sonar_property $(workspaces.source.path)/sonar-project.properties ${key})" ]]; then
+              echo "ERROR: SonarCloud requires ${key} in sonar-project.properties in the repository root."
+              exit 1
+            fi
+          done
         fi
 
         echo "---------------------------"

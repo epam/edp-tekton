@@ -77,56 +77,13 @@ spec:
       name: prepare-project
       workingDir: $(workspaces.source.path)
       env:
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: token
+{{- include "edp-tekton.sonar.secretEnv" . | nindent 8 }}
         - name: SONAR_PROJECT_KEY
           value: "$(params.SONAR_PROJECT_KEY)"
         - name: SONAR_PROJECT_NAME
           value: "$(params.SONAR_PROJECT_NAME)"
       script: |
-        set -e
-
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          # mainBranch is deliberately not sent. SonarQube then names the main branch from its own
-          # sonar.projects.defaultBranchName setting, which keeps that setting authoritative and
-          # means this task needs no access to the Kubernetes API to read the Codebase resource.
-          # It must be omitted rather than sent empty: an empty value creates a branch whose name
-          # is the empty string.
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
-        else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
-          else
-            echo "Unknown Response format"
-          fi
-        fi
+        {{ include "edp-tekton.sonar.prepareProject" . | nindent 8 }}
     - name: gradle-tasks
       image: $(params.BASE_IMAGE)
       volumeMounts:
@@ -142,9 +99,34 @@ spec:
         #!/bin/bash
         set -e
 
+{{ include "edp-tekton.sonar.resolve" . | nindent 8 }}
+
+        # In SonarCloud mode the project key and the organization come from the project's build.gradle.
+        # System properties win over build.gradle, so an init script removes the codebase name the
+        # pipeline passes as -Dsonar.projectKey. In the US region it also removes the host URL the
+        # pipeline passes and sets sonar.region.
+        SONAR_INIT_ARGS=""
+        if [[ "${SONAR_MODE}" == "sonarcloud" ]]; then
+          for key in sonar.projectKey sonar.organization; do
+            grep -qs "${key}" build.gradle build.gradle.kts gradle.properties || echo "WARNING: ${key} is not found in build.gradle or gradle.properties. SonarCloud needs it."
+          done
+          {
+            echo "System.clearProperty('sonar.projectKey')"
+            if [[ -n "${SONAR_REGION}" ]]; then
+              echo "System.clearProperty('sonar.host.url')"
+              echo "System.setProperty('sonar.region', '${SONAR_REGION}')"
+            fi
+          } > /tmp/sonar-init.gradle
+          SONAR_INIT_ARGS="-I /tmp/sonar-init.gradle"
+          if [[ -n "${SONAR_REGION}" ]]; then
+            unset SONAR_HOST_URL
+          fi
+        fi
+
         gradle \
           -I \
           /var/configmap/init.gradle \
+          ${SONAR_INIT_ARGS} \
           -PnexusLogin=${CI_USERNAME} \
           -PnexusPassword=${CI_PASSWORD} \
           $(params.EXTRA_COMMANDS)
@@ -155,16 +137,9 @@ spec:
           value: $(workspaces.source.path)/$(params.PROJECT_DIR)
         - name: SONAR_USER_HOME
           value: $(workspaces.source.path)/$(params.PROJECT_DIR)
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: token
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
+{{- include "edp-tekton.sonar.secretEnv" . | nindent 8 }}
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

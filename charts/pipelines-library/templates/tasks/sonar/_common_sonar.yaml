@@ -1,0 +1,138 @@
+{{/*
+Shared building blocks of the sonarqube-* tasks.
+
+The tasks work with a self-hosted SonarQube and with SonarQube Cloud (SonarCloud). The CI secret
+(default name: ci-sonarqube) holds only what the portal integration form writes:
+  - url    Sonar endpoint
+  - token  Sonar token
+
+The host name of the URL selects the mode:
+  - sonarcloud.io (and its subdomains)  SonarCloud, EU region
+  - sonarqube.us (and its subdomains)   SonarCloud, US region
+  - anything else                       SonarQube
+SonarQube mode behaves exactly as before.
+
+In SonarCloud mode the project key and the organization are not derived or injected: they are read
+from the project's own configuration, the way each scanner expects it:
+  - general (sonar-project.properties): sonar.projectKey, sonar.organization
+  - maven (pom.xml properties or -D options): sonar.projectKey, sonar.organization
+  - gradle (build.gradle "sonar" block or gradle.properties): sonar.projectKey, sonar.organization
+  - dotnet: sonar.projectKey and sonar.organization from SonarQube.Analysis.xml (the settings file of
+    the SonarScanner for .NET) in the repository root, because the 'begin' command has no
+    project-level place for them; sonar-project.properties must not exist, the scanner rejects it
+The key the pipeline passes for the codebase name is dropped in SonarCloud mode so that it cannot
+override the project's own key. Projects are never created automatically in SonarCloud.
+
+In the US region the scanners must get sonar.region=us and must not get sonar.host.url (with
+sonar.host.url=https://sonarqube.us they treat the server as SonarQube Server and fail), so the tasks
+drop the host URL the pipelines pass and add the region.
+*/}}
+
+{{/* Env var with the URL of the Sonar CI secret. Indent to the level of the `env:` list items. */}}
+{{- define "edp-tekton.sonar.urlEnv" -}}
+- name: SONAR_HOST_URL
+  valueFrom:
+    secretKeyRef:
+      name: $(params.ci-sonarqube)
+      key: url
+{{- end -}}
+
+{{/* Secret-backed env vars: URL and token. Indent to the level of the `env:` list items. */}}
+{{- define "edp-tekton.sonar.secretEnv" -}}
+{{ include "edp-tekton.sonar.urlEnv" . }}
+- name: SONAR_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: $(params.ci-sonarqube)
+      key: token
+{{- end -}}
+
+{{/*
+POSIX sh. Needs SONAR_HOST_URL in the environment. Sets SONAR_MODE (sonarqube|sonarcloud) and
+SONAR_REGION (empty, or "us" for the SonarCloud US region) from the host name of the URL, and defines
+sonar_property FILE KEY, which prints the last value of KEY in a properties file (empty when absent).
+*/}}
+{{- define "edp-tekton.sonar.resolve" -}}
+# The URL in the secret may end with "/" (for example "https://sonarcloud.io/").
+SONAR_HOST_URL="${SONAR_HOST_URL%/}"
+
+# Only the host name decides: "https://example.com/sonarcloud.io" is not SonarCloud.
+sonar_host=$(printf '%s' "${SONAR_HOST_URL}" | tr 'A-Z' 'a-z')
+sonar_host="${sonar_host#*://}"
+sonar_host="${sonar_host%%/*}"
+sonar_host="${sonar_host%%:*}"
+SONAR_MODE=sonarqube
+SONAR_REGION=""
+case "${sonar_host}" in
+  sonarcloud.io | *.sonarcloud.io) SONAR_MODE=sonarcloud ;;
+  sonarqube.us | *.sonarqube.us) SONAR_MODE=sonarcloud; SONAR_REGION=us ;;
+esac
+
+sonar_property() {
+  [ -f "$1" ] || return 0
+  sed -n "s/^[[:space:]]*$2[[:space:]]*=[[:space:]]*//p" "$1" | tail -n 1 | tr -d '\r' | sed 's/[[:space:]]*$//'
+}
+
+if [ "${SONAR_MODE}" = "sonarcloud" ]; then
+  echo "SonarCloud mode: the project key and the organization are taken from the project configuration"
+  if [ -n "${SONAR_REGION}" ]; then
+    echo "SonarCloud region: ${SONAR_REGION}"
+  fi
+fi
+{{- end -}}
+
+{{/* bash. The `prepare-project` step: availability check and, for SonarQube, project lookup/creation. */}}
+{{- define "edp-tekton.sonar.prepareProject" -}}
+set -e
+
+{{ include "edp-tekton.sonar.resolve" . }}
+
+if [[ "$SONAR_MODE" == "sonarcloud" ]]; then
+  # The SonarCloud root URL redirects to the login page; /api/system/status answers 200.
+  SONAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SONAR_HOST_URL}/api/system/status") || SONAR_STATUS="503"
+else
+  SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
+fi
+
+if [[ "$SONAR_STATUS" != "200" ]]; then
+  echo -e "Sonar is not available (HTTP ${SONAR_STATUS})\nPlease check the connection to Sonar"
+  exit 1
+fi
+
+if [[ "$SONAR_MODE" == "sonarcloud" ]]; then
+  # The project key is known only to the scanner (it comes from the project configuration) and
+  # projects are not created automatically in SonarCloud, so there is nothing to look up here.
+  # A wrong token is reported now instead of deep inside the scanner.
+  SONAR_VALID=$(curl -s -H "Authorization: Bearer ${SONAR_TOKEN}" "${SONAR_HOST_URL}/api/authentication/validate" | jq -r '.valid' 2>/dev/null) || SONAR_VALID=""
+  if [[ "$SONAR_VALID" != "true" ]]; then
+    echo "Token isn't valid or not defined"
+    exit 1
+  fi
+  exit 0
+fi
+
+# Check if project exists
+SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
+
+# Check token is valid
+if [[ -z "$SONAR_RESPONSE" ]]; then
+  echo "Token isn't valid or not defined"
+  exit 1
+fi
+
+if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
+  # mainBranch is deliberately not sent. SonarQube then names the main branch from its own
+  # sonar.projects.defaultBranchName setting, which keeps that setting authoritative and
+  # means this task needs no access to the Kubernetes API to read the Codebase resource.
+  # It must be omitted rather than sent empty: an empty value creates a branch whose name
+  # is the empty string.
+  echo "Create project ${SONAR_PROJECT_KEY}"
+  curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
+else
+  if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
+    echo "Project \"$SONAR_PROJECT_KEY\" already exists"
+  else
+    echo "Unknown Response format"
+  fi
+fi
+{{- end -}}

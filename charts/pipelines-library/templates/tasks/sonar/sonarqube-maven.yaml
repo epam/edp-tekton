@@ -82,80 +82,61 @@ spec:
       name: prepare-project
       workingDir: $(workspaces.source.path)
       env:
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: token
+{{- include "edp-tekton.sonar.secretEnv" . | nindent 8 }}
         - name: SONAR_PROJECT_KEY
           value: "$(params.SONAR_PROJECT_KEY)"
         - name: SONAR_PROJECT_NAME
           value: "$(params.SONAR_PROJECT_NAME)"
       script: |
-        set -e
-
-        # Check if SonarQube is available
-        SONAR_STATUS=$(curl -s -I -w "%{http_code}" -o /dev/null ${SONAR_HOST_URL}) || SONAR_STATUS="503"
-
-        if [[ "$SONAR_STATUS" != "200" ]]; then
-          echo -e "SonarQube is not available\nPlease check the connection to SonarQube"
-          exit 1
-        fi
-
-        # Check if project exists
-        SONAR_RESPONSE=$(curl -s -u "${SONAR_TOKEN}:" "${SONAR_HOST_URL}/api/components/show?component=${SONAR_PROJECT_KEY}")
-
-        # Check token is valid
-        if [[ -z "$SONAR_RESPONSE" ]]; then
-          echo "Token isn't valid or not defined"
-          exit 1
-        fi
-
-        # Create project if it doesn't exist of skip if it does
-        if echo "$SONAR_RESPONSE" | jq -e '.errors[0].msg' &>/dev/null; then
-          # mainBranch is deliberately not sent. SonarQube then names the main branch from its own
-          # sonar.projects.defaultBranchName setting, which keeps that setting authoritative and
-          # means this task needs no access to the Kubernetes API to read the Codebase resource.
-          # It must be omitted rather than sent empty: an empty value creates a branch whose name
-          # is the empty string.
-          echo "Create project ${SONAR_PROJECT_KEY}"
-          curl -X POST -u ${SONAR_TOKEN}: "${SONAR_HOST_URL}/api/projects/create?name=${SONAR_PROJECT_KEY}&project=${SONAR_PROJECT_KEY}"
-        else
-          if echo "$SONAR_RESPONSE" | jq -e '.component.key' &>/dev/null; then
-            echo "Project \"$SONAR_PROJECT_KEY\" already exists"
-          else
-            echo "Unknown Response format"
-          fi
-        fi
+        {{ include "edp-tekton.sonar.prepareProject" . | nindent 8 }}
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)
       volumeMounts:
         - name: settings-maven
           mountPath: /var/configmap
       workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
-      command: ["/usr/bin/mvn"]
+      command: ["/bin/sh", "-c"]
       args:
-        - -s
-        - /var/configmap/settings.xml
-        - "$(params.EXTRA_COMMANDS)"
+        - |
+{{ include "edp-tekton.sonar.resolve" . | nindent 10 }}
+
+          # In SonarCloud mode the project key and the organization come from the project's pom.xml.
+          # The command line wins over pom.xml, so the codebase name the pipeline passes as
+          # -Dsonar.projectKey is dropped. In the US region the scanner gets sonar.region and no host
+          # URL: not as an option, not from the environment, and not from the "sonar" profile of the
+          # Maven settings, which sets sonar.host.url (the scanner rejects it together with the region).
+          if [ "${SONAR_MODE}" = "sonarcloud" ]; then
+            for key in sonar.projectKey sonar.organization; do
+              grep -qs "${key}" pom.xml || echo "WARNING: ${key} is not found in pom.xml. SonarCloud needs it (it can also come from a parent POM or a -D option)."
+            done
+            n=$#
+            i=0
+            while [ "$i" -lt "$n" ]; do
+              arg="$1"
+              shift
+              case "$arg" in
+                -Dsonar.projectKey=*) ;;
+                -Dsonar.host.url=*) [ -n "${SONAR_REGION}" ] || set -- "$@" "$arg" ;;
+                *) set -- "$@" "$arg" ;;
+              esac
+              i=$((i + 1))
+            done
+            if [ -n "${SONAR_REGION}" ]; then
+              unset SONAR_HOST_URL
+              MAVEN_SETTINGS=$(mktemp)
+              sed '/<sonar.host.url>/,/<\/sonar.host.url>/d' /var/configmap/settings.xml > "${MAVEN_SETTINGS}"
+              set -- "$@" "-Dsonar.region=${SONAR_REGION}"
+            fi
+          fi
+          exec /usr/bin/mvn -s "${MAVEN_SETTINGS:-/var/configmap/settings.xml}" "$@"
+        - "--"
+        - $(params.EXTRA_COMMANDS[*])
       env:
         - name: HOME
           value: $(workspaces.source.path)
-        - name: SONAR_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: token
-        - name: SONAR_HOST_URL
-          valueFrom:
-            secretKeyRef:
-              name: $(params.ci-sonarqube)
-              key: url
+{{- include "edp-tekton.sonar.secretEnv" . | nindent 8 }}
+        - name: SONAR_PROJECT_KEY
+          value: "$(params.SONAR_PROJECT_KEY)"
         - name: CI_USERNAME
           valueFrom:
             secretKeyRef:

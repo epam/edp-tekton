@@ -25,7 +25,21 @@ spec:
       default: "{{ include "edp-tekton.registry" . }}/epamedp/tekton-autotest:0.1.8"
       type: string
     - name: CACHE_MAX_AGE_DAYS
-      description: "Maximum age (in days) of the existing cache archive before it is considered stale and re-uploaded. Set to 0 to always upload."
+      description: |
+        Maximum age (in days) of the existing cache archive before it is considered stale and re-uploaded.
+
+        Behavior:
+        - If cache archive exists and Last-Modified < CACHE_MAX_AGE_DAYS, upload is SKIPPED
+        - If cache archive is older or doesn't exist, new archive is uploaded
+        - Set to "0" to ALWAYS upload (force refresh on every run)
+
+        How to clear cache:
+        1. Set CACHE_MAX_AGE_DAYS=0 in pipeline to force refresh
+        2. Delete <CACHE_NAME>.tar.zst from cache server storage
+
+        Note: If a cache is saved empty on first run (e.g., due to --no-cache-dir),
+        it stays empty for CACHE_MAX_AGE_DAYS. Fix the root cause (remove cache-disabling
+        flags like --no-cache-dir) rather than relying on cache expiry.
       default: "1"
       type: string
   steps:

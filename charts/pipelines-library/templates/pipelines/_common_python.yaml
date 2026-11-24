@@ -14,7 +14,7 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        pip install --no-cache-dir --user .
+        pip install --user .
 
   workspaces:
     - name: source
@@ -49,7 +49,7 @@
       value: 'python:3.13-slim'
     - name: EXTRA_COMMANDS
       value: |
-        pip install --no-cache-dir -r requirements.txt
+        pip install -r requirements.txt
         pip install --upgrade build
         python -m build
 
@@ -86,8 +86,8 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        pip install --no-cache-dir -r requirements.txt
-        pip install --no-cache-dir --user .
+        pip install -r requirements.txt
+        pip install --user .
 
         if [ -f run_service.py ]; then
           python run_service.py &
@@ -137,8 +137,8 @@
         # we checkout the source code in the /source directory
         # and hold cache in the /cache directory
 
-        pip install --no-cache-dir -r requirements.txt
-        pip install --no-cache-dir  --user .
+        pip install -r requirements.txt
+        pip install --user .
 
         if [ -f run_service.py ]; then
           python run_service.py &

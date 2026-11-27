@@ -95,7 +95,7 @@ spec:
         - name: key-id
           value: $(params.changeNumber)
         - name: BASE_IMAGE
-          value: 'epamedp/tekton-dotnet:6.0.3'
+          value: 'epamedp/tekton-dotnet:6.0.4'
         - name: EXTRA_COMMANDS
           value: |
             slnFilename=$(ls *.sln)
